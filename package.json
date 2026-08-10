@@ -14,7 +14,10 @@
     "build:site": "pnpm --filter @justdummies/site build",
     "build:playground": "dotnet publish apps/playground/JustDummies.Playground.csproj -c Release",
     "build": "./scripts/build-site.sh",
-    "check": "pnpm --filter @justdummies/site check"
+    "check": "pnpm --filter @justdummies/site check",
+    "serve": "wrangler dev",
+    "preview": "wrangler versions upload",
+    "deploy": "wrangler deploy"
   },
   "devDependencies": {
     "wrangler": "^4.120.1"
