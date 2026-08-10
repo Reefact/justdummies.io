@@ -1,0 +1,166 @@
+---
+/**
+ * A command line the visitor can read, select, and — when scripting is available —
+ * copy in one click.
+ *
+ * The copy button is **hidden until the script unhides it**. A button that does
+ * nothing is worse than no button, and the command itself is selectable text, so
+ * without scripting the component loses a convenience rather than a function.
+ *
+ * It emits a DOM event carrying its placement and its variant rather than calling
+ * an analytics library. The measurement that matters is which moment of the page
+ * convinced the visitor and which door they left by, and that needs both
+ * dimensions; but the component has no business knowing who is listening. The
+ * placement is a stable identifier, never a scene ordinal — the page's scene count
+ * has changed before and would make two measurement periods incomparable.
+ */
+import { localeFromPath } from '../i18n/routing';
+import { useTranslations } from '../i18n/ui';
+
+interface Props {
+    command: string;
+    /** Stable, position-independent identifier of where this instance sits. */
+    placement: string;
+    /** Which door was taken: the two commands do not mean the same thing. */
+    variant: string;
+}
+
+const { command, placement, variant } = Astro.props;
+
+const t = useTranslations(localeFromPath(Astro.url.pathname));
+---
+
+<div class="command">
+    <code>{command}</code>
+
+    <button
+        type="button"
+        class="copy"
+        hidden
+        data-copy
+        data-command={command}
+        data-placement={placement}
+        data-variant={variant}
+        data-copied={t('install.copied')}
+        data-idle={t('install.copy')}
+        data-failed={t('install.copyFailed')}
+        aria-label={t('install.copyCommand')}
+    >
+        <span data-copy-label>{t('install.copy')}</span>
+    </button>
+
+    {/* The button's own label changes, but a label change is not always announced.
+        A polite live region is what makes the result reach a screen reader. */}
+    <span class="visually-hidden" role="status" aria-live="polite" data-copy-status></span>
+</div>
+
+<script>
+    const RESET_AFTER_MS = 2000;
+
+    for (const button of document.querySelectorAll<HTMLButtonElement>('button[data-copy]')) {
+        // Unhidden here rather than in the markup: reaching this line is the proof
+        // that the button can do its job.
+        button.hidden = false;
+
+        const label: HTMLElement | null = button.querySelector('[data-copy-label]');
+        const status: HTMLElement | null | undefined = button.parentElement?.querySelector('[data-copy-status]');
+
+        let reset: ReturnType<typeof setTimeout> | undefined;
+
+        button.addEventListener('click', async () => {
+            const command: string = button.dataset.command ?? '';
+
+            try {
+                await navigator.clipboard.writeText(command);
+            } catch {
+                // Clipboard access can be refused — an insecure context, a denied
+                // permission. Saying so beats a button that silently does nothing.
+                if (status) {
+                    status.textContent = button.dataset.failed ?? '';
+                }
+
+                return;
+            }
+
+            if (label) {
+                label.textContent = button.dataset.copied ?? '';
+            }
+            if (status) {
+                status.textContent = button.dataset.copied ?? '';
+            }
+
+            document.dispatchEvent(
+                new CustomEvent('jd:install-command-copied', {
+                    detail: {
+                        placement: button.dataset.placement,
+                        variant: button.dataset.variant,
+                    },
+                }),
+            );
+
+            clearTimeout(reset);
+            reset = setTimeout(() => {
+                if (label) {
+                    label.textContent = button.dataset.idle ?? '';
+                }
+                if (status) {
+                    status.textContent = '';
+                }
+            }, RESET_AFTER_MS);
+        });
+    }
+</script>
+
+<style>
+    .command {
+        display: flex;
+        align-items: center;
+        gap: var(--jd-space-3);
+        background: var(--jd-surface);
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-md);
+        padding: var(--jd-space-3) var(--jd-space-4);
+        overflow-x: auto;
+    }
+
+    code {
+        flex: 1;
+        font-family: var(--jd-font-mono);
+        font-size: var(--jd-text-sm);
+        white-space: pre;
+    }
+
+    .copy {
+        flex: none;
+        font: inherit;
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-primary);
+        background: var(--jd-surface-raised);
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-sm);
+        padding: var(--jd-space-1) var(--jd-space-3);
+        cursor: pointer;
+        transition: border-color var(--jd-duration-fast) var(--jd-ease);
+    }
+
+    .copy:hover {
+        border-color: var(--jd-accent);
+    }
+
+    .copy:focus-visible {
+        outline: 2px solid var(--jd-accent);
+        outline-offset: 2px;
+    }
+
+    .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+        border: 0;
+    }
+</style>

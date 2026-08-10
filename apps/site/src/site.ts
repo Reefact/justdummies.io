@@ -23,6 +23,12 @@ export const site = {
     repository: 'https://github.com/Reefact/just-dummies',
 
     library: {
+        /**
+         * Availability is content, not a decision taken inside a component. Nothing
+         * visible may lead nowhere without its state being said, and an interface
+         * cannot say it if it has to guess it.
+         */
+        status: 'available',
         package: 'JustDummies',
         version: '1.0.0-preview.1',
         nuget: 'https://www.nuget.org/packages/JustDummies',
@@ -33,9 +39,26 @@ export const site = {
          * else.
          */
         installCommand: 'dotnet add package JustDummies --prerelease',
+        /**
+         * The Package Manager Console form. The casing is PowerShell's convention
+         * and nuget.org's own label, and this string will be pasted a very large
+         * number of times: it has to be exact.
+         */
+        packageManagerCommand: 'Install-Package JustDummies -IncludePrerelease',
+    },
+
+    /**
+     * The fourth slot of the install row, which has no target yet. It is declared
+     * rather than omitted so the row is designed at its final width now, instead of
+     * being redrawn the day the documentation exists.
+     */
+    documentation: {
+        status: 'pending',
+        url: null,
     },
 
     cli: {
+        status: 'available',
         /** The package installed, which is not the command typed. */
         package: 'JustDummies.Cli',
         /** The command typed, which is not the package installed. */

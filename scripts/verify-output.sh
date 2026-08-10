@@ -60,6 +60,28 @@ if [ -f "${dist}/.assetsignore" ]; then
   fi
 fi
 
+# An element that leads nowhere must say so, and stay reachable while saying it.
+# The `disabled` attribute takes a control out of the tab order, which makes its
+# explanation unreachable by keyboard and invisible to a screen reader — so a
+# pending element carries `aria-disabled` and a tabindex instead. Both halves are
+# checked, because getting one right and the other wrong looks correct on screen.
+pending_html="$(grep -rl 'aria-disabled="true"' "${dist}" --include='*.html' || true)"
+if [ -n "${pending_html}" ]; then
+  bad_focus=0
+  for page in ${pending_html}; do
+    # Every element carrying aria-disabled must also carry a tabindex.
+    total="$(grep -o 'aria-disabled="true"' "${page}" | wc -l)"
+    focusable="$(grep -oE '<[^>]*aria-disabled="true"[^>]*>' "${page}" | grep -c 'tabindex' || true)"
+    [ "${total}" -eq "${focusable}" ] || { fail "a pending element in ${page#"${dist}"/} is not focusable — its state cannot be reached by keyboard"; bad_focus=1; }
+    # And none may also carry the real disabled attribute.
+    if grep -qE '<[^>]*aria-disabled="true"[^>]*[[:space:]]disabled[[:space:]=>]' "${page}"; then
+      fail "a pending element in ${page#"${dist}"/} carries the disabled attribute, which removes it from the tab order"
+      bad_focus=1
+    fi
+  done
+  [ "${bad_focus}" -eq 0 ] && pass "pending elements stay focusable and say their state"
+fi
+
 # not_found_handling is set to "404-page" in wrangler.jsonc, and it serves the
 # nearest 404.html. Without the files, the setting points at nothing and a
 # mistyped URL gets the host's default page rather than the site's.

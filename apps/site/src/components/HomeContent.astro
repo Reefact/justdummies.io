@@ -6,6 +6,7 @@
  * the install command — come from `site.ts` and are identical in every locale
  * (§28.2: only the narrative around the code is translated, never the code).
  */
+import InstallBlock from './InstallBlock.astro';
 import { localeFromPath } from '../i18n/routing';
 import { useTranslations } from '../i18n/ui';
 import { site } from '../site';
@@ -19,7 +20,7 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
     <p class="subtitle">{t('brand.subtitle')}</p>
 
     <h2 class="install-label">{t('home.install.label')}</h2>
-    <pre class="command"><code>{site.library.installCommand}</code></pre>
+    <InstallBlock placement="home-skeleton" />
 
     <nav class="links" aria-label={t('nav.primary')}>
         {/*
@@ -31,7 +32,8 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
           would be worse than sending them to one that does.
         */}
         <a href="/playground/">{t('nav.playground')}</a>
-        <a href={site.library.nuget}>{t('nav.nuget')}</a>
+        {/* No NuGet link here: the install block above owns it, and the same link
+            twice on one screen makes the reader wonder which is which. */}
         <a href={site.repository}>{t('nav.github')}</a>
     </nav>
 
