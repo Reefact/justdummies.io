@@ -1,0 +1,6 @@
+{
+  "constrained-reference": "string reference = Any.String()\n                      .NonEmpty()\n                      .WithMaxLength(20)\n                      .StartingWith(\"ORD-\")\n                      .Generate();",
+  "derived-reference": "OrderReference reference = Any.String()\n                              .NonEmpty()\n                              .WithMaxLength(20)\n                              .StartingWith(\"ORD-\")\n                              .As(OrderReference.Create)\n                              .Generate();",
+  "hero-expression": "string reference = Any.String()\n                      .StartingWith(\"ORD-\")\n                      .Containing(\"2026\")\n                      .WithLength(12)\n                      .Generate();",
+  "verbose-arrangement": "Order order = new Order(\n    reference: Any.String().NonEmpty().WithMaxLength(20).StartingWith(\"ORD-\")\n                  .As(OrderReference.Create).Generate(),\n    customerId: Any.Guid().As(CustomerId.Create).Generate(),\n    total: Any.Decimal().GreaterThan(0).WithScale(2).As(Money.Create).Generate(),\n    status: OrderStatus.Pending);"
+}

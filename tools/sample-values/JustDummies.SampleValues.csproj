@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Produces the values the site displays, by running the library.
+    Nothing generated is ever typed by hand.
+
+    A value written into the content by a person is a lie with a delay on it: the day
+    the library's draw changes shape, the page keeps showing the old one and the site
+    misrepresents its own product. This tool removes the possibility rather than the
+    temptation.
+
+    It executes the very expressions the snippet project publishes, so the code shown
+    and the value shown come from one source. An expression cannot be displayed
+    without compiling, and cannot be displayed without running.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>JustDummies.SampleValues</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\snippet-validation\JustDummies.SnippetValidation.csproj" />
+  </ItemGroup>
+
+</Project>
