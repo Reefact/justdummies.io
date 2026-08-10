@@ -1,0 +1,146 @@
+/*
+ * Playground styling. Every colour, space and type value comes from
+ * packages/design-tokens/tokens.css — nothing is declared literally here, so the
+ * playground cannot drift away from the site's look.
+ */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--jd-background);
+    color: var(--jd-text-primary);
+    font-family: var(--jd-font-sans);
+    font-size: var(--jd-text-base);
+    line-height: var(--jd-line-body);
+}
+
+.page {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: var(--jd-space-12) var(--jd-space-4) var(--jd-space-16);
+}
+
+h1 {
+    font-size: var(--jd-text-xl);
+    line-height: var(--jd-line-tight);
+    margin: 0 0 var(--jd-space-4);
+}
+
+/* Blazor's router focuses the <h1> on navigation so a screen reader lands on the
+   new page's title, and the browser paints a focus ring there. That ring is left
+   alone deliberately: `:focus-visible` matches this programmatic focus in
+   Chromium, so the usual `:not(:focus-visible)` escape does nothing, and the only
+   rule that would remove it is a blanket `h1:focus { outline: none }` — which
+   also removes it for someone who genuinely needs to see where focus went. It is
+   a question for the real playground's design, not for its skeleton. */
+
+.lede {
+    color: var(--jd-text-muted);
+    max-width: 46rem;
+}
+
+/* The fixed prefix/suffix and the editable middle, per §11.2. */
+.expression {
+    background: var(--jd-surface);
+    border: 1px solid var(--jd-border);
+    border-radius: var(--jd-radius-md);
+    padding: var(--jd-space-4);
+    margin: var(--jd-space-6) 0;
+    font-family: var(--jd-font-mono);
+    font-size: var(--jd-text-sm);
+    overflow-x: auto;
+}
+
+.expression .fixed {
+    color: var(--jd-text-muted);
+}
+
+.expression .editable {
+    color: var(--jd-text-primary);
+    background: var(--jd-surface-raised);
+    border-radius: var(--jd-radius-sm);
+    padding: 0 var(--jd-space-1);
+}
+
+.generate {
+    font: inherit;
+    color: var(--jd-background);
+    background: var(--jd-accent);
+    border: 0;
+    border-radius: var(--jd-radius-sm);
+    padding: var(--jd-space-2) var(--jd-space-4);
+    cursor: pointer;
+    transition: filter var(--jd-duration-fast) var(--jd-ease);
+}
+
+.generate:hover {
+    filter: brightness(1.08);
+}
+
+.generate:focus-visible {
+    outline: 2px solid var(--jd-text-primary);
+    outline-offset: 2px;
+}
+
+.value {
+    display: block;
+    margin-top: var(--jd-space-4);
+    font-family: var(--jd-font-mono);
+    font-size: var(--jd-text-lg);
+    color: var(--jd-generated);
+}
+
+.version {
+    margin-top: var(--jd-space-12);
+    padding-top: var(--jd-space-4);
+    border-top: 1px solid var(--jd-border);
+    color: var(--jd-text-muted);
+    font-family: var(--jd-font-mono);
+    font-size: var(--jd-text-sm);
+}
+
+/* The pre-runtime shell. Styled from the same tokens so the boot state and the
+   booted page are the same page, not two designs. */
+.boot {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: var(--jd-space-12) var(--jd-space-4);
+    font-family: var(--jd-font-sans);
+}
+
+.boot-title {
+    font-size: var(--jd-text-xl);
+    line-height: var(--jd-line-tight);
+    margin: 0 0 var(--jd-space-4);
+}
+
+.boot-note {
+    color: var(--jd-text-muted);
+    margin: 0;
+}
+
+#blazor-error-ui {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    padding: var(--jd-space-3) var(--jd-space-4);
+    background: var(--jd-surface-raised);
+    border-top: 2px solid var(--jd-error);
+    color: var(--jd-text-primary);
+    box-shadow: var(--jd-shadow-raised);
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: var(--jd-space-3);
+    top: var(--jd-space-3);
+}
