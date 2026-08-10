@@ -1,0 +1,69 @@
+# justdummies.io
+
+The official website of **[JustDummies](https://github.com/Reefact/just-dummies)** — a .NET library
+that generates explicit, constrained, domain-respecting dummies for tests.
+
+The site is one static deployment: an Astro application, with a Blazor WebAssembly playground
+mounted under `/playground/`. There is no application server.
+
+> **Status: skeleton.** The build pipeline is real and verified end to end. The landing page's
+> scrollytelling narrative and the playground's parser are specified and not yet built.
+
+## Layout
+
+```
+apps/
+  site/          Astro — landing page and content pages
+  playground/    Blazor WebAssembly — runs the real library in the browser
+packages/
+  design-tokens/ Colour, space, type and motion, shared by both applications
+scripts/         Build the two halves and assemble them into one artefact
+tools/           Repository tooling (the commit-message linter)
+```
+
+## Requirements
+
+| | |
+|---|---|
+| Node | ≥ 22, with pnpm (`packageManager` pins the version) |
+| .NET SDK | pinned by `global.json` |
+
+## Building
+
+```bash
+pnpm install
+pnpm build
+```
+
+That runs the whole pipeline: it builds the site into `dist/`, publishes the playground, copies it
+to `dist/playground/`, and verifies the artefact's shape. The halves can also be built separately
+with `pnpm build:site` and `pnpm build:playground`.
+
+`dist/` is the deployment — the directory uploaded to Cloudflare Pages, exactly as built.
+
+## How the two halves meet
+
+The playground's project file sets `StaticWebAssetBasePath` to `playground`, and its `index.html`
+carries the matching `<base href="/playground/" />`. Both are asserted by
+`scripts/verify-output.sh`, because a mismatch produces a blank page rather than an error: the
+document loads, and every asset URL resolves one directory too high.
+
+## The library version
+
+The playground references a **published** JustDummies package, never a source build — a playground
+running the library's `main` would offer constraints that exist in no package a visitor can install.
+The version is declared once, in `Directory.Packages.props`, and the interface reads what it
+actually loaded rather than a string typed beside it.
+
+## Contributing
+
+Commit convention, branch rules and pull request titles: [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Enable the commit-message hook once per clone:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+## Licence
+
+[Apache 2.0](LICENSE).
