@@ -1,0 +1,91 @@
+/*
+ * JustDummies design tokens.
+ *
+ * The single source of colour, space, radius, shadow, type and motion for both
+ * applications: the Astro site imports this file, and the Blazor playground
+ * copies it into its own wwwroot. Neither declares a raw colour of its own —
+ * that is what makes the two look like one product rather than two sites that
+ * happen to share a name.
+ *
+ * PROVISIONAL VALUES are marked `@provisional` and are exactly the ones the
+ * specification leaves open (§28: palette and accent colour, typography). They
+ * exist so the shell renders; they are not the brand. Replacing one is an edit
+ * to this file and nothing else, which is the point of the indirection.
+ *
+ * Light mode is not built, but must remain buildable (§7.5). Every colour is
+ * therefore defined once, here, as a semantic name — `--jd-text-muted`, never
+ * `--jd-grey-400`. A future light theme redefines the same names under a
+ * `prefers-color-scheme` query or a `[data-theme]` attribute; it never has to
+ * hunt for a literal buried in a component.
+ */
+
+:root {
+    /* Colour — surfaces and text ------------------------------------------- */
+    /* The four values the specification fixes (§7.2). */
+    --jd-background: #0D0E10;
+    --jd-surface: #17191D;
+    --jd-text-primary: #F4F2ED;
+    --jd-text-muted: #A8ABB2;
+
+    /* @provisional — §7.2 leaves these "à définir", §28 lists the palette as
+       open. Chosen only for legibility on --jd-background while the brand is
+       decided. */
+    --jd-accent: #FFB86B;
+    --jd-generated: #7FD3C1;
+    --jd-success: #7CD992;
+    --jd-error: #F2836B;
+
+    /* Derived surfaces. Kept as tokens rather than inline rgba() so a light
+       theme can redefine them without touching a component. */
+    --jd-border: #262A30;
+    --jd-surface-raised: #1E2126;
+
+    /* Space ----------------------------------------------------------------- */
+    --jd-space-1: 0.25rem;
+    --jd-space-2: 0.5rem;
+    --jd-space-3: 0.75rem;
+    --jd-space-4: 1rem;
+    --jd-space-6: 1.5rem;
+    --jd-space-8: 2rem;
+    --jd-space-12: 3rem;
+    --jd-space-16: 4rem;
+
+    /* Radius and elevation --------------------------------------------------- */
+    --jd-radius-sm: 4px;
+    --jd-radius-md: 8px;
+    --jd-radius-lg: 14px;
+    --jd-shadow-raised: 0 1px 2px rgb(0 0 0 / 40%), 0 8px 24px rgb(0 0 0 / 24%);
+
+    /* Type ------------------------------------------------------------------- */
+    /* @provisional — §28 leaves the typefaces open. The stacks below name no
+       webfont on purpose: nothing is downloaded until the choice is made, and
+       the system fallbacks §7.3 asks for are already what renders. */
+    --jd-font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --jd-font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+
+    /* Fluid between mobile and desktop, as §7.3 requires. */
+    --jd-text-sm: clamp(0.8125rem, 0.79rem + 0.12vw, 0.875rem);
+    --jd-text-base: clamp(0.9375rem, 0.9rem + 0.19vw, 1.0625rem);
+    --jd-text-lg: clamp(1.125rem, 1.05rem + 0.38vw, 1.375rem);
+    --jd-text-xl: clamp(1.5rem, 1.3rem + 1vw, 2.25rem);
+    --jd-text-2xl: clamp(2rem, 1.6rem + 2vw, 3.5rem);
+    --jd-line-tight: 1.15;
+    --jd-line-body: 1.6;
+
+    /* Motion ----------------------------------------------------------------- */
+    --jd-ease: cubic-bezier(0.2, 0, 0, 1);
+    --jd-duration-fast: 120ms;
+    --jd-duration-base: 220ms;
+}
+
+/*
+ * Reduced motion is a token concern, not a per-component one: a component that
+ * reads --jd-duration-* gets the right behaviour without knowing the query
+ * exists. §10.4 requires the whole story to stay readable without movement.
+ */
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --jd-duration-fast: 1ms;
+        --jd-duration-base: 1ms;
+    }
+}
