@@ -48,6 +48,12 @@ jobs:
         with:
           global-json-file: global.json
 
+      # Before the site is built, because a snippet the library diagnoses is a
+      # defect in what the site would teach, and finding it after a two-minute
+      # build wastes the two minutes.
+      - name: Validate the published snippets
+        run: ./scripts/validate-snippets.sh
+
       # --frozen-lockfile: CI installs what the lockfile says or fails. A CI run
       # that silently resolves a different tree than the committed one is testing
       # something nobody has.
