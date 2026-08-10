@@ -15,7 +15,17 @@ the scope table differs, because the components differ.
 Everything recorded here is in **English**: source, comments, commit messages,
 branch names, pull request titles and descriptions, issues.
 
-The site's own user-facing copy is a separate question, settled by the
+One exception, bounded and named: **design documents under `docs/design/` are in
+French**. They continue a document written in French for a reader who works in
+that language, and translating them would cost a permanent synchronisation
+without adding a reader. The exception stops at that directory — a decision
+record, a code comment or a commit message about a design document is English
+like everything else.
+
+It is written down because an exception nobody wrote down is not an exception,
+it is the beginning of a repository in two languages.
+
+The site's own user-facing copy is a third question again, settled by the
 specification and not by this guide.
 
 ## Branches
