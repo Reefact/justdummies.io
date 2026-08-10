@@ -1,0 +1,43 @@
+# Node -------------------------------------------------------------------------
+node_modules/
+.pnpm-store/
+npm-debug.log*
+pnpm-debug.log*
+yarn-error.log*
+
+# Astro ------------------------------------------------------------------------
+# `.astro/` holds generated types and the content collection cache; `dist/` is the
+# build output. Both are reproducible from the sources beside them.
+.astro/
+dist/
+
+# .NET -------------------------------------------------------------------------
+bin/
+obj/
+*.user
+*.suo
+artifacts/
+
+# The combined deployment artefact ---------------------------------------------
+# The site build writes here, then the published playground is copied under it.
+# Ignored explicitly as well as by the `dist/` rule above, because a build that
+# stops halfway leaves it partial and a partial artefact must never be committed.
+/dist/
+
+# Cloudflare -------------------------------------------------------------------
+.wrangler/
+
+# Secrets ----------------------------------------------------------------------
+# Deployment credentials live in GitHub environments, never in the repository.
+# These patterns are a backstop, not the policy.
+.env
+.env.*
+!.env.example
+*.pem
+
+# Editors and operating systems ------------------------------------------------
+.vs/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
