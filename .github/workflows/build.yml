@@ -69,6 +69,17 @@ jobs:
       - name: Build the artefact
         run: pnpm build
 
+      # The build regenerates what the site displays. If the committed copies differ,
+      # the repository holds values nobody drew and code nobody compiled — and the
+      # review that approved them was reading fiction. Failing here is how the diff
+      # stays honest.
+      - name: Check the generated content is committed and current
+        run: |
+          if ! git diff --exit-code -- apps/site/src/generated/; then
+            echo "::error title=Generated content is stale::Run 'pnpm build' and commit apps/site/src/generated/."
+            exit 1
+          fi
+
       - name: Check the size budgets
         run: ./scripts/check-budgets.sh
 
