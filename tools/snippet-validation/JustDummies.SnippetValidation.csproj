@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Every C# expression the site publishes lives here, and compiling this project is
+    what proves it can be published.
+
+    The proof has two halves. The first is ordinary: an expression that does not
+    compile is not an example, it is a typo waiting to be pasted by a reader. The
+    second is the one that matters — JustDummies ships its analyzers inside the
+    package, so referencing it turns every diagnostic into a compiler warning, and
+    TreatWarningsAsErrors (inherited from Directory.Build.props) turns that warning
+    into a failed build.
+
+    A library whose home page triggers its own diagnostics would lose more
+    credibility than any argument could win, and the check costs nothing because the
+    analyzers travel with the package anyway.
+
+    Nothing is published from here: this project exists to be compiled.
+  -->
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <OutputType>Library</OutputType>
+    <RootNamespace>JustDummies.SnippetValidation</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The published package, analyzers included. Version: Directory.Packages.props. -->
+    <PackageReference Include="JustDummies" />
+  </ItemGroup>
+
+</Project>

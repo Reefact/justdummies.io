@@ -1,0 +1,8 @@
+root = true
+
+# Mirrors the validation project's escalation, so the guard proves the same bar the
+# snippets are held to — not a weaker one.
+[*.cs]
+dotnet_diagnostic.JD020.severity = error
+dotnet_diagnostic.JD022.severity = error
+dotnet_diagnostic.JD024.severity = error
