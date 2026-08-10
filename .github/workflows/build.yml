@@ -1,0 +1,101 @@
+name: build
+
+# Build the whole deployment and check it, on every pull request and on every push
+# to main. This is what turns `pnpm build` from something that works on a
+# maintainer's machine into something the repository guarantees.
+#
+# It runs the same scripts a maintainer runs, deliberately: a pipeline that
+# reimplements the local build in YAML drifts from it, and the drift is only ever
+# discovered when one of the two is wrong.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A newer commit on the same branch makes an in-flight run pointless.
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and verify the artefact
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      # Before setup-node, so its pnpm cache has a pnpm to work with. The version
+      # comes from package.json's packageManager field, so CI and a maintainer's
+      # machine cannot use different ones.
+      - name: Install pnpm
+        uses: pnpm/action-setup@f520eceda224fe1a4aed5a2a27a194379a409996 # v6
+
+      - name: Install Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install the .NET SDK
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
+        with:
+          global-json-file: global.json
+
+      # --frozen-lockfile: CI installs what the lockfile says or fails. A CI run
+      # that silently resolves a different tree than the committed one is testing
+      # something nobody has.
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type-check the site
+        run: pnpm check
+
+      # Builds the site, publishes the playground into it, generates the response
+      # headers, and asserts the artefact's shape — all through scripts/, the same
+      # ones `pnpm build` runs locally.
+      - name: Build the artefact
+        run: pnpm build
+
+      - name: Check the size budgets
+        run: ./scripts/check-budgets.sh
+
+      - name: Upload the artefact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: site
+          path: dist/
+          retention-days: 7
+          # The deployment is a directory of many small files; keeping them
+          # uncompressed in the artefact would multiply the upload for no gain.
+          compression-level: 6
+
+  # Deployment is wired but inert, and stays that way until the credentials exist.
+  # The target is settled: Cloudflare Workers with static assets, uploaded by
+  # wrangler. Two things still have to be built before this job can do its work —
+  # the wrangler configuration and the .assetsignore that Workers requires and
+  # Pages did not — and neither belongs in the same change as the build pipeline.
+  #
+  # This job exists rather than being commented out so that the missing piece is
+  # visible in every run instead of being remembered.
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Report what is missing
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -z "${CLOUDFLARE_API_TOKEN}" ]; then
+            echo "::notice title=Deployment skipped::No CLOUDFLARE_API_TOKEN configured. The artefact was built and verified, and nothing was published."
+            exit 0
+          fi
+          echo "::warning title=Deployment not implemented::Credentials are present, but the upload step awaits the Pages-or-Workers decision."
