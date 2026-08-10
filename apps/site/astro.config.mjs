@@ -37,4 +37,16 @@ export default defineConfig({
         // asserts the result rather than trusting this setting.
         inlineStylesheets: 'never',
     },
+
+    vite: {
+        build: {
+            // Same reasoning as inlineStylesheets, applied to everything else Astro
+            // would fold into the document to save a request. An inlined script needs
+            // its own hash in the policy, recomputed whenever its content changes; an
+            // emitted file is covered by `script-src 'self'`, is cacheable, and is
+            // counted by the size budget — an inlined one weighs nothing on paper and
+            // is downloaded on every page view.
+            assetsInlineLimit: 0,
+        },
+    },
 });
