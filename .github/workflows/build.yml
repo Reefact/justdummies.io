@@ -81,27 +81,85 @@ jobs:
           # The deployment is a directory of many small files; keeping them
           # uncompressed in the artefact would multiply the upload for no gain.
           compression-level: 6
+          # dist/.assetsignore is a dotfile, and this action drops dotfiles unless
+          # told otherwise. Losing it is silent in both directions: the artefact still
+          # publishes, and whatever the file was meant to keep out of the upload goes
+          # up with everything else. The deploy job re-runs verify-output.sh on what it
+          # downloads, which is what turns this line from a hope into a guarantee.
+          include-hidden-files: true
 
-  # Deployment is wired but inert, and stays that way until the credentials exist.
-  # The target is settled: Cloudflare Workers with static assets, uploaded by
-  # wrangler. Two things still have to be built before this job can do its work —
-  # the wrangler configuration and the .assetsignore that Workers requires and
-  # Pages did not — and neither belongs in the same change as the build pipeline.
+  # Publish the artefact the build job verified — by downloading it, not by building
+  # again. A deploy job that rebuilds publishes bytes no check has ever seen.
   #
-  # This job exists rather than being commented out so that the missing piece is
-  # visible in every run instead of being remembered.
+  # There is no wrangler-action here, deliberately. The repository pins one wrangler in
+  # package.json, and `pnpm run deploy` is the command a maintainer runs by hand; a
+  # pipeline that fetches a different wrangler than the lockfile's is publishing with a
+  # version nobody has tested. Same reason the build job runs scripts/ rather than
+  # reimplementing the build in YAML.
+  #
+  # Every step up to the last one runs whether or not the credentials exist. That is
+  # the point: without them the job still proves the artefact survives the round trip
+  # through the artefact store, which is the failure this job is most likely to meet
+  # first.
   deploy:
     name: Deploy
     needs: build
+    # Production, and only production. A pull request must never be able to publish.
+    # A preview is made deliberately, by hand, with `pnpm run preview` — see
+    # docs/deployment.md.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Report what is missing
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@f520eceda224fe1a4aed5a2a27a194379a409996 # v6
+
+      - name: Install Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      # Only wrangler is needed here, but the whole workspace is installed anyway: the
+      # lockfile is the one the build job used, and resolving a narrower tree would be
+      # a second dependency graph to reason about for no gain.
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Download the verified artefact
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: site
+          path: dist
+
+      # The same script the build job ran, now against the bytes that will actually be
+      # uploaded. It costs seconds, and it is the only thing that would notice the
+      # artefact losing a file between the two jobs.
+      - name: Verify the artefact as downloaded
+        run: ./scripts/verify-output.sh
+
+      # Announced rather than failed while the account does not exist yet: a red
+      # pipeline on every push to main would say nothing useful and teach everyone to
+      # ignore it. Once both secrets are set this branch is never taken again.
+      - name: Publish to Cloudflare Workers
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
+          missing=""
           if [ -z "${CLOUDFLARE_API_TOKEN}" ]; then
-            echo "::notice title=Deployment skipped::No CLOUDFLARE_API_TOKEN configured. The artefact was built and verified, and nothing was published."
+            missing="CLOUDFLARE_API_TOKEN"
+          fi
+          if [ -z "${CLOUDFLARE_ACCOUNT_ID}" ]; then
+            missing="${missing:+${missing} and }CLOUDFLARE_ACCOUNT_ID"
+          fi
+
+          if [ -n "${missing}" ]; then
+            echo "::notice title=Deployment skipped::${missing} not configured, so nothing was published. The artefact was built, verified, and verified again after download. docs/deployment.md walks through creating them."
             exit 0
           fi
-          echo "::warning title=Deployment not implemented::Credentials are present, but the upload step awaits the Pages-or-Workers decision."
+
+          pnpm run deploy
