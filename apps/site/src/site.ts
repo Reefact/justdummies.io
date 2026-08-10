@@ -12,12 +12,13 @@
  * build step compares them. Until that step exists, this comment is the guard.
  */
 export const site = {
+    /**
+     * A product name, not prose: it is spelled the same in every locale. Anything
+     * that would be *translated* — the tagline, the subtitle, every sentence the
+     * site says — lives in `i18n/ui.ts` instead, and nothing here is a candidate
+     * for translation.
+     */
     name: 'JustDummies',
-
-    /** Provisional wording. §28 lists the final slogan as still to be settled. */
-    tagline: 'Just dummies. Seriously powerful ones.',
-    /** Provisional wording. */
-    subtitle: 'Focused, fluent test values for .NET.',
 
     repository: 'https://github.com/Reefact/just-dummies',
 

@@ -2,30 +2,98 @@
 import '@justdummies/design-tokens/tokens.css';
 import '../styles/base.css';
 
+import LanguageSelector from '../components/LanguageSelector.astro';
+import { localeFromPath, pathForLocale, translatedLocales } from '../i18n/routing';
+import { defaultLocale, localeTags, openGraphLocales, type Locale } from '../i18n/ui';
+
 interface Props {
     title: string;
     description: string;
 }
 
 const { title, description } = Astro.props;
-const canonical = new URL(Astro.url.pathname, Astro.site);
+
+const pathname: string = Astro.url.pathname;
+const locale: Locale = localeFromPath(pathname);
+const alternates: Locale[] = translatedLocales(pathname);
+
+function absolute(path: string): string {
+    return new URL(path, Astro.site).href;
+}
+
+/**
+ * The canonical URL is the page's own, in its own locale, never the other one's
+ * (§25.1). Two locales pointing at one canonical would ask search engines to drop
+ * one of them.
+ */
+const canonical: string = absolute(pathForLocale(pathname, locale));
+
+/**
+ * `x-default` names the version to serve when no declared language matches, and
+ * the specification points it at English (§7.6). It is only emitted when English
+ * really exists for this route.
+ */
+const hasDefault: boolean = alternates.includes(defaultLocale);
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={localeTags[locale]}>
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>{title}</title>
         <meta name="description" content={description} />
+
         <link rel="canonical" href={canonical} />
+        {
+            alternates.map((alternate: Locale) => (
+                <link
+                    rel="alternate"
+                    hreflang={localeTags[alternate]}
+                    href={absolute(pathForLocale(pathname, alternate))}
+                />
+            ))
+        }
+        {hasDefault && <link rel="alternate" hreflang="x-default" href={absolute(pathForLocale(pathname, defaultLocale))} />}
+
         <meta property="og:type" content="website" />
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
         <meta property="og:url" content={canonical} />
+        <meta property="og:locale" content={openGraphLocales[locale]} />
+        {
+            alternates
+                .filter((alternate: Locale) => alternate !== locale)
+                .map((alternate: Locale) => (
+                    <meta property="og:locale:alternate" content={openGraphLocales[alternate]} />
+                ))
+        }
         <meta name="twitter:card" content="summary_large_image" />
     </head>
     <body>
+        <header class="site-header">
+            <a class="brand" href={pathForLocale('/', locale)}>JustDummies</a>
+            <LanguageSelector pathname={pathname} />
+        </header>
+
         <slot />
     </body>
 </html>
+
+<style>
+    .site-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--jd-space-4);
+        max-width: 60rem;
+        margin: 0 auto;
+        padding: var(--jd-space-4);
+    }
+
+    .brand {
+        color: var(--jd-text-primary);
+        font-weight: 600;
+        text-decoration: none;
+    }
+</style>
