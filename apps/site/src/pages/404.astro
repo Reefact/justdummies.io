@@ -1,0 +1,41 @@
+---
+import Base from '../layouts/Base.astro';
+import { useTranslations } from '../i18n/ui';
+import { site } from '../site';
+
+/**
+ * Served by Workers for any request matching no asset (`not_found_handling:
+ * "404-page"`). The locale is fixed rather than derived from the URL: this page
+ * answers under an address that does not exist, so the path proves nothing about
+ * what the visitor reads. `/fr/404.html` is the French twin, and Cloudflare
+ * serves the *nearest* one, so a mistyped French URL lands on it.
+ */
+const t = useTranslations('en');
+---
+
+<Base title={`${t('notfound.title')} — ${site.name}`} description={t('notfound.body')} noindex>
+    <main class="shell">
+        <h1>{t('notfound.title')}</h1>
+        <p class="body">{t('notfound.body')}</p>
+        <p><a href="/">{t('notfound.home')}</a></p>
+    </main>
+</Base>
+
+<style>
+    .shell {
+        max-width: 60rem;
+        margin: 0 auto;
+        padding: var(--jd-space-16) var(--jd-space-4);
+    }
+
+    h1 {
+        font-size: var(--jd-text-xl);
+        line-height: var(--jd-line-tight);
+        margin: 0 0 var(--jd-space-4);
+    }
+
+    .body {
+        color: var(--jd-text-muted);
+        max-width: 46rem;
+    }
+</style>

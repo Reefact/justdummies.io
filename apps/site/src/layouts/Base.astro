@@ -9,9 +9,16 @@ import { defaultLocale, localeTags, openGraphLocales, type Locale } from '../i18
 interface Props {
     title: string;
     description: string;
+    /**
+     * Set on pages that answer for an address rather than owning one — the 404.
+     * Such a page is served under whatever URL was mistyped, so declaring a
+     * canonical would nominate that typo as a real page, and an `hreflang` would
+     * announce a translation of it. It says `noindex` instead and claims nothing.
+     */
+    noindex?: boolean;
 }
 
-const { title, description } = Astro.props;
+const { title, description, noindex = false } = Astro.props;
 
 const pathname: string = Astro.url.pathname;
 const locale: Locale = localeFromPath(pathname);
@@ -44,17 +51,23 @@ const hasDefault: boolean = alternates.includes(defaultLocale);
         <title>{title}</title>
         <meta name="description" content={description} />
 
-        <link rel="canonical" href={canonical} />
+        {noindex && <meta name="robots" content="noindex" />}
+        {!noindex && <link rel="canonical" href={canonical} />}
         {
-            alternates.map((alternate: Locale) => (
-                <link
-                    rel="alternate"
-                    hreflang={localeTags[alternate]}
-                    href={absolute(pathForLocale(pathname, alternate))}
-                />
-            ))
+            !noindex &&
+                alternates.map((alternate: Locale) => (
+                    <link
+                        rel="alternate"
+                        hreflang={localeTags[alternate]}
+                        href={absolute(pathForLocale(pathname, alternate))}
+                    />
+                ))
         }
-        {hasDefault && <link rel="alternate" hreflang="x-default" href={absolute(pathForLocale(pathname, defaultLocale))} />}
+        {
+            !noindex && hasDefault && (
+                <link rel="alternate" hreflang="x-default" href={absolute(pathForLocale(pathname, defaultLocale))} />
+            )
+        }
 
         <meta property="og:type" content="website" />
         <meta property="og:title" content={title} />

@@ -11,6 +11,18 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 echo "▸ Building the site"
 pnpm --filter @justdummies/site build
 
+# Astro special-cases only the 404 at the root of src/pages, emitting it as
+# 404.html. A localised one is an ordinary page, so with directory-format builds
+# it lands at fr/404/index.html — a name the host will never look for. Workers
+# serves the *nearest* file literally called 404.html, so the French page is
+# renamed to that and its directory removed, leaving exactly one URL rather than
+# the same page answering at two.
+if [ -f "${root}/dist/fr/404/index.html" ]; then
+  echo "▸ Flattening the French 404 to the name the host looks for"
+  mv "${root}/dist/fr/404/index.html" "${root}/dist/fr/404.html"
+  rmdir "${root}/dist/fr/404"
+fi
+
 "${root}/scripts/copy-playground.sh"
 
 # After the playground, never before: the policy names a hash of the shell that
