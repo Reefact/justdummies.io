@@ -1,0 +1,82 @@
+---
+/**
+ * The explicit language selector the specification requires (§7.3).
+ *
+ * It is plain links and no JavaScript. That is not minimalism for its own sake:
+ * anything that reads a stored preference and *acts* on it becomes the automatic
+ * redirection §7.3 forbids, and this way the control works before hydration, with
+ * JavaScript disabled, and inside the reduced-motion and no-script variants the
+ * landing page has to ship anyway.
+ *
+ * Locales the current page is not translated into do not appear at all (§7.4) —
+ * an offer that leads to a 404 is worse than no offer.
+ */
+import { localeFromPath, pathForLocale, translatedLocales } from '../i18n/routing';
+import { localeNames, localeTags, useTranslations, type Locale } from '../i18n/ui';
+
+interface Props {
+    pathname: string;
+}
+
+const { pathname } = Astro.props;
+
+const current: Locale = localeFromPath(pathname);
+const available: Locale[] = translatedLocales(pathname);
+const t = useTranslations(current);
+---
+
+{
+    available.length > 1 && (
+        <nav class="language-selector" aria-label={t('language.label')}>
+            <ul>
+                {available.map((locale: Locale) => (
+                    <li>
+                        {locale === current ? (
+                            <span aria-current="true" lang={localeTags[locale]}>
+                                {localeNames[locale]}
+                            </span>
+                        ) : (
+                            <a
+                                href={pathForLocale(pathname, locale)}
+                                hreflang={localeTags[locale]}
+                                lang={localeTags[locale]}
+                            >
+                                <span class="visually-hidden">{t('language.switch')} </span>
+                                {localeNames[locale]}
+                            </a>
+                        )}
+                    </li>
+                ))}
+            </ul>
+        </nav>
+    )
+}
+
+<style>
+    .language-selector ul {
+        display: flex;
+        gap: var(--jd-space-3);
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        font-size: var(--jd-text-sm);
+    }
+
+    .language-selector [aria-current] {
+        color: var(--jd-text-muted);
+    }
+
+    /* Visible to a screen reader, absent from the visual design. The link reads
+       "Read this page in Français" rather than a bare word out of context. */
+    .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+        border: 0;
+    }
+</style>

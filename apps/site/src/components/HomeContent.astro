@@ -1,0 +1,96 @@
+---
+/**
+ * The home page's body, written once and rendered in every locale.
+ *
+ * Prose comes from the translation system; facts — the package name, its version,
+ * the install command — come from `site.ts` and are identical in every locale
+ * (§28.2: only the narrative around the code is translated, never the code).
+ */
+import { localeFromPath } from '../i18n/routing';
+import { useTranslations } from '../i18n/ui';
+import { site } from '../site';
+
+const t = useTranslations(localeFromPath(Astro.url.pathname));
+---
+
+<main class="shell">
+    <h1>{site.name}</h1>
+    <p class="tagline">{t('brand.tagline')}</p>
+    <p class="subtitle">{t('brand.subtitle')}</p>
+
+    <h2 class="install-label">{t('home.install.label')}</h2>
+    <pre class="command"><code>{site.library.installCommand}</code></pre>
+
+    <nav class="links" aria-label={t('nav.primary')}>
+        {/*
+          The one internal link that deliberately leaves the current locale.
+          Internal links are supposed to stay in it (§25.1), but the playground is
+          a single Blazor application served in English only (§8.3), and
+          /fr/playground — a translated shell around that same application — is
+          phase 4 work. Sending a French reader to a route that does not exist
+          would be worse than sending them to one that does.
+        */}
+        <a href="/playground/">{t('nav.playground')}</a>
+        <a href={site.library.nuget}>{t('nav.nuget')}</a>
+        <a href={site.repository}>{t('nav.github')}</a>
+    </nav>
+
+    <p class="note">{t('home.skeleton.note')}</p>
+</main>
+
+<style>
+    .shell {
+        max-width: 60rem;
+        margin: 0 auto;
+        padding: var(--jd-space-8) var(--jd-space-4) var(--jd-space-16);
+    }
+
+    h1 {
+        font-size: var(--jd-text-2xl);
+        line-height: var(--jd-line-tight);
+        margin: 0;
+    }
+
+    .tagline {
+        font-size: var(--jd-text-lg);
+        color: var(--jd-accent);
+        margin: var(--jd-space-3) 0 0;
+    }
+
+    .subtitle {
+        color: var(--jd-text-muted);
+        margin: var(--jd-space-2) 0 var(--jd-space-8);
+    }
+
+    .install-label {
+        font-size: var(--jd-text-sm);
+        font-weight: 400;
+        color: var(--jd-text-muted);
+        margin: 0 0 var(--jd-space-2);
+    }
+
+    .command {
+        background: var(--jd-surface);
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-md);
+        padding: var(--jd-space-4);
+        margin: 0;
+        overflow-x: auto;
+        font-size: var(--jd-text-sm);
+    }
+
+    .links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--jd-space-6);
+        margin-top: var(--jd-space-6);
+    }
+
+    .note {
+        margin-top: var(--jd-space-12);
+        padding-top: var(--jd-space-4);
+        border-top: 1px solid var(--jd-border);
+        color: var(--jd-text-muted);
+        max-width: 46rem;
+    }
+</style>
