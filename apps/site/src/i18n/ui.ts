@@ -57,6 +57,21 @@ const en = {
     'home.skeleton.note':
         'This is the skeleton, not the landing page. The scrollytelling narrative it will carry is specified and not yet built; what stands here is the build pipeline underneath it, so that the first real scene has somewhere to land.',
 
+    'install.cli': '.NET CLI',
+    'install.packageManager': 'Package Manager',
+    'install.nuget': 'View on NuGet',
+    'install.documentation': 'Documentation',
+    'install.copy': 'Copy',
+    'install.copyCommand': 'Copy this command',
+    'install.copied': 'Copied',
+    'install.copyFailed': 'Could not copy. Select the command and copy it manually.',
+
+    /**
+     * The state marker of §5.7. It is displayed next to the label, never behind a
+     * hover, because there is no hover on a phone.
+     */
+    'state.comingSoon': 'coming soon',
+
     'notfound.title': 'Page not found',
     'notfound.body': 'There is nothing at this address. It may have moved, or never existed.',
     'notfound.home': 'Go to the home page',
@@ -85,6 +100,17 @@ const fr: Record<UiKey, string> = {
         "JustDummies produit pour .NET des valeurs de test arbitraires qui respectent les contraintes que vous déclarez, pour qu'un test dise ce dont il parle, et rien d'autre.",
     'home.skeleton.note':
         "Ceci est le squelette, pas la page d'accueil. La narration au défilement qu'elle portera est spécifiée mais pas encore construite ; ce qui tient ici, c'est la chaîne de build en dessous, pour que la première vraie scène ait où atterrir.",
+
+    'install.cli': 'CLI .NET',
+    'install.packageManager': 'Console du gestionnaire de packages',
+    'install.nuget': 'Voir sur NuGet',
+    'install.documentation': 'Documentation',
+    'install.copy': 'Copier',
+    'install.copyCommand': 'Copier cette commande',
+    'install.copied': 'Copié',
+    'install.copyFailed': 'Copie impossible. Sélectionnez la commande et copiez-la à la main.',
+
+    'state.comingSoon': 'en cours de construction',
 
     'notfound.title': 'Page introuvable',
     'notfound.body': "Il n'y a rien à cette adresse. Elle a pu changer, ou n'avoir jamais existé.",
