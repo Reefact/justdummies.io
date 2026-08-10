@@ -8,6 +8,15 @@ set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
+# Before the site is built, because the site imports what these produce. Both write
+# into apps/site/src/generated/, and both are committed: the values only move when
+# something real moves, so the diff is worth reading rather than noise to skip.
+echo "▸ Extracting the validated snippets"
+node "${root}/scripts/extract-snippets.mjs"
+
+echo "▸ Generating the sample values"
+"${root}/scripts/generate-sample-values.sh"
+
 echo "▸ Building the site"
 pnpm --filter @justdummies/site build
 

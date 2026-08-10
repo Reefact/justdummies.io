@@ -1,0 +1,29 @@
+{
+  "seed": 20260810,
+  "values": {
+    "constrained-reference": [
+      "ORD-5f5xO2T",
+      "ORD-zvrxyEBwfd1o",
+      "ORD-IqYioSFBhEelxl",
+      "ORD-TVSd"
+    ],
+    "derived-reference": [
+      "ORD-w",
+      "ORD-T7VRNINHbAKeNu51",
+      "ORD-w4C2i1iL8T",
+      "ORD-KDpr"
+    ],
+    "hero-expression": [
+      "ORD-h2026Mhf",
+      "ORD-hD2026Yg",
+      "ORD-j2026HYF",
+      "ORD-20262NJK"
+    ],
+    "order-reference": [
+      "ORD-toPq3Y7sWwdaz"
+    ],
+    "order-total": [
+      "544006.13"
+    ]
+  }
+}
