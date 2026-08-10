@@ -1,0 +1,13 @@
+{
+  "name": "@justdummies/design-tokens",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The single source of colour, space, type and motion for the site and the playground.",
+  "license": "Apache-2.0",
+  "exports": {
+    "./tokens.css": "./tokens.css"
+  },
+  "files": [
+    "tokens.css"
+  ]
+}
