@@ -53,7 +53,12 @@ fi
 # absent, and the site loses its policy, its cache rules and the playground
 # rewrite while every page keeps answering 200.
 if [ -f "${dist}/.assetsignore" ]; then
-  if grep -vE '^[[:space:]]*#' "${dist}/.assetsignore" | grep -qE '(^|/)_(headers|redirects)[[:space:]]*$'; then
+  # `grep -c` rather than `grep -q`: the quiet form exits at the first match and
+  # closes the pipe under it, which makes the upstream grep fail to write and, with
+  # `set -o pipefail`, fails the build for the wrong reason. Counting reads to the
+  # end and cannot.
+  excluded="$(grep -vE '^[[:space:]]*#' "${dist}/.assetsignore" | grep -cE '(^|/)_(headers|redirects)[[:space:]]*$' || true)"
+  if [ "${excluded}" -gt 0 ]; then
     fail ".assetsignore excludes _headers or _redirects — those are parsed, not served, and excluding them deletes the policy"
   else
     pass "_headers and _redirects are not excluded from the upload"

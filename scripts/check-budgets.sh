@@ -35,7 +35,12 @@ report "files in the artefact" "${files} / ${MAX_FILES}"
 [ "${files}" -le "${MAX_FILES}" ] || fail "too many files for one Cloudflare deployment"
 
 # --- Platform: largest single asset ---------------------------------------------
-largest_file="$(find "${dist}" -type f -printf '%s\t%p\n' | sort -rn | head -1)"
+# One pass in awk rather than `sort -rn | head -1`, and not for speed. `head` closes
+# the pipe as soon as it has its line, `sort` then fails to write the rest, and
+# `set -o pipefail` turns that into a failed build. Whether it happens at all
+# depends on buffer sizes and timing, so it passes locally and on most runs, then
+# fails on one — which is the worst kind of check. Nothing here closes a pipe early.
+largest_file="$(find "${dist}" -type f -printf '%s\t%p\n' | awk -F'\t' '$1 > max { max = $1; path = $2 } END { print max "\t" path }')"
 largest_bytes="${largest_file%%$'\t'*}"
 largest_path="${largest_file#*$'\t'}"
 report "largest asset" "$(kib "${largest_bytes}") — ${largest_path#"${dist}"/}"
