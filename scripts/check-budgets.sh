@@ -20,6 +20,11 @@ MAX_LANDING_JS_BYTES=$((150 * 1024))
 
 failures=0
 report() { printf '  %-46s %s\n' "$1" "$2"; }
+
+# Integer division reports a real value under one kibibyte as "0 KiB", which reads
+# as "nothing" rather than as "a little". A budget exists to be watched, and a
+# number that rounds itself away cannot be.
+kib() { awk -v bytes="$1" 'BEGIN { printf (bytes < 10240 ? "%.2f KiB" : "%.0f KiB"), bytes / 1024 }'; }
 fail() { echo "  ✗ $1" >&2; failures=$((failures + 1)); }
 
 echo "▸ Budgets for ${dist}"
@@ -33,7 +38,7 @@ report "files in the artefact" "${files} / ${MAX_FILES}"
 largest_file="$(find "${dist}" -type f -printf '%s\t%p\n' | sort -rn | head -1)"
 largest_bytes="${largest_file%%$'\t'*}"
 largest_path="${largest_file#*$'\t'}"
-report "largest asset" "$((largest_bytes / 1024)) KiB — ${largest_path#"${dist}"/}"
+report "largest asset" "$(kib "${largest_bytes}") — ${largest_path#"${dist}"/}"
 [ "${largest_bytes}" -le "${MAX_FILE_BYTES}" ] || fail "an asset exceeds Cloudflare's per-file limit"
 
 # --- Performance: the landing page's own JavaScript -----------------------------
@@ -45,7 +50,7 @@ landing_js=0
 while IFS= read -r asset; do
   landing_js=$((landing_js + $(gzip -c "${asset}" | wc -c)))
 done < <(find "${dist}/_astro" -name '*.js' 2>/dev/null || true)
-report "landing page JavaScript (gzipped)" "$((landing_js / 1024)) KiB / $((MAX_LANDING_JS_BYTES / 1024)) KiB"
+report "landing page JavaScript (gzipped)" "$(kib "${landing_js}") / $(kib "${MAX_LANDING_JS_BYTES}")"
 [ "${landing_js}" -le "${MAX_LANDING_JS_BYTES}" ] || fail "the landing page's JavaScript exceeds its budget"
 
 # --- Informational: the playground's weight -------------------------------------
@@ -54,7 +59,7 @@ report "landing page JavaScript (gzipped)" "$((landing_js / 1024)) KiB / $((MAX_
 # complaint.
 if [ -d "${dist}/playground/_framework" ]; then
   framework_br="$(find "${dist}/playground/_framework" -name '*.br' -printf '%s\n' | awk '{ total += $1 } END { print total + 0 }')"
-  report "playground runtime, Brotli (informational)" "$((framework_br / 1024)) KiB"
+  report "playground runtime, Brotli (informational)" "$(kib "${framework_br}")"
 fi
 
 if [ "${failures}" -ne 0 ]; then
