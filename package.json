@@ -1,0 +1,19 @@
+{
+  "name": "justdummies-io",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The official JustDummies website: the Astro site and the Blazor WebAssembly playground.",
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @justdummies/site dev",
+    "build:site": "pnpm --filter @justdummies/site build",
+    "build:playground": "dotnet publish apps/playground/JustDummies.Playground.csproj -c Release",
+    "build": "./scripts/build-site.sh",
+    "check": "pnpm --filter @justdummies/site check"
+  }
+}

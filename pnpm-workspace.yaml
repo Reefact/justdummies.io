@@ -1,0 +1,8 @@
+# The Blazor playground is not listed here: it is a .NET project, and its
+# dependencies are resolved by NuGet under Directory.Packages.props. What the two
+# applications share crosses that boundary as a file, not as a package —
+# packages/design-tokens is imported by the site and copied into the playground's
+# wwwroot by its project file.
+packages:
+  - "apps/site"
+  - "packages/*"
