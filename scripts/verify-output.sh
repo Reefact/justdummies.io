@@ -65,6 +65,54 @@ if [ -f "${dist}/.assetsignore" ]; then
   fi
 fi
 
+# The playground's client-side routes and the rewrites that make them survive a cold
+# request have to agree, and nothing but this check makes them.
+#
+# Three ways they come apart. None of them fails the build on its own, none shows up
+# in a click-through, and all three reach a visitor who pastes a link:
+#
+#   A splat over /playground/* is discarded by the host as an infinite loop, because
+#   its target canonicalises back into its own pattern. Zero rules are parsed and the
+#   deployment succeeds regardless.
+#
+#   A rewrite whose target is index.html answers 307 to the directory instead of 200
+#   with the shell, so the URL the rewrite existed to preserve is thrown away before
+#   Blazor ever sees it.
+#
+#   A route declared in Blazor with no rewrite here works in every click-through,
+#   because the router is already running by then, and 404s only when entered cold.
+if [ -f "${dist}/_redirects" ]; then
+  if grep -qE '^/playground/\*([[:space:]]|$)' "${dist}/_redirects"; then
+    fail "_redirects splats over /playground/* — the host discards it as an infinite loop, so no playground route gets a rewrite at all"
+  else
+    pass "no splat over /playground/ is silently discarded"
+  fi
+
+  if grep -qE '^/playground[^[:space:]]*[[:space:]]+[^[:space:]]*index\.html' "${dist}/_redirects"; then
+    fail "a playground rewrite targets index.html — the host canonicalises that to the directory and answers 307, destroying the URL the rewrite exists to preserve"
+  else
+    pass "playground rewrites target the directory, not index.html"
+  fi
+
+  # `/` is excluded: it is dist/playground/index.html, served as the directory index.
+  routes="$(grep -rhoE '@page[[:space:]]+"[^"]*"' "${root}/apps/playground" --include='*.razor' \
+    | sed -E 's/.*"(.*)"/\1/' | grep -vxF '/' || true)"
+
+  # No route at all means the extraction broke, not that the application has none:
+  # Home.razor has carried `@page "/"` since the shell was added. A check that
+  # silently passes when it stops looking is worse than no check.
+  if [ -z "$(grep -rhoE '@page[[:space:]]+"[^"]*"' "${root}/apps/playground" --include='*.razor' || true)" ]; then
+    fail "no @page directive found under apps/playground — this check has stopped looking rather than found nothing"
+  else
+    missing=0
+    for route in ${routes}; do
+      grep -qE "^/playground${route}[[:space:]]" "${dist}/_redirects" \
+        || { fail "the playground declares @page \"${route}\" but _redirects has no rewrite for /playground${route} — a cold link to it will 404"; missing=1; }
+    done
+    [ "${missing}" -eq 0 ] && pass "every playground route has a rewrite that survives a cold request"
+  fi
+fi
+
 # An element that leads nowhere must say so, and stay reachable while saying it.
 # The `disabled` attribute takes a control out of the tab order, which makes its
 # explanation unreachable by keyboard and invisible to a screen reader — so a

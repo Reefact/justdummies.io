@@ -1,16 +1,41 @@
 # Cloudflare redirect rules for the deployed artefact.
 #
-# Astro copies this file verbatim from public/ to the root of dist/.
+# Astro copies this file verbatim from public/ to the root of dist/. On Workers it is
+# never served as an asset: it is parsed, and its rules are applied to asset
+# responses. Redirects are evaluated before _headers, so a rule here wins over one
+# there.
 #
-# The playground is a single-page application: its client-side routes exist only
-# once Blazor is running, so a cold request to one of them must be answered with
-# the application shell rather than a 404. The rewrite below does that, and it is
-# a rewrite (status 200), not a redirect — the visitor's URL has to survive, or
-# the router has nothing left to route on when it starts.
+# The playground is a single-page application: its client-side routes exist only once
+# Blazor is running, so a cold request to one of them must be answered with the
+# application shell rather than a 404. The rules below do that, and they are rewrites
+# (status 200), not redirects — the visitor's URL has to survive, or the router has
+# nothing left to route on when it starts.
 #
-# ORDERING ASSUMPTION, to be confirmed on the first real preview: static assets
-# are matched before these rules, so /playground/_framework/... keeps being served
-# as itself rather than being swallowed by the splat. If that turns out to be
-# false, the runtime will 404 in a way no local static server reproduces, and this
-# rule needs narrowing to the routes the application actually declares.
-/playground/*  /playground/index.html  200
+# Two shapes look correct and are not. Both were measured against `wrangler dev`
+# rather than reasoned about, and scripts/verify-output.sh now asserts against both.
+#
+#   ONE RULE PER DECLARED ROUTE — never a splat over /playground/*.
+#
+#     /playground/*  /playground/index.html  200
+#
+#   is discarded outright: "Parsed 0 valid redirect rules — Infinite loop detected in
+#   this rule and has been ignored." The host canonicalises /playground/index.html to
+#   /playground/, which the splat matches again. Nothing fails loudly; the file
+#   parses, the site deploys, and the rule simply does not exist.
+#
+#   THE TARGET IS THE DIRECTORY — never index.html.
+#
+#     /playground/not-found  /playground/index.html  200
+#
+#   does parse as valid, and still fails: it answers 307 to /playground/. That is the
+#   same canonicalisation, and it destroys the very URL the rewrite exists to
+#   preserve — Blazor boots at its root and the route is gone. Naming /playground/,
+#   which is already canonical, answers 200 with the shell and leaves the URL alone.
+#
+# The root route needs no rule: /playground/ is dist/playground/index.html, which the
+# host serves as the directory index.
+#
+# A route added to the application and forgotten here works in every click-through,
+# because the router is already running by then, and 404s only on a cold link — which
+# is the version of this bug that reaches a visitor.
+/playground/not-found  /playground/  200
