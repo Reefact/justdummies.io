@@ -12,7 +12,7 @@
 // a hash of that exact tag. This takes the hash, and recomputes it every build
 // because the fingerprints inside it change every build.
 import { createHash } from 'node:crypto';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -38,13 +38,42 @@ function inlineScriptHashes(html) {
     return hashes;
 }
 
-const playgroundShell = readFileSync(join(dist, 'playground', 'index.html'), 'utf8');
-const scriptHashes = inlineScriptHashes(playgroundShell);
+/** Every HTML document in the artefact, because the policy applies to all of them. */
+function htmlDocuments(directory) {
+    const found = [];
+
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+        const path = join(directory, entry.name);
+
+        if (entry.isDirectory()) {
+            found.push(...htmlDocuments(path));
+        } else if (entry.name.endsWith('.html')) {
+            found.push(path);
+        }
+    }
+
+    return found;
+}
+
+// Scanned across the whole artefact rather than the playground shell alone. The
+// shell is where the importmap lives and was the only known case, but a generator
+// that covers less than the policy it writes is a policy that is wrong somewhere
+// nobody looked — and verify-output.sh checks every document, so the two would
+// have disagreed the first time a page gained an inline script.
+const hashes = new Set();
+
+for (const document of htmlDocuments(dist)) {
+    for (const hash of inlineScriptHashes(readFileSync(document, 'utf8'))) {
+        hashes.add(hash);
+    }
+}
+
+const scriptHashes = [...hashes].sort();
 
 if (scriptHashes.length === 0) {
-    console.error('generate-headers: no inline script found in the playground shell.');
-    console.error('  Blazor has always emitted an importmap there. Either the template changed');
-    console.error('  and the policy can tighten, or the shell was not built. Check before assuming.');
+    console.error('generate-headers: no inline script found anywhere in the artefact.');
+    console.error('  The playground shell has always carried an importmap. Either the template');
+    console.error('  changed and the policy can tighten, or the artefact was not built.');
     process.exit(1);
 }
 
