@@ -39,7 +39,22 @@ That runs the whole pipeline: it builds the site into `dist/`, publishes the pla
 to `dist/playground/`, and verifies the artefact's shape. The halves can also be built separately
 with `pnpm build:site` and `pnpm build:playground`.
 
-`dist/` is the deployment — the directory uploaded to Cloudflare Pages, exactly as built.
+`dist/` is the deployment — the directory uploaded to Cloudflare Workers, exactly as built.
+
+## Deploying
+
+```bash
+pnpm serve      # serve dist/ the way Workers will, parsing _headers and _redirects
+pnpm preview    # upload a version and get its URL, without promoting it
+pnpm deploy     # publish dist/ as built — it does not rebuild, so build first
+```
+
+`pnpm serve` is not a static file server: it is the Workers runtime locally, so the response
+headers and the redirect rules are the real ones. Prefer it over any other local server when
+checking anything that depends on them.
+
+Pushing to `main` builds, verifies and publishes. The step-by-step setup — account, API token,
+GitHub secrets, custom domain — is [`docs/deployment.md`](docs/deployment.md).
 
 ## How the two halves meet
 
