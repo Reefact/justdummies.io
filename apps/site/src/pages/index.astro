@@ -1,0 +1,78 @@
+---
+import Base from '../layouts/Base.astro';
+import { site } from '../site';
+
+const title = `${site.name} — ${site.subtitle}`;
+---
+
+<Base title={title} description={site.subtitle}>
+    <main class="shell">
+        <h1>{site.name}</h1>
+        <p class="tagline">{site.tagline}</p>
+        <p class="subtitle">{site.subtitle}</p>
+
+        <pre class="command"><code>{site.library.installCommand}</code></pre>
+
+        <nav class="links" aria-label="Primary">
+            <a href="/playground/">Playground</a>
+            <a href={site.library.nuget}>NuGet</a>
+            <a href={site.repository}>GitHub</a>
+        </nav>
+
+        <p class="note">
+            This is the skeleton, not the landing page. The scrollytelling narrative
+            it will carry is specified and not yet built; what stands here is the
+            build pipeline underneath it, so that the first real scene has somewhere
+            to land.
+        </p>
+    </main>
+</Base>
+
+<style>
+    .shell {
+        max-width: 60rem;
+        margin: 0 auto;
+        padding: var(--jd-space-16) var(--jd-space-4);
+    }
+
+    h1 {
+        font-size: var(--jd-text-2xl);
+        line-height: var(--jd-line-tight);
+        margin: 0;
+    }
+
+    .tagline {
+        font-size: var(--jd-text-lg);
+        color: var(--jd-accent);
+        margin: var(--jd-space-3) 0 0;
+    }
+
+    .subtitle {
+        color: var(--jd-text-muted);
+        margin: var(--jd-space-2) 0 var(--jd-space-8);
+    }
+
+    .command {
+        background: var(--jd-surface);
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-md);
+        padding: var(--jd-space-4);
+        overflow-x: auto;
+        font-size: var(--jd-text-sm);
+    }
+
+    .links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--jd-space-6);
+        margin-top: var(--jd-space-6);
+    }
+
+    .note {
+        margin-top: var(--jd-space-12);
+        padding-top: var(--jd-space-4);
+        border-top: 1px solid var(--jd-border);
+        color: var(--jd-text-muted);
+        max-width: 46rem;
+    }
+</style>

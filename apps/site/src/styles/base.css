@@ -1,0 +1,38 @@
+/*
+ * Base styling for the site. Like the playground's, it declares no colour, space
+ * or type value of its own: everything comes from the shared tokens, which is
+ * what keeps the two applications looking like one product.
+ */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--jd-background);
+    color: var(--jd-text-primary);
+    font-family: var(--jd-font-sans);
+    font-size: var(--jd-text-base);
+    line-height: var(--jd-line-body);
+    -webkit-font-smoothing: antialiased;
+}
+
+a {
+    color: var(--jd-accent);
+    text-underline-offset: 0.2em;
+}
+
+a:focus-visible,
+button:focus-visible {
+    outline: 2px solid var(--jd-text-primary);
+    outline-offset: 2px;
+}
+
+code,
+pre,
+kbd {
+    font-family: var(--jd-font-mono);
+}
