@@ -1,0 +1,29 @@
+root = true
+
+# The rule says no published expression may trigger one of the library's
+# diagnostics. `TreatWarningsAsErrors` was assumed to be enough to enforce it. It is
+# not.
+#
+# Part of the library's catalogue ships at **info** severity, and info is neither a
+# warning nor an error: it does not fail a build, and it does not even appear in
+# ordinary build output. A snippet triggering one of those would have passed this
+# validation in complete silence — which is the exact failure this project exists to
+# prevent, reproduced inside the thing meant to prevent it.
+#
+# So the informational rules that are on by default are raised to error here. This
+# is a stricter bar than a consumer's project would apply, and deliberately: a
+# consumer may reasonably ignore an informational hint, while a page that teaches
+# people how to use the library may not.
+[*.cs]
+dotnet_diagnostic.JD020.severity = error
+dotnet_diagnostic.JD022.severity = error
+dotnet_diagnostic.JD024.severity = error
+
+# JD019 — a constant replay seed committed in code — is deliberately NOT raised, and
+# not because it is unimportant.
+#
+# The narrative's third act ends on a test carrying a pinned seed, which is the very
+# thing this rule reports. That snippet is correct as teaching material and would be
+# wrong as production code, and the two cannot both be true under one severity. It
+# needs a decision when that scene is written, not a setting chosen in advance by
+# whoever happened to create this file.

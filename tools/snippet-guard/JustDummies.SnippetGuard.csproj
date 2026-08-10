@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    This project MUST NOT compile.
+
+    It holds expressions the library's analyzers are supposed to reject, and
+    scripts/validate-snippets.sh builds it expecting failure. Without it, a clean
+    build of the validation project would prove nothing: "no diagnostic" and "no
+    analyzer running" produce exactly the same silence.
+
+    It is excluded from every ordinary build. Only the script touches it.
+  -->
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>JustDummies.SnippetGuard</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="JustDummies" />
+  </ItemGroup>
+
+</Project>
