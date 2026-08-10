@@ -12,6 +12,12 @@ echo "▸ Building the site"
 pnpm --filter @justdummies/site build
 
 "${root}/scripts/copy-playground.sh"
+
+# After the playground, never before: the policy names a hash of the shell that
+# the publish has just written.
+echo "▸ Generating the response headers"
+node "${root}/scripts/generate-headers.mjs"
+
 "${root}/scripts/verify-output.sh"
 
 echo

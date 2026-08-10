@@ -42,6 +42,39 @@ else
   fail "no Brotli assets under _framework — the payload will be served uncompressed"
 fi
 
+[ -f "${dist}/_redirects" ] && pass "the redirect rules were copied" || fail "dist/_redirects is missing"
+[ -f "${dist}/_headers" ] && pass "the response headers were generated" || fail "dist/_headers is missing"
+
+# The policy claims style-src 'self'. That claim is only true while no document
+# carries an inline <style>, and one inlined stylesheet turns the whole policy into
+# a lie that shows up as unstyled pages in production and nowhere else.
+if [ -f "${dist}/_headers" ] && grep -q "style-src 'self'" "${dist}/_headers"; then
+  inlined="$(grep -rl '<style' "${dist}" --include='*.html' || true)"
+  if [ -z "${inlined}" ]; then
+    pass "no inline <style> survives, so style-src can stay at 'self'"
+  else
+    fail "inline <style> found, which style-src 'self' will block: ${inlined}"
+  fi
+fi
+
+# Likewise for the script policy: every inline script in the shipped HTML must be
+# covered by a hash in the policy, or it is blocked at run time.
+if [ -f "${dist}/_headers" ]; then
+  uncovered=0
+  while IFS= read -r shell; do
+    hash="$(node -e '
+      const { createHash } = require("node:crypto");
+      const html = require("node:fs").readFileSync(process.argv[1], "utf8");
+      for (const m of html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)) {
+        if (m[1].length) { console.log(createHash("sha256").update(m[1], "utf8").digest("base64")); }
+      }' "${shell}")"
+    for h in ${hash}; do
+      grep -q "sha256-${h}" "${dist}/_headers" || { fail "inline script in ${shell#"${dist}"/} is not covered by a policy hash"; uncovered=1; }
+    done
+  done < <(find "${dist}" -name '*.html')
+  [ "${uncovered}" -eq 0 ] && pass "every inline script is covered by a policy hash"
+fi
+
 if [ "${failures}" -ne 0 ]; then
   echo "verify-output: ${failures} check(s) failed." >&2
   exit 1

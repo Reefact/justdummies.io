@@ -1,0 +1,16 @@
+# Cloudflare redirect rules for the deployed artefact.
+#
+# Astro copies this file verbatim from public/ to the root of dist/.
+#
+# The playground is a single-page application: its client-side routes exist only
+# once Blazor is running, so a cold request to one of them must be answered with
+# the application shell rather than a 404. The rewrite below does that, and it is
+# a rewrite (status 200), not a redirect — the visitor's URL has to survive, or
+# the router has nothing left to route on when it starts.
+#
+# ORDERING ASSUMPTION, to be confirmed on the first real preview: static assets
+# are matched before these rules, so /playground/_framework/... keeps being served
+# as itself rather than being swallowed by the splat. If that turns out to be
+# false, the runtime will 404 in a way no local static server reproduces, and this
+# rule needs narrowing to the routes the application actually declares.
+/playground/*  /playground/index.html  200
