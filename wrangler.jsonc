@@ -1,0 +1,33 @@
+{
+    "$schema": "./node_modules/wrangler/config-schema.json",
+
+    "name": "justdummies-site",
+    "compatibility_date": "2026-07-01",
+
+    // No "main": this Worker has no script, deliberately.
+    //
+    // Requests served as static assets are free and unmetered; requests that invoke
+    // a Worker script count against the plan's request quota, and on the free plan
+    // exhausting that quota answers 429 rather than falling back to the assets. The
+    // difference between a script and no script is therefore the difference between
+    // a site that degrades and a site that goes down.
+    //
+    // Adding one is a decision to take on purpose, not something to discover in a
+    // diff. Shareable playground URLs are the case that will tempt it; encoding the
+    // state in the URL fragment costs nothing on the server and is the preferred
+    // answer.
+    "assets": {
+        "directory": "./dist/",
+
+        // "404-page" serves the nearest 404.html for a request that matches no
+        // asset. "Nearest" is what makes it right here: /fr/... falls back to
+        // /fr/404.html and gets a French page, while everything else gets /404.html.
+        //
+        // Not "single-page-application": this site is many pages, and that mode
+        // would answer 200 with the home page for every mistyped URL, which is
+        // invisible to a visitor and poison to a search engine. The playground is
+        // the one part that does need a shell fallback, and it gets it from the
+        // rewrite in _redirects rather than from a mode that would apply site-wide.
+        "not_found_handling": "404-page"
+    }
+}

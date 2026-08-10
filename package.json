@@ -15,5 +15,8 @@
     "build:playground": "dotnet publish apps/playground/JustDummies.Playground.csproj -c Release",
     "build": "./scripts/build-site.sh",
     "check": "pnpm --filter @justdummies/site check"
+  },
+  "devDependencies": {
+    "wrangler": "^4.120.1"
   }
 }

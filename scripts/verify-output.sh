@@ -44,6 +44,27 @@ fi
 
 [ -f "${dist}/_redirects" ] && pass "the redirect rules were copied" || fail "dist/_redirects is missing"
 [ -f "${dist}/_headers" ] && pass "the response headers were generated" || fail "dist/_headers is missing"
+[ -f "${dist}/.assetsignore" ] && pass "the upload exclusions were copied" || fail "dist/.assetsignore is missing"
+
+# The host's own migration guide invites this mistake, so it is checked rather
+# than trusted. On Workers, _headers and _redirects are never served as assets:
+# they are parsed, and their rules are applied to asset responses. Excluding them
+# from the upload does not make them private — they already are — it makes them
+# absent, and the site loses its policy, its cache rules and the playground
+# rewrite while every page keeps answering 200.
+if [ -f "${dist}/.assetsignore" ]; then
+  if grep -vE '^[[:space:]]*#' "${dist}/.assetsignore" | grep -qE '(^|/)_(headers|redirects)[[:space:]]*$'; then
+    fail ".assetsignore excludes _headers or _redirects — those are parsed, not served, and excluding them deletes the policy"
+  else
+    pass "_headers and _redirects are not excluded from the upload"
+  fi
+fi
+
+# not_found_handling is set to "404-page" in wrangler.jsonc, and it serves the
+# nearest 404.html. Without the files, the setting points at nothing and a
+# mistyped URL gets the host's default page rather than the site's.
+[ -f "${dist}/404.html" ] && pass "the English 404 page exists" || fail "dist/404.html is missing, and wrangler.jsonc asks for it"
+[ -f "${dist}/fr/404.html" ] && pass "the French 404 page exists" || fail "dist/fr/404.html is missing, so a mistyped French URL answers in English"
 
 # The policy claims style-src 'self'. That claim is only true while no document
 # carries an inline <style>, and one inlined stylesheet turns the whole policy into

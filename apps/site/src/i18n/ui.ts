@@ -56,6 +56,10 @@ const en = {
         'JustDummies generates arbitrary test values for .NET that satisfy the constraints you declare, so a test can say what it is about and nothing else.',
     'home.skeleton.note':
         'This is the skeleton, not the landing page. The scrollytelling narrative it will carry is specified and not yet built; what stands here is the build pipeline underneath it, so that the first real scene has somewhere to land.',
+
+    'notfound.title': 'Page not found',
+    'notfound.body': 'There is nothing at this address. It may have moved, or never existed.',
+    'notfound.home': 'Go to the home page',
 } as const;
 
 /**
@@ -81,6 +85,10 @@ const fr: Record<UiKey, string> = {
         "JustDummies produit pour .NET des valeurs de test arbitraires qui respectent les contraintes que vous déclarez, pour qu'un test dise ce dont il parle, et rien d'autre.",
     'home.skeleton.note':
         "Ceci est le squelette, pas la page d'accueil. La narration au défilement qu'elle portera est spécifiée mais pas encore construite ; ce qui tient ici, c'est la chaîne de build en dessous, pour que la première vraie scène ait où atterrir.",
+
+    'notfound.title': 'Page introuvable',
+    'notfound.body': "Il n'y a rien à cette adresse. Elle a pu changer, ou n'avoir jamais existé.",
+    'notfound.home': "Aller à la page d'accueil",
 };
 
 const translations: Record<Locale, Record<UiKey, string>> = { en, fr };

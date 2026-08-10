@@ -1,0 +1,31 @@
+# Files inside the assets directory that must NOT be uploaded to Workers.
+# Same syntax as .gitignore. Astro copies this file verbatim from public/ to the
+# root of dist/, which is where Wrangler looks for it.
+#
+# It excludes nothing today, and that is the correct state: dist/ is built fresh
+# from sources and contains no node_modules, no .git and no source maps. The file
+# exists for the opposite reason — to say what must never be added to it.
+#
+#   NEVER add _headers or _redirects.
+#
+# Cloudflare's own migration guide lists them as candidates, and following that
+# advice here would be silent and expensive. On Workers those two files are not
+# served as assets at all: they are parsed, and their rules are applied to asset
+# responses. Excluding them from the upload does not stop them being public — they
+# already are not — it stops them existing. The site would lose its Content
+# Security Policy, its cache policy and its playground rewrite, and every page
+# would keep answering 200.
+#
+# Also deliberately absent: *.br and *.gz.
+#
+# The Blazor publish emits a pre-compressed twin of every framework file — 96 of
+# the artefact's 153 files, 6.3 MiB — and the .NET loader never requests one, as
+# a search of the published loader confirms. They are dead weight on a host that
+# compresses at the edge, and excluding them would cut the upload by roughly two
+# thirds.
+#
+# They stay because the saving cannot be measured from here and the risk can. If
+# Cloudflare does not compress application/wasm at the edge, excluding them ships
+# a 2.9 MiB runtime uncompressed, against a 3 MiB budget for the whole first load.
+# Settle it on the first real deployment, by looking at the content-encoding of
+# dotnet.native.<hash>.wasm — not before.

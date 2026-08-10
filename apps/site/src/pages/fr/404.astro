@@ -1,0 +1,35 @@
+---
+import Base from '../../layouts/Base.astro';
+import { useTranslations } from '../../i18n/ui';
+import { site } from '../../site';
+
+/** The French twin of /404.html. See the note there. */
+const t = useTranslations('fr');
+---
+
+<Base title={`${t('notfound.title')} — ${site.name}`} description={t('notfound.body')} noindex>
+    <main class="shell">
+        <h1>{t('notfound.title')}</h1>
+        <p class="body">{t('notfound.body')}</p>
+        <p><a href="/fr/">{t('notfound.home')}</a></p>
+    </main>
+</Base>
+
+<style>
+    .shell {
+        max-width: 60rem;
+        margin: 0 auto;
+        padding: var(--jd-space-16) var(--jd-space-4);
+    }
+
+    h1 {
+        font-size: var(--jd-text-xl);
+        line-height: var(--jd-line-tight);
+        margin: 0 0 var(--jd-space-4);
+    }
+
+    .body {
+        color: var(--jd-text-muted);
+        max-width: 46rem;
+    }
+</style>
