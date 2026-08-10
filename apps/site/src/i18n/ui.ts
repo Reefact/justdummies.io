@@ -57,6 +57,8 @@ const en = {
     'home.skeleton.note':
         'This is the skeleton, not the landing page. The scrollytelling narrative it will carry is specified and not yet built; what stands here is the build pipeline underneath it, so that the first real scene has somewhere to land.',
 
+    'sample.produced': 'produced',
+
     'install.cli': '.NET CLI',
     'install.packageManager': 'Package Manager',
     'install.nuget': 'View on NuGet',
@@ -100,6 +102,8 @@ const fr: Record<UiKey, string> = {
         "JustDummies produit pour .NET des valeurs de test arbitraires qui respectent les contraintes que vous déclarez, pour qu'un test dise ce dont il parle, et rien d'autre.",
     'home.skeleton.note':
         "Ceci est le squelette, pas la page d'accueil. La narration au défilement qu'elle portera est spécifiée mais pas encore construite ; ce qui tient ici, c'est la chaîne de build en dessous, pour que la première vraie scène ait où atterrir.",
+
+    'sample.produced': 'produit',
 
     'install.cli': 'CLI .NET',
     'install.packageManager': 'Console du gestionnaire de packages',

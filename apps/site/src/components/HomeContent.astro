@@ -6,6 +6,7 @@
  * the install command — come from `site.ts` and are identical in every locale
  * (§28.2: only the narrative around the code is translated, never the code).
  */
+import CodeSample from './CodeSample.astro';
 import InstallBlock from './InstallBlock.astro';
 import { localeFromPath } from '../i18n/routing';
 import { useTranslations } from '../i18n/ui';
@@ -18,6 +19,8 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
     <h1>{site.name}</h1>
     <p class="tagline">{t('brand.tagline')}</p>
     <p class="subtitle">{t('brand.subtitle')}</p>
+
+    <CodeSample id="hero-expression" />
 
     <h2 class="install-label">{t('home.install.label')}</h2>
     <InstallBlock placement="home-skeleton" />
@@ -62,6 +65,10 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
     .subtitle {
         color: var(--jd-text-muted);
         margin: var(--jd-space-2) 0 var(--jd-space-8);
+    }
+
+    figure {
+        margin: 0 0 var(--jd-space-8);
     }
 
     .install-label {
