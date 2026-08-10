@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <!--
+      The published output is copied under /playground/ of the combined artefact,
+      so every asset URL the framework writes must be rooted there. This is the
+      build-time half; wwwroot/index.html carries the matching <base href>.
+    -->
+    <StaticWebAssetBasePath>playground</StaticWebAssetBasePath>
+    <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The library the playground exists to demonstrate. Version: Directory.Packages.props. -->
+    <PackageReference Include="JustDummies" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The design tokens the site and the playground share, so the two look like one product. -->
+    <Content Include="..\..\packages\design-tokens\tokens.css" Link="wwwroot\css\tokens.css" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>
