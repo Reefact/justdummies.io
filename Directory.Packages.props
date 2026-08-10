@@ -1,0 +1,33 @@
+<Project>
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <!--
+    Every package version used by this repository is declared here, once. Projects
+    write <PackageReference Include="..." /> with no Version attribute.
+
+    JustDummies is the one that matters. The playground demonstrates the library a
+    visitor is about to install, so it must reference a *published* version, never
+    a source build: a playground running main would offer constraints that exist
+    in no package, and the visitor would find them missing minutes later. This
+    repository is deliberately separate from the library's precisely so that a
+    project reference is not even possible.
+
+    The version below is a pre-release. That is not an oversight: every
+    JustDummies package is one as of this commit, which is also why the site's
+    install command needs the prerelease flag until a stable version ships.
+    Raising the version here is the whole of the upgrade, because the interface
+    reads the version it actually loaded rather than a string typed beside it.
+  -->
+  <ItemGroup>
+    <PackageVersion Include="JustDummies" Version="1.0.0-preview.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.10" />
+  </ItemGroup>
+
+</Project>
