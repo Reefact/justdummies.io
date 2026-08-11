@@ -51,8 +51,6 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
     <ActOne />
     <ActTwo />
     <ActThree />
-
-    <p class="note">{t('home.progress.note')}</p>
 </main>
 
 <style>
@@ -114,11 +112,4 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
         margin-top: var(--jd-space-6);
     }
 
-    .note {
-        margin-top: var(--jd-space-12);
-        padding-top: var(--jd-space-4);
-        border-top: 1px solid var(--jd-border);
-        color: var(--jd-text-muted);
-        max-width: 46rem;
-    }
 </style>
