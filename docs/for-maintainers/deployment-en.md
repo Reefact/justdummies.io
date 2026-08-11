@@ -91,12 +91,36 @@ be read:
 
 **The order matters, and it is not the one you would guess.** `corepack` ships *with* Node, so it
 does not exist before it; and `nvm install` reads `.nvmrc`, which lives *inside* the repository, so
-it has nothing to read before the clone. Hence: nvm → .NET SDK → clone → Node → pnpm.
+it has nothing to read before the clone. Hence: system packages → nvm → .NET SDK → clone →
+Node → pnpm.
 
 Each block ends with its own check. **Do not move to the next one without it**: a step missed here
 only shows up three commands later, under a message that does not name it.
 
-#### a. nvm
+#### a. The system packages
+
+Everything else depends on them, including this guide's own commands: `curl` downloads nvm **and**
+the SDK, `git` fetches the repository, and the .NET SDK refuses to start without ICU. A fresh WSL
+image does not necessarily have them all.
+
+```bash
+sudo apt-get update
+sudo apt-get install -y curl git unzip libicu-dev
+```
+
+✅ **Check:** `curl --version | head -1` and `git --version` both answer. ICU has no check of its
+own here — the SDK's check, in **c**, is what proves it.
+
+> **`libicu-dev`, not `libicu74`**: the runtime package carries a number that changes with every
+> Ubuntu release, whereas this name is stable and pulls the right version.
+>
+> Without ICU, `dotnet` does not start *at all*: it stops on *"Couldn't find a valid ICU package
+> installed on the system"*, with a stack trace that nowhere says the answer is a package to
+> install. And do **not** answer that message with `System.Globalization.Invariant`, which the error
+> itself suggests: it starts the SDK with no globalization support, so it changes the build's
+> behaviour instead of fixing the machine.
+
+#### b. nvm
 
 ```bash
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.6/install.sh | bash
@@ -108,7 +132,10 @@ exec "$SHELL"      # nvm adds itself to ~/.bashrc: without the reload it does no
 > `which nvm` will fail, and that failure means nothing: nvm is a **shell function**, not an
 > executable. `command -v` is what answers correctly.
 
-#### b. The .NET SDK
+#### c. The .NET SDK
+
+`dotnet-install.sh` downloads the SDK and **installs no system dependencies** — which is why ICU
+came in **a**, and not here.
 
 ```bash
 curl -sSL https://dot.net/v1/dotnet-install.sh | bash -s -- --channel 10.0
@@ -118,7 +145,10 @@ exec "$SHELL"
 
 ✅ **Check:** `dotnet --version` prints `10.0.1xx`.
 
-#### c. The repository, on the Linux disk
+> If a *"Couldn't find…"* appears anyway, it names the library that is missing: same remedy,
+> `sudo apt-get install -y <name>`.
+
+#### d. The repository, on the Linux disk
 
 The Ubuntu shell often starts in `/mnt/c/Users/<you>`, which is the Windows side. The destination
 path below is therefore spelled out in full, and that is not fussiness: see the warning in step
@@ -134,7 +164,7 @@ cd ~/dev/justdummies.io
 > **From here on, every command in this guide runs from the repository root.** The `scripts/…` and
 > `dist/…` paths depend on it, and so does `pnpm`.
 
-#### d. Node, then pnpm — read from inside the repository
+#### e. Node, then pnpm — read from inside the repository
 
 ```bash
 nvm install        # reads .nvmrc → Node 22
@@ -143,7 +173,7 @@ corepack enable    # corepack comes with Node, so after it
 
 ✅ **Check:** `node --version` prints `v22.x.x`.
 
-#### e. The commit-message hook
+#### f. The commit-message hook
 
 ```bash
 git config core.hooksPath .githooks    # once per clone
@@ -202,7 +232,7 @@ The most important point, and the one that explains half the repository's config
 > and on the free plan exhausting that quota answers an error rather than falling back to the
 > assets. That is the difference between a site that degrades and a site that goes down.
 
-The full reasoning is in [`design/decisions-inventory.md`](design/decisions-inventory.md), entries
+The full reasoning is in [`design/decisions-inventory.md`](../design/decisions-inventory.md), entries
 **A1** (why Workers rather than Pages) and **A6** (why no script).
 
 ---
@@ -736,6 +766,7 @@ The active deployment must be unchanged — that is the whole point of an unprom
 | Symptom | Most likely cause |
 |---|---|
 | `./scripts/build-site.sh: not found`, syntax errors | You are not in bash. See 0.1. |
+| `dotnet --version`: "Couldn't find a valid ICU package" | A missing system dependency, not an SDK problem: `sudo apt-get install -y libicu-dev`. See 0.2a. |
 | `pnpm install` refuses the Node version | `engines` requires Node ≥ 22: `nvm install`. |
 | The build takes several minutes | Repository under `/mnt/c/`. See the warning in 0.1. |
 | `Parsed 0 valid redirect rules` | A rule is rejected. A target that canonicalises back into its own pattern gives "Infinite loop detected". |

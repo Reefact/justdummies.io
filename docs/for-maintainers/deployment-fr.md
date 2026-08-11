@@ -91,12 +91,36 @@ lire :
 
 **L'ordre compte, et ce n'est pas celui qu'on devine.** `corepack` est livré *avec* Node, donc il
 n'existe pas avant lui ; et `nvm install` lit `.nvmrc`, qui est *dans* le dépôt, donc il ne peut
-rien lire avant le clone. D'où cette séquence : nvm → SDK .NET → clone → Node → pnpm.
+rien lire avant le clone. D'où cette séquence : paquets système → nvm → SDK .NET → clone →
+Node → pnpm.
 
 Chaque bloc se termine par sa propre vérification. **Ne passe pas au suivant sans elle** : une
 étape ratée ici ne se manifeste que trois commandes plus loin, sous un message qui ne la nomme pas.
 
-#### a. nvm
+#### a. Les paquets système
+
+Tout le reste en dépend, y compris les commandes de ce guide : `curl` télécharge nvm **et** le SDK,
+`git` récupère le dépôt, et le SDK .NET refuse de démarrer sans ICU. Une image WSL fraîche ne les a
+pas forcément tous.
+
+```bash
+sudo apt-get update
+sudo apt-get install -y curl git unzip libicu-dev
+```
+
+✅ **Contrôle :** `curl --version | head -1` et `git --version` répondent. ICU n'a pas de contrôle
+propre ici — c'est celui du SDK, en **c**, qui le prouve.
+
+> **`libicu-dev` et non `libicu74`** : le paquet runtime porte un numéro qui change à chaque version
+> d'Ubuntu, alors que ce nom-là est stable et tire la bonne version.
+>
+> Sans ICU, `dotnet` ne démarre pas *du tout* : il s'arrête sur « *Couldn't find a valid ICU package
+> installed on the system* », avec une trace d'appels qui ne dit nulle part qu'il s'agit d'un paquet
+> à installer. Et ne réponds **pas** à ce message par `System.Globalization.Invariant`, que l'erreur
+> suggère pourtant elle-même : ça fait démarrer le SDK sans support de globalisation, donc en
+> changeant le comportement du build au lieu de réparer la machine.
+
+#### b. nvm
 
 ```bash
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.6/install.sh | bash
@@ -108,7 +132,10 @@ exec "$SHELL"      # nvm s'ajoute à ~/.bashrc : sans rechargement, il n'existe 
 > `which nvm` échouera, et cet échec ne veut rien dire : nvm est une **fonction shell**, pas un
 > exécutable. C'est `command -v` qui répond juste.
 
-#### b. Le SDK .NET
+#### c. Le SDK .NET
+
+`dotnet-install.sh` télécharge le SDK et **n'installe aucune dépendance système** — c'est pour ça
+qu'ICU est venu en **a**, et non ici.
 
 ```bash
 curl -sSL https://dot.net/v1/dotnet-install.sh | bash -s -- --channel 10.0
@@ -118,7 +145,10 @@ exec "$SHELL"
 
 ✅ **Contrôle :** `dotnet --version` affiche `10.0.1xx`.
 
-#### c. Le dépôt, dans le disque Linux
+> Si un « *Couldn't find…* » apparaît malgré tout, il nomme la bibliothèque qui manque : même
+> remède, `sudo apt-get install -y <nom>`.
+
+#### d. Le dépôt, dans le disque Linux
 
 Le shell Ubuntu démarre souvent dans `/mnt/c/Users/<toi>`, c'est-à-dire du côté Windows. Le chemin
 de destination est donc écrit en entier ci-dessous, et ce n'est pas du zèle : voir l'avertissement
@@ -134,7 +164,7 @@ cd ~/dev/justdummies.io
 > **À partir d'ici, toutes les commandes de ce guide se lancent depuis la racine du dépôt.** Les
 > chemins `scripts/…` et `dist/…` en dépendent, et `pnpm` aussi.
 
-#### d. Node, puis pnpm — lus dans le dépôt
+#### e. Node, puis pnpm — lus dans le dépôt
 
 ```bash
 nvm install        # lit .nvmrc → Node 22
@@ -143,7 +173,7 @@ corepack enable    # corepack vient avec Node, donc après lui
 
 ✅ **Contrôle :** `node --version` affiche `v22.x.x`.
 
-#### e. Le hook de message de commit
+#### f. Le hook de message de commit
 
 ```bash
 git config core.hooksPath .githooks    # une fois par clone
@@ -203,7 +233,7 @@ Le point le plus important, celui qui explique la moitié de la configuration du
 > lieu de se replier sur les fichiers. C'est la différence entre un site qui se dégrade et un
 > site qui tombe.
 
-Le raisonnement complet est dans [`design/decisions-inventory.md`](design/decisions-inventory.md),
+Le raisonnement complet est dans [`design/decisions-inventory.md`](../design/decisions-inventory.md),
 fiches **A1** (pourquoi Workers et pas Pages) et **A6** (pourquoi aucun script).
 
 ---
@@ -747,6 +777,7 @@ Le déploiement actif doit être inchangé — c'est tout l'intérêt d'une vers
 | Symptôme | Cause la plus probable |
 |---|---|
 | `./scripts/build-site.sh: not found`, erreurs de syntaxe | Tu n'es pas dans bash. Voir 0.1. |
+| `dotnet --version` : « Couldn't find a valid ICU package » | Dépendance système absente, pas un problème de SDK : `sudo apt-get install -y libicu-dev`. Voir 0.2a. |
 | `pnpm install` refuse la version de Node | `engines` exige Node ≥ 22 : `nvm install`. |
 | Le build met plusieurs minutes | Dépôt sous `/mnt/c/`. Voir l'avertissement en 0.1. |
 | `Parsed 0 valid redirect rules` | Une règle est rejetée. Une cible qui se normalise vers son propre motif donne « Infinite loop detected ». |
