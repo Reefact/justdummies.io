@@ -743,7 +743,7 @@ en faire. Une question tranchée qui n'est pas écrite se repose au prochain pas
 ## Étape 7 — Automatiser
 
 **Pourquoi** — La CI construit et vérifie déjà à chaque poussée. Le job `deploy` publie dès que
-deux secrets existent, et **seulement sur un tag `v*`** ; sans eux, il annonce ce qui manque et
+deux secrets existent, et **seulement sur un tag `release/*`** ; sans eux, il annonce ce qui manque et
 n'échoue pas.
 
 ### 7.1 Le jeton d'API
@@ -809,9 +809,22 @@ repository secret**. Deux entrées, ces noms exactement :
 
 ```bash
 git checkout main && git pull origin main
-git tag v0.1.0
-git push origin v0.1.0
+git tag -a "release/$(date -u +%Y-%m-%dT%H-%M-%SZ)" -m "ce que cette mise en ligne apporte"
+git push origin --tags
 ```
+
+Le nom du tag est un **horodatage UTC**, pas un numéro de version. Rien ne consomme ce site, donc la
+question à laquelle répond le semver — « est-ce compatible avec ce que j'ai ? » — ne se pose jamais,
+tandis que l'arbitrage qu'il exige (mineure ou patch, pour une page d'accueil ?) est un coût sec.
+`date -u` produit le nom sans que tu aies à consulter `git tag` d'abord, il ne peut pas entrer en
+collision, et l'ordre lexical suit l'ordre chronologique.
+
+Il correspond surtout à l'unité que Cloudflare te rend : `wrangler deployments list` affiche des
+horodatages, donc un tag horodaté s'aligne dessus directement — ce qui est toute la raison de nommer
+des releases.
+
+Le tag est **annoté** (`-a -m`) et non léger : il porte un auteur, une date et un message, donc
+`git show` sur le tag dira *pourquoi* cette mise en ligne a eu lieu. Un tag léger ne dit rien.
 
 > ⚠️ **Ceci publie en production.** Ce n'est pas un essai à blanc. Une poussée sur `main`, elle, ne
 > publie rien : elle construit et vérifie.
@@ -821,8 +834,9 @@ retaguer : **Actions** → workflow **build** → **Run workflow**, et choisis l
 sélecteur de référence, qui liste les tags autant que les branches.
 
 > **`Deploy` apparaît « skipped » ?** Sur une branche, y compris `main`, **c'est normal** — seul un
-> tag `v*` publie. Sauté *depuis un tag*, c'est autre chose : vérifie que le nom commence bien par
-> `v`. Un job sauté ne dit jamais pourquoi, c'est la façon la moins bavarde de ne pas déployer, et la
+> tag `release/*` publie. Sauté *depuis un tag*, c'est autre chose : vérifie que le nom commence bien
+> par `release/`. Un job sauté ne dit jamais pourquoi, c'est la façon la moins bavarde de ne pas
+> déployer, et la
 > seule manière de trancher est de lire le `if:` du job.
 
 Puis ouvre le job **Deploy** :
@@ -845,7 +859,7 @@ chaque déploiement porte un nom, pas seulement une date.
 
 ### Ce que fait la CI, et pourquoi ainsi
 
-À chaque poussée sur `main` **et** sur chaque tag `v*` :
+À chaque poussée sur `main` **et** sur chaque tag `release/*` :
 
 1. **build** — valide les extraits publiés, installe, contrôle les types, construit, vérifie que
    le contenu généré committé est à jour, contrôle les budgets de taille, **demande au runtime ce
@@ -864,7 +878,7 @@ Trois choix qui ne se devinent pas :
   en télécharge un autre publie avec une version que personne n'a testée.
 
 Et **une branche ne publie pas** — ni une pull request, ni `main`. Le job est conditionné à
-`refs/tags/v*`, donc ce qui atteint la production a toujours un nom que tu as choisi.
+`refs/tags/release/*`, donc ce qui atteint la production porte toujours un horodatage que tu as posé.
 
 Le coût de ce choix mérite d'être dit : `main` peut prendre de l'avance sur la production
 indéfiniment, et rien ici ne te le signalera. Un `Deploy` sauté sur `main` est l'état attendu, pas

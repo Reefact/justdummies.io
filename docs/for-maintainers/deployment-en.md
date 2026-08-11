@@ -732,7 +732,7 @@ it. A settled question that is not written down gets asked again next time.
 ## Step 7 — Automate
 
 **Why** — CI already builds and verifies on every push. The `deploy` job publishes as soon as two
-secrets exist, and **only on a `v*` tag**; without them it announces what is missing and does not
+secrets exist, and **only on a `release/*` tag**; without them it announces what is missing and does not
 fail.
 
 ### 7.1 The API token
@@ -795,9 +795,22 @@ repository secret**. Two entries, exactly these names:
 
 ```bash
 git checkout main && git pull origin main
-git tag v0.1.0
-git push origin v0.1.0
+git tag -a "release/$(date -u +%Y-%m-%dT%H-%M-%SZ)" -m "what this release brings"
+git push origin --tags
 ```
+
+The tag's name is a **UTC timestamp**, not a version number. Nothing consumes this site, so the
+question semver answers — "is this compatible with what I have?" — never arises, while the
+arbitration it demands (minor or patch, for a landing page?) is pure cost. `date -u` produces the
+name without your having to consult `git tag` first, it cannot collide, and lexical order follows
+chronological order.
+
+Above all it matches the unit Cloudflare hands back: `wrangler deployments list` prints timestamps,
+so a timestamped tag lines up against it directly — which is the whole reason for naming releases.
+
+The tag is **annotated** (`-a -m`) rather than lightweight: it carries an author, a date and a
+message, so `git show` on the tag will say *why* that release happened. A lightweight tag says
+nothing.
 
 > ⚠️ **This publishes to production.** It is not a dry run. A push to `main`, by contrast, publishes
 > nothing: it builds and verifies.
@@ -807,9 +820,9 @@ re-tagging: **Actions** → the **build** workflow → **Run workflow**, and pic
 selector, which lists tags as well as branches.
 
 > **`Deploy` showing as "skipped"?** On a branch, `main` included, **that is normal** — only a `v*`
-> tag publishes. Skipped *from a tag* is something else: check the name really begins with `v`. A
-> skipped job never says why, it is the least talkative way of not deploying, and the only way to
-> settle it is to read the job's `if:`.
+> tag publishes. Skipped *from a tag* is something else: check the name really begins with
+> `release/`. A skipped job never says why, it is the least talkative way of not deploying, and the
+> only way to settle it is to read the job's `if:`.
 
 Then open the **Deploy** job:
 
@@ -830,7 +843,7 @@ a name, not just a date.
 
 ### What CI does, and why this way
 
-On every push to `main` **and** on every `v*` tag:
+On every push to `main` **and** on every `release/*` tag:
 
 1. **build** — validates the published snippets, installs, type-checks, builds, verifies the
    committed generated content is current, checks the size budgets, **asks the runtime what it
@@ -849,7 +862,7 @@ Three choices that do not guess themselves:
   downloads another publishes with a version nobody has tested.
 
 And **a branch does not publish** — not a pull request, not `main`. The job is conditioned on
-`refs/tags/v*`, so whatever reaches production always carries a name you chose.
+`refs/tags/release/*`, so whatever reaches production always carries a timestamp you put there.
 
 The cost of that choice deserves saying: `main` can run ahead of production indefinitely, and
 nothing here will tell you. A skipped `Deploy` on a push to `main` is the expected state, not a
