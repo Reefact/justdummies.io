@@ -2,9 +2,8 @@
 # Same syntax as .gitignore. Astro copies this file verbatim from public/ to the
 # root of dist/, which is where Wrangler looks for it.
 #
-# It excludes nothing today, and that is the correct state: dist/ is built fresh
-# from sources and contains no node_modules, no .git and no source maps. The file
-# exists for the opposite reason — to say what must never be added to it.
+# It excludes nothing today. The file exists for the opposite reason — to say what
+# must never be added to it.
 #
 #   NEVER add _headers or _redirects.
 #
@@ -16,29 +15,40 @@
 # Security Policy, its cache policy and its playground rewrite, and every page
 # would keep answering 200.
 #
-# Also deliberately absent: *.br and *.gz.
+# scripts/verify-output.sh fails the build if either name appears below.
 #
-# The Blazor publish emits a pre-compressed twin of every framework file — 96 of
-# the artefact's 153 files, 6.3 MiB — and the .NET loader never requests one, as
-# a search of the published loader confirms. They are dead weight on a host that
-# compresses at the edge, and excluding them would cut the upload by roughly two
-# thirds.
+# ---
 #
-# The question that kept them was whether the host compresses application/wasm on
-# the way out. Against the local runtime it does, measured rather than assumed:
-# 3,002,102 bytes become 1,197,764 with Content-Encoding: br. The twins are
-# therefore unused *and* unnecessary — and they are publicly fetchable at their own
-# URLs into the bargain.
+# Also absent, but no longer for the original reason: *.br and *.gz.
 #
-# They stay for one remaining reason, and it is small: the local runtime is not the
-# edge. Excluding them on the strength of a local measurement risks shipping a
-# 2.9 MiB runtime uncompressed against a 3 MiB budget for the whole first load, and
-# the artefact's own checks would not notice, because they measure files rather than
-# transfers.
+# The Blazor publish emits a pre-compressed twin of every framework file — 60 of the
+# artefact's 196 files, around 3 MiB. Two things had to be true before excluding
+# them, and both are now measured rather than argued:
 #
-# That is now one command away from settled, against the deployed site:
+#   The loader never asks for a twin. Nothing under _framework/ that fetches assets
+#   contains a reference to `.br`.
 #
-#     scripts/check-served-headers.sh https://justdummies.io
+#   The host compresses application/wasm on the way out. Against the deployed site,
+#   3,002,102 bytes arrive as 1,217,181 with Content-Encoding: br. The figure is the
+#   proof, not the compression: the same payload compresses to 1,197,764 under the
+#   local runtime, and two different sizes for one file mean the host compressed it
+#   itself rather than serving the twin beside it.
 #
-# If it reports the payload compressed there too, delete this paragraph and add
-# *.br and *.gz below.
+# So the twins are dead weight, and the question that kept them is closed.
+#
+# What is not settled is the exclusion itself. `wrangler deploy --dry-run` does not
+# apply this file — its "Read N files" line is identical with these patterns present,
+# absent, or excluding the whole playground — so nothing local can demonstrate that
+# excluding them uploads fewer files, or that the playground still boots afterwards.
+# Adding them on the strength of the documentation alone would be a change whose
+# failure mode is a blank playground in production.
+#
+# The sequence that would settle it, in this order:
+#
+#   1. add `*.br` and `*.gz` below, and deploy
+#   2. curl -sI <url>/playground/_framework/<any>.wasm.br   → expect 404
+#   3. scripts/check-served-headers.sh <url>                → expect six ✓
+#   4. open /playground/ and watch it start
+#
+# Step 2 is the one that matters: a 200 there means the twins are still being
+# uploaded and nothing was gained. Step 3 is what proves nothing was lost.
