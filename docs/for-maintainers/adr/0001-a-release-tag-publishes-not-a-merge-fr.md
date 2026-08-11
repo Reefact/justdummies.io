@@ -2,8 +2,9 @@
 
 🌍 🇫🇷 Français (ce fichier) · 🇬🇧 [English](0001-a-release-tag-publishes-not-a-merge-en.md)
 
-**Statut :** Proposé
+**Statut :** Accepté
 **Proposé :** 2026-08-11
+**Accepté :** 2026-08-11
 **Décideurs :** Reefact
 
 ## Contexte
