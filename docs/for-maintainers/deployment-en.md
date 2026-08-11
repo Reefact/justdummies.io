@@ -376,12 +376,32 @@ distribution already running — nothing to reinstall.
 
 | How | What to do | Reliability |
 |---|---|---|
-| **From any tab** | open a tab, PowerShell included, and type `wsl` | ✅ always works |
+| **From any tab** | open a tab, PowerShell included, and type `wsl -d Ubuntu` | ✅ always works |
 | Start menu | launch the **Ubuntu** application again | ✅ |
 | Windows Terminal profile | the `⌄` chevron beside the `+`, then **Ubuntu** | ⚠️ only if the profile exists |
 
-**Start with `wsl`.** It is the one route that depends on no configuration: it attaches the current
-tab to the running distribution.
+> ⚠️ **`-d Ubuntu` is not decoration.** Bare `wsl` opens the **default** distribution, which is not
+> necessarily yours: Docker Desktop, Rancher Desktop and tools like them install their own, often
+> running as `root` and with the Windows drives mounted somewhere other than `/mnt/`. You then
+> believe you are in Ubuntu while working in a system that is not the right one — and no command
+> fails to tell you.
+>
+> ```powershell
+> wsl -l -v          # the list; the star marks the default distribution
+> ```
+>
+> To make Ubuntu that default: `wsl --set-default Ubuntu`.
+
+✅ **Check, before anything else in that terminal:**
+
+```bash
+whoami      # your user, NOT root
+pwd         # /home/<you>
+```
+
+A `root`, or a `pwd` that does not look like your home directory, means you are in another
+distribution. Leave with `exit` and start again with `-d Ubuntu`. **Do not try to "fix" that
+distribution**: its `/etc/wsl.conf` belongs to the tool that created it.
 
 > **No Ubuntu in the chevron?** Windows Terminal discovers WSL distributions **at startup**. Opened
 > before Ubuntu was installed, it never saw the new one: close it entirely — every window, not just

@@ -378,12 +378,32 @@ fenêtre sur la distribution qui tourne déjà — rien à réinstaller.
 
 | Comment | Ce qu'il faut faire | Fiabilité |
 |---|---|---|
-| **Depuis n'importe quel onglet** | ouvre un onglet, même PowerShell, et tape `wsl` | ✅ marche toujours |
+| **Depuis n'importe quel onglet** | ouvre un onglet, même PowerShell, et tape `wsl -d Ubuntu` | ✅ marche toujours |
 | Menu Démarrer | relance l'application **Ubuntu** | ✅ |
 | Profil Windows Terminal | le chevron `⌄` à côté du `+`, puis **Ubuntu** | ⚠️ seulement si le profil existe |
 
-**Commence par `wsl`.** C'est la seule voie qui ne dépend d'aucune configuration : elle attache
-l'onglet courant à la distribution en cours.
+> ⚠️ **`-d Ubuntu` n'est pas décoratif.** `wsl` tout court ouvre la distribution **par défaut**, qui
+> n'est pas forcément la tienne : Docker Desktop, Rancher Desktop et les outils du même genre
+> installent la leur, souvent en `root`, et avec les disques Windows montés ailleurs que sous
+> `/mnt/`. On se croit alors dans Ubuntu et on travaille dans un système qui n'est pas le bon —
+> sans qu'aucune commande n'échoue pour le signaler.
+>
+> ```powershell
+> wsl -l -v          # la liste ; l'étoile marque la distribution par défaut
+> ```
+>
+> Pour qu'Ubuntu devienne ce défaut : `wsl --set-default Ubuntu`.
+
+✅ **Contrôle, avant toute autre chose dans ce terminal :**
+
+```bash
+whoami      # ton utilisateur, PAS root
+pwd         # /home/<toi>
+```
+
+Un `root`, ou un `pwd` qui ne ressemble pas à ton dossier personnel, veut dire que tu es dans une
+autre distribution. Sors avec `exit` et recommence avec `-d Ubuntu`. **N'essaie pas de « réparer »
+cette distribution-là** : son `/etc/wsl.conf` appartient à l'outil qui l'a créée.
 
 > **Ubuntu n'apparaît pas dans le chevron ?** Windows Terminal découvre les distributions WSL **à
 > son démarrage**. Ouvert avant l'installation d'Ubuntu, il n'a jamais vu la nouvelle : ferme-le
