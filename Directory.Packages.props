@@ -30,4 +30,27 @@
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.10" />
   </ItemGroup>
 
+  <!--
+    The story the site tells is a test being written, so the snippets it publishes have
+    to *be* tests: [Fact], Assert, and nothing else. §5.6 asks for the most ordinary
+    runner and assertions available, on the grounds that a visitor meeting constrained
+    dummies, the Any. syntax and an unfamiliar assertion library at the same time has
+    three focal points and therefore none.
+
+    Referenced by the snippet project alone, which compiles what the site displays and
+    ships nothing. The alternative — declaring a local FactAttribute so the code
+    compiles without the dependency — would put names on the page that resolve to
+    something other than what a reader would get, which is the exact class of error
+    that project exists to prevent.
+
+    extensibility.core rather than core: the latter's targets refuse to build anything
+    that is not an executable test project, and say so in as many words. The snippet
+    project is a library that is compiled and never run, so it takes the pair xUnit
+    itself points at — the attributes and the assertions, without the runner.
+  -->
+  <ItemGroup>
+    <PackageVersion Include="xunit.v3.assert" Version="3.2.2" />
+    <PackageVersion Include="xunit.v3.extensibility.core" Version="3.2.2" />
+  </ItemGroup>
+
 </Project>

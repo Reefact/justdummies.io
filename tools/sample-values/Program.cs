@@ -50,25 +50,60 @@ public static class Program {
             // value shown is what the domain accepted, not what the string was.
             ["derived-reference"] = Repeat(static () => ActOne.DerivedReference().Value),
 
-            // Scene five: the arrangement that works and still says too much.
+            // Scene six: the arrangement that works and still says too much.
             ["order-reference"] = [ActOne.VerboseArrangement().Reference.Value],
             ["order-total"]     = [ActOne.VerboseArrangement().Total.Amount.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)],
         };
 
+        // Scene two shows the domain refusing a careless value. What it refused with is
+        // read off the exception rather than written beside it, for the same reason every
+        // other value here is: a message typed onto a page is right on the day it is typed.
+        SortedDictionary<string, string> refusals = new() {
+            ["naive-reference"] = Refusal(static () => ActOne.NaiveReference()),
+        };
+
         SortedDictionary<string, object> document = new() {
-            ["seed"]   = Seed,
-            ["values"] = values,
+            ["seed"]     = Seed,
+            ["refusals"] = refusals,
+            ["values"]   = values,
         };
 
         // Indented, sorted, and with a trailing newline: this file is committed and
-        // read in review, so it is written to be read rather than to be small.
-        string json = JsonSerializer.Serialize(document, new JsonSerializerOptions { WriteIndented = true });
+        // read in review, so it is written to be read rather than to be small. The
+        // relaxed encoder is part of that — the default escapes an apostrophe to
+        // ', and a refusal message is prose a reviewer has to be able to read.
+        // Nothing here is ever interpolated into markup: the site imports it as a
+        // module and Astro escapes what it renders.
+        string json = JsonSerializer.Serialize(document, new JsonSerializerOptions {
+            WriteIndented = true,
+            Encoder       = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        });
 
         File.WriteAllText(args[0], json + Environment.NewLine);
 
-        Console.WriteLine($"  {args[0]}  ({values.Count} expressions, seed {Seed})");
+        Console.WriteLine($"  {args[0]}  ({values.Count} expressions, {refusals.Count} refusal, seed {Seed})");
 
         return 0;
+    }
+
+    /// <summary>
+    ///     Runs an expression the domain is expected to reject, and returns what it said.
+    ///
+    ///     An expression that succeeds here fails the build rather than being quietly
+    ///     dropped. The scene it feeds is built entirely on the refusal happening; if the
+    ///     draw ever stopped provoking one, the page would keep its sentence about being
+    ///     refused and lose the evidence under it, which is worse than not shipping.
+    /// </summary>
+    private static string Refusal(Func<object> expression) {
+        try {
+            expression();
+        } catch (ArgumentException refused) {
+            return refused.Message;
+        }
+
+        throw new InvalidOperationException(
+            "The expression the second scene shows being refused was accepted. Either the draw or the domain moved, "
+          + "and the scene has to be rewritten rather than published without its evidence.");
     }
 
     private static string[] Repeat(Func<string> expression) {

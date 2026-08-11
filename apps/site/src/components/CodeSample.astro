@@ -1,36 +1,72 @@
 ---
 /**
- * An expression and what it produced, both of them generated.
+ * An expression and what the build recorded about it.
  *
- * The component takes an identifier and nothing else, which is deliberate: there is
- * no prop through which a page could pass code of its own, or a value of its own.
- * Displaying an expression that was never compiled, or a value nobody drew, is not
- * something a page is able to do.
+ * The component takes an identifier and a choice of *which* record to show, and
+ * nothing else. That is deliberate: there is no prop through which a page could pass
+ * code of its own, a value of its own, or a message of its own. Displaying an
+ * expression that was never compiled, a value nobody drew, or a refusal that never
+ * happened is not something a page is able to do.
  */
 import { localeFromPath } from '../i18n/routing';
 import { useTranslations } from '../i18n/ui';
-import { sampleValue, snippet } from '../samples';
+import { refusal, sampleValue, sampleValues, snippet } from '../samples';
 
 interface Props {
     /** The identifier marked in the validated C# source. */
     id: string;
+    /**
+     * Which record the build holds for this expression:
+     *
+     * - `value`    — one drawn value, the ordinary case;
+     * - `sequence` — several draws of the same chain, which is how "arbitrary" is
+     *                shown rather than asserted;
+     * - `refusal`  — what the domain answered when it rejected the expression;
+     * - `none`     — nothing was run. Code the site quotes rather than executes,
+     *                such as a test body or a set of guard clauses.
+     */
+    outcome?: 'value' | 'sequence' | 'refusal' | 'none';
 }
 
-const { id } = Astro.props;
+const { id, outcome = 'value' } = Astro.props;
 
 const t = useTranslations(localeFromPath(Astro.url.pathname));
 const code: string = snippet(id);
-const value: string = sampleValue(id);
+
+const drawn: string[] = outcome === 'sequence' ? sampleValues(id) : outcome === 'value' ? [sampleValue(id)] : [];
+const rejected: string = outcome === 'refusal' ? refusal(id) : '';
 ---
 
-<figure class="sample">
+<figure class="sample" data-outcome={outcome}>
     <pre><code>{code}</code></pre>
 
-    <figcaption>
-        <span class="arrow" aria-hidden="true">→</span>
-        <span class="label">{t('sample.produced')}</span>
-        <output class="value">{value}</output>
-    </figcaption>
+    {
+        drawn.length > 0 && (
+            <figcaption>
+                <span class="arrow" aria-hidden="true">
+                    →
+                </span>
+                <span class="label">{outcome === 'sequence' ? t('sample.producedEachRun') : t('sample.produced')}</span>
+                <span class="values">
+                    {drawn.map((value) => (
+                        <output class="value">{value}</output>
+                    ))}
+                </span>
+            </figcaption>
+        )
+    }
+
+    {
+        rejected !== '' && (
+            <figcaption class="refused">
+                <span class="arrow" aria-hidden="true">
+                    →
+                </span>
+                <span class="label">{t('sample.refused')}</span>
+                <output class="message">{rejected}</output>
+            </figcaption>
+        )
+    }
 </figure>
 
 <style>
@@ -67,8 +103,22 @@ const value: string = sampleValue(id);
         color: var(--jd-text-muted);
     }
 
+    .values {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--jd-space-1) var(--jd-space-4);
+    }
+
     .value {
         font-family: var(--jd-font-mono);
         color: var(--jd-generated);
+    }
+
+    /* The refusal is stated, not dramatised: it is the domain doing its job, and the
+       scene it belongs to is about the rules, not about a failure. Hence the error
+       colour on the message alone, and no border, background or icon around it. */
+    .message {
+        font-family: var(--jd-font-mono);
+        color: var(--jd-error);
     }
 </style>

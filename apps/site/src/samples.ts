@@ -16,6 +16,7 @@ import snippetsDocument from './generated/snippets.json';
 
 const code: Record<string, string> = snippetsDocument;
 const drawn: Record<string, string[]> = samplesDocument.values;
+const refused: Record<string, string> = samplesDocument.refusals;
 
 /** The seed every displayed value was drawn under. */
 export const sampleSeed: number = samplesDocument.seed;
@@ -44,4 +45,22 @@ export function sampleValues(id: string): string[] {
 
 export function sampleValue(id: string): string {
     return sampleValues(id)[0]!;
+}
+
+/**
+ * What the domain said when it rejected an expression.
+ *
+ * Recorded by running it and catching what came out, exactly as the drawn values are
+ * recorded by running theirs. A scene built on a refusal is built on the refusal
+ * having happened, so the emitter fails the build if the expression is ever accepted
+ * rather than letting the page keep its sentence and lose its evidence.
+ */
+export function refusal(id: string): string {
+    const found: string | undefined = refused[id];
+
+    if (found === undefined) {
+        throw new Error(`No recorded refusal for "${id}". tools/sample-values has to run the expression and catch it.`);
+    }
+
+    return found;
 }

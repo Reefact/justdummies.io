@@ -1,4 +1,7 @@
 {
+  "refusals": {
+    "naive-reference": "An order reference must start with ORD-. (Parameter 'value')"
+  },
   "seed": 20260810,
   "values": {
     "constrained-reference": [
