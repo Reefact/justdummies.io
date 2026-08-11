@@ -35,9 +35,10 @@ once.
 ### 0.1 Choosing your terminal
 
 This matters, and it is not cosmetic: **building the site relies on bash scripts**. `pnpm build`
-calls `scripts/build-site.sh`, and the repository's five scripts use bash-only constructs
-(`set -euo pipefail`, process substitution `< <(...)`, `compgen`). Neither `cmd.exe` nor
-PowerShell can run them — this is not a matter of preference, those constructs have no equivalent.
+calls `scripts/build-site.sh`, and every script under `scripts/` carries the
+`#!/usr/bin/env bash` shebang. All of them use `set -euo pipefail`, and some use process
+substitution `< <(...)` or `compgen`. Neither `cmd.exe` nor PowerShell can run them — this is not a
+matter of preference, those constructs have no equivalent.
 
 | Command | cmd / PowerShell | Git Bash | WSL2 | macOS / Linux |
 |---|---|---|---|---|
@@ -62,8 +63,9 @@ from now on.
 
 > ⚠️ **The most expensive trap.** Clone the repository into the Linux filesystem
 > (`~/dev/justdummies.io`), **never** under `/mnt/c/...`. Every file access crossing the
-> Windows↔Linux boundary pays a fixed cost, and this build writes thousands of small files — 129
-> in `_framework` alone. On `/mnt/c`, a thirty-second build takes several minutes.
+> Windows↔Linux boundary pays a fixed cost, and this build writes a great many small ones — the
+> .NET runtime alone accounts for over a hundred under `_framework`. On `/mnt/c`, a thirty-second
+> build takes several minutes.
 
 *On macOS or Linux there is nothing to do: your terminal already qualifies.*
 
@@ -271,7 +273,9 @@ ls dist/playground/_framework/ | wc -l
 ```
 
 `dist/` must contain `index.html`, `404.html`, `_headers`, `_redirects`, `.assetsignore`, `fr/`,
-`_astro/` and `playground/`. The `_framework` count sits around 130 files.
+`_astro/` and `playground/`. `_framework` holds over a hundred — the exact number moves with every
+playground change, so do not compare it against a figure written here: what matters is that it is
+not empty.
 
 ---
 
@@ -282,27 +286,24 @@ server: it is the Workers runtime locally, which **parses `_headers` and `_redir
 applies their rules. No other local server has any opinion about those two files, and they are
 the ones carrying the security policy and the playground's routing.
 
-**Do**
+**Do** — two commands, in this order, and the order matters:
 
 ```bash
-pnpm serve       # holds the terminal — serves on http://localhost:8787
+scripts/check-served-headers.sh   # 1. the automatic check: starts its runtime, asks it, stops it
+pnpm serve                        # 2. then the server, to browse and for the manual checks
 ```
 
-> This command does not return. **Open a second terminal** for the checks.
+The script first, because it needs nothing and answers in one shot.
+
+> ⚠️ **Never both at once.** They both want port 8787: the script launched on top of a running
+> `pnpm serve` questions the other server instead of its own, or fails to start. If `pnpm serve` is
+> already running, stop it (`Ctrl+C`) before the script.
+
+`pnpm serve` does not return. **Open a second terminal** for the manual checks that follow.
 
 ### ✅ Check 2 — in a single command
 
-Everything below also exists as a script, and CI runs it on every build:
-
-```bash
-scripts/check-served-headers.sh    # starts the runtime, asks it, stops it
-```
-
-> ⚠️ **Stop `pnpm serve` before running it** (`Ctrl+C`). The script starts its **own** runtime, and
-> both want port 8787: launched on top of a running `pnpm serve`, it either questions the other
-> server or fails to start its own. It needs nothing alongside it.
-
-Expected:
+It is the script above, and CI runs it on every build. Expected:
 
 ```
 ▸ Starting the runtime
@@ -430,7 +431,7 @@ page.
 > comment at the top of `_redirects` tells the whole story. **A new route in the playground needs
 > a new line in `_redirects`** — without it, it works by clicking and fails on a shared link.
 
-Stop the server with `Ctrl+C` once all four checks pass.
+Stop the server with `Ctrl+C` once checks 2a to 2d pass.
 
 ---
 
@@ -487,8 +488,9 @@ First look at what would go up, without publishing:
 pnpm wrangler deploy --dry-run
 ```
 
-Expected: `✨ Read 158 files from the assets directory …/dist` — the number will move, but it must
-be counted in hundreds, not in units.
+Expected: a line reading `✨ Read N files from the assets directory …/dist`. **Do not compare `N`
+against a figure written here** — it changes with every playground change. What matters is that it
+is counted in hundreds and not in units: a handful of files would mean `dist/` is incomplete.
 
 Then publish:
 
@@ -545,7 +547,8 @@ unnecessary locally. What remains to confirm is the edge — the local runtime i
 artefact's own checks would not notice the difference, because they measure files rather than
 transfers.
 
-**Do** — one command, the one `.assetsignore` names:
+**Do** — nothing new: **you already ran the command in step 5's check**, and it is the one
+`.assetsignore` names. Re-read its last `✓`/`✗` line. If you no longer have it in front of you:
 
 ```bash
 scripts/check-served-headers.sh https://justdummies-site.<your-subdomain>.workers.dev
@@ -618,8 +621,9 @@ The most recent deployment must match your workflow's time, not your manual atte
 
 On every push to `main`:
 
-1. **build** — installs, validates the snippets, type-checks, builds, verifies the shape, checks
-   the budgets, uploads the artefact.
+1. **build** — validates the published snippets, installs, type-checks, builds, verifies the
+   committed generated content is current, checks the size budgets, **asks the runtime what it
+   actually serves** (step 2's script), then uploads the artefact.
 2. **deploy** — fetches **that** artefact rather than rebuilding, replays `verify-output.sh` on
    the downloaded bytes, then runs `pnpm run deploy`.
 
@@ -640,7 +644,7 @@ A pull request cannot publish: the job is conditioned on a `push` to `main`.
 ## Step 8 — Attach `justdummies.io`
 
 **Why** — This is the first step that is hard to undo: it changes the domain's nameservers. Do it
-once the previous seven are green.
+once every previous step is green.
 
 A custom domain requires the **zone to be active at Cloudflare**.
 
