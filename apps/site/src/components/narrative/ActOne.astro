@@ -1,0 +1,88 @@
+---
+/**
+ * ACT I — validity.
+ *
+ * The six beats the specification fixes (§9.2), in the order it fixes them:
+ *
+ *   an incomplete test
+ *     → a value of no importance that has to be valid anyway
+ *     → the invariants of the value object
+ *     → the chain of constraints that satisfies them
+ *     → the value becomes an object of the domain, in one operation
+ *     → the test works, and still says too much
+ *
+ * It is one transformation, not six slides (§9.2): the same test, the same reference,
+ * followed from the hole in the first scene to the arrangement in the last. The
+ * snippet source says the same thing — the helper the first scene calls is the
+ * arrangement the sixth scene shows.
+ *
+ * The act ends on the library alone, which is all it has demonstrated. The tool has
+ * not appeared yet, so the exit does not offer it.
+ */
+import Act from './Act.astro';
+import Scene from './Scene.astro';
+---
+
+<Act
+    name="act-one"
+    label="act1.label"
+    title="act1.title"
+    summary="act1.summary"
+    exitTitle="act1.exit.title"
+    exitBody="act1.exit.body"
+>
+    <Scene
+        name="the-test"
+        title="act1.test.title"
+        body="act1.test.body"
+        sample="incomplete-test"
+        outcome="none"
+    />
+
+    <Scene
+        name="the-careless-value"
+        title="act1.careless.title"
+        body="act1.careless.body"
+        sample="naive-reference"
+        outcome="refusal"
+    />
+
+    <Scene
+        name="the-invariants"
+        title="act1.invariants.title"
+        body="act1.invariants.body"
+        sample="order-reference-invariants"
+        outcome="none"
+    />
+
+    <Scene
+        name="the-constraints"
+        title="act1.constraints.title"
+        body="act1.constraints.body"
+        sample="constrained-reference"
+        outcome="sequence"
+    />
+
+    {/*
+      A sequence here as well as in the scene above, and the repetition is the point:
+      the two figures differ by one link and by the type on the left, and by nothing
+      else. Showing one draw instead would also make a short reference — the domain
+      allows `ORD-` plus a single character — read as a truncation rather than as the
+      arbitrary value it is. Four of them read as variety.
+    */}
+    <Scene
+        name="the-derivation"
+        title="act1.derivation.title"
+        body="act1.derivation.body"
+        sample="derived-reference"
+        outcome="sequence"
+    />
+
+    <Scene
+        name="the-verbose-test"
+        title="act1.verbose.title"
+        body="act1.verbose.body"
+        sample="verbose-arrangement"
+        outcome="none"
+    />
+</Act>

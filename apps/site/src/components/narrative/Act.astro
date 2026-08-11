@@ -1,0 +1,104 @@
+---
+/**
+ * An act: a label, the claim it is going to make, its scenes, and the door out.
+ *
+ * The door is the point (§9.3). A visitor convinced by the end of an act has no reason
+ * to keep reading, and the page has to let them leave with the install command in hand
+ * rather than holding them until the end.
+ *
+ * The exits are **graduated**: each one offers what the visitor has been shown by that
+ * point, and nothing else. Offering the tool at the end of an act that has not
+ * mentioned it is noise — it asks the reader to evaluate something they have no way to
+ * judge yet.
+ */
+import InstallBlock from '../InstallBlock.astro';
+import { localeFromPath } from '../../i18n/routing';
+import { useTranslations, type UiKey } from '../../i18n/ui';
+
+interface Props {
+    /** Stable identifier, used for the anchor and by the exit's measurement. */
+    name: string;
+    label: UiKey;
+    title: UiKey;
+    summary: UiKey;
+    exitTitle: UiKey;
+    exitBody: UiKey;
+}
+
+const { name, label, title, summary, exitTitle, exitBody } = Astro.props;
+
+const t = useTranslations(localeFromPath(Astro.url.pathname));
+---
+
+<section class="act" id={name} aria-labelledby={`${name}-title`}>
+    <header>
+        <p class="label">{t(label)}</p>
+        <h2 id={`${name}-title`}>{t(title)}</h2>
+        <p class="summary">{t(summary)}</p>
+    </header>
+
+    <slot />
+
+    <footer class="exit">
+        <h3>{t(exitTitle)}</h3>
+        <p>{t(exitBody)}</p>
+        <InstallBlock placement={`${name}-exit`} />
+    </footer>
+</section>
+
+<style>
+    .act {
+        padding: var(--jd-space-16) 0 var(--jd-space-12);
+        border-top: 1px solid var(--jd-border);
+    }
+
+    header {
+        margin-bottom: var(--jd-space-12);
+        max-width: 40rem;
+    }
+
+    .label {
+        margin: 0 0 var(--jd-space-2);
+        font-size: var(--jd-text-sm);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--jd-accent);
+    }
+
+    h2 {
+        font-size: var(--jd-text-xl);
+        line-height: var(--jd-line-tight);
+        margin: 0;
+    }
+
+    .summary {
+        margin: var(--jd-space-3) 0 0;
+        font-size: var(--jd-text-lg);
+        color: var(--jd-text-muted);
+    }
+
+    .exit {
+        max-width: 46rem;
+        padding-top: var(--jd-space-8);
+        border-top: 1px solid var(--jd-border);
+    }
+
+    .exit h3 {
+        font-size: var(--jd-text-lg);
+        line-height: var(--jd-line-tight);
+        margin: 0 0 var(--jd-space-2);
+    }
+
+    .exit p {
+        margin: 0 0 var(--jd-space-6);
+        color: var(--jd-text-muted);
+        max-width: 40rem;
+    }
+
+    @media (min-width: 48rem) {
+        header,
+        .exit {
+            padding-left: var(--jd-space-8);
+        }
+    }
+</style>

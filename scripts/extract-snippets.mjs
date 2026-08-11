@@ -10,12 +10,40 @@
 // right about it on the day they copy. That is the failure this whole arrangement
 // exists to remove, and it is not removed by being careful.
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const source = join(root, 'tools', 'snippet-validation', 'Snippets');
+const source = join(root, 'tools', 'snippet-validation');
 const destination = join(root, 'apps', 'site', 'src', 'generated', 'snippets.json');
+
+/** Build output, which contains copies of nothing this cares about. */
+const SKIPPED = new Set(['bin', 'obj']);
+
+/**
+ * Every C# file of the project, not only the ones under `Snippets/`.
+ *
+ * The site shows the domain's own guard clauses, and it shows them because they are the
+ * reason a constrained dummy is needed at all. Extracting them from the file the snippets
+ * compile against is what keeps the invariant on the page and the invariant in the code
+ * from being two things — a copy would look identical on the day it was made and drift
+ * on the day the domain changed.
+ */
+function csharpFilesIn(directory) {
+    const found = [];
+
+    for (const entry of readdirSync(directory, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+        if (entry.isDirectory()) {
+            if (!SKIPPED.has(entry.name)) {
+                found.push(...csharpFilesIn(join(directory, entry.name)));
+            }
+        } else if (entry.name.endsWith('.cs')) {
+            found.push(join(directory, entry.name));
+        }
+    }
+
+    return found;
+}
 
 const OPEN = /^\s*\/\/\s*<snippet:([a-z0-9-]+)>\s*$/;
 const CLOSE = /^\s*\/\/\s*<\/snippet:([a-z0-9-]+)>\s*$/;
@@ -35,8 +63,9 @@ function dedent(lines) {
 
 const snippets = {};
 
-for (const file of readdirSync(source).filter((name) => name.endsWith('.cs')).sort()) {
-    const lines = readFileSync(join(source, file), 'utf8').split(/\r?\n/);
+for (const path of csharpFilesIn(source)) {
+    const file = relative(root, path);
+    const lines = readFileSync(path, 'utf8').split(/\r?\n/);
 
     let collecting = null;
     let collected = [];

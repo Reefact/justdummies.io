@@ -1,0 +1,188 @@
+---
+/**
+ * One beat of the narrative: a short claim, and the code that makes it.
+ *
+ * A scene names its prose by translation key rather than receiving the text, so a key
+ * missing from a locale is a compile error here too, and no sentence can be typed into
+ * a page. Its code is named by snippet identifier, for the same reason.
+ *
+ * WHAT IT COSTS TO EXIST (§9.7). A scene is built four times — desktop, mobile,
+ * reduced motion, and without JavaScript — and this one is built so that three of the
+ * four are the same build:
+ *
+ *   * the layout is a two-column grid that collapses to one, in CSS;
+ *   * the figure sticks beside its prose with `position: sticky`, in CSS;
+ *   * the rail down the left says where the reader is in the transformation.
+ *
+ * Only the last needs script, and it is additive: without it every marker is hollow
+ * and the act reads exactly as it does with it. Nothing is hidden, dimmed or collapsed
+ * waiting to be revealed, which is what makes the no-JavaScript build the same
+ * document rather than a degraded one.
+ *
+ * NOT BUILT: the cross-scene sticky panel of §9.1, where one figure holds the viewport
+ * and its content is replaced as the prose scrolls past. That needs script to move
+ * figures out of document order, and moving them is what a no-JavaScript reader cannot
+ * have. It is additive on top of this and is deliberately left for its own change.
+ */
+import CodeSample from '../CodeSample.astro';
+import { localeFromPath } from '../../i18n/routing';
+import { useTranslations, type UiKey } from '../../i18n/ui';
+
+interface Props {
+    /**
+     * Stable identifier for this beat: its anchor, and what a measurement would call
+     * it. Never an ordinal — the scene count has changed before, and naming scenes by
+     * position makes two measurement periods incomparable.
+     */
+    name: string;
+    title: UiKey;
+    body: UiKey;
+    /** The identifier marked in the validated C# source. */
+    sample: string;
+    outcome?: 'value' | 'sequence' | 'refusal' | 'none';
+}
+
+const { name, title, body, sample, outcome = 'value' } = Astro.props;
+
+const t = useTranslations(localeFromPath(Astro.url.pathname));
+---
+
+<section class="scene" id={name} data-scene={name} aria-labelledby={`${name}-title`}>
+    <div class="prose">
+        <h3 id={`${name}-title`}>{t(title)}</h3>
+        <p>{t(body)}</p>
+    </div>
+
+    <div class="figure">
+        <CodeSample id={sample} outcome={outcome} />
+    </div>
+</section>
+
+<script>
+    /**
+     * Marks the scene the reader is on, so the rail says where they are.
+     *
+     * Additive by construction: it only ever sets an attribute that CSS uses to fill a
+     * marker. If this never runs — no scripting, an error above it, a browser without
+     * IntersectionObserver — every marker stays hollow and every word stays where it
+     * was. There is nothing here to un-hide.
+     */
+    const scenes: HTMLElement[] = Array.from(document.querySelectorAll<HTMLElement>('[data-scene]'));
+
+    if (scenes.length > 0 && 'IntersectionObserver' in window) {
+        // The band across the middle of the viewport. A scene is "current" while it is
+        // the one the reader has in front of them, not while any part of it is visible:
+        // at the bottom of a long act, three scenes are on screen at once.
+        const BAND: string = '-45% 0px -45% 0px';
+
+        let current: HTMLElement | undefined;
+
+        const observer: IntersectionObserver = new IntersectionObserver(
+            (entries: IntersectionObserverEntry[]) => {
+                for (const entry of entries) {
+                    if (!entry.isIntersecting) {
+                        continue;
+                    }
+
+                    if (current !== undefined && current !== entry.target) {
+                        delete current.dataset.current;
+                    }
+
+                    current = entry.target as HTMLElement;
+                    current.dataset.current = '';
+                }
+            },
+            { rootMargin: BAND },
+        );
+
+        for (const scene of scenes) {
+            observer.observe(scene);
+        }
+    }
+</script>
+
+<style>
+    /*
+     * `minmax(0, 1fr)` in both branches of this file, never `1fr` and never the
+     * default. A grid track's automatic minimum is the min-content width of what it
+     * holds, and a line of code offers no wrapping opportunity — so the track widens
+     * to the longest line, carrying the `overflow-x: auto` that was meant to contain
+     * it out of the page with it. On a phone that is not a scrollbar in the wrong
+     * place: it is every paragraph on the page running off the right edge.
+     */
+    .scene {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--jd-space-4);
+        padding-bottom: var(--jd-space-16);
+    }
+
+    .prose {
+        max-width: 34rem;
+    }
+
+    h3 {
+        font-size: var(--jd-text-lg);
+        line-height: var(--jd-line-tight);
+        margin: 0 0 var(--jd-space-3);
+    }
+
+    p {
+        margin: 0;
+        color: var(--jd-text-muted);
+    }
+
+    /*
+     * The rail. It is drawn from the scene itself rather than from the act, so the
+     * segments join without anything having to know how many scenes there are.
+     *
+     * Below the breakpoint it is not drawn at all: on a phone the horizontal room
+     * belongs to the code, and a progress rail is the first thing worth its width.
+     */
+    @media (min-width: 48rem) {
+        .scene {
+            position: relative;
+            grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr);
+            gap: var(--jd-space-8);
+            padding-left: var(--jd-space-8);
+        }
+
+        .scene::before {
+            content: '';
+            position: absolute;
+            left: 0.4375rem;
+            top: 0.75rem;
+            bottom: 0;
+            width: 1px;
+            background: var(--jd-border);
+        }
+
+        .scene::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.35rem;
+            width: 0.9375rem;
+            height: 0.9375rem;
+            border: 1px solid var(--jd-border);
+            border-radius: 50%;
+            background: var(--jd-background);
+            transition:
+                background-color var(--jd-duration-base) var(--jd-ease),
+                border-color var(--jd-duration-base) var(--jd-ease);
+        }
+
+        .scene[data-current]::after {
+            border-color: var(--jd-accent);
+            background: var(--jd-accent);
+        }
+
+        /* Stays beside its prose while the prose is being read. Wraps rather than
+           overflows: `align-self: start` is what lets a sticky grid item stick at all. */
+        .figure {
+            position: sticky;
+            top: var(--jd-space-8);
+            align-self: start;
+        }
+    }
+</style>

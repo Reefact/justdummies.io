@@ -26,6 +26,14 @@
   <ItemGroup>
     <!-- The published package, analyzers included. Version: Directory.Packages.props. -->
     <PackageReference Include="JustDummies" />
+
+    <!--
+      So a published snippet can *be* a test rather than resemble one. This project
+      stays a library and nothing here is ever executed: xUnit is referenced so that
+      [Fact] and Assert resolve to what a reader's own project would resolve them to.
+    -->
+    <PackageReference Include="xunit.v3.assert" />
+    <PackageReference Include="xunit.v3.extensibility.core" />
   </ItemGroup>
 
 </Project>

@@ -8,6 +8,7 @@
  */
 import CodeSample from './CodeSample.astro';
 import InstallBlock from './InstallBlock.astro';
+import ActOne from './narrative/ActOne.astro';
 import { localeFromPath } from '../i18n/routing';
 import { useTranslations } from '../i18n/ui';
 import { site } from '../site';
@@ -16,38 +17,52 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
 ---
 
 <main class="shell">
-    <h1>{site.name}</h1>
-    <p class="tagline">{t('brand.tagline')}</p>
-    <p class="subtitle">{t('brand.subtitle')}</p>
+    <header class="hero">
+        <h1>{site.name}</h1>
+        <p class="tagline">{t('brand.tagline')}</p>
+        <p class="subtitle">{t('brand.subtitle')}</p>
 
-    <CodeSample id="hero-expression" />
+        <CodeSample id="hero-expression" />
 
-    <h2 class="install-label">{t('home.install.label')}</h2>
-    <InstallBlock placement="home-skeleton" />
+        <h2 class="install-label">{t('home.install.label')}</h2>
+        <InstallBlock placement="hero" />
 
-    <nav class="links" aria-label={t('nav.primary')}>
-        {/*
-          The one internal link that deliberately leaves the current locale.
-          Internal links are supposed to stay in it (§25.1), but the playground is
-          a single Blazor application served in English only (§8.3), and
-          /fr/playground — a translated shell around that same application — is
-          phase 4 work. Sending a French reader to a route that does not exist
-          would be worse than sending them to one that does.
-        */}
-        <a href="/playground/">{t('nav.playground')}</a>
-        {/* No NuGet link here: the install block above owns it, and the same link
-            twice on one screen makes the reader wonder which is which. */}
-        <a href={site.repository}>{t('nav.github')}</a>
-    </nav>
+        <nav class="links" aria-label={t('nav.primary')}>
+            {/*
+              The one internal link that deliberately leaves the current locale.
+              Internal links are supposed to stay in it (§25.1), but the playground is
+              a single Blazor application served in English only (§8.3), and
+              /fr/playground — a translated shell around that same application — is
+              phase 4 work. Sending a French reader to a route that does not exist
+              would be worse than sending them to one that does.
+            */}
+            <a href="/playground/">{t('nav.playground')}</a>
+            {/* No NuGet link here: the install block above owns it, and the same link
+                twice on one screen makes the reader wonder which is which. */}
+            <a href={site.repository}>{t('nav.github')}</a>
+        </nav>
+    </header>
 
-    <p class="note">{t('home.skeleton.note')}</p>
+    {/* NOT BUILT: §7.4's reduced install block in the site header, which is what the
+        visitor who already knows the product is supposed to reach for. Until it
+        exists, the hero's block is the only one above the first act's exit. */}
+    <ActOne />
+
+    <p class="note">{t('home.progress.note')}</p>
 </main>
 
 <style>
+    /* Wider than the hero needs, because the acts are two columns and the right one
+       holds code that does not wrap. The hero keeps its own measure below and stays
+       left-aligned with the acts rather than being centred against them. */
     .shell {
-        max-width: 60rem;
+        max-width: 72rem;
         margin: 0 auto;
         padding: var(--jd-space-8) var(--jd-space-4) var(--jd-space-16);
+    }
+
+    .hero {
+        max-width: 56rem;
     }
 
     h1 {
