@@ -14,7 +14,10 @@ import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const source = join(root, 'tools', 'snippet-validation');
+// Both projects that compile published code. The second act's generator and the third
+// act's tests live apart because they are different kinds of project — a library that is
+// only ever compiled, and a suite that is run — and a snippet may come from either.
+const sources = [join(root, 'tools', 'snippet-validation'), join(root, 'tools', 'reproducibility')];
 const destination = join(root, 'apps', 'site', 'src', 'generated', 'snippets.json');
 
 /** Build output, which contains copies of nothing this cares about. */
@@ -63,7 +66,7 @@ function dedent(lines) {
 
 const snippets = {};
 
-for (const path of csharpFilesIn(source)) {
+for (const path of sources.flatMap((source) => csharpFilesIn(source))) {
     const file = relative(root, path);
     const lines = readFileSync(path, 'utf8').split(/\r?\n/);
 

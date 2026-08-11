@@ -60,6 +60,11 @@ public static class Program {
             // values existing at all is the claim being made.
             ["completed-recipe"]       = Repeat(static () => new AnyOrder().Generate().Reference.Value),
             ["scaffolded-arrangement"] = Repeat(static () => Arranged().Reference.Value),
+
+            // The third act, first scene. The same arrangement with the status left
+            // arbitrary, which is the one line the second act's test kept — so what these
+            // four draws show is not a defect but the reason that line was there.
+            ["intermittent-test"] = Repeat(static () => new AnyOrder().Generate().Status.ToString()),
         };
 
         // Scene two shows the domain refusing a careless value. What it refused with is

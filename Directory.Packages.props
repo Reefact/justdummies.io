@@ -49,6 +49,8 @@
     itself points at — the attributes and the assertions, without the runner.
   -->
   <ItemGroup>
+    <PackageVersion Include="JustDummies.Xunit" Version="1.0.0-preview.1" />
+    <PackageVersion Include="xunit.v3" Version="3.2.2" />
     <PackageVersion Include="xunit.v3.assert" Version="3.2.2" />
     <PackageVersion Include="xunit.v3.extensibility.core" Version="3.2.2" />
   </ItemGroup>

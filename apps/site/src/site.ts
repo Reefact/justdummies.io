@@ -57,6 +57,19 @@ export const site = {
         url: null,
     },
 
+    /**
+     * The xUnit v3 adapter. It is what makes a failing test report the seed it drew from,
+     * and the third act cannot be told without it — which is why the last exit offers it
+     * and the earlier ones do not.
+     */
+    xunit: {
+        status: 'available',
+        package: 'JustDummies.Xunit',
+        version: '1.0.0-preview.1',
+        nuget: 'https://www.nuget.org/packages/JustDummies.Xunit',
+        installCommand: 'dotnet add package JustDummies.Xunit --prerelease',
+    },
+
     cli: {
         status: 'available',
         /** The package installed, which is not the command typed. */

@@ -55,7 +55,7 @@ const en = {
     'home.meta.description':
         'JustDummies generates arbitrary test values for .NET that satisfy the constraints you declare, so a test can say what it is about and nothing else.',
     'home.progress.note':
-        'Acts I and II are built. Act III — the green test that turns red now and then, and the seed that reproduces the failure exactly — is specified and not yet here.',
+        'The three acts are built. What the specification still describes and this page does not carry: the comparison table, the reduced install block in the header, and the playground beyond its shell.',
 
     /**
      * ACT I — validity. The claim is that a value a test does not care about still has
@@ -122,6 +122,34 @@ const en = {
     'act2.exit.body':
         'The tool is optional — everything the second act removed, the first act had already made possible. Take both if the arrangement was your complaint; take the library alone if it was not.',
 
+    /**
+     * ACT III — reproducibility. The claim is that a test which forgot to constrain a value
+     * fails now and then, that the failure hands back the seed, and that the seed brings the
+     * same failure back. Never more than that: see §9.6.
+     */
+    'act3.hinge':
+        'The test you just watched go green stays green. It stays green because one line in it says the only thing the test needs to be true, and the last act spent four scenes putting that line there. What follows is what happens when a test forgets one.',
+
+    'act3.label': 'Act III',
+    'act3.title': 'A red that comes back when you ask it to',
+    'act3.summary': 'Arbitrary values fail a forgetful test now and then. The failure hands back the seed.',
+
+    'act3.forgotten.title': 'One line lighter',
+    'act3.forgotten.body':
+        'The same test, with the status left arbitrary. An order can be pending, cancelled or shipped, and two of those cannot be cancelled — so it goes red on roughly two runs in three. Nothing is broken here. The test simply stopped saying what it needed.',
+
+    'act3.seed.title': 'The failure hands back its seed',
+    'act3.seed.body':
+        'Not a screenshot to compare against, and not a value to dig out of a diff. One line, in the output of the test that failed, naming the seed those values were drawn from and the attribute that replays it.',
+
+    'act3.replay.title': 'Paste it, and the red comes back',
+    'act3.replay.body':
+        'The same failure, on any machine, for as long as that line stays there — the values are the ones that failed, not values resembling them. Each test case draws its own seed, so a suite running in parallel still hands back the seed of the case that failed rather than one shared across the run.',
+
+    'act3.exit.title': 'A package, a tool, and an adapter',
+    'act3.exit.body':
+        'The adapter is the piece that turns a red test into a seed you can replay, and it is the smallest of the three. Everything this page has shown is here.',
+
     'sample.produced': 'produced',
     'sample.producedEachRun': 'produced, run after run',
     'sample.refused': 'refused',
@@ -129,8 +157,10 @@ const en = {
     'install.cli': '.NET CLI',
     'install.packageManager': 'Package Manager',
     'install.tool': 'The scaffolding tool',
+    'install.adapter': 'The xUnit adapter',
     'install.nuget': 'View on NuGet',
     'install.nugetTool': 'The tool on NuGet',
+    'install.nugetAdapter': 'The adapter on NuGet',
     'install.documentation': 'Documentation',
     'install.copy': 'Copy',
     'install.copyCommand': 'Copy this command',
@@ -170,7 +200,7 @@ const fr: Record<UiKey, string> = {
     'home.meta.description':
         "JustDummies produit pour .NET des valeurs de test arbitraires qui respectent les contraintes que vous déclarez, pour qu'un test dise ce dont il parle, et rien d'autre.",
     'home.progress.note':
-        "Les actes I et II sont construits. L'acte III — le test vert qui redevient rouge par intermittence, et le seed qui reproduit l'échec à l'identique — est spécifié et pas encore là.",
+        "Les trois actes sont construits. Ce que la spécification décrit encore et que cette page ne porte pas : le tableau comparatif, le bloc d'installation réduit dans l'en-tête, et le playground au-delà de sa coquille.",
 
     'act1.label': 'Acte I',
     'act1.title': 'La valeur dont votre test se moque',
@@ -228,6 +258,30 @@ const fr: Record<UiKey, string> = {
     'act2.exit.body':
         "L'outil est facultatif — tout ce que le second acte a retiré, le premier l'avait déjà rendu possible. Prenez les deux si c'était l'arrangement qui vous gênait ; prenez la bibliothèque seule sinon.",
 
+    'act3.hinge':
+        "Le test que vous venez de voir passer au vert y reste. Il y reste parce qu'une ligne y dit la seule chose dont le test a besoin, et l'acte précédent a passé quatre scènes à mettre cette ligne. Ce qui suit, c'est ce qui arrive quand un test en oublie une.",
+
+    'act3.label': 'Acte III',
+    'act3.title': 'Un rouge qui revient quand vous le demandez',
+    'act3.summary':
+        "Des valeurs arbitraires font échouer par intermittence un test distrait. L'échec rend le seed.",
+
+    'act3.forgotten.title': 'Une ligne de moins',
+    'act3.forgotten.body':
+        "Le même test, avec le statut laissé arbitraire. Une commande peut être en attente, annulée ou expédiée, et deux de ces trois-là ne s'annulent pas — il passe donc au rouge environ deux fois sur trois. Rien n'est cassé ici. Le test a simplement cessé de dire ce dont il avait besoin.",
+
+    'act3.seed.title': "L'échec rend son seed",
+    'act3.seed.body':
+        "Pas une capture d'écran à comparer, ni une valeur à retrouver dans un diff. Une ligne, dans la sortie du test qui a échoué, qui nomme le seed d'où venaient ces valeurs et l'attribut qui les rejoue.",
+
+    'act3.replay.title': 'Collez-le, et le rouge revient',
+    'act3.replay.body':
+        "Le même échec, sur n'importe quelle machine, tant que cette ligne est là — ce sont les valeurs qui ont échoué, pas des valeurs qui leur ressemblent. Chaque cas de test tire son propre seed : une suite qui s'exécute en parallèle rend donc le seed du cas qui a échoué, pas un seed partagé par toute l'exécution.",
+
+    'act3.exit.title': 'Un package, un outil et un adaptateur',
+    'act3.exit.body':
+        "L'adaptateur est la pièce qui transforme un test rouge en un seed rejouable, et c'est la plus petite des trois. Tout ce que cette page a montré est là.",
+
     'sample.produced': 'produit',
     'sample.producedEachRun': 'produit, exécution après exécution',
     'sample.refused': 'refusé',
@@ -235,8 +289,10 @@ const fr: Record<UiKey, string> = {
     'install.cli': 'CLI .NET',
     'install.packageManager': 'Console du gestionnaire de packages',
     'install.tool': "L'outil de scaffolding",
+    'install.adapter': "L'adaptateur xUnit",
     'install.nuget': 'Voir sur NuGet',
     'install.nugetTool': "L'outil sur NuGet",
+    'install.nugetAdapter': "L'adaptateur sur NuGet",
     'install.documentation': 'Documentation',
     'install.copy': 'Copier',
     'install.copyCommand': 'Copier cette commande',

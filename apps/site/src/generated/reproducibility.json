@@ -1,0 +1,3 @@
+{
+  "replayed-failure": "Ordering.Tests.OrderCancellationReplayed.A_pending_order_can_be_cancelled [FAIL]\n  System.InvalidOperationException : Only a pending order can be cancelled.\n  Output:\n    [JustDummies] These arbitrary values were seeded with -1808250554. Reproduce this run with [Reproducible(Seed = -1808250554)]."
+}

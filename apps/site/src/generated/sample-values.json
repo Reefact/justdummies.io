@@ -28,6 +28,12 @@
       "ORD-j2026HYF",
       "ORD-20262NJK"
     ],
+    "intermittent-test": [
+      "Shipped",
+      "Pending",
+      "Cancelled",
+      "Cancelled"
+    ],
     "order-reference": [
       "ORD-toPq3Y7sWwdaz"
     ],
