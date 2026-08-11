@@ -46,6 +46,33 @@ fi
 [ -f "${dist}/_headers" ] && pass "the response headers were generated" || fail "dist/_headers is missing"
 [ -f "${dist}/.assetsignore" ] && pass "the upload exclusions were copied" || fail "dist/.assetsignore is missing"
 
+# The stamp that lets anyone ask the deployment what it is. Three ways it can be
+# useless, and none of them is visible by looking at the file: absent, unparseable,
+# or naming a commit other than the one that was built. The third is the dangerous
+# one — a stamp that lies is worse than no stamp, because it will be believed.
+if [ ! -f "${dist}/version.json" ]; then
+  fail "dist/version.json is missing — the deployment cannot say which release it is"
+elif ! node -e 'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"))' \
+       "${dist}/version.json" 2> /dev/null; then
+  fail "dist/version.json is not valid JSON — whatever reads it will fail on the live site"
+else
+  pass "the artefact is stamped with a parseable version"
+
+  head_commit="$(git -C "${root}" rev-parse HEAD 2> /dev/null || true)"
+  stamped="$(node -e 'process.stdout.write(String(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).commit))' \
+             "${dist}/version.json" 2> /dev/null || true)"
+
+  # Skipped rather than failed without git: an exported tarball has no HEAD to compare
+  # against, and the stamp says so itself by carrying a null commit.
+  if [ -z "${head_commit}" ]; then
+    pass "no git metadata to check the stamp against, and the stamp does not claim one"
+  elif [ "${stamped}" = "${head_commit}" ]; then
+    pass "the stamped commit is the one that was built"
+  else
+    fail "version.json names ${stamped:-null}, but HEAD is ${head_commit} — the stamp would misreport what is live"
+  fi
+fi
+
 # The host's own migration guide invites this mistake, so it is checked rather
 # than trusted. On Workers, _headers and _redirects are never served as assets:
 # they are parsed, and their rules are applied to asset responses. Excluding them

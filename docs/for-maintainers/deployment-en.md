@@ -860,6 +860,36 @@ The most recent deployment must match your workflow's time, not your manual atte
 Since a tag published it, you can also line this list up against `git tag`: every deployment carries
 a name, not just a date.
 
+Or ask the site itself, which needs no credentials and no wrangler:
+
+```bash
+curl -s https://justdummies.io/version.json
+```
+
+```json
+{
+  "release": "release/2026-08-11T20-33-42Z",
+  "commit": "672fc88e799cb06d688b82f9fed3e4a3a5c2b924",
+  "built": "2026-08-11T20:41:22Z"
+}
+```
+
+Three properties of that file are worth knowing before you rely on it:
+
+- **`release` is `null` unless the commit carried a `release/*` tag.** It is read with
+  `git tag --points-at HEAD`, never `git describe`, so it names the release *this* commit is —
+  never the nearest one behind it.
+- **It is written by the build, not by the deploy job.** The deploy job publishes the artefact it
+  downloaded and never rebuilds, so a file stamped at upload time would be the one byte in the
+  deployment no check had ever examined. Being generated in the build means `verify-output.sh`
+  asserts it, including that its commit is the commit that was built.
+- **It is served `no-store`.** A cached version stamp answers "what was live when you last asked",
+  which is the one answer it must never give. `check-served-headers.sh` asserts the header off a
+  real response, because a rule can be present on disk and ignored by the host.
+
+It answers *what is live*. It cannot tell you whether `main` has moved since — that is the gap the
+release-tag decision leaves open on purpose, and comparing the two is still a second step.
+
 ### What CI does, and why this way
 
 On every push to `main` **and** on every `release/*` tag:

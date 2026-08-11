@@ -876,6 +876,38 @@ Le déploiement le plus récent doit correspondre à l'heure de ton workflow, pa
 de l'étape 5. Comme c'est un tag qui a publié, tu peux aussi aligner cette liste sur `git tag` :
 chaque déploiement porte un nom, pas seulement une date.
 
+Ou demande-le au site lui-même, ce qui ne demande ni identifiants ni wrangler :
+
+```bash
+curl -s https://justdummies.io/version.json
+```
+
+```json
+{
+  "release": "release/2026-08-11T20-33-42Z",
+  "commit": "672fc88e799cb06d688b82f9fed3e4a3a5c2b924",
+  "built": "2026-08-11T20:41:22Z"
+}
+```
+
+Trois propriétés de ce fichier méritent d'être connues avant de s'y fier :
+
+- **`release` vaut `null` sauf si le commit portait un tag `release/*`.** Il est lu avec
+  `git tag --points-at HEAD`, jamais `git describe`, il nomme donc la release que *ce* commit est —
+  jamais la plus proche derrière lui.
+- **Il est écrit par la build, pas par le job de déploiement.** Ce dernier publie l'artefact qu'il a
+  téléchargé et ne reconstruit jamais : un fichier estampillé au moment du téléversement serait le
+  seul octet du déploiement qu'aucun contrôle n'aurait examiné. L'engendrer dans la build fait que
+  `verify-output.sh` l'assertionne, y compris que son commit est bien celui qui a été construit.
+- **Il est servi en `no-store`.** Une estampille en cache répond « ce qui était en ligne la dernière
+  fois que tu as demandé », qui est la seule réponse qu'elle ne doit jamais donner.
+  `check-served-headers.sh` vérifie l'en-tête sur une vraie réponse, parce qu'une règle peut être
+  présente sur le disque et ignorée par l'hébergeur.
+
+Il répond *ce qui est en ligne*. Il ne peut pas te dire si `main` a bougé depuis — c'est l'écart que
+la décision du tag de release laisse ouvert délibérément, et comparer les deux reste un second
+geste.
+
 ### Ce que fait la CI, et pourquoi ainsi
 
 À chaque poussée sur `main` **et** sur chaque tag `release/*` :

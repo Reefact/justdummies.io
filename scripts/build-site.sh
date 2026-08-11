@@ -50,6 +50,11 @@ fi
 echo "▸ Generating the response headers"
 node "${root}/scripts/generate-headers.mjs"
 
+# Before verify-output.sh, which asserts it: the stamp is part of the artefact's
+# shape, not an afterthought bolted on at upload time.
+echo "▸ Stamping the artefact with its version"
+"${root}/scripts/generate-version.sh"
+
 "${root}/scripts/verify-output.sh"
 
 echo
