@@ -35,10 +35,13 @@ once.
 ### 0.1 Choosing your terminal
 
 This matters, and it is not cosmetic: **building the site relies on bash scripts**. `pnpm build`
-calls `scripts/build-site.sh`, and every script under `scripts/` carries the
-`#!/usr/bin/env bash` shebang. All of them use `set -euo pipefail`, and some use process
-substitution `< <(...)` or `compgen`. Neither `cmd.exe` nor PowerShell can run them — this is not a
-matter of preference, those constructs have no equivalent.
+calls `scripts/build-site.sh`, and every `scripts/*.sh` carries the `#!/usr/bin/env bash` shebang.
+All of them use `set -euo pipefail`, and some use process substitution `< <(...)` or `compgen`.
+Neither `cmd.exe` nor PowerShell can run them — this is not a matter of preference, those constructs
+have no equivalent.
+
+*(The `scripts/*.mjs` are Node and would run anywhere; it is the shell scripts that require bash,
+and they are the ones `pnpm build` chains together.)*
 
 | Command | cmd / PowerShell | Git Bash | WSL2 | macOS / Linux |
 |---|---|---|---|---|

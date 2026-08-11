@@ -34,10 +34,13 @@ déboguer deux choses à la fois.
 ### 0.1 Choisir son terminal
 
 Le point important, et il n'est pas cosmétique : **la construction du site repose sur des scripts
-bash**. `pnpm build` appelle `scripts/build-site.sh`, et tous les scripts de `scripts/` portent le
-shebang `#!/usr/bin/env bash`. Tous utilisent `set -euo pipefail`, et certains la substitution de
-processus `< <(...)` ou `compgen`. Ni `cmd.exe` ni PowerShell ne peuvent les exécuter — ce n'est
-pas une question de préférence, ces constructions n'ont pas d'équivalent.
+bash**. `pnpm build` appelle `scripts/build-site.sh`, et chaque `scripts/*.sh` porte le shebang
+`#!/usr/bin/env bash`. Tous utilisent `set -euo pipefail`, et certains la substitution de processus
+`< <(...)` ou `compgen`. Ni `cmd.exe` ni PowerShell ne peuvent les exécuter — ce n'est pas une
+question de préférence, ces constructions n'ont pas d'équivalent.
+
+*(Les `scripts/*.mjs` sont du Node et tourneraient partout ; ce sont les scripts shell qui
+imposent bash, et ce sont eux que `pnpm build` enchaîne.)*
 
 | Commande | cmd / PowerShell | Git Bash | WSL2 | macOS / Linux |
 |---|---|---|---|---|
