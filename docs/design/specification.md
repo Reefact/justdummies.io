@@ -1010,12 +1010,12 @@ ailleurs, et confondre les trois est ce qui a fait vieillir les brouillons.
 
 | | Où | Nature |
 |---|---|---|
-| **Décisions durables d'architecture** | `docs/decisions/` | Ce qu'un futur mainteneur remettra en cause : le choix d'hébergement, l'absence de script serveur, le pont catalogue, la source de vérité éditoriale. Une décision, son contexte, ses conséquences, ses alternatives écartées |
+| **Décisions durables d'architecture** | `docs/for-maintainers/adr/` | Ce qu'un futur mainteneur remettra en cause : le choix d'hébergement, l'absence de script serveur, le pont catalogue, la source de vérité éditoriale. Une décision, son contexte, ses conséquences, ses alternatives écartées |
 | **Conception du site** | Ce document | La narration, les règles éditoriales, l'architecture de l'information, les principes |
 | **Le travail à faire** | Le suivi de projet | Petit, fermable, daté |
 
 Une décision consignée ici et qui mérite de survivre à ce document migre vers
-`docs/decisions/`. Une tâche qui apparaît ici est une erreur de rangement.
+`docs/for-maintainers/adr/`. Une tâche qui apparaît ici est une erreur de rangement.
 
 ---
 
