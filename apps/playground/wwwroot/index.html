@@ -14,7 +14,14 @@
     <link rel="stylesheet" href="css/tokens.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <link href="JustDummies.Playground.styles.css" rel="stylesheet" />
+    <!--
+      The scoped-CSS bundle the Blazor template links is deliberately absent. It is only
+      emitted when a component has a .razor.css beside it, and none does: this application
+      styles itself from the shared design tokens, which is what keeps it looking like the
+      site rather than like a Blazor app. Linking a stylesheet that is never built made
+      every playground page fetch a 404 and log two console errors — one for the missing
+      file, one for the 404 page arriving as text/html where a stylesheet was expected.
+    -->
     <script type="importmap"></script>
 </head>
 
@@ -37,6 +44,7 @@
         <a href="." class="reload">Reload</a>
         <span class="dismiss">🗙</span>
     </div>
+    <script src="js/hero-frame.js"></script>
     <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
 </body>
 
