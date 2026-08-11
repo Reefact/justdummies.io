@@ -613,9 +613,40 @@ First look at what would go up, without publishing:
 pnpm wrangler deploy --dry-run
 ```
 
-Expected: a line reading `✨ Read N files from the assets directory …/dist`. **Do not compare `N`
-against a figure written here** — it changes with every playground change. What matters is that it
-is counted in hundreds and not in units: a handful of files would mean `dist/` is incomplete.
+Four lines come out, and the third one always causes alarm:
+
+```
+✨ Read N files from the assets directory /home/<you>/dev/justdummies.io/dist
+Total Upload: 0.34 KiB / gzip: 0.24 KiB
+No bindings found.
+--dry-run: exiting now.
+```
+
+| Line | What it has to say |
+|---|---|
+| `Read N files` | `N` is counted in **hundreds**. **Do not compare it against a figure written here**: it changes with every playground change. A handful of files would mean `dist/` is incomplete. The path must start with `/home/`, not `/mnt/`. |
+| `Total Upload` | **under a kibibyte, and that is correct** — see below. |
+| `No bindings found.` | expected: this Worker has no KV, no D1, no R2, no variables. |
+| `--dry-run: exiting now.` | nothing was published. |
+
+> **`Total Upload` is not the size of your files.** It is the size of the Worker **script** — and
+> since this site has none (`wrangler.jsonc` deliberately carries no `main`), wrangler generates one
+> that does nothing. You can see it:
+>
+> ```bash
+> pnpm wrangler deploy --dry-run --outdir /tmp/wdry && ls /tmp/wdry
+> ```
+>
+> It writes `no-op-worker.js`: that is what those 0.34 KiB weigh. Your files are counted separately,
+> on the line above, and go up as *static assets* — free and unlimited.
+>
+> A `Total Upload` in the hundreds of kibibytes would be the opposite signal: a script has crept into
+> the configuration, and requests would start consuming a quota. That is decision **A6**, and this
+> line is the only place it is visible from outside.
+
+This check does **not** prove you are authenticated: `--dry-run` never contacts Cloudflare. Step 4's
+check is what does. Nor does it verify the *contents* of `dist/` — it counts files. `pnpm build` and
+its assertions do that, back in step 1.
 
 Then publish:
 
