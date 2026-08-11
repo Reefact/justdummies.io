@@ -1,102 +1,171 @@
-# 0001 — A release tag publishes, not a merge
+# ADR-0001 | A release tag publishes, not a merge
 
-*🇫🇷 [Version française](0001-a-release-tag-publishes-not-a-merge-fr.md)*
+🌍 🇬🇧 English (this file) · 🇫🇷 [Français](0001-a-release-tag-publishes-not-a-merge-fr.md)
 
-**Decided** 2026-08-11 · **Lives in** `.github/workflows/build.yml`, and in step 7 of the
-deployment guide.
-
-## Decision
-
-Publication is gated on a deliberate release marker, not on integration.
-
-A push to `main` builds the artefact and verifies it, and publishes nothing. A tag matching
-`release/*` publishes. The tag's name is a UTC timestamp — `release/2026-08-11T19-33-42Z` —
-and the tag is annotated, so it carries the reason the release was cut.
-
-```bash
-git tag -a "release/$(date -u +%Y-%m-%dT%H-%M-%SZ)" -m "what this release brings"
-git push origin --tags
-```
-
-The condition is the ref alone, `refs/tags/release/*`. No event can publish something that was
-never tagged, and a tag reaches the job whether it was pushed or picked from the Run workflow
-dialog — so re-publishing a release needs no second mechanism.
+**Status:** Proposed
+**Proposed:** 2026-08-11
+**Decision Makers:** Reefact
 
 ## Context
 
-The pipeline first shipped publishing on every push to `main`. Nothing was wrong with it: a
-static site with no server script and no consumers can be continuously deployed safely, and the
-artefact is verified twice before it goes out.
+The site is a single static deployment: an application built into one directory and uploaded
+whole. There is no server script, and no consumer — no package references this deployment, no
+build depends on it, nothing installs it.
 
-What made it wrong here is what `main` receives. This repository merges documentation fixes,
-copy changes, tooling adjustments — on the day this was decided, eight pull requests landed in
-under three hours, all of them corrections to a setup guide. Every one of them moved the live
-site. Publication had become a side effect of integration rather than an act.
+The pipeline, as first built, published on every push to `main`. Publication was safe by
+construction: the artefact is checked on disk, checked again by starting the runtime and asking
+what it actually serves, and checked a third time after the round trip through the artefact store,
+so what reaches production has been verified three times.
 
-The counter-question is worth recording because it will be asked again: if every merge is
-verified, why not publish every merge? Because "verified" and "intended" are different claims.
-The checks prove the artefact is well formed; they cannot know whether a half-written narrative
-act was meant to be read by anyone yet.
+What `main` receives is documentation fixes, copy changes and tooling adjustments. On the day this
+was decided, eight pull requests landed in under three hours, every one of them a correction to a
+setup guide. Each moved the live site.
+
+The repository has one deployment target. There is no staging environment; previewing is a
+separate mechanism, a version uploaded without being promoted.
+
+Cloudflare reports deployments as times, not as names: the deployment list a maintainer reads to
+answer "what is live?" is a list of timestamps.
+
+Git refs cannot contain a colon, which constrains any timestamp used as a tag name.
+
+The credentials that publish live in the repository's secrets, readable by any job the workflow
+permits to read them.
+
+## Decision
+
+Publication is gated on a `release/*` tag whose name is a UTC timestamp; a push to any branch,
+`main` included, builds and verifies but publishes nothing.
+
+## Rationale
+
+Publishing on merge conflated two claims the context keeps separate. The three checks establish
+that the artefact is *well formed*; nothing in them establishes that it was *meant to be read*. A
+half-written narrative act passes every check that exists, because none of them is about
+readiness. Eight corrections to a guide moving the live site eight times is that conflation
+observable: publication had become a side effect of integration rather than an act someone
+performed.
+
+Gating on a marker restores the distinction at the only place the maintainer can express it — a
+deliberate step, taken once per release, on the commit they choose.
+
+The marker is a timestamp rather than a version because of two facts above. Nothing consumes this
+deployment, so the question a semantic version answers — *is this compatible with what I have* —
+is never asked here; what would remain of semver is its cost, the arbitration between a minor and
+a patch, demanded on every release for an answer no reader has. And Cloudflare reports times, so a
+timestamped release name lines up directly against the list a maintainer reads to see what is
+live. Lining up with that list is the whole reason for naming releases at all.
+
+A timestamp also needs nothing to be known before it is produced: no existing tag has to be
+consulted to learn what the next name is, two releases cannot collide, and lexical order is
+chronological order.
+
+The gate is the ref, not the event. One condition then covers a tag that was pushed and a tag that
+was selected to re-run, so re-publishing an existing release needs no second mechanism — and no
+event, whatever triggers it, can publish something that was never tagged.
+
+The tag is annotated rather than lightweight so that the reason for the release travels with it.
+The release list is the only place that reason can live; a lightweight tag would leave the record
+naming *when* and never *why*.
+
+## Alternatives Considered
+
+### Publishing on every push to `main`
+
+Considered because it was what already worked, and because it is defensible in general: a static
+site with no server script and no consumers can be continuously deployed safely, which is why it
+was built that way first.
+
+Rejected because it makes publication a consequence of merging. The eight-pull-request afternoon
+is not a pathological case to guard against but the repository's normal traffic, and no gate
+placed inside the checks can distinguish a correction worth shipping from one that merely passes.
+
+### Semantic versions
+
+Considered because "publish like a NuGet package" was the shape asked for, and the library beside
+this repository does version that way, so the convention was to hand.
+
+Rejected because semver's question is not asked here. Its cost, on the other hand, is charged on
+every release: deciding whether a change to a landing page is a minor or a patch. This is a
+property of *this* repository, not of the library, where the same scheme earns its keep because
+consumers depend on the answer.
+
+### A date with a same-day counter
+
+Considered because a date is produced without deliberating, which is exactly the property semver
+lacks.
+
+Rejected because the counter reintroduces the deliberation the date removed: naming the next
+release requires learning whether today already has one. That is a lookup before every release,
+for a distinction that carries no information a timestamp does not.
+
+### A plain incrementing counter
+
+Considered because it is the smallest thing that orders releases.
+
+Rejected because it orders without informing. It cannot answer whether the live site is three days
+or eight months old, which is the question the release name exists to answer.
+
+### Mirroring the library's version
+
+Considered because the playground ships against a published library package, so the two are
+genuinely related.
+
+Rejected because the site changes far more often than the library, and for unrelated reasons.
+Coupling the names would force releases that mean nothing and withhold names from releases that
+mean something. What a deployment should record is which library version it shipped with — and
+that is metadata the playground already reads from what it actually loaded, not a version number
+for the site.
+
+### Semantic versions derived from commit types
+
+Considered because tooling exists to compute them, which would remove the arbitration that sank
+the plain semver option.
+
+Rejected because it adds a tool in order to produce a number that, per that same option, no reader
+consumes.
 
 ## Consequences
 
-**What reaches production carries a name.** `wrangler deployments list` prints timestamps, and
-so does the tag, so the two line up directly. Before this, matching a live deployment to a
-commit meant reading a clock.
+### Positive
 
-**`main` can run ahead of production indefinitely, and nothing says so.** This is the real cost
-and it has no mitigation in place. A job comparing the newest tag against `main` and annotating
-the run would provide one; it does not exist yet.
+* What is live carries a name a maintainer put there, and that name lines up against the
+  deployment list without translation. Before this, matching a live deployment to a commit meant
+  reading a clock.
+* Releasing is an act with an author, a date and a stated reason, recorded in the tag.
+* Re-publishing a release is the same mechanism as publishing it, because the gate is the ref.
+* A branch can no longer reach production, whatever event runs the pipeline.
 
-**A skipped `Deploy` on a push to `main` is the expected state.** It is not a symptom, and
-anything that teaches a reader to treat a skipped job as a fault has to say so — the deployment
-guide was corrected on exactly this point, having briefly taught the opposite.
+### Negative
 
-**Releasing is now a decision someone makes.** That is the point, and it is also a step that can
-be forgotten. The site lagging its repository is a failure mode this design accepts in exchange
-for never publishing by accident.
+* `main` can run ahead of production indefinitely, and nothing in the pipeline says so.
+* Releasing is a step that can be forgotten, where before it could not be.
+* A skipped deploy job is now the expected outcome of a push, which makes a skipped job a weaker
+  signal than it was: it no longer distinguishes "nothing to publish" from "misconfigured".
 
-## Rejected alternatives
+### Risks
 
-**Publishing on every push to `main`** — what was there. Rejected above: it makes publication a
-consequence of merging.
+* **The site silently lags its repository.** No mitigation is in place. The drift is invisible
+  until someone looks at both, and the pipeline is the natural place to surface it.
+* **A skipped job is read as a fault.** The deployment guide taught the opposite for a short while
+  and was corrected; anything else describing the pipeline has to state that a skipped deploy on a
+  branch is normal, or it will generate false alarms.
+* **A release is cut from an unintended commit.** The tag names a commit, and nothing checks that
+  the commit is the one the maintainer meant. The annotated message is the only record of intent.
 
-**Semantic versions, `v1.2.0`.** The shape "like a NuGet package" suggests, and the first thing
-built. Semver answers one question — *is this compatible with what I have* — and nothing consumes
-this site, so the question never arises. What remains is its cost: deciding whether a change to
-a landing page is a minor or a patch, every single time, for an answer no one reads. Note that
-this is a property of *this* repository and not of the library beside it, where semver earns its
-keep.
+## Follow-up Actions
 
-**A date with a same-day counter, `2026-08-11.2`.** Proposed and abandoned within the hour. It
-was argued for on the grounds that a date is produced without deliberating, and then required
-reading `git tag` to learn whether the next release is `.1` or `.2` — reintroducing exactly the
-deliberation it claimed to remove. A timestamp is produced by `date -u` alone.
+* Surface the drift the Negative section names: compare the newest release tag against `main` and
+  annotate the run, so a repository ahead of production says so without being asked.
+* State in the deployment guide, at the point a reader meets it, that a skipped deploy job on a
+  branch is the expected state.
 
-**A plain counter, `release-7`.** Orders releases without informing: it cannot tell you whether
-the live site is three days or eight months old.
+## References
 
-**Mirroring the library's version.** The playground ships against a published JustDummies
-package, so coupling the site's releases to it is tempting. Rejected: the site changes far more
-often, and for reasons unrelated to the library, which would force releases that mean nothing.
-What the deployment should record is which library version it shipped with — metadata, not a
-version number, and the playground already reads that from what it actually loaded.
-
-**Semver derived from commit types**, as release-please and similar tools do. Adds a tool in
-order to compute a number that, per the second rejection above, nobody reads.
-
-## When this will be questioned
-
-At the first release someone forgot to cut, and discovers the site is weeks behind `main`. The
-answer then is not to remove the gate but to add the warning this record says is missing.
-
-Also whenever a preview environment is wanted for a branch. That is a different mechanism —
-`pnpm preview` uploads a version without promoting it — and confusing the two would put branch
-deployments back in production's path.
-
-## Relation to other records
-
-This refines **D1** in `docs/design/decisions-inventory.md`. That entry separates a repository
-publishing versioned packages from one publishing a deployment; the deployment now has versions
-too. The separation still holds — the two repositories version different things for different
-reasons, which is the substance of D1, not the absence of versions here.
+* Step 7 of the deployment guide, which is this decision's operating half —
+  [English](../for-maintainers/deployment-en.md) · [Français](../for-maintainers/deployment-fr.md).
+* `.github/workflows/build.yml`, where the gate lives.
+* **D1** in [`docs/design/decisions-inventory.md`](../design/decisions-inventory.md) — a repository
+  publishing versioned packages against one publishing a deployment. This record refines it rather
+  than retiring it: the deployment now has release names too, and the separation D1 draws still
+  holds, because the two repositories name different things for different reasons.

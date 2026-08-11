@@ -23,11 +23,18 @@ would cost a permanent synchronisation without adding a reader.
 
 **What tells a maintainer how to operate this repository is kept as an
 English/French pair** — the deployment guide under `docs/for-maintainers/`, the
-decision records under `docs/decisions/`. Both halves carry the same name with an
-`-en` or `-fr` suffix and link to each other. They are paired because they are
-read while doing the thing they describe, by whoever is doing it, and someone
+decision records under `docs/decisions/`. They are paired because they are read
+while doing the thing they describe, by whoever is doing it, and someone
 following installation steps in a second language makes mistakes they would not
 make in their own.
+
+Both halves carry the same name under an explicit `-en` or `-fr` suffix —
+`deployment-en.md`, `deployment-fr.md` — and each opens with a banner linking to
+the other. Neither language hides in an unsuffixed filename: a reader who lands
+on one knows, from the name alone, that a twin exists.
+
+**The English half is authoritative** and the French one follows it, so a
+divergence between the two has an answer rather than an argument.
 
 The synchronisation the first exception refuses is the price of the second, and
 it is not hypothetical: the deployment guide was corrected eight times in one
@@ -228,6 +235,20 @@ code does.
   with an initial capital and no trailing period.
 * Keep it within **72 characters**.
 * The issue reference lives in the description, never the title.
+
+## Decision records
+
+A pull request that embarks an architectural decision records it as an ADR under
+[`docs/decisions/`](docs/decisions/README.md). The format is the library's, and
+so is the test for whether a decision is significant enough to record: *if the
+implementation changed but the decision stood, would the record need rewriting?*
+
+Most pull requests embark no decision and add no ADR. What is expected is that
+the question was asked, not that the artefact exists.
+
+An accepted record is never edited in place — a decision is revisited by writing
+a new record that supersedes it. Drafting one leaves it `Proposed`; accepting it
+is the maintainer's act.
 
 ## What this repository does not inherit
 
