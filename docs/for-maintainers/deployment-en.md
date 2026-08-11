@@ -812,6 +812,9 @@ The tag is **annotated** (`-a -m`) rather than lightweight: it carries an author
 message, so `git show` on the tag will say *why* that release happened. A lightweight tag says
 nothing.
 
+Why a tag rather than a merge, what that costs, and the naming schemes rejected on the way:
+[`docs/decisions/0001-a-release-tag-publishes-not-a-merge-en.md`](../decisions/0001-a-release-tag-publishes-not-a-merge-en.md).
+
 > ⚠️ **This publishes to production.** It is not a dry run. A push to `main`, by contrast, publishes
 > nothing: it builds and verifies.
 

@@ -12,20 +12,36 @@ the scope table differs, because the components differ.
 
 ## Language
 
-Everything recorded here is in **English**: source, comments, commit messages,
-branch names, pull request titles and descriptions, issues.
+The default is **English**: source, comments, commit messages, branch names,
+pull request titles and descriptions, issues.
 
-One exception, bounded and named: **design documents under `docs/design/` are in
-French**. They continue a document written in French for a reader who works in
-that language, and translating them would cost a permanent synchronisation
-without adding a reader. The exception stops at that directory — a decision
-record, a code comment or a commit message about a design document is English
-like everything else.
+Two exceptions, bounded and named.
 
-It is written down because an exception nobody wrote down is not an exception,
+**Design documents under `docs/design/` are in French.** They continue a document
+written in French for a reader who works in that language, and translating them
+would cost a permanent synchronisation without adding a reader.
+
+**What tells a maintainer how to operate this repository is kept as an
+English/French pair** — the deployment guide under `docs/for-maintainers/`, the
+decision records under `docs/decisions/`. Both halves carry the same name with an
+`-en` or `-fr` suffix and link to each other. They are paired because they are
+read while doing the thing they describe, by whoever is doing it, and someone
+following installation steps in a second language makes mistakes they would not
+make in their own.
+
+The synchronisation the first exception refuses is the price of the second, and
+it is not hypothetical: the deployment guide was corrected eight times in one
+afternoon, every correction applied twice. **A change to one half is unfinished
+until the other has it** — the halves are reviewed against each other, not each
+against itself. Prefer a single file whenever the audience allows one.
+
+Both exceptions stop at prose. A code comment, a commit message or a pull request
+title is English, including when its subject is a French document.
+
+They are written down because an exception nobody wrote down is not an exception,
 it is the beginning of a repository in two languages.
 
-The site's own user-facing copy is a third question again, settled by the
+The site's own user-facing copy is a different question again, settled by the
 specification and not by this guide.
 
 ## Branches
@@ -222,9 +238,10 @@ not apply here, and importing them would be cargo cult:
 * **No release trains.** The library partitions commits into trains by scope so
   each package publishes independently. This repository publishes one artefact,
   so the scope is a reading aid, not a routing key.
-* **No French twin.** The library keeps every user-facing page in an
-  English/French pair. This repository's own documentation is English only; the
-  site's content language is settled by the specification.
+* **No blanket French twin.** The library pairs every user-facing page. Here the
+  pairing is bounded to what the Language section names, and everything else —
+  source, comments, commit messages, issues — is English only; the site's content
+  language is settled by the specification.
 * **No mutation testing, no analyzer release tracking.**
 
 One exception is recorded rather than hidden: the repository's first commit,

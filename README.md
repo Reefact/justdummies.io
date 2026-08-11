@@ -19,7 +19,8 @@ packages/
   design-tokens/ Colour, space, type and motion, shared by both applications
 docs/
   for-maintainers/ Operating this repository — the deployment guide, in English and French
-  design/          The specification, and the record of the decisions taken
+  decisions/       The decision records, in English and French
+  design/          The specification, and the decisions still awaiting a record
 scripts/         Build the two halves and assemble them into one artefact
 tools/           Repository tooling (the commit-message linter)
 ```

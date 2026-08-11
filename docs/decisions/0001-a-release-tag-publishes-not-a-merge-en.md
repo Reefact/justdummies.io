@@ -1,5 +1,7 @@
 # 0001 — A release tag publishes, not a merge
 
+*🇫🇷 [Version française](0001-a-release-tag-publishes-not-a-merge-fr.md)*
+
 **Decided** 2026-08-11 · **Lives in** `.github/workflows/build.yml`, and in step 7 of the
 deployment guide.
 
