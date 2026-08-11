@@ -632,7 +632,7 @@ No bindings found.
 
 | Ligne | Ce qu'elle doit dire |
 |---|---|
-| `Read N files` | `N` se compte en **centaines**. **Ne le compare pas à un nombre écrit ici** : il change à chaque modification du playground. Quelques fichiers seulement voudrait dire que `dist/` est incomplet. Le chemin doit commencer par `/home/`, pas par `/mnt/`. |
+| `Read N files` | `N` se compte en **centaines**. **Ne le compare pas à un nombre écrit ici** : il change à chaque modification du playground, et ce n'est pas le nombre de fichiers téléversés — `--dry-run` n'applique pas `.assetsignore`, vérifié. Quelques fichiers seulement voudrait dire que `dist/` est incomplet. Le chemin doit commencer par `/home/`, pas par `/mnt/`. |
 | `Total Upload` | **moins d'un kibioctet, et c'est normal** — voir ci-dessous. |
 | `No bindings found.` | attendu : ce Worker n'a ni KV, ni D1, ni R2, ni variable. |
 | `--dry-run: exiting now.` | rien n'a été publié. |

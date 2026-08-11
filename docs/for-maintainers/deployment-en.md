@@ -624,7 +624,7 @@ No bindings found.
 
 | Line | What it has to say |
 |---|---|
-| `Read N files` | `N` is counted in **hundreds**. **Do not compare it against a figure written here**: it changes with every playground change. A handful of files would mean `dist/` is incomplete. The path must start with `/home/`, not `/mnt/`. |
+| `Read N files` | `N` is counted in **hundreds**. **Do not compare it against a figure written here**: it changes with every playground change, and it is not the number of files uploaded — `--dry-run` does not apply `.assetsignore`, verified. A handful of files would mean `dist/` is incomplete. The path must start with `/home/`, not `/mnt/`. |
 | `Total Upload` | **under a kibibyte, and that is correct** — see below. |
 | `No bindings found.` | expected: this Worker has no KV, no D1, no R2, no variables. |
 | `--dry-run: exiting now.` | nothing was published. |
