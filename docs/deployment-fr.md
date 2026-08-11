@@ -174,7 +174,8 @@ Rien de tout ceci n'est à écrire :
 | `dist/_headers` *(généré)* | La Content Security Policy et les règles de cache. Régénéré à chaque build par `scripts/generate-headers.mjs`, parce que la politique doit nommer un hash que seul le build connaît. |
 | `apps/site/public/_redirects` | La réécriture qui fait survivre les routes du playground à un lien à froid. |
 | `apps/site/public/.assetsignore` | Ce qui ne doit **jamais** monter dans le téléversement. |
-| `scripts/verify-output.sh` | Dix-sept assertions sur la forme de l'artefact. Plusieurs n'existent que parce que leur échec est invisible jusqu'à ce qu'un visiteur le rencontre. |
+| `scripts/verify-output.sh` | Dix-sept assertions sur la forme de l'artefact, lue sur le disque. Plusieurs n'existent que parce que leur échec est invisible jusqu'à ce qu'un visiteur le rencontre. |
+| `scripts/check-served-headers.sh` | Six assertions sur ce que le runtime **sert réellement** : il démarre le moteur et l'interroge. Un fichier de règles peut être présent, bien formé, et ignoré — c'est exactement ce qui est arrivé ici. |
 | `.github/workflows/build.yml` | Construit, vérifie, puis publie — dès que les identifiants existeront. |
 
 Sur Workers, `_headers` et `_redirects` **ne sont pas servis comme des fichiers** : ils sont
@@ -248,6 +249,34 @@ pnpm serve       # occupe le terminal — sert sur http://localhost:8787
 ```
 
 > Cette commande ne rend pas la main. **Ouvre un second terminal** pour les contrôles.
+
+### ✅ Contrôle 2 — en une seule commande
+
+Tout ce qui suit existe aussi sous forme de script, et la CI l'exécute à chaque build :
+
+```bash
+scripts/check-served-headers.sh    # démarre le runtime, l'interroge, s'arrête
+```
+
+Il n'a pas besoin d'un `pnpm serve` en parallèle : il lance le moteur lui-même. Attendu :
+
+```
+▸ Starting the runtime
+  Parsed 1 valid redirect rule
+  Parsed 5 valid header rules
+▸ Asking http://localhost:8787
+  ✓ / is served with a content security policy
+  ✓ /fr/ is served with a content security policy
+  ✓ /playground/ is served with a content security policy
+  ✓ a fingerprinted asset gets both its own cache rule and the global policy
+  ✓ a cold link to a playground route answers 200
+  ✓ the runtime compresses the WebAssembly payload (br: 3002102 → 1197764 bytes)
+▸ The host serves what the artefact intends.
+```
+
+**C'est le contrôle à retenir.** Les quatre suivants font la même chose à la main, et gardent deux
+usages : comprendre *ce que* le script vérifie, et diagnostiquer quand une de ses lignes passe au
+`✗`.
 
 ### ✅ Contrôle 2a — les règles sont-elles chargées ?
 
@@ -452,6 +481,13 @@ Les six codes doivent être identiques à ceux de l'étape 2. **S'ils diffèrent
 la plateforme réelle, pas ton poste** — et c'est exactement l'information que cette étape sert à
 produire.
 
+Le script accepte une URL de base, ce qui rejoue les six assertions du contrôle 2 contre le
+déploiement plutôt que contre ton poste :
+
+```bash
+scripts/check-served-headers.sh https://justdummies-site.<ton-sous-domaine>.workers.dev
+```
+
 Ouvre ensuite `/playground/` dans un navigateur et regarde la console. Une page blanche *sans*
 erreur réseau mais *avec* une erreur de Content Security Policy signifie que le hash de
 l'importmap n'a pas suivi ; c'est ce que `generate-headers.mjs` calcule à chaque build.
@@ -460,30 +496,31 @@ l'importmap n'a pas suivi ; c'est ce que `generate-headers.mjs` calcule à chaqu
 
 ## Étape 6 — La mesure qui tranche une question ouverte
 
-**Pourquoi** — Le dépôt a délibérément laissé une question sans réponse, dans le commentaire de
-`.assetsignore` : la publication Blazor émet un jumeau `.br` pré-compressé de chaque fichier du
-framework, que le chargeur .NET ne demande jamais. Les exclure allégerait le téléversement des
-deux tiers — **à condition** que Cloudflare compresse `application/wasm` à sa périphérie. Le
-serveur local ne peut pas répondre : seule la périphérie le peut.
+**Pourquoi** — Le dépôt garde une question ouverte dans le commentaire de `.assetsignore` : la
+publication Blazor émet un jumeau `.br` pré-compressé de chaque fichier du framework, que le
+chargeur .NET ne demande jamais. Les exclure allégerait le téléversement des deux tiers.
 
-**Faire**
+Le runtime local a déjà répondu pour sa part, mesuré plutôt que supposé : **3 002 102 octets
+deviennent 1 197 764 avec `Content-Encoding: br`**. Les jumeaux sont donc inutilisés *et* inutiles
+en local. Ce qui reste à confirmer, c'est la périphérie — le runtime local n'est pas elle, et les
+contrôles de l'artefact ne verraient pas la différence, puisqu'ils mesurent des fichiers et non
+des transferts.
+
+**Faire** — une seule commande, celle que `.assetsignore` nomme :
 
 ```bash
-B=https://justdummies-site.<ton-sous-domaine>.workers.dev
-W=$(basename $(ls dist/playground/_framework/dotnet.native.*.wasm | head -1))
-curl -sD - -o /dev/null -H 'Accept-Encoding: br, gzip' "$B/playground/_framework/$W" \
-  | grep -iE 'content-encoding|content-length|content-type'
+scripts/check-served-headers.sh https://justdummies-site.<ton-sous-domaine>.workers.dev
 ```
 
 ### ✅ Comment lire le résultat
 
-| Sortie | Conclusion |
+| Ligne | Conclusion |
 |---|---|
-| `content-encoding: br` ou `gzip` | La périphérie compresse. Les jumeaux `.br` sont du poids mort : tu peux les exclure dans `.assetsignore`. |
-| *aucun* `content-encoding` | **Ne les exclus pas.** Le runtime partirait non compressé, contre un budget de 3 Mio pour le premier chargement. |
+| `✓ the runtime compresses the WebAssembly payload (br: … → …)` | La périphérie compresse. Les jumeaux sont du poids mort : supprime le paragraphe correspondant de `.assetsignore` et ajoute `*.br` et `*.gz` en dessous. |
+| `✗ the WebAssembly payload is served uncompressed` | **Ne les exclus pas.** Le runtime partirait non compressé, contre un budget de 3 Mio pour le premier chargement. |
 
-Note le résultat dans `.assetsignore`, là où la question est posée. Une question tranchée qui
-n'est pas écrite se repose au prochain passage.
+Écris la réponse dans `.assetsignore`, là où la question est posée — le fichier dit lui-même quoi
+en faire. Une question tranchée qui n'est pas écrite se repose au prochain passage.
 
 ---
 
@@ -638,14 +675,15 @@ Le déploiement actif doit être inchangé — c'est tout l'intérêt d'une vers
 | # | Étape | Ce que ça prouve |
 |---|---|---|
 | 0 | versions + chemin du clone | La chaîne d'outils correspond au dépôt, et le disque n'est pas le mauvais. |
-| 1 | `Artefact looks well formed.`, zéro `✗` | L'artefact a la forme attendue. |
+| 1 | `Artefact looks well formed.`, zéro `✗` | L'artefact a la forme attendue, sur le disque. |
+| **2** | **`check-served-headers.sh`** | **Ce que le runtime sert vraiment — le contrôle à retenir.** |
 | 2a | `Parsed 1 valid redirect rule.` | Les règles sont chargées, pas silencieusement rejetées. |
 | 2b | les six codes HTTP | Le routage, les 404 et la réécriture du playground fonctionnent. |
 | 2c | les titres + l'en-tête CSP | Le bon contenu, la bonne langue, la politique appliquée. |
 | 2d | `text/javascript`, ~50 ko | Aucune règle n'avale les fichiers du framework. |
 | 4 | `wrangler whoami` | Authentifié, sur le bon compte. |
-| 5 | les six codes sur l'URL réelle | La plateforme se comporte comme le local. |
-| 6 | `content-encoding` du `.wasm` | Tranche la question des jumeaux `.br`. |
+| 5 | les six codes, puis le script sur l'URL réelle | La plateforme se comporte comme le local. |
+| 6 | le script contre le déploiement | Tranche la question des jumeaux `.br`. |
 | 7 | le job **Deploy** + `deployments list` | La CI publie vraiment, avec les bons secrets. |
 | 8 | `HTTP/2 200` sur le domaine | DNS, TLS et rattachement du Worker en place. |
 | 9 | `deployments list` inchangé | Une preview ne touche pas la production. |
@@ -663,6 +701,8 @@ Le déploiement actif doit être inchangé — c'est tout l'intérêt d'une vers
 | Lien à froid vers le playground en **307** | La règle cible `index.html`. Cible le dossier. |
 | Lien à froid vers le playground en **404** | Route déclarée dans Blazor, absente de `_redirects`. `pnpm build` le dit maintenant. |
 | Le runtime revient en `text/html` | Une règle avale `_framework`. Contrôle 2d. |
+| `check-served-headers.sh` : `served with NO content security policy` | L'hôte ignore `_headers`. Vérifie que le fichier est bien à la racine de `dist/` et qu'il n'est pas exclu par `.assetsignore`. |
+| `check-served-headers.sh` : `rules replace rather than merge` | Une règle spécifique a écrasé la règle générale au lieu de s'y ajouter : les assets empreintés perdraient la politique en gagnant leur durée de cache. |
 | Playground blanc, aucune erreur réseau | Content Security Policy. Un `_headers` modifié à la main casse le playground au build suivant, car le hash est recalculé. |
 | Playground blanc, tous les assets en 404 | Le `<base href>` ne correspond plus à l'endroit où le playground a été copié. `verify-output.sh` l'attrape. |
 | CI : « Deployment skipped » | Un secret manque. Son nom est dans l'annotation. |
