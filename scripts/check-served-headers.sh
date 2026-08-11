@@ -157,6 +157,31 @@ if [ -n "${astro_asset}" ] && present "/${astro_asset}" "the merging of its rule
   fi
 fi
 
+# --- the version stamp is reachable, and reachable freshly -----------------------
+# Its whole job is to answer "what is live right now", so a cached copy is not a
+# degraded answer but a wrong one — and the reader most likely to be handed it is
+# whoever is checking whether a release went out. The `no-store` rule is exactly the
+# kind of thing that can be present on disk and ignored by the host, which is the
+# failure this file exists to catch.
+if present "/version.json" "its cache policy"; then
+  cache="$(header_of "/version.json" "cache-control")"
+  stamped="$(curl -sS --max-time 20 "${base}/version.json" \
+             | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{process.stdout.write(String(JSON.parse(s).commit))}catch{process.stdout.write("")}})' \
+             2> /dev/null || true)"
+
+  case "${cache}" in
+    *no-store*) pass "/version.json is served no-store, so it cannot answer with a stale release" ;;
+    "") fail "/version.json is served with no cache directive — a proxy is free to pin one release forever" ;;
+    *) fail "/version.json is served '${cache}' rather than no-store — it can report a release that is no longer live" ;;
+  esac
+
+  if [ -n "${stamped}" ]; then
+    pass "/version.json parses and names commit ${stamped:0:7}"
+  else
+    fail "/version.json did not parse as JSON with a commit — whatever reads it on the live site will fail"
+  fi
+fi
+
 # --- a cold link into the playground survives ------------------------------------
 status="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 "${base}/playground/not-found" || true)"
 if [ "${status}" = "200" ]; then

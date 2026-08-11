@@ -60,6 +60,9 @@ checking anything that depends on them.
 Pushing to `main` builds and verifies. **A `release/*` tag publishes** — a branch never does:
 `git tag -a "release/$(date -u +%Y-%m-%dT%H-%M-%SZ)" -m …`
 
+`curl -s https://justdummies.io/version.json` says which release is live, with the commit it was
+built from. The build stamps it, `verify-output.sh` asserts it, and it is served `no-store`.
+
 The step-by-step setup — prerequisites, account, API token, GitHub secrets, custom domain — with a
 check to run after every step:
 [`docs/for-maintainers/deployment-en.md`](docs/for-maintainers/deployment-en.md) ·
