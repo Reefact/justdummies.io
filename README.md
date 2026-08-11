@@ -17,6 +17,9 @@ apps/
   playground/    Blazor WebAssembly — runs the real library in the browser
 packages/
   design-tokens/ Colour, space, type and motion, shared by both applications
+docs/
+  for-maintainers/ Operating this repository — the deployment guide, in English and French
+  design/          The specification, and the record of the decisions taken
 scripts/         Build the two halves and assemble them into one artefact
 tools/           Repository tooling (the commit-message linter)
 ```
@@ -55,8 +58,8 @@ checking anything that depends on them.
 
 Pushing to `main` builds, verifies and publishes. The step-by-step setup — prerequisites, account,
 API token, GitHub secrets, custom domain — with a check to run after every step:
-[`docs/deployment-en.md`](docs/deployment-en.md) ·
-[`docs/deployment-fr.md`](docs/deployment-fr.md).
+[`docs/for-maintainers/deployment-en.md`](docs/for-maintainers/deployment-en.md) ·
+[`docs/for-maintainers/deployment-fr.md`](docs/for-maintainers/deployment-fr.md).
 
 On Windows, build under WSL2: `pnpm build` runs bash scripts, which `cmd.exe` and PowerShell
 cannot execute. The guide's step 0 covers it.
