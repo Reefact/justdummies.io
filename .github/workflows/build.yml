@@ -83,6 +83,13 @@ jobs:
       - name: Check the size budgets
         run: ./scripts/check-budgets.sh
 
+      # The checks above read the artefact on disk. This one starts the runtime and
+      # asks it, which is a different claim: a rule can be present, well formed, and
+      # ignored. That has happened here — a redirect rule was discarded silently for
+      # months' worth of builds while every on-disk check passed.
+      - name: Check what the runtime actually serves
+        run: ./scripts/check-served-headers.sh
+
       - name: Upload the artefact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
