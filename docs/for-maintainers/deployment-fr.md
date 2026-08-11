@@ -18,6 +18,14 @@ Chaque étape a la même forme :
 > **Faire** — les commandes, à copier.
 > **✅ Contrôle** — une commande qui prouve que l'étape a marché, avec la sortie attendue.
 
+**Où taper quoi.** Chaque bloc porte une étiquette, et elle dit sur quelle machine il tourne : les
+blocs **`powershell`** se tapent côté **Windows**, les blocs **`bash`** côté **Ubuntu**, dans WSL.
+Une même étape passe parfois de l'un à l'autre.
+
+`wsl` est une commande **Windows** : lancée depuis un shell Ubuntu, elle répond
+`wsl: not found` — ce n'est pas qu'elle manque, c'est qu'elle n'existe pas de ce côté. `exit` ramène
+côté Windows.
+
 **Ne saute jamais un contrôle.** Cette plateforme a la propriété désagréable d'accepter des
 configurations fausses sans rien dire : le site se déploie, répond 200, et une partie ne
 fonctionne pas. Les contrôles existent exactement pour ça — chacun d'eux correspond à une panne
