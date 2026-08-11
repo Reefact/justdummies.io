@@ -19,10 +19,12 @@
  * waiting to be revealed, which is what makes the no-JavaScript build the same
  * document rather than a degraded one.
  *
- * NOT BUILT: the cross-scene sticky panel of §9.1, where one figure holds the viewport
- * and its content is replaced as the prose scrolls past. That needs script to move
- * figures out of document order, and moving them is what a no-JavaScript reader cannot
- * have. It is additive on top of this and is deliberately left for its own change.
+ * §9.1's cross-scene panel is built on top of this, in Act.astro, and does not replace
+ * it: the act lifts these figures into one sticky stage only where script is running,
+ * the viewport is wide, and the reader has not asked for reduced motion. Everywhere else
+ * what renders is exactly what is written above. That is why the figure stays in its
+ * scene in the markup rather than in a panel — a panel in the markup would be a column
+ * of figures detached from their prose for anyone the script never reaches.
  */
 import CodeSample from '../CodeSample.astro';
 import { localeFromPath } from '../../i18n/routing';
@@ -107,6 +109,16 @@ if (!ownFigure && sample === undefined) {
 
                     current = entry.target as HTMLElement;
                     current.dataset.current = '';
+
+                    // Announced rather than acted on, so the act above can drive a shared
+                    // panel from the same signal without a second observer disagreeing with
+                    // this one about which scene the reader is on.
+                    current.dispatchEvent(
+                        new CustomEvent('jd:scene-current', {
+                            bubbles: true,
+                            detail: { name: current.dataset.scene },
+                        }),
+                    );
                 }
             },
             { rootMargin: BAND },
@@ -200,6 +212,20 @@ if (!ownFigure && sample === undefined) {
             position: sticky;
             top: var(--jd-space-8);
             align-self: start;
+        }
+
+        /*
+         * When the act has lifted the figures into a shared panel, a scene keeps only its
+         * prose and stops reserving a column for what is no longer in it. Declared here,
+         * after the two-column rule it has to beat, and set from the act because the act
+         * is what decides — a scene has no way to know.
+         */
+        :global(.act[data-staged]) .scene {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        :global(.act[data-staged]) .scene .figure {
+            display: none;
         }
 
         /* A wide scene gives the figure the whole measure and puts the prose above it.
