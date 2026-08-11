@@ -375,8 +375,8 @@ The script first, because it needs nothing and answers in one shot.
 > already running, stop it (`Ctrl+C`) before the script.
 
 `pnpm serve` does not return: the terminal stays busy for as long as the server runs, and `Ctrl+C`
-stops it. While it runs you can open `http://localhost:8787` in your Windows browser — WSL forwards
-the port for you.
+stops it. While it runs it prints its URL — **read it, do not assume it**: the port is 8787 when
+free, 8788, 8789… otherwise. Open that URL in your Windows browser — WSL forwards the port for you.
 
 The manual checks 2a to 2d therefore need **a second terminal**. That means a second window onto the
 distribution already running — nothing to reinstall.
@@ -434,7 +434,7 @@ It is the script above, and CI runs it on every build. Expected:
 ▸ Starting the runtime
   Parsed 1 valid redirect rule
   Parsed 5 valid header rules
-▸ Asking http://localhost:8787
+▸ Asking http://localhost:8787          ← 8788, 8789… if 8787 was busy
   ✓ / is served with a content security policy
   ✓ /fr/ is served with a content security policy
   ✓ /playground/ is served with a content security policy
@@ -465,7 +465,7 @@ message says precisely what is wrong.
 In the second terminal:
 
 ```bash
-B=http://localhost:8787
+B=http://localhost:8787       # the port pnpm serve printed
 for u in / /fr/ /playground/ /playground/not-found /does-not-exist /fr/does-not-exist; do
   printf '%-26s %s\n' "$u" "$(curl -so /dev/null -w '%{http_code}' $B$u)"
 done
@@ -488,7 +488,7 @@ means the playground's rewrite is broken. See the box below.
 ### ✅ Check 2c — the right content, in the right language
 
 ```bash
-B=http://localhost:8787
+B=http://localhost:8787       # the port pnpm serve printed
 curl -sD - -o /dev/null $B/ | grep -i '^content-security-policy' | cut -c1-60
 for u in / /fr/ /playground/ /does-not-exist /fr/does-not-exist; do
   printf '%-20s %s\n' "$u" "$(curl -s $B$u | grep -o '<title>[^<]*</title>')"
@@ -512,7 +512,7 @@ The last two lines verify a deliberate subtlety: `not_found_handling` serves the
 ### ✅ Check 2d — the .NET runtime is served as itself
 
 ```bash
-B=http://localhost:8787
+B=http://localhost:8787       # the port pnpm serve printed
 J=$(basename $(ls dist/playground/_framework/dotnet.*.js | head -1))
 curl -so /dev/null -w '%{http_code} %{content_type} %{size_download} bytes\n' \
   "$B/playground/_framework/$J"

@@ -378,7 +378,8 @@ Le script en premier, parce qu'il ne demande rien et répond d'un coup.
 > démarrer. Si `pnpm serve` tourne déjà, arrête-le (`Ctrl+C`) avant le script.
 
 `pnpm serve` ne rend pas la main : le terminal reste occupé tant que le serveur tourne. `Ctrl+C`
-l'arrête. Pendant qu'il tourne, tu peux ouvrir `http://localhost:8787` dans ton navigateur Windows —
+l'arrête. Pendant qu'il tourne, il affiche son URL — **lis-la, ne la suppose pas** : le port est
+8787 s'il est libre, 8788, 8789… sinon. Ouvre cette URL dans ton navigateur Windows —
 WSL expose le port automatiquement.
 
 Les contrôles manuels 2a à 2d demandent donc **un second terminal**. Il s'agit d'une deuxième
@@ -438,7 +439,7 @@ C'est le script ci-dessus, et la CI l'exécute à chaque build. Attendu :
 ▸ Starting the runtime
   Parsed 1 valid redirect rule
   Parsed 5 valid header rules
-▸ Asking http://localhost:8787
+▸ Asking http://localhost:8787          ← 8788, 8789… si 8787 était occupé
   ✓ / is served with a content security policy
   ✓ /fr/ is served with a content security policy
   ✓ /playground/ is served with a content security policy
@@ -470,7 +471,7 @@ parfaitement sans ses règles ; simplement, elles n'existent pas. Si tu lis
 Dans le second terminal :
 
 ```bash
-B=http://localhost:8787
+B=http://localhost:8787       # le port que pnpm serve a affiché
 for u in / /fr/ /playground/ /playground/not-found /nexiste-pas /fr/nexiste-pas; do
   printf '%-24s %s\n' "$u" "$(curl -so /dev/null -w '%{http_code}' $B$u)"
 done
@@ -493,7 +494,7 @@ cette ligne signifie que la réécriture du playground est cassée. Voir l'encad
 ### ✅ Contrôle 2c — le bon contenu, dans la bonne langue
 
 ```bash
-B=http://localhost:8787
+B=http://localhost:8787       # le port que pnpm serve a affiché
 curl -sD - -o /dev/null $B/ | grep -i '^content-security-policy' | cut -c1-60
 for u in / /fr/ /playground/ /nexiste-pas /fr/nexiste-pas; do
   printf '%-18s %s\n' "$u" "$(curl -s $B$u | grep -o '<title>[^<]*</title>')"
@@ -517,7 +518,7 @@ Les deux dernières lignes vérifient une subtilité voulue : `not_found_handlin
 ### ✅ Contrôle 2d — le runtime .NET est servi tel quel
 
 ```bash
-B=http://localhost:8787
+B=http://localhost:8787       # le port que pnpm serve a affiché
 J=$(basename $(ls dist/playground/_framework/dotnet.*.js | head -1))
 curl -so /dev/null -w '%{http_code} %{content_type} %{size_download} octets\n' \
   "$B/playground/_framework/$J"
