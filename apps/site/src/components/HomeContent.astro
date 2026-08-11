@@ -6,7 +6,7 @@
  * the install command — come from `site.ts` and are identical in every locale
  * (§28.2: only the narrative around the code is translated, never the code).
  */
-import CodeSample from './CodeSample.astro';
+import LiveHero from './LiveHero.astro';
 import InstallBlock from './InstallBlock.astro';
 import ActOne from './narrative/ActOne.astro';
 import ActTwo from './narrative/ActTwo.astro';
@@ -24,7 +24,7 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
         <p class="tagline">{t('brand.tagline')}</p>
         <p class="subtitle">{t('brand.subtitle')}</p>
 
-        <CodeSample id="hero-expression" />
+        <LiveHero />
 
         <h2 class="install-label">{t('home.install.label')}</h2>
         <InstallBlock placement="hero" />

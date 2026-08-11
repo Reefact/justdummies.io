@@ -144,3 +144,95 @@ h1 {
     right: var(--jd-space-3);
     top: var(--jd-space-3);
 }
+
+/*
+ * The landing page's hero widget (§9.8), rendered by /hero and framed by the site.
+ *
+ * It carries no page furniture: the frame around it is already inside a page. What it
+ * does carry is the difference between the parts of the expression the visitor can move
+ * and the parts they cannot, because that difference is the whole invitation.
+ */
+.hero-widget {
+    padding: var(--jd-space-4);
+    font-family: var(--jd-font-mono);
+    font-size: var(--jd-text-sm);
+}
+
+.hero-widget .expression {
+    line-height: 2.1;
+    word-break: break-word;
+}
+
+.hero-widget .fixed {
+    color: var(--jd-text-muted);
+}
+
+.hero-widget .link {
+    color: var(--jd-text-primary);
+}
+
+/* Editable, and looking it. An argument styled like its surrounding code reads as code
+   and never gets clicked; one styled like a form control in a code block reads as a
+   mistake. This sits between: the code's own type, with a floor under it. */
+.hero-widget input {
+    font: inherit;
+    color: var(--jd-generated);
+    background: transparent;
+    border: 0;
+    border-bottom: 1px dashed var(--jd-generated);
+    padding: 0 var(--jd-space-1);
+    min-width: 3ch;
+}
+
+.hero-widget input[type='number'] {
+    width: 4.5ch;
+}
+
+.hero-widget input:focus-visible {
+    outline: 2px solid var(--jd-accent);
+    outline-offset: 2px;
+}
+
+.hero-widget .controls {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: var(--jd-space-3);
+    margin-top: var(--jd-space-4);
+}
+
+.hero-widget .generate {
+    font: inherit;
+    color: var(--jd-text-primary);
+    background: var(--jd-surface-raised);
+    border: 1px solid var(--jd-border);
+    border-radius: var(--jd-radius-sm);
+    padding: var(--jd-space-1) var(--jd-space-3);
+    cursor: pointer;
+}
+
+.hero-widget .generate:hover {
+    border-color: var(--jd-accent);
+}
+
+.hero-widget .live {
+    color: var(--jd-text-muted);
+    font-family: var(--jd-font-sans);
+}
+
+.hero-widget .value {
+    display: block;
+    margin-top: var(--jd-space-4);
+    color: var(--jd-generated);
+    font-size: var(--jd-text-lg);
+}
+
+/* The refusal is the library defending the demonstration (§9.9), so it is legible and
+   plain — the error colour on the text, and nothing around it that reads as an alarm. */
+.hero-widget .refusal {
+    display: block;
+    margin-top: var(--jd-space-4);
+    color: var(--jd-error);
+    font-family: var(--jd-font-sans);
+    line-height: var(--jd-line-body);
+}

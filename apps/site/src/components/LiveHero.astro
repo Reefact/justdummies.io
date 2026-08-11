@@ -1,0 +1,206 @@
+---
+/**
+ * The hero's expression, and the visitor's first interaction with it (§9.8).
+ *
+ * THE LOADING CONTRACT IS THE POINT. What renders here is a real expression and a real
+ * value, both produced at build time by the real library — no .NET runtime, nothing
+ * deferred, nothing that makes the first paint wait. The runtime is downloaded only when
+ * the visitor asks for it, by pressing a button that does not exist until a script has
+ * unhidden it. A visitor who never presses it never fetches a megabyte, and a visitor
+ * without scripting still reads the expression and a value it really produced.
+ *
+ * WHY A FRAME. Live values mean the library running, which means Blazor, which is already
+ * published under /playground/. Framing its hero route lets that application keep its own
+ * base href and boot exactly as it does when visited, and makes "the runtime is never
+ * loaded without an explicit action" true by construction rather than by care: until the
+ * button is pressed there is no frame in the document, so there is nothing to request.
+ *
+ * The height travels back by postMessage — a frame cannot measure another document's
+ * content — and is accepted only from this origin and only under a name of ours.
+ *
+ * THE MENTION IS NOT DECORATION. §9.8 requires the pre-load value to say what it is. A
+ * value with no provenance reads as live, and the first press would then look like a
+ * refresh rather than the moment the library started running here.
+ */
+import { localeFromPath } from '../i18n/routing';
+import { useTranslations } from '../i18n/ui';
+import { sampleValue, sampleSeed, snippet } from '../samples';
+
+const t = useTranslations(localeFromPath(Astro.url.pathname));
+
+const code: string = snippet('hero-expression');
+const value: string = sampleValue('hero-expression');
+---
+
+<section class="hero-expression" data-hero data-hero-title={t('hero.frameTitle')}>
+    <figure class="sample" data-hero-static>
+        <pre><code>{code}</code></pre>
+
+        <figcaption>
+            <span class="arrow" aria-hidden="true">→</span>
+            <span class="label">{t('sample.produced')}</span>
+            <output class="value">{value}</output>
+            <span class="mention">{t('hero.builtValue')} · {t('hero.seed')} {sampleSeed}</span>
+        </figcaption>
+    </figure>
+
+    <p class="invite">
+        <button type="button" class="run" hidden data-hero-run data-loading={t('hero.loading')}>
+            {t('hero.run')}
+        </button>
+        <span class="cost" data-hero-cost>{t('hero.cost')}</span>
+    </p>
+
+    <div class="frame" data-hero-frame hidden></div>
+</section>
+
+<script>
+    const FRAME_TITLE_ATTRIBUTE = 'data-hero-title';
+    const MIN_HEIGHT = 190;
+
+    const hero: HTMLElement | null = document.querySelector('[data-hero]');
+    const button: HTMLButtonElement | null | undefined = hero?.querySelector('[data-hero-run]');
+    const holder: HTMLElement | null | undefined = hero?.querySelector('[data-hero-frame]');
+    const statics: HTMLElement | null | undefined = hero?.querySelector('[data-hero-static]');
+    const cost: HTMLElement | null | undefined = hero?.querySelector('[data-hero-cost]');
+
+    if (hero && button && holder && statics) {
+        // Unhidden here rather than in the markup: reaching this line is the proof that
+        // the button can do what it offers.
+        button.hidden = false;
+
+        button.addEventListener('click', () => {
+            button.disabled = true;
+            button.textContent = button.dataset.loading ?? '';
+
+            const frame: HTMLIFrameElement = document.createElement('iframe');
+            frame.src = '/playground/hero';
+            frame.title = hero.getAttribute(FRAME_TITLE_ATTRIBUTE) ?? 'JustDummies';
+            frame.loading = 'eager';
+            frame.style.height = `${MIN_HEIGHT}px`;
+
+            // Inserting the frame is what starts the download. Everything before this line
+            // ran without a byte of .NET on the wire.
+            holder.appendChild(frame);
+            holder.hidden = false;
+
+            window.addEventListener('message', (event: MessageEvent) => {
+                if (event.origin !== window.location.origin || event.source !== frame.contentWindow) {
+                    return;
+                }
+
+                const message: { type?: string; height?: number } = event.data ?? {};
+
+                if (message.type !== 'jd:hero-height' || typeof message.height !== 'number') {
+                    return;
+                }
+
+                frame.style.height = `${Math.max(message.height, MIN_HEIGHT)}px`;
+
+                // The static figure is replaced rather than hidden alongside: two values on
+                // screen, one live and one from the build, is a question nobody asked.
+                statics.hidden = true;
+                button.hidden = true;
+                if (cost) {
+                    cost.hidden = true;
+                }
+            });
+        });
+    }
+</script>
+
+<style>
+    .sample {
+        margin: 0;
+        background: var(--jd-surface);
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-md);
+        overflow: hidden;
+    }
+
+    pre {
+        margin: 0;
+        padding: var(--jd-space-4);
+        overflow-x: auto;
+        font-family: var(--jd-font-mono);
+        font-size: var(--jd-text-sm);
+        line-height: 1.5;
+    }
+
+    figcaption {
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: var(--jd-space-2);
+        padding: var(--jd-space-3) var(--jd-space-4);
+        border-top: 1px solid var(--jd-border);
+        background: var(--jd-surface-raised);
+        font-size: var(--jd-text-sm);
+    }
+
+    .arrow,
+    .label {
+        color: var(--jd-text-muted);
+    }
+
+    .value {
+        font-family: var(--jd-font-mono);
+        color: var(--jd-generated);
+    }
+
+    /* Quiet, and next to what it qualifies. It says the value is real and was made at
+       build time; it is not a disclaimer and should not read like one. */
+    .mention {
+        color: var(--jd-text-muted);
+        font-size: var(--jd-text-sm);
+        opacity: 0.75;
+    }
+
+    .invite {
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: var(--jd-space-3);
+        margin: var(--jd-space-4) 0 0;
+    }
+
+    .run {
+        font: inherit;
+        font-size: var(--jd-text-sm);
+        color: var(--jd-background);
+        background: var(--jd-accent);
+        border: 1px solid var(--jd-accent);
+        border-radius: var(--jd-radius-sm);
+        padding: var(--jd-space-2) var(--jd-space-4);
+        cursor: pointer;
+    }
+
+    .run:disabled {
+        cursor: progress;
+        opacity: 0.7;
+    }
+
+    .run:focus-visible {
+        outline: 2px solid var(--jd-text-primary);
+        outline-offset: 2px;
+    }
+
+    /* The download is a megabyte and a half. Saying so before the press is what makes the
+       press a choice rather than a surprise. */
+    .cost {
+        color: var(--jd-text-muted);
+        font-size: var(--jd-text-sm);
+    }
+
+    .frame {
+        margin-top: var(--jd-space-4);
+    }
+
+    .frame :global(iframe) {
+        display: block;
+        width: 100%;
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-md);
+        background: var(--jd-surface);
+    }
+</style>
