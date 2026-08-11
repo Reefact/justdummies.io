@@ -13,7 +13,18 @@
     <link rel="preload" id="webassembly" />
     <link rel="stylesheet" href="css/tokens.css" />
     <link rel="stylesheet" href="css/app.css" />
-    <link rel="icon" type="image/png" href="favicon.png" />
+    <!--
+      Absolute, and pointing outside this application on purpose. The mark belongs to the
+      product, not to one half of it, and a copy under /playground/ would be a second file
+      to replace the day it changes — the failure being two tabs wearing different icons,
+      which is exactly what this replaced.
+
+      Absolute rather than relative because <base href="/playground/"> would otherwise
+      resolve these into this directory, where they are deliberately no longer kept. Same
+      two files, same declarations, as the site's own pages.
+    -->
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" type="image/png" href="/favicon.png" sizes="512x512" />
     <!--
       The scoped-CSS bundle the Blazor template links is deliberately absent. It is only
       emitted when a component has a .razor.css beside it, and none does: this application
