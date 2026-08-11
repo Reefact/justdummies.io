@@ -369,8 +369,28 @@ Le script en premier, parce qu'il ne demande rien et répond d'un coup.
 > par-dessus un `pnpm serve` en cours interroge le serveur de l'autre au lieu du sien, ou échoue à
 > démarrer. Si `pnpm serve` tourne déjà, arrête-le (`Ctrl+C`) avant le script.
 
-`pnpm serve` ne rend pas la main. **Ouvre un second terminal** pour les contrôles manuels qui
-suivent.
+`pnpm serve` ne rend pas la main : le terminal reste occupé tant que le serveur tourne. `Ctrl+C`
+l'arrête. Pendant qu'il tourne, tu peux ouvrir `http://localhost:8787` dans ton navigateur Windows —
+WSL expose le port automatiquement.
+
+Les contrôles manuels 2a à 2d demandent donc **un second terminal**. Sous Windows, ce n'est pas
+`wsl` à retaper : c'est une deuxième fenêtre sur la distribution qui tourne déjà.
+
+| Comment | Où |
+|---|---|
+| Windows Terminal | le chevron `⌄` à côté du `+`, puis **Ubuntu** — nouvel onglet |
+| Menu Démarrer | relance l'application **Ubuntu** — nouvelle fenêtre |
+
+> ⚠️ **Ce second terminal démarre dans ton dossier personnel, pas dans le dépôt.** Première commande
+> à y taper, sans quoi tous les contrôles cherchent `dist/` et `scripts/` là où ils ne sont pas :
+>
+> ```bash
+> cd ~/dev/justdummies.io
+> ```
+
+Tu peux aussi **ne pas ouvrir de second terminal du tout** : le contrôle 2 ci-dessous les couvre
+tous les quatre et n'a besoin de rien en parallèle. Les manuels servent à comprendre ce qui est
+vérifié et à diagnostiquer une ligne rouge — pas à valider le build.
 
 ### ✅ Contrôle 2 — en une seule commande
 
