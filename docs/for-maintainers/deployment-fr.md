@@ -620,10 +620,40 @@ Regarde d'abord ce qui partirait, sans rien publier :
 pnpm wrangler deploy --dry-run
 ```
 
-Attendu : une ligne `✨ Read N files from the assets directory …/dist`. **Ne compare pas `N` à un
-nombre écrit ici** — il change à chaque modification du playground. Ce qui compte est qu'il se
-compte en centaines et non en unités : quelques fichiers seulement voudrait dire que `dist/` est
-incomplet.
+Quatre lignes en sortent, et la troisième inquiète toujours :
+
+```
+✨ Read N files from the assets directory /home/<toi>/dev/justdummies.io/dist
+Total Upload: 0.34 KiB / gzip: 0.24 KiB
+No bindings found.
+--dry-run: exiting now.
+```
+
+| Ligne | Ce qu'elle doit dire |
+|---|---|
+| `Read N files` | `N` se compte en **centaines**. **Ne le compare pas à un nombre écrit ici** : il change à chaque modification du playground. Quelques fichiers seulement voudrait dire que `dist/` est incomplet. Le chemin doit commencer par `/home/`, pas par `/mnt/`. |
+| `Total Upload` | **moins d'un kibioctet, et c'est normal** — voir ci-dessous. |
+| `No bindings found.` | attendu : ce Worker n'a ni KV, ni D1, ni R2, ni variable. |
+| `--dry-run: exiting now.` | rien n'a été publié. |
+
+> **Le `Total Upload` n'est pas la taille de tes fichiers.** C'est celle du **script** Worker — et
+> comme ce site n'en a aucun (`wrangler.jsonc` est délibérément sans champ `main`), wrangler en
+> fabrique un qui ne fait rien. Tu peux le voir :
+>
+> ```bash
+> pnpm wrangler deploy --dry-run --outdir /tmp/wdry && ls /tmp/wdry
+> ```
+>
+> Il écrit `no-op-worker.js` : voilà ce que pèsent ces 0,34 KiB. Tes fichiers sont comptés à part, sur
+> la ligne du dessus, et partent comme *static assets* — gratuits et illimités.
+>
+> Un `Total Upload` en centaines de kibioctets serait le signal inverse : un script s'est glissé dans
+> la configuration, et les requêtes se mettraient à consommer un quota. C'est la décision **A6**, et
+> cette ligne est le seul endroit où on la voit de l'extérieur.
+
+Ce contrôle ne prouve **pas** que tu es authentifié : `--dry-run` ne contacte pas Cloudflare. C'est
+le contrôle de l'étape 4 qui le fait. Il ne vérifie pas non plus le *contenu* de `dist/` — il compte
+des fichiers. C'est `pnpm build` et ses assertions qui le vérifient, à l'étape 1.
 
 Puis publie :
 
