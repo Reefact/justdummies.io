@@ -160,9 +160,7 @@ if (!ownFigure && sample === undefined) {
 
         /*
          * The rail. Drawn from the scene itself rather than from the act, so the segments
-         * join without anything having to know how many scenes there are. Its marker sits
-         * at the middle of the scene now that a scene is a screen — beside the figure,
-         * which is what the reader is looking at.
+         * join without anything having to know how many scenes there are.
          */
         .scene::before {
             content: '';
@@ -174,11 +172,23 @@ if (!ownFigure && sample === undefined) {
             background: var(--jd-border);
         }
 
-        .scene::after {
+        /*
+         * The marker belongs to the heading, not to the middle of the scene.
+         *
+         * Anchored to the scene it sat wherever the scene's midpoint fell, which since a
+         * scene became a screen is beside the code block — where a small round mark reads
+         * as a bullet pointing at nothing in particular. Against the heading it reads as
+         * what it is: this scene, and you are on it.
+         */
+        h3 {
+            position: relative;
+        }
+
+        h3::before {
             content: '';
             position: absolute;
-            left: 0;
-            top: 50%;
+            left: calc(-1 * var(--jd-space-8));
+            top: 0.35em;
             width: 0.9375rem;
             height: 0.9375rem;
             border: 1px solid var(--jd-border);
@@ -189,7 +199,7 @@ if (!ownFigure && sample === undefined) {
                 border-color var(--jd-duration-base) var(--jd-ease);
         }
 
-        .scene[data-current]::after {
+        .scene[data-current] h3::before {
             border-color: var(--jd-accent);
             background: var(--jd-accent);
         }
