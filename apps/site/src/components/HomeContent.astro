@@ -6,6 +6,7 @@
  * the install command — come from `site.ts` and are identical in every locale
  * (§28.2: only the narrative around the code is translated, never the code).
  */
+import InstallBlock from './InstallBlock.astro';
 import LiveHero from './LiveHero.astro';
 import ActOne from './narrative/ActOne.astro';
 import ActTwo from './narrative/ActTwo.astro';
@@ -24,6 +25,14 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
         <p class="subtitle">{t('brand.subtitle')}</p>
 
         <LiveHero />
+
+        {/*
+          §7.4's reduced form. This screen is not one of the narrative's reward moments —
+          the reader has been given no reason yet — but the offer does not belong to the
+          first act either, so it belongs here. One command and one link is what fits
+          without pushing the chevron off the screen.
+        */}
+        <InstallBlock placement="hero" variant="compact" />
 
         <nav class="links" aria-label={t('nav.primary')}>
             {/*
@@ -109,6 +118,62 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
         min-height: calc(100svh - 7.5rem);
         /* So the chevron does not sit on the first act's rule, four pixels below it. */
         padding-bottom: var(--jd-space-8);
+        gap: var(--jd-space-4);
+    }
+
+    /*
+     * A short screen — a laptop at 700 logical pixels is ordinary — has room for the same
+     * things but not the same air between them. Tightening here beats dropping one of them,
+     * because every one of them is why this screen exists.
+     */
+    /*
+     * A phone is not a short screen — it is a narrow one, and narrow is what makes its
+     * figure taller: the same code wraps. So it gets the same treatment for a different
+     * reason, and by its own query rather than by widening the height one, which would
+     * strip the subtitle off an ordinary 900-pixel desktop that has room for it.
+     */
+    @media (max-width: 47.99rem) {
+        .shell {
+            padding-top: var(--jd-space-4);
+        }
+
+        .hero {
+            gap: var(--jd-space-2);
+            padding-bottom: var(--jd-space-4);
+        }
+
+        .subtitle {
+            display: none;
+        }
+
+        .cue {
+            padding-top: var(--jd-space-4);
+        }
+    }
+
+    @media (max-height: 820px) {
+        .shell {
+            padding-top: var(--jd-space-4);
+        }
+
+        .hero {
+            gap: var(--jd-space-2);
+            padding-bottom: var(--jd-space-4);
+        }
+
+        .hero h1 {
+            font-size: var(--jd-text-xl);
+        }
+
+        /* The tagline carries the claim; the subtitle restates it in plainer words. On a
+           screen with no room for both, the one that repeats is the one that goes. */
+        .subtitle {
+            display: none;
+        }
+
+        .cue {
+            padding-top: var(--jd-space-4);
+        }
     }
 
     .cue {
@@ -134,6 +199,7 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
     }
 
     .chevrons {
+        color: var(--jd-accent);
         fill: none;
         stroke: currentColor;
         stroke-width: 2;
