@@ -54,9 +54,10 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
 </main>
 
 <style>
-    /* Wider than the hero needs, because the acts are two columns and the right one
-       holds code that does not wrap. The hero keeps its own measure below and stays
-       left-aligned with the acts rather than being centred against them. */
+    /* Wider than the hero needs, because a scene's figure now takes the whole measure
+       and the widest of them is a recorded terminal 130 characters across. The hero keeps
+       its own measure below and stays left-aligned with the acts rather than being
+       centred against them. */
     .shell {
         max-width: 72rem;
         margin: 0 auto;

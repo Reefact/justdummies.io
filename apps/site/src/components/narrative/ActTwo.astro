@@ -43,9 +43,7 @@ import { site } from '../../site';
         <CopyableCommand command={site.cli.installCommand} placement="act-two-scene" variant="dotnet-tool" />
     </Scene>
 
-    {/* Wide: the recap's longest line is 128 characters, and the two words that make this
-        scene worth showing sit at the end of it. */}
-    <Scene name="the-scaffold" title="act2.scaffold.title" body="act2.scaffold.body" wide>
+    <Scene name="the-scaffold" title="act2.scaffold.title" body="act2.scaffold.body">
         <ToolRun id="generate-order" command={site.cli.example} />
     </Scene>
 

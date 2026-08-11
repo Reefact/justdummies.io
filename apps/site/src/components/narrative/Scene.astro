@@ -6,25 +6,29 @@
  * missing from a locale is a compile error here too, and no sentence can be typed into
  * a page. Its code is named by snippet identifier, for the same reason.
  *
- * WHAT IT COSTS TO EXIST (§9.7). A scene is built four times — desktop, mobile,
- * reduced motion, and without JavaScript — and this one is built so that three of the
- * four are the same build:
+ * THE FIGURE IS THE SCENE, AND IT IS FULL WIDTH. Two defects came from it not being:
  *
- *   * the layout is a two-column grid that collapses to one, in CSS;
- *   * the figure sticks beside its prose with `position: sticky`, in CSS;
- *   * the rail down the left says where the reader is in the transformation.
+ *   A code block in half the measure needs a horizontal scrollbar for lines it should
+ *   never have had to scroll. Every figure on this page is at most 78 characters, and
+ *   the two recorded terminals 130 at a smaller size; all of them fit across the full
+ *   measure and several of them do not fit across half of it.
  *
- * Only the last needs script, and it is additive: without it every marker is hollow
- * and the act reads exactly as it does with it. Nothing is hidden, dimmed or collapsed
- * waiting to be revealed, which is what makes the no-JavaScript build the same
- * document rather than a degraded one.
+ *   And a figure beside its prose is a figure the reader has to pair up by eye. When
+ *   several scenes are on screen at once — which a short scene guarantees — the pairing
+ *   goes wrong: a heading reads next to code belonging to a scene three below it. Under
+ *   its own heading, there is nothing left to pair.
  *
- * §9.1's cross-scene panel is built on top of this, in Act.astro, and does not replace
- * it: the act lifts these figures into one sticky stage only where script is running,
- * the viewport is wide, and the reader has not asked for reduced motion. Everywhere else
- * what renders is exactly what is written above. That is why the figure stays in its
- * scene in the markup rather than in a panel — a panel in the markup would be a column
- * of figures detached from their prose for anyone the script never reaches.
+ * A SCENE HOLDS THE SCREEN, so scrolling advances the story rather than sliding a
+ * document past. What that buys is the figure landing in roughly the same place from one
+ * scene to the next, which is what makes the code read as transforming rather than as
+ * being restated — §9.1's continuous transformation, obtained from the layout instead of
+ * from a script.
+ *
+ * WHAT IT COSTS TO EXIST (§9.7). A scene is built four times — desktop, mobile, reduced
+ * motion, and without JavaScript — and this one is the same build in all four. The
+ * layout is CSS, the figure sits in the document under the heading it belongs to, and
+ * the only thing script adds is the rail marker saying where the reader is. Without it
+ * every marker stays hollow and not one word moves.
  */
 import CodeSample from '../CodeSample.astro';
 import { localeFromPath } from '../../i18n/routing';
@@ -46,16 +50,9 @@ interface Props {
      */
     sample?: string;
     outcome?: 'value' | 'sequence' | 'refusal' | 'none';
-    /**
-     * Puts the figure across the full width with the prose above it, for content the
-     * two-column measure would force a reader to scroll sideways through. Used
-     * sparingly: it costs the sticky column, and a page of wide scenes is a page with
-     * no rhythm.
-     */
-    wide?: boolean;
 }
 
-const { name, title, body, sample, outcome = 'value', wide = false } = Astro.props;
+const { name, title, body, sample, outcome = 'value' } = Astro.props;
 
 const t = useTranslations(localeFromPath(Astro.url.pathname));
 
@@ -66,15 +63,14 @@ if (!ownFigure && sample === undefined) {
 }
 ---
 
-<section class="scene" id={name} data-scene={name} aria-labelledby={`${name}-title`} data-wide={wide ? '' : undefined}>
-    <div class="prose">
-        <h3 id={`${name}-title`}>{t(title)}</h3>
-        <p>{t(body)}</p>
-    </div>
+<section class="scene" id={name} data-scene={name} aria-labelledby={`${name}-title`}>
+    <h3 id={`${name}-title`}>{t(title)}</h3>
 
     <div class="figure">
         {ownFigure ? <slot /> : <CodeSample id={sample!} outcome={outcome} />}
     </div>
+
+    <p class="commentary">{t(body)}</p>
 </section>
 
 <script>
@@ -90,8 +86,7 @@ if (!ownFigure && sample === undefined) {
 
     if (scenes.length > 0 && 'IntersectionObserver' in window) {
         // The band across the middle of the viewport. A scene is "current" while it is
-        // the one the reader has in front of them, not while any part of it is visible:
-        // at the bottom of a long act, three scenes are on screen at once.
+        // the one the reader has in front of them, not while any part of it is visible.
         const BAND: string = '-45% 0px -45% 0px';
 
         let current: HTMLElement | undefined;
@@ -109,16 +104,6 @@ if (!ownFigure && sample === undefined) {
 
                     current = entry.target as HTMLElement;
                     current.dataset.current = '';
-
-                    // Announced rather than acted on, so the act above can drive a shared
-                    // panel from the same signal without a second observer disagreeing with
-                    // this one about which scene the reader is on.
-                    current.dispatchEvent(
-                        new CustomEvent('jd:scene-current', {
-                            bubbles: true,
-                            detail: { name: current.dataset.scene },
-                        }),
-                    );
                 }
             },
             { rootMargin: BAND },
@@ -131,56 +116,59 @@ if (!ownFigure && sample === undefined) {
 </script>
 
 <style>
-    /*
-     * `minmax(0, 1fr)` in both branches of this file, never `1fr` and never the
-     * default. A grid track's automatic minimum is the min-content width of what it
-     * holds, and a line of code offers no wrapping opportunity — so the track widens
-     * to the longest line, carrying the `overflow-x: auto` that was meant to contain
-     * it out of the page with it. On a phone that is not a scrollbar in the wrong
-     * place: it is every paragraph on the page running off the right edge.
-     */
     .scene {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr);
+        display: flex;
+        flex-direction: column;
         gap: var(--jd-space-4);
         padding-bottom: var(--jd-space-16);
-    }
-
-    .prose {
-        max-width: 34rem;
     }
 
     h3 {
         font-size: var(--jd-text-lg);
         line-height: var(--jd-line-tight);
-        margin: 0 0 var(--jd-space-3);
-    }
-
-    p {
         margin: 0;
-        color: var(--jd-text-muted);
     }
 
     /*
-     * The rail. It is drawn from the scene itself rather than from the act, so the
-     * segments join without anything having to know how many scenes there are.
-     *
-     * Below the breakpoint it is not drawn at all: on a phone the horizontal room
-     * belongs to the code, and a progress rail is the first thing worth its width.
+     * The commentary keeps a reading measure while the figure takes the whole width. A
+     * paragraph as wide as a code block is a paragraph nobody finishes: the eye loses the
+     * start of the next line somewhere in the middle of this one.
      */
+    .commentary {
+        margin: 0;
+        max-width: 42rem;
+        color: var(--jd-text-muted);
+    }
+
     @media (min-width: 48rem) {
+        /*
+         * A scene holds the screen, and what is in it is centred — so the figure lands in
+         * roughly the same place from one scene to the next, and scrolling reads as the
+         * same code changing rather than as a new block arriving.
+         *
+         * `min-height`, never `height`: a scene whose figure is taller than the viewport
+         * grows rather than clipping, and the recorded terminals are the tallest things on
+         * this page.
+         */
         .scene {
             position: relative;
-            grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr);
-            gap: var(--jd-space-8);
-            padding-left: var(--jd-space-8);
+            min-height: 100vh;
+            justify-content: center;
+            gap: var(--jd-space-6);
+            padding: var(--jd-space-16) 0 var(--jd-space-16) var(--jd-space-8);
         }
 
+        /*
+         * The rail. Drawn from the scene itself rather than from the act, so the segments
+         * join without anything having to know how many scenes there are. Its marker sits
+         * at the middle of the scene now that a scene is a screen — beside the figure,
+         * which is what the reader is looking at.
+         */
         .scene::before {
             content: '';
             position: absolute;
             left: 0.4375rem;
-            top: 0.75rem;
+            top: 0;
             bottom: 0;
             width: 1px;
             background: var(--jd-border);
@@ -190,7 +178,7 @@ if (!ownFigure && sample === undefined) {
             content: '';
             position: absolute;
             left: 0;
-            top: 0.35rem;
+            top: 50%;
             width: 0.9375rem;
             height: 0.9375rem;
             border: 1px solid var(--jd-border);
@@ -204,39 +192,6 @@ if (!ownFigure && sample === undefined) {
         .scene[data-current]::after {
             border-color: var(--jd-accent);
             background: var(--jd-accent);
-        }
-
-        /* Stays beside its prose while the prose is being read. Wraps rather than
-           overflows: `align-self: start` is what lets a sticky grid item stick at all. */
-        .figure {
-            position: sticky;
-            top: var(--jd-space-8);
-            align-self: start;
-        }
-
-        /*
-         * When the act has lifted the figures into a shared panel, a scene keeps only its
-         * prose and stops reserving a column for what is no longer in it. Declared here,
-         * after the two-column rule it has to beat, and set from the act because the act
-         * is what decides — a scene has no way to know.
-         */
-        :global(.act[data-staged]) .scene {
-            grid-template-columns: minmax(0, 1fr);
-        }
-
-        :global(.act[data-staged]) .scene .figure {
-            display: none;
-        }
-
-        /* A wide scene gives the figure the whole measure and puts the prose above it.
-           Nothing sticks here: there is no second column for it to stick beside. */
-        .scene[data-wide] {
-            grid-template-columns: minmax(0, 1fr);
-            gap: var(--jd-space-6);
-        }
-
-        .scene[data-wide] .figure {
-            position: static;
         }
     }
 </style>
