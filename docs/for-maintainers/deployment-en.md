@@ -19,6 +19,13 @@ Every step has the same shape:
 > **Do** — the commands, ready to copy.
 > **✅ Check** — a command that proves the step worked, with the output to expect.
 
+**Where to type what.** Every block is labelled, and the label says which machine it runs on:
+**`powershell`** blocks are typed on the **Windows** side, **`bash`** blocks on the **Ubuntu** side,
+inside WSL. A single step sometimes moves from one to the other.
+
+`wsl` is a **Windows** command: run from an Ubuntu shell it answers `wsl: not found` — not because it
+is missing, but because it does not exist on that side. `exit` returns you to Windows.
+
 **Never skip a check.** This platform has the unpleasant property of accepting wrong
 configurations without saying anything: the site deploys, answers 200, and part of it does not
 work. The checks exist for exactly that — each one corresponds to a real failure that, without it,
