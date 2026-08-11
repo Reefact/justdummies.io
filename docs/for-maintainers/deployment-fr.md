@@ -54,7 +54,7 @@ imposent bash, et ce sont eux que `pnpm build` enchaîne.)*
 |---|---|---|---|---|
 | `pnpm install` | ✅ | ✅ | ✅ | ✅ |
 | `pnpm dev`, `pnpm check` | ✅ | ✅ | ✅ | ✅ |
-| `pnpm serve`, `preview`, `deploy` | ✅ | ✅ | ✅ | ✅ |
+| `pnpm serve`, `preview`, `run deploy` | ✅ | ✅ | ✅ | ✅ |
 | `pnpm build:playground` | ✅ | ✅ | ✅ | ✅ |
 | **`pnpm build`** | ❌ | ⚠️ | ✅ | ✅ |
 | `./scripts/*.sh` en direct | ❌ | ✅ | ✅ | ✅ |
@@ -658,12 +658,20 @@ des fichiers. C'est `pnpm build` et ses assertions qui le vérifient, à l'étap
 Puis publie :
 
 ```bash
-pnpm build && pnpm deploy
+pnpm build && pnpm run deploy
 ```
 
-`pnpm deploy` publie `dist/` **tel quel** et ne le reconstruit pas : `pnpm build` d'abord, donc,
+`pnpm run deploy` publie `dist/` **tel quel** et ne le reconstruit pas : `pnpm build` d'abord,
 toujours. Au premier déploiement, Cloudflare peut demander de choisir un sous-domaine
 `workers.dev` — c'est un identifiant de compte, prends ce que tu veux.
+
+> ⚠️ **`run` n'est pas optionnel ici.** `pnpm deploy` sans `run` ne lance **pas** ce script :
+> `deploy` est une commande interne de pnpm, qui l'emporte et répond
+> `ERR_PNPM_NOTHING_TO_DEPLOY  No project was selected for deployment`. Le message ne mentionne ni
+> wrangler ni Cloudflare, donc rien n'indique que le script existe et n'a pas été appelé.
+>
+> `serve` et `preview` n'ont pas ce problème — vérifié, aucune commande pnpm ne porte ces noms — et
+> s'écrivent donc sans `run`. C'est `deploy` qui est le cas particulier, pas l'inverse.
 
 Le Worker prend le nom déclaré dans `wrangler.jsonc` :
 
@@ -905,6 +913,7 @@ Le déploiement actif doit être inchangé — c'est tout l'intérêt d'une vers
 | `./scripts/build-site.sh: not found`, erreurs de syntaxe | Tu n'es pas dans bash. Voir 0.1. |
 | `dotnet --version` : « Couldn't find a valid ICU package » | Dépendance système absente, pas un problème de SDK : `sudo apt-get install -y libicu-dev`. Voir 0.2a. |
 | `E: Unable to locate package libicu` | Le nom vient du message d'erreur et n'existe pas sur Ubuntu. C'est `libicu-dev` (ou `libicu74`). Voir 0.2a. |
+| `ERR_PNPM_NOTHING_TO_DEPLOY` | `pnpm deploy` a appelé la commande interne de pnpm, pas le script. C'est `pnpm run deploy`. Voir l'étape 5. |
 | `pnpm install` refuse la version de Node | `engines` exige Node ≥ 22 : `nvm install`. |
 | Le build met plusieurs minutes | Dépôt sous `/mnt/c/`. Voir l'avertissement en 0.1. |
 | `Parsed 0 valid redirect rules` | Une règle est rejetée. Une cible qui se normalise vers son propre motif donne « Infinite loop detected ». |

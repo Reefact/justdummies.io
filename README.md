@@ -49,7 +49,7 @@ with `pnpm build:site` and `pnpm build:playground`.
 ```bash
 pnpm serve      # serve dist/ the way Workers will, parsing _headers and _redirects
 pnpm preview    # upload a version and get its URL, without promoting it
-pnpm deploy     # publish dist/ as built — it does not rebuild, so build first
+pnpm run deploy # publish dist/ as built — it does not rebuild, so build first
 ```
 
 `pnpm serve` is not a static file server: it is the Workers runtime locally, so the response

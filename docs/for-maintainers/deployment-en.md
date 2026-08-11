@@ -54,7 +54,7 @@ and they are the ones `pnpm build` chains together.)*
 |---|---|---|---|---|
 | `pnpm install` | ✅ | ✅ | ✅ | ✅ |
 | `pnpm dev`, `pnpm check` | ✅ | ✅ | ✅ | ✅ |
-| `pnpm serve`, `preview`, `deploy` | ✅ | ✅ | ✅ | ✅ |
+| `pnpm serve`, `preview`, `run deploy` | ✅ | ✅ | ✅ | ✅ |
 | `pnpm build:playground` | ✅ | ✅ | ✅ | ✅ |
 | **`pnpm build`** | ❌ | ⚠️ | ✅ | ✅ |
 | `./scripts/*.sh` directly | ❌ | ✅ | ✅ | ✅ |
@@ -651,12 +651,20 @@ its assertions do that, back in step 1.
 Then publish:
 
 ```bash
-pnpm build && pnpm deploy
+pnpm build && pnpm run deploy
 ```
 
-`pnpm deploy` publishes `dist/` **as built** and does not rebuild it: so always `pnpm build`
+`pnpm run deploy` publishes `dist/` **as built** and does not rebuild it: so always `pnpm build`
 first. On the first deployment, Cloudflare may ask you to choose a `workers.dev` subdomain — it is
 an account identifier, take what you like.
+
+> ⚠️ **`run` is not optional here.** `pnpm deploy` without `run` does **not** run this script:
+> `deploy` is a built-in pnpm command, it wins, and it answers
+> `ERR_PNPM_NOTHING_TO_DEPLOY  No project was selected for deployment`. The message mentions neither
+> wrangler nor Cloudflare, so nothing tells you the script exists and was never called.
+>
+> `serve` and `preview` do not have this problem — verified, no pnpm command carries those names —
+> and so are written without `run`. `deploy` is the special case, not the other way round.
 
 The Worker takes the name declared in `wrangler.jsonc`:
 
@@ -894,6 +902,7 @@ The active deployment must be unchanged — that is the whole point of an unprom
 | `./scripts/build-site.sh: not found`, syntax errors | You are not in bash. See 0.1. |
 | `dotnet --version`: "Couldn't find a valid ICU package" | A missing system dependency, not an SDK problem: `sudo apt-get install -y libicu-dev`. See 0.2a. |
 | `E: Unable to locate package libicu` | The name came from the error message and does not exist on Ubuntu. It is `libicu-dev` (or `libicu74`). See 0.2a. |
+| `ERR_PNPM_NOTHING_TO_DEPLOY` | `pnpm deploy` called pnpm's built-in command, not the script. It is `pnpm run deploy`. See step 5. |
 | `pnpm install` refuses the Node version | `engines` requires Node ≥ 22: `nvm install`. |
 | The build takes several minutes | Repository under `/mnt/c/`. See the warning in 0.1. |
 | `Parsed 0 valid redirect rules` | A rule is rejected. A target that canonicalises back into its own pattern gives "Infinite loop detected". |
