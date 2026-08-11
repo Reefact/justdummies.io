@@ -367,7 +367,28 @@ The script first, because it needs nothing and answers in one shot.
 > `pnpm serve` questions the other server instead of its own, or fails to start. If `pnpm serve` is
 > already running, stop it (`Ctrl+C`) before the script.
 
-`pnpm serve` does not return. **Open a second terminal** for the manual checks that follow.
+`pnpm serve` does not return: the terminal stays busy for as long as the server runs, and `Ctrl+C`
+stops it. While it runs you can open `http://localhost:8787` in your Windows browser — WSL forwards
+the port for you.
+
+The manual checks 2a to 2d therefore need **a second terminal**. On Windows that does not mean
+typing `wsl` again: it means a second window onto the distribution already running.
+
+| How | Where |
+|---|---|
+| Windows Terminal | the `⌄` chevron beside the `+`, then **Ubuntu** — a new tab |
+| Start menu | launch the **Ubuntu** application again — a new window |
+
+> ⚠️ **That second terminal starts in your home directory, not in the repository.** First command to
+> type there, without which every check looks for `dist/` and `scripts/` where they are not:
+>
+> ```bash
+> cd ~/dev/justdummies.io
+> ```
+
+You can also **not open a second terminal at all**: check 2 below covers all four of them and needs
+nothing running alongside it. The manual ones are there to show what is being verified and to
+diagnose a red line — not to validate the build.
 
 ### ✅ Check 2 — in a single command
 
