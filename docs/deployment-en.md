@@ -78,8 +78,8 @@ tool the scripts call. It is a fallback, not a choice.
 
 ### 0.2 The toolchain
 
-Three tools, and **the repository pins the versions itself** — do not choose them, let them be
-read:
+Three tools, and **the repository pins the versions itself** — you do not choose them, you let them
+be read:
 
 | Tool | Version | Pinned by |
 |---|---|---|
@@ -87,36 +87,75 @@ read:
 | pnpm | 10.33.0 | the `packageManager` field of `package.json` |
 | .NET SDK | 10.0.100 | `global.json` |
 
-On Ubuntu (WSL) or Linux:
+**The order matters, and it is not the one you would guess.** `corepack` ships *with* Node, so it
+does not exist before it; and `nvm install` reads `.nvmrc`, which lives *inside* the repository, so
+it has nothing to read before the clone. Hence: nvm → .NET SDK → clone → Node → pnpm.
+
+Each block ends with its own check. **Do not move to the next one without it**: a step missed here
+only shows up three commands later, under a message that does not name it.
+
+#### a. nvm
 
 ```bash
-# Node — install nvm by following its README, then, inside the repository:
-#   https://github.com/nvm-sh/nvm#installing-and-updating
-nvm install          # reads .nvmrc, so it installs the version the repository requires
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.6/install.sh | bash
+exec "$SHELL"      # nvm adds itself to ~/.bashrc: without the reload it does not exist yet
+```
 
-# pnpm — corepack ships with Node and reads the packageManager field
-corepack enable
+✅ **Check:** `command -v nvm` prints `nvm`.
 
-# .NET SDK — the channel matches global.json
+> `which nvm` will fail, and that failure means nothing: nvm is a **shell function**, not an
+> executable. `command -v` is what answers correctly.
+
+#### b. The .NET SDK
+
+```bash
 curl -sSL https://dot.net/v1/dotnet-install.sh | bash -s -- --channel 10.0
 echo 'export PATH="$HOME/.dotnet:$PATH"' >> ~/.bashrc
 exec "$SHELL"
 ```
 
-Then get the repository and enable the commit-message hook:
+✅ **Check:** `dotnet --version` prints `10.0.1xx`.
+
+#### c. The repository, on the Linux disk
+
+The Ubuntu shell often starts in `/mnt/c/Users/<you>`, which is the Windows side. The destination
+path below is therefore spelled out in full, and that is not fussiness: see the warning in step
+0.1.
 
 ```bash
-git clone https://github.com/Reefact/justdummies.io.git
-cd justdummies.io
+git clone https://github.com/Reefact/justdummies.io.git ~/dev/justdummies.io
+cd ~/dev/justdummies.io
+```
+
+✅ **Check:** `pwd` prints `/home/<you>/dev/justdummies.io`, with no `/mnt/`.
+
+> **From here on, every command in this guide runs from the repository root.** The `scripts/…` and
+> `dist/…` paths depend on it, and so does `pnpm`.
+
+#### d. Node, then pnpm — read from inside the repository
+
+```bash
+nvm install        # reads .nvmrc → Node 22
+corepack enable    # corepack comes with Node, so after it
+```
+
+✅ **Check:** `node --version` prints `v22.x.x`.
+
+#### e. The commit-message hook
+
+```bash
 git config core.hooksPath .githooks    # once per clone
 ```
 
 ### ✅ Checking the prerequisites
 
+From the repository root:
+
 ```bash
 node --version
-pnpm --version
+pnpm --version          # must be run FROM the repository: see the table below
 dotnet --version
+git --version
 bash --version | head -1
 pwd | grep -q '^/mnt/' \
   && echo '⚠️  repository on the Windows disk — the build will be very slow' \
@@ -129,13 +168,18 @@ Expected:
 v22.x.x
 10.33.0
 10.0.1xx
+git version 2.x.x
 GNU bash, version 5.x.x(1)-release ...
 ✅ repository on the native filesystem
 ```
 
-A `node: command not found` after `nvm install` means the shell has not reloaded its environment:
-`exec "$SHELL"`. A Node 20 or 24 instead of 22 will make `pnpm install` fail on the `engines`
-field — that is deliberate.
+The three possible discrepancies, and their cause:
+
+| Discrepancy | Cause |
+|---|---|
+| `nvm: command not found` | The shell was not reloaded after installing: `exec "$SHELL"`. |
+| `pnpm --version` ≠ 10.33.0 | Command run outside the repository. The `packageManager` field pins the version, and corepack only reads it from here. |
+| Node 20 or 24 | `pnpm install` will refuse, on the `engines` field. That is deliberate, not a bug to work around. |
 
 ---
 
@@ -254,7 +298,11 @@ Everything below also exists as a script, and CI runs it on every build:
 scripts/check-served-headers.sh    # starts the runtime, asks it, stops it
 ```
 
-It needs no `pnpm serve` alongside it: it starts the engine itself. Expected:
+> ⚠️ **Stop `pnpm serve` before running it** (`Ctrl+C`). The script starts its **own** runtime, and
+> both want port 8787: launched on top of a running `pnpm serve`, it either questions the other
+> server or fails to start its own. It needs nothing alongside it.
+
+Expected:
 
 ```
 ▸ Starting the runtime
