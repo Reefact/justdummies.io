@@ -3,7 +3,7 @@
 *🇬🇧 [English version](deployment-en.md)*
 
 Ce guide part de zéro : aucun compte Cloudflare, aucune connaissance de la plateforme. À la fin,
-`justdummies.io` sera servi par Cloudflare et chaque poussée sur `main` publiera automatiquement.
+`justdummies.io` sera servi par Cloudflare, et un tag suffira à publier.
 
 **Compte environ deux heures**, dont une bonne partie d'attente (propagation DNS, premiers
 téléchargements). Rien n'est irréversible avant l'étape 8.
@@ -742,8 +742,9 @@ en faire. Une question tranchée qui n'est pas écrite se repose au prochain pas
 
 ## Étape 7 — Automatiser
 
-**Pourquoi** — La CI construit et vérifie déjà à chaque poussée. Le job `deploy` publie sur
-`main` dès que deux secrets existent ; sans eux, il annonce ce qui manque et n'échoue pas.
+**Pourquoi** — La CI construit et vérifie déjà à chaque poussée. Le job `deploy` publie dès que
+deux secrets existent, et **seulement sur un tag `v*`** ; sans eux, il annonce ce qui manque et
+n'échoue pas.
 
 ### 7.1 Le jeton d'API
 
@@ -804,18 +805,25 @@ repository secret**. Deux entrées, ces noms exactement :
 
 ### ✅ Contrôle
 
-Ouvre l'onglet **Actions** → workflow **build** → bouton **Run workflow** → branche `main` →
-**Run workflow**. Aucune commande à taper : le bouton prend le `main` du serveur, ton dépôt local
-n'intervient pas. *(Une poussée sur `main` déclenche la même chose.)*
+**C'est un tag qui publie.** Pose-en un sur le commit que tu veux mettre en ligne :
 
-> ⚠️ **Ce bouton publie en production.** Depuis `main`, il fait exactement ce qu'une poussée fait —
-> ce n'est pas un essai à blanc. Depuis une autre branche, le job `Deploy` est sauté.
+```bash
+git checkout main && git pull origin main
+git tag v0.1.0
+git push origin v0.1.0
+```
 
-> **Le job apparaît « skipped » ?** Regarde d'abord la branche : `Deploy` ne s'exécute que sur
-> `main`. S'il est sauté *depuis* `main`, c'est la condition du workflow qui exclut ton événement —
-> c'est arrivé ici, `workflow_dispatch` en avait été oublié, et le run passait au vert avec `Deploy`
-> en grisé. Un job sauté ne dit jamais pourquoi : c'est la façon la moins bavarde de ne pas
-> déployer, et la seule manière de le voir est de lire le `if:` du job.
+> ⚠️ **Ceci publie en production.** Ce n'est pas un essai à blanc. Une poussée sur `main`, elle, ne
+> publie rien : elle construit et vérifie.
+
+Le tag déclenche un run complet — `build` puis `Deploy`. Tu peux aussi le rejouer plus tard sans
+retaguer : **Actions** → workflow **build** → **Run workflow**, et choisis le **tag** dans le
+sélecteur de référence, qui liste les tags autant que les branches.
+
+> **`Deploy` apparaît « skipped » ?** Sur une branche, y compris `main`, **c'est normal** — seul un
+> tag `v*` publie. Sauté *depuis un tag*, c'est autre chose : vérifie que le nom commence bien par
+> `v`. Un job sauté ne dit jamais pourquoi, c'est la façon la moins bavarde de ne pas déployer, et la
+> seule manière de trancher est de lire le `if:` du job.
 
 Puis ouvre le job **Deploy** :
 
@@ -831,12 +839,13 @@ Vérifie enfin que la publication vient bien de la CI :
 pnpm wrangler deployments list
 ```
 
-Le déploiement le plus récent doit correspondre à l'heure de ton workflow, pas à ton essai
-manuel de l'étape 5.
+Le déploiement le plus récent doit correspondre à l'heure de ton workflow, pas à ton essai manuel
+de l'étape 5. Comme c'est un tag qui a publié, tu peux aussi aligner cette liste sur `git tag` :
+chaque déploiement porte un nom, pas seulement une date.
 
 ### Ce que fait la CI, et pourquoi ainsi
 
-À chaque poussée sur `main` :
+À chaque poussée sur `main` **et** sur chaque tag `v*` :
 
 1. **build** — valide les extraits publiés, installe, contrôle les types, construit, vérifie que
    le contenu généré committé est à jour, contrôle les budgets de taille, **demande au runtime ce
@@ -854,7 +863,12 @@ Trois choix qui ne se devinent pas :
 - **Pas de `wrangler-action`.** Le dépôt épingle un wrangler dans `package.json` ; un pipeline qui
   en télécharge un autre publie avec une version que personne n'a testée.
 
-Une pull request ne peut pas publier : le job est conditionné à un `push` sur `main`.
+Et **une branche ne publie pas** — ni une pull request, ni `main`. Le job est conditionné à
+`refs/tags/v*`, donc ce qui atteint la production a toujours un nom que tu as choisi.
+
+Le coût de ce choix mérite d'être dit : `main` peut prendre de l'avance sur la production
+indéfiniment, et rien ici ne te le signalera. Un `Deploy` sauté sur `main` est l'état attendu, pas
+un symptôme.
 
 ---
 

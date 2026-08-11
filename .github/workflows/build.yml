@@ -11,7 +11,10 @@ name: build
 on:
   pull_request:
   push:
+    # main is built and verified on every push, and publishes nothing. A tag is what
+    # publishes — see the deploy job.
     branches: [main]
+    tags: ['v*']
   workflow_dispatch:
 
 permissions:
@@ -122,22 +125,22 @@ jobs:
   deploy:
     name: Deploy
     needs: build
-    # Production, and only production. A pull request must never be able to publish.
-    # A preview is made deliberately, by hand, with `pnpm run preview` — see
-    # docs/for-maintainers/deployment-en.md.
+    # A TAG PUBLISHES. A branch does not, including main.
     #
-    # workflow_dispatch is listed alongside push, and its absence was a bug: the
-    # workflow offers a Run workflow button, the guide sends readers to it to prove
-    # their credentials work, and the condition then skipped the whole job. Nothing
-    # failed — the run went green with Deploy greyed out, which is the least
-    # informative way to not deploy.
+    # The unit of publication is a release someone decided to make, not a commit
+    # someone happened to merge. `git push origin v1.2.0` deploys; forty commits on
+    # main deploy nothing. What reaches production therefore has a name, and
+    # `wrangler deployments list` can be lined up against `git tag`.
     #
-    # The gate is the ref, not the event. A pull_request run carries
-    # refs/pull/N/merge, so it cannot reach this either way; naming both events keeps
-    # the intent readable rather than resting on that.
-    if: >-
-      github.ref == 'refs/heads/main' &&
-      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    # The cost is real and worth naming: main can sit ahead of production
+    # indefinitely, and nothing here will say so. A skipped Deploy on a push to main
+    # is the expected state, not a symptom.
+    #
+    # The gate is the ref alone. A tag reaches this whether it was pushed or picked
+    # in the Run workflow dialog — GitHub's ref selector lists tags — so re-deploying
+    # a release needs no second mechanism, and no event can publish something that
+    # was never tagged.
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
