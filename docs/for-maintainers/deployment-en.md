@@ -163,9 +163,17 @@ exec "$SHELL"
 
 #### d. The repository, on the Linux disk
 
-The Ubuntu shell often starts in `/mnt/c/Users/<you>`, which is the Windows side. The destination
-path below is therefore spelled out in full, and that is not fussiness: see the warning in step
-0.1.
+From Ubuntu you can see **two** filesystems, and the guide asked you to pick one without saying how
+you get there:
+
+| Path | What it is | Speed |
+|---|---|---|
+| `~`, that is `/home/<you>` | the **Linux** disk | fast |
+| `/mnt/c/...` | your **Windows** disk, mounted inside Linux | slow to cross |
+
+The Ubuntu shell often starts in `/mnt/c/Users/<you>`, so on the wrong side. **There is nothing to
+do about that**: what decides is the destination written in the command, not where you run it from.
+`~/dev/justdummies.io` lands on the Linux disk even when typed from `/mnt/c`.
 
 ```bash
 git clone https://github.com/Reefact/justdummies.io.git ~/dev/justdummies.io
@@ -173,6 +181,23 @@ cd ~/dev/justdummies.io
 ```
 
 ✅ **Check:** `pwd` prints `/home/<you>/dev/justdummies.io`, with no `/mnt/`.
+
+> **Already cloned on the wrong side?** Move it rather than cloning again, or you keep two copies:
+>
+> ```bash
+> mkdir -p ~/dev
+> mv /mnt/c/path/to/justdummies.io ~/dev/
+> cd ~/dev/justdummies.io
+> ```
+>
+> If `node_modules/` was installed over there, delete it after the move and run `pnpm install`
+> again. pnpm's internal links are relative and survive the move, but the launchers in
+> `node_modules/.bin/` bake the repository's **absolute** path into their `NODE_PATH`, and so does
+> `.pnpm-workspace-state-v1.json`. Moved, the tree keeps paths that no longer exist.
+>
+> ```bash
+> rm -rf node_modules dist && pnpm install
+> ```
 
 > **From here on, every command in this guide runs from the repository root.** The `scripts/…` and
 > `dist/…` paths depend on it, and so does `pnpm`.
