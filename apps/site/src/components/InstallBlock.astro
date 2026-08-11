@@ -29,17 +29,9 @@ interface Props {
      * noise rather than as a door.
      */
     offer?: 'library' | 'library-and-tool' | 'everything';
-    /**
-     * `compact` is §7.4's reduced form: one command and one link, for a place that owes the
-     * visitor the offer without owing them the whole row. The full form belongs at the
-     * narrative's reward moments, where a reader has just been given a reason to want it and
-     * the screen is theirs to spend.
-     */
-    variant?: 'full' | 'compact';
 }
 
-const { placement, offer = 'library', variant = 'full' } = Astro.props;
-const compact: boolean = variant === 'compact';
+const { placement, offer = 'library' } = Astro.props;
 
 const t = useTranslations(localeFromPath(Astro.url.pathname));
 
@@ -48,13 +40,13 @@ const withTool: boolean = offer === 'library-and-tool' || offer === 'everything'
 const withAdapter: boolean = offer === 'everything';
 ---
 
-<div class="install" data-compact={compact ? '' : undefined}>
+<div class="install">
     <div class="slot">
-        {!compact && <h3>{t('install.cli')}</h3>}
+        <h3>{t('install.cli')}</h3>
         <CopyableCommand command={site.library.installCommand} placement={placement} variant="dotnet-cli" />
     </div>
 
-    <div class="slot" hidden={compact}>
+    <div class="slot">
         <h3>{t('install.packageManager')}</h3>
         <CopyableCommand
             command={site.library.packageManagerCommand}
@@ -103,7 +95,7 @@ const withAdapter: boolean = offer === 'everything';
         }
 
         {
-            compact ? null : documentationPending ? (
+            documentationPending ? (
                 <span class="pending" role="link" aria-disabled="true" tabindex="0">
                     {t('install.documentation')}
                     <span class="state"> · {t('state.comingSoon')}</span>

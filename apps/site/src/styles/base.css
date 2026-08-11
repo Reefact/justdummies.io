@@ -10,6 +10,25 @@
     box-sizing: border-box;
 }
 
+/*
+ * `hidden` means hidden, and any `display` beats it.
+ *
+ * The site hides a control until its script proves it can act — the copy button, the
+ * install tablist — and every one of those is also given a `display` by the rule that
+ * lays it out. The user agent's own `[hidden] { display: none }` loses to that rule on
+ * specificity alone, so the attribute is set correctly, the element is shown anyway, and
+ * what a reader without scripting gets is exactly the dead control the pattern exists to
+ * prevent. It happened here, to the tablist, and it was found by loading the page with
+ * scripting refused rather than by reading the stylesheet.
+ *
+ * A rule per component would have to be remembered per component. This one is the
+ * guarantee, and `!important` is what makes it one: nothing further down can quietly
+ * undo it. Decision: ADR-0004.
+ */
+[hidden] {
+    display: none !important;
+}
+
 body {
     margin: 0;
     background: var(--jd-background);

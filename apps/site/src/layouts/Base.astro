@@ -3,8 +3,9 @@ import '@justdummies/design-tokens/tokens.css';
 import '../styles/base.css';
 
 import LanguageSelector from '../components/LanguageSelector.astro';
+import { site } from '../site';
 import { localeFromPath, pathForLocale, translatedLocales } from '../i18n/routing';
-import { defaultLocale, localeTags, openGraphLocales, type Locale } from '../i18n/ui';
+import { defaultLocale, localeTags, openGraphLocales, useTranslations, type Locale } from '../i18n/ui';
 
 interface Props {
     title: string;
@@ -41,6 +42,8 @@ const canonical: string = absolute(pathForLocale(pathname, locale));
  * really exists for this route.
  */
 const hasDefault: boolean = alternates.includes(defaultLocale);
+
+const t = useTranslations(locale);
 ---
 
 <!doctype html>
@@ -98,7 +101,21 @@ const hasDefault: boolean = alternates.includes(defaultLocale);
     <body>
         <header class="site-header">
             <a class="brand" href={pathForLocale('/', locale)}>JustDummies</a>
-            <LanguageSelector pathname={pathname} />
+
+            {/*
+              The two destinations that are not part of the story. They were in the hero,
+              where they competed with the one thing that screen asks for; a link that is
+              true on every page belongs in the bar that is on every page.
+
+              The playground link deliberately leaves the current locale: the application is
+              served in English only, and sending a French reader to a route that does not
+              exist would be worse than sending them to one that does.
+            */}
+            <nav class="site-nav" aria-label={t('nav.primary')}>
+                <a href="/playground/">{t('nav.playground')}</a>
+                <a href={site.repository}>{t('nav.github')}</a>
+                <LanguageSelector pathname={pathname} />
+            </nav>
         </header>
 
         <slot />
@@ -120,5 +137,35 @@ const hasDefault: boolean = alternates.includes(defaultLocale);
         color: var(--jd-text-primary);
         font-weight: 600;
         text-decoration: none;
+    }
+
+    .site-nav {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: var(--jd-space-6);
+        font-size: var(--jd-text-sm);
+    }
+
+    /*
+     * Below this width the bar cannot hold the brand and the three items on one line, and
+     * what it does instead is wrap the nav to two — leaving the brand floating against the
+     * middle of them. Stacking is both tidier and *shorter*: 82 pixels rather than 98, which
+     * the first screen below gets back.
+     *
+     * The number is measured, not chosen: brand and nav together need 440 pixels of viewport,
+     * so the query trips just above that. It is deliberately not the 48rem the rest of the
+     * page uses — between 448 and 768 the bar fits on one line and has no reason to stack.
+     */
+    @media (max-width: 28rem) {
+        .site-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--jd-space-2);
+        }
+
+        .site-nav {
+            gap: var(--jd-space-4);
+        }
     }
 </style>
