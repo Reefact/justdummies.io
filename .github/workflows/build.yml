@@ -206,3 +206,58 @@ jobs:
           fi
 
           pnpm run deploy
+
+  # A release is the human-readable half of what a tag already does. The tag publishes;
+  # this gives it a page listing what went out since the previous one, which is where
+  # somebody actually looks. A CHANGELOG.md would be the same list kept by hand, and
+  # nothing consumes this site, so nobody needs a compatibility note about it.
+  #
+  # Its own job, for one reason: creating a release needs `contents: write`, and the
+  # narrowest place to grant that is a job that does nothing else. Deploy keeps the
+  # read-only token it has always had, and nothing that touches Cloudflare credentials
+  # ever holds a token that can write to the repository.
+  #
+  # `needs: deploy` rather than the tag alone, so a release names something that
+  # shipped. One caveat worth stating: the deploy step exits 0 when the Cloudflare
+  # secrets are absent, so this would still publish a release for a deployment that
+  # announced itself skipped. That branch is dead now that both secrets exist, and
+  # making this job read the other's mind would cost more than the case is worth.
+  notes:
+    name: Release notes
+    needs: deploy
+    if: startsWith(github.ref, 'refs/tags/release/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          # The tag object itself, not only the commit it points at: its annotation is
+          # the release's title, and that message does not come with a shallow fetch.
+          fetch-depth: 0
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${GITHUB_REF_NAME}"
+
+          # Re-runnable. A tag can reach this twice — the Run workflow dialog lists tags,
+          # and re-deploying a release is a supported thing to do — and a second attempt
+          # must not fail the pipeline over a page that already exists.
+          if gh release view "${tag}" > /dev/null 2>&1; then
+            echo "::notice title=Release already exists::${tag} has a release already; left as it is."
+            exit 0
+          fi
+
+          # The subject of the annotated tag, which is the sentence written at `git tag -m`.
+          # Falling back to the tag's own name rather than failing: a dull title beats a red
+          # pipeline over a deployment that has already gone out.
+          title="$(git for-each-ref "refs/tags/${tag}" --format='%(contents:subject)')"
+
+          gh release create "${tag}" \
+            --title "${title:-${tag}}" \
+            --generate-notes \
+            --latest
