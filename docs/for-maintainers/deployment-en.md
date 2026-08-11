@@ -114,14 +114,24 @@ sudo apt-get install -y curl git unzip libicu-dev
 ✅ **Check:** `curl --version | head -1` and `git --version` both answer. ICU has no check of its
 own here — the SDK's check, in **c**, is what proves it.
 
-> **`libicu-dev`, not `libicu74`**: the runtime package carries a number that changes with every
-> Ubuntu release, whereas this name is stable and pulls the right version.
->
 > Without ICU, `dotnet` does not start *at all*: it stops on *"Couldn't find a valid ICU package
 > installed on the system"*, with a stack trace that nowhere says the answer is a package to
-> install. And do **not** answer that message with `System.Globalization.Invariant`, which the error
-> itself suggests: it starts the SDK with no globalization support, so it changes the build's
-> behaviour instead of fixing the machine.
+> install.
+>
+> ⚠️ **The error message names two packages, neither of which exists on Ubuntu.** It advises
+> *"install libicu (or icu-libs)"*: `apt-get install libicu` answers
+> `E: Unable to locate package libicu`, and `icu-libs` is Alpine's name. Copying the name out of the
+> error is the first thing anyone tries, and it fails.
+>
+> Hence **`libicu-dev`**: it is the only stable name, and it depends on the right runtime package
+> (`Depends: libicu74` on Ubuntu 24.04). The runtime alone is called `libicu74` — with a number that
+> changes with every release of the distribution. If you want the strict minimum, `libicu74` is
+> enough and avoids the `icu-devtools` and `libc6-dev` that `libicu-dev` drags in; at the price of a
+> name to correct at the next Ubuntu jump.
+>
+> And do **not** take the other escape the error offers, `System.Globalization.Invariant`: it starts
+> the SDK with no globalization support, so it changes the build's behaviour instead of fixing the
+> machine.
 
 #### b. nvm
 
@@ -770,6 +780,7 @@ The active deployment must be unchanged — that is the whole point of an unprom
 |---|---|
 | `./scripts/build-site.sh: not found`, syntax errors | You are not in bash. See 0.1. |
 | `dotnet --version`: "Couldn't find a valid ICU package" | A missing system dependency, not an SDK problem: `sudo apt-get install -y libicu-dev`. See 0.2a. |
+| `E: Unable to locate package libicu` | The name came from the error message and does not exist on Ubuntu. It is `libicu-dev` (or `libicu74`). See 0.2a. |
 | `pnpm install` refuses the Node version | `engines` requires Node ≥ 22: `nvm install`. |
 | The build takes several minutes | Repository under `/mnt/c/`. See the warning in 0.1. |
 | `Parsed 0 valid redirect rules` | A rule is rejected. A target that canonicalises back into its own pattern gives "Infinite loop detected". |
