@@ -58,30 +58,58 @@ and the only thing script still adds is the marker saying which scene the reader
 
 ## Alternatives Considered
 
-**Keep the panel and widen its column.** It removes the scrollbar and leaves the pairing defect,
-which is the worse of the two.
+### Keep the panel and widen its column
 
-**Keep the panel and make every scene taller,** so only one is ever on screen. That fixes the
+Considered because it is the smallest change and preserves the specification's sticky-panel
+reading. Rejected because it addresses only the scrollbar: the pairing defect survives untouched,
+and it is the worse of the two.
+
+### Keep the panel and make every scene taller, so only one is ever on screen
+
+Considered because it fixes the pairing while keeping the mechanism. Rejected because it fixes the
 pairing by making the panel redundant — if one scene fills the viewport, its figure has nowhere
-else to be.
+else to be — so what remains is script, a viewport width and a motion preference, paying for
+nothing.
 
-**Keep the two-column layout and narrow the terminals.** The recap's width is not decoration: the
-two words that make that scene worth showing — `unread guards` — sit at the end of its longest
-line. Narrowing it hides the point of the scene.
+### Keep the two-column layout and narrow the terminals
+
+Considered because it would let the figures fit the half-measure and leave the layout as designed.
+Rejected because the recap's width is not decoration: the two words that make that scene worth
+showing — `unread guards` — sit at the end of its longest line. Narrowing it hides the point of the
+scene.
 
 ## Consequences
 
+### Positive
+
+The association between a figure and the words about it is stated by the document instead of
+inferred from position, so it cannot be got wrong by a scene that is short or a viewport that is
+tall.
+
+Every published figure fits across the page, so no scene needs a horizontal scrollbar.
+
+Four builds collapse into one: desktop, mobile, reduced motion and no-JavaScript render the same
+document, and the only thing script still adds is the marker saying which scene the reader is on.
+
+### Negative
+
+The page is much longer. That is intended — scrolling advances the story rather than sliding a
+document past — but it is a real cost for a reader who wanted to skim.
+
 The `wide` scene variant is removed. It existed so two figures could span the full measure while
-the rest sat in a column; every figure has the full measure now.
+the rest sat in a column, and there is no column left for it to be an exception to.
 
-The page is much longer, and that is intended: scrolling advances the story rather than sliding a
-document past.
+The commentary needs a reading measure of its own rather than inheriting the figure's width, so
+the two now carry different widths inside one scene.
 
-The commentary keeps a reading measure of its own rather than inheriting the figure's width. A
-paragraph as wide as a code block is a paragraph nobody finishes.
+### Risks
 
-Scroll snapping is **not** adopted. Full-height scenes give the sense of advancing without it, and
-snapping applies to the root scroller, which would make the hero snap too.
+A figure wider than the measure would bring the scrollbar back, silently, in one scene. The guard
+is the width assertion in `check-narrative.sh`; the margin today is zero, the widest published
+figure being exactly the 130 characters the measure holds.
+
+Scroll snapping is **not** adopted, and adopting it later would be a new decision rather than a
+tweak: it applies to the root scroller, which would make the hero snap too.
 
 ## Follow-up Actions
 
