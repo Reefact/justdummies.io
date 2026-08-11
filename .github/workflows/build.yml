@@ -117,7 +117,7 @@ jobs:
     needs: build
     # Production, and only production. A pull request must never be able to publish.
     # A preview is made deliberately, by hand, with `pnpm run preview` — see
-    # docs/deployment.md.
+    # docs/deployment-en.md.
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -169,7 +169,7 @@ jobs:
           fi
 
           if [ -n "${missing}" ]; then
-            echo "::notice title=Deployment skipped::${missing} not configured, so nothing was published. The artefact was built, verified, and verified again after download. docs/deployment.md walks through creating them."
+            echo "::notice title=Deployment skipped::${missing} not configured, so nothing was published. The artefact was built, verified, and verified again after download. docs/deployment-en.md walks through creating them, with a check after every step."
             exit 0
           fi
 
