@@ -795,6 +795,15 @@ Open the **Actions** tab → the **build** workflow → **Run workflow** → bra
 workflow**. No commands to type: the button uses the server's `main`, your local clone plays no
 part. *(A push to `main` triggers the same thing.)*
 
+> ⚠️ **That button publishes to production.** From `main` it does exactly what a push does — it is
+> not a dry run. From any other branch, the `Deploy` job is skipped.
+
+> **Job showing as "skipped"?** Check the branch first: `Deploy` only runs on `main`. If it is
+> skipped *from* `main`, the workflow's condition is excluding your event — which happened here,
+> `workflow_dispatch` having been left out, and the run went green with `Deploy` greyed out. A
+> skipped job never says why: it is the least talkative way of not deploying, and the only way to see
+> it is to read the job's `if:`.
+
 Then open the **Deploy** job:
 
 - **Expected:** the *Publish to Cloudflare Workers* step ends on a wrangler deployment.
