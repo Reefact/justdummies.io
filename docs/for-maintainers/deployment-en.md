@@ -739,14 +739,32 @@ soon as two secrets exist; without them it announces what is missing and does no
 
 1. Dashboard → avatar, top right → **My Profile** → **API Tokens**.
 2. **Create Token**.
-3. The **Edit Cloudflare Workers** template — the path Cloudflare documents. The strict minimum is
-   *Account · Workers Scripts · Edit*; you will tighten it once the automatic deployment is
-   proven.
-4. Check that the target account is the right one, create the token, **copy it**. It is shown
-   once.
+3. The **Edit Cloudflare Workers** template — the path Cloudflare documents.
 
-> This token is the right to publish on your account. It goes **only** into the GitHub secrets,
-> never into a file in the repository.
+The template prefills thirteen permissions and **leaves two fields empty that block creation**:
+
+| Field | What to do | Why |
+|---|---|---|
+| **Account Resources** | `Include` → **your account** | a token with no account attached has no scope at all, and wrangler would fail |
+| **Zone Resources** | `Include` → **All zones from an account** → your account | the template includes a zone permission (`Workers Routes`), and Cloudflare refuses a zone permission with no zone |
+| **TTL** | **leave it empty** | a token that expires fails CI months later, under an authentication message that does not say "expired" |
+
+For `Zone Resources`, the other way out is to **delete** the `Zone · Workers Routes · Edit` row
+with its `✕`: this repository publishes to `workers.dev`, and step 8's domain is attached from the
+dashboard, not by this token.
+
+4. **Continue to summary** → **Create Token** → **copy the token**. It is shown once: keep the tab
+   open until you have stored it in 7.3.
+
+> This token is the right to publish on your account, and the template grants far more than this
+> repository uses — KV, R2, Pages, Containers, Observability, all with write access. The strict
+> minimum would be *Account · Workers Scripts · Edit*.
+>
+> **Do not trim it now.** A deployment failing on a missing permission would be one more problem to
+> isolate, at the exact moment you are trying to validate another. Tightening is recorded under
+> "Still to be settled", to be done once the automatic deployment is proven.
+>
+> The token goes **only** into the GitHub secrets, never into a file in the repository.
 
 ### 7.2 The account identifier
 
@@ -756,17 +774,28 @@ panel.
 ### 7.3 Store them
 
 `Reefact/justdummies.io` → **Settings** → **Secrets and variables** → **Actions** → **New
-repository secret**. Two secrets, exactly these names:
+repository secret**. Two entries, exactly these names:
 
 | Name | Value |
 |---|---|
 | `CLOUDFLARE_API_TOKEN` | the token from 7.1 |
 | `CLOUDFLARE_ACCOUNT_ID` | the identifier from 7.2 |
 
+> ⚠️ **The Secrets tab, not Variables.** The page offers both, and they are separate namespaces: the
+> workflow reads `${{ secrets.… }}`, so a value created as a *variable* is invisible to it. The job
+> would answer "Deployment skipped" with nothing to indicate the value exists next door.
+>
+> The account identifier is not a credential, though — `vars` would be the correct home, and the
+> workflow would read it in clear in its logs instead of masking it. It is in `secrets` because that
+> is the shape of Cloudflare's example, copied. Worth revisiting, but not during setup.
+
 ### ✅ Check
 
-Push anything to `main` (or re-run the workflow from the **Actions** tab — `workflow_dispatch` is
-enabled), then open the **Deploy** job:
+Open the **Actions** tab → the **build** workflow → **Run workflow** → branch `main` → **Run
+workflow**. No commands to type: the button uses the server's `main`, your local clone plays no
+part. *(A push to `main` triggers the same thing.)*
+
+Then open the **Deploy** job:
 
 - **Expected:** the *Publish to Cloudflare Workers* step ends on a wrangler deployment.
 - A "**Deployment skipped**" annotation naming a secret ⇒ that secret is missing or misspelled.
