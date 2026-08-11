@@ -23,9 +23,11 @@ interface Props {
     summary: UiKey;
     exitTitle: UiKey;
     exitBody: UiKey;
+    /** What this act has earned the right to offer. See InstallBlock's own note. */
+    offer?: 'library' | 'library-and-tool';
 }
 
-const { name, label, title, summary, exitTitle, exitBody } = Astro.props;
+const { name, label, title, summary, exitTitle, exitBody, offer = 'library' } = Astro.props;
 
 const t = useTranslations(localeFromPath(Astro.url.pathname));
 ---
@@ -42,7 +44,7 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
     <footer class="exit">
         <h3>{t(exitTitle)}</h3>
         <p>{t(exitBody)}</p>
-        <InstallBlock placement={`${name}-exit`} />
+        <InstallBlock placement={`${name}-exit`} offer={offer} />
     </footer>
 </section>
 

@@ -22,13 +22,21 @@ import { site } from '../site';
 interface Props {
     /** Stable, position-independent identifier passed to every command in the row. */
     placement: string;
+    /**
+     * What this instance offers, which is what the visitor has been shown by the time
+     * they reach it (§9.3). An exit that offers the tool before the tool has appeared
+     * asks the reader to judge something they have no way to judge yet, and reads as
+     * noise rather than as a door.
+     */
+    offer?: 'library' | 'library-and-tool';
 }
 
-const { placement } = Astro.props;
+const { placement, offer = 'library' } = Astro.props;
 
 const t = useTranslations(localeFromPath(Astro.url.pathname));
 
 const documentationPending: boolean = site.documentation.status === 'pending';
+const withTool: boolean = offer === 'library-and-tool';
 ---
 
 <div class="install">
@@ -46,10 +54,27 @@ const documentationPending: boolean = site.documentation.status === 'pending';
         />
     </div>
 
+    {
+        withTool && (
+            <div class="slot">
+                <h3>{t('install.tool')}</h3>
+                <CopyableCommand command={site.cli.installCommand} placement={placement} variant="dotnet-tool" />
+            </div>
+        )
+    }
+
     <nav class="links" aria-label={t('install.nuget')}>
         <a href={site.library.nuget} data-placement={placement} data-variant="nuget-link">
             {t('install.nuget')}
         </a>
+
+        {
+            withTool && (
+                <a href={site.cli.nuget} data-placement={placement} data-variant="nuget-tool-link">
+                    {t('install.nugetTool')}
+                </a>
+            )
+        }
 
         {
             documentationPending ? (

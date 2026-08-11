@@ -9,6 +9,7 @@
 import CodeSample from './CodeSample.astro';
 import InstallBlock from './InstallBlock.astro';
 import ActOne from './narrative/ActOne.astro';
+import ActTwo from './narrative/ActTwo.astro';
 import { localeFromPath } from '../i18n/routing';
 import { useTranslations } from '../i18n/ui';
 import { site } from '../site';
@@ -47,6 +48,7 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
         visitor who already knows the product is supposed to reach for. Until it
         exists, the hero's block is the only one above the first act's exit. */}
     <ActOne />
+    <ActTwo />
 
     <p class="note">{t('home.progress.note')}</p>
 </main>
