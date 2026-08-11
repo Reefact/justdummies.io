@@ -22,8 +22,8 @@ written in French for a reader who works in that language, and translating them
 would cost a permanent synchronisation without adding a reader.
 
 **What tells a maintainer how to operate this repository is kept as an
-English/French pair** — the deployment guide under `docs/for-maintainers/`, the
-decision records under `docs/decisions/`. They are paired because they are read
+English/French pair** — everything under `docs/for-maintainers/`: the deployment
+guide, and the decision records in `adr/`. They are paired because they are read
 while doing the thing they describe, by whoever is doing it, and someone
 following installation steps in a second language makes mistakes they would not
 make in their own.
@@ -239,9 +239,10 @@ code does.
 ## Decision records
 
 A pull request that embarks an architectural decision records it as an ADR under
-[`docs/decisions/`](docs/decisions/README.md). The format is the library's, and
-so is the test for whether a decision is significant enough to record: *if the
-implementation changed but the decision stood, would the record need rewriting?*
+[`docs/for-maintainers/adr/`](docs/for-maintainers/adr/README.md). The format is
+the library's, and so is the test for whether a decision is significant enough to
+record: *if the implementation changed but the decision stood, would the record
+need rewriting?*
 
 Most pull requests embark no decision and add no ADR. What is expected is that
 the question was asked, not that the artefact exists.

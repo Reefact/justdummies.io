@@ -827,7 +827,7 @@ Le tag est **annoté** (`-a -m`) et non léger : il porte un auteur, une date et
 `git show` sur le tag dira *pourquoi* cette mise en ligne a eu lieu. Un tag léger ne dit rien.
 
 Pourquoi un tag plutôt qu'une fusion, ce que ça coûte, et les schémas de nommage écartés en
-chemin : [`ADR-0001`](../decisions/0001-a-release-tag-publishes-not-a-merge-fr.md).
+chemin : [`ADR-0001`](adr/0001-a-release-tag-publishes-not-a-merge-fr.md).
 
 > ⚠️ **Ceci publie en production.** Ce n'est pas un essai à blanc. Une poussée sur `main`, elle, ne
 > publie rien : elle construit et vérifie.

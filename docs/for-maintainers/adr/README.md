@@ -8,14 +8,14 @@ link to its successor.
 **This format is the library's, adopted deliberately** — it is the ADR base of
 [`Reefact/first-class-errors`](https://github.com/Reefact/first-class-errors/tree/main/doc/handwritten/for-maintainers/adr),
 reproduced here so a maintainer moving between the two repositories reads the same shape twice. The
-same reasoning as the commit convention in [`CONTRIBUTING.md`](../../CONTRIBUTING.md). Where the
+same reasoning as the commit convention in [`CONTRIBUTING.md`](../../../CONTRIBUTING.md). Where the
 library's base carries a rule this one does not, the library's is the one to follow; the local
 differences are named at the bottom of this file.
 
 ## When is an ADR written?
 
 The test for "significant" is the one
-[`docs/design/decisions-inventory.md`](../design/decisions-inventory.md) already applies:
+[`docs/design/decisions-inventory.md`](../../design/decisions-inventory.md) already applies:
 
 > If the implementation changed but the decision stood, would the record need rewriting? If not, it
 > is an ADR.
@@ -36,7 +36,7 @@ ratifying one is the maintainer's act.
 An ADR captures a **decision and the reasoning behind it** — not how that decision is implemented.
 Implementation mechanics (code, configuration, YAML, exact flags, command snippets, step-by-step
 walkthroughs) live in the code and in the reference documentation the ADR links to — for example the
-[deployment guide](../for-maintainers/deployment-en.md) — never in the ADR itself.
+[deployment guide](../deployment-en.md) — never in the ADR itself.
 
 In particular, **Rationale is argument, not a design document**: if a paragraph explains *how
 something is built* rather than *why the decision is right*, it belongs in the reference docs, and
@@ -45,7 +45,7 @@ documenting how it is wired is specification and does not.
 
 ## File conventions
 
-* One decision per record, under `docs/decisions/`, as a `-en`/`-fr` pair:
+* One decision per record, under `docs/for-maintainers/adr/`, as a `-en`/`-fr` pair:
   `NNNN-short-title-en.md` and `NNNN-short-title-fr.md` — a four-digit sequence number, a
   lowercase kebab-case title, then the language. Both halves carry a banner linking to the other.
 * The number is a **sequence**, assigned in the order records are written. It ranks nothing.
@@ -137,9 +137,9 @@ requests, issues, diagrams.
 
 Named rather than left to be discovered:
 
-* **The directory is `docs/decisions/`**, not `doc/handwritten/for-maintainers/adr/`. This
-  repository has no generated documentation to separate from hand-written documentation, and
-  `docs/design/decisions-inventory.md` already promises this path.
+* **The directory drops one level**, `docs/for-maintainers/adr/` rather than
+  `doc/handwritten/for-maintainers/adr/`. Nothing here is generated, so there is no generated
+  documentation to separate hand-written documentation from.
 * **Both languages are suffixed**, `-en` and `-fr`, where the library leaves English unsuffixed and
   marks only the translation. This repository's existing pair — the deployment guide — was written
   that way before this base existed, and one twinning convention beats matching the library on a
@@ -154,6 +154,6 @@ Named rather than left to be discovered:
 ## Relation to the design documents
 
 The specification's registry of decisions is what this directory is. Until it is populated,
-[`docs/design/decisions-inventory.md`](../design/decisions-inventory.md) lists the decisions the
+[`docs/design/decisions-inventory.md`](../../design/decisions-inventory.md) lists the decisions the
 specification applies without recording — **a line leaves that inventory when its record exists
 here**. It is transitional by construction, and the day it is empty it deletes itself.

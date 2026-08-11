@@ -177,9 +177,9 @@ aucun lecteur ne consomme.
 ## Références
 
 * L'étape 7 du guide de déploiement, qui est la moitié opératoire de cette décision —
-  [Français](../for-maintainers/deployment-fr.md) · [English](../for-maintainers/deployment-en.md).
+  [Français](../deployment-fr.md) · [English](../deployment-en.md).
 * `.github/workflows/build.yml`, où vit le garde-fou.
-* **D1** dans [`docs/design/decisions-inventory.md`](../design/decisions-inventory.md) — un dépôt
+* **D1** dans [`docs/design/decisions-inventory.md`](../../design/decisions-inventory.md) — un dépôt
   qui publie des paquets versionnés face à un dépôt qui publie un déploiement. Cette fiche l'affine
   plutôt qu'elle ne la retire : le déploiement a maintenant des noms de release lui aussi, et la
   séparation que trace D1 tient toujours, parce que les deux dépôts nomment des choses différentes

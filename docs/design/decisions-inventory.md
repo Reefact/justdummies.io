@@ -3,7 +3,7 @@
 ## Ce qu'est ce document
 
 La liste des décisions que la [spécification](specification.md) applique sans les
-consigner, et qui méritent chacune une fiche dans `docs/decisions/`.
+consigner, et qui méritent chacune une fiche dans `docs/for-maintainers/adr/`.
 
 **Il est transitoire, et c'est sa seule différence importante avec la spécification.**
 

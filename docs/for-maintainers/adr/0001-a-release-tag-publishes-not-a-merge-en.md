@@ -163,9 +163,9 @@ consumes.
 ## References
 
 * Step 7 of the deployment guide, which is this decision's operating half —
-  [English](../for-maintainers/deployment-en.md) · [Français](../for-maintainers/deployment-fr.md).
+  [English](../deployment-en.md) · [Français](../deployment-fr.md).
 * `.github/workflows/build.yml`, where the gate lives.
-* **D1** in [`docs/design/decisions-inventory.md`](../design/decisions-inventory.md) — a repository
+* **D1** in [`docs/design/decisions-inventory.md`](../../design/decisions-inventory.md) — a repository
   publishing versioned packages against one publishing a deployment. This record refines it rather
   than retiring it: the deployment now has release names too, and the separation D1 draws still
   holds, because the two repositories name different things for different reasons.

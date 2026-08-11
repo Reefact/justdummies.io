@@ -10,7 +10,7 @@
      specification: it lives in the code and the reference docs (e.g. the
      deployment guide), which this ADR links to. Test: if the implementation
      changed but the decision stood, this ADR should not need editing.
-     See docs/decisions/README.md. -->
+     See docs/for-maintainers/adr/README.md. -->
 
 **Status:** Proposed
 **Proposed:** YYYY-MM-DD
