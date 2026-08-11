@@ -125,6 +125,12 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
 
     code {
         flex: 1;
+        /* Without this the command never scrolls and the page does. A flex item's
+           automatic minimum size is its min-content width, and `white-space: pre`
+           gives the command no wrapping opportunity, so the item refuses to shrink,
+           the row grows past its container, and on a phone every paragraph on the
+           page is pushed off the right edge by a command nobody could read anyway. */
+        min-width: 0;
         font-family: var(--jd-font-mono);
         font-size: var(--jd-text-sm);
         white-space: pre;
