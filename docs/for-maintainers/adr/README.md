@@ -133,6 +133,7 @@ requests, issues, diagrams.
 |---|---|---|
 | [ADR-0001](0001-a-release-tag-publishes-not-a-merge-en.md) | A release tag publishes, not a merge | Accepted |
 | [ADR-0002](0002-the-site-answers-on-one-hostname-en.md) | The site answers on one hostname | Proposed |
+| [ADR-0003](0003-the-figure-carries-the-scene-en.md) | The figure carries the scene | Proposed |
 
 ## How this base differs from the library's
 

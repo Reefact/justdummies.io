@@ -57,5 +57,9 @@ echo "▸ Stamping the artefact with its version"
 
 "${root}/scripts/verify-output.sh"
 
+# After verify-output.sh, which is about the artefact's shape; this one is about what the
+# narrative says, and it reads the built pages as well as the strings behind them.
+"${root}/scripts/check-narrative.sh"
+
 echo
 echo "▸ Ready: ${root}/dist"
