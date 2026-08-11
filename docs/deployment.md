@@ -1,298 +1,654 @@
 # Mettre le site en ligne sur Cloudflare Workers
 
-Ce guide part de zéro : aucun compte Cloudflare, aucune connaissance de la plateforme. À la
-fin, `justdummies.io` sera servi par Cloudflare et chaque poussée sur `main` publiera
-automatiquement.
+*🇬🇧 [English version](deployment-en.md)*
 
-Il se lit dans l'ordre. Les étapes 1 à 4 se font une fois, à la main, et t'apprennent ce que
-la plateforme fait ; l'étape 5 automatise ce que tu viens de faire à la main. Ne saute pas
-l'ordre : automatiser un déploiement qu'on n'a jamais vu réussir revient à déboguer deux
-choses à la fois.
+Ce guide part de zéro : aucun compte Cloudflare, aucune connaissance de la plateforme. À la fin,
+`justdummies.io` sera servi par Cloudflare et chaque poussée sur `main` publiera automatiquement.
+
+**Compte environ deux heures**, dont une bonne partie d'attente (propagation DNS, premiers
+téléchargements). Rien n'est irréversible avant l'étape 8.
 
 ---
 
-## Le modèle mental, en cinq mots
+## Comment lire ce guide
+
+Chaque étape a la même forme :
+
+> **Pourquoi** — ce que l'étape sert à obtenir, en deux lignes.
+> **Faire** — les commandes, à copier.
+> **✅ Contrôle** — une commande qui prouve que l'étape a marché, avec la sortie attendue.
+
+**Ne saute jamais un contrôle.** Cette plateforme a la propriété désagréable d'accepter des
+configurations fausses sans rien dire : le site se déploie, répond 200, et une partie ne
+fonctionne pas. Les contrôles existent exactement pour ça — chacun d'eux correspond à une panne
+réelle qui, sans lui, ne se voit qu'en production.
+
+Les étapes 1 à 6 se font à la main. L'étape 7 automatise ce que tu viens de faire à la main. Cet
+ordre n'est pas négociable : automatiser un déploiement qu'on n'a jamais vu réussir, c'est
+déboguer deux choses à la fois.
+
+---
+
+## Étape 0 — Les prérequis
+
+### 0.1 Choisir son terminal
+
+Le point important, et il n'est pas cosmétique : **la construction du site repose sur des scripts
+bash**. `pnpm build` appelle `scripts/build-site.sh`, et les cinq scripts du dépôt utilisent des
+constructions propres à bash (`set -euo pipefail`, la substitution de processus `< <(...)`,
+`compgen`). Ni `cmd.exe` ni PowerShell ne peuvent les exécuter — ce n'est pas une question de
+préférence, ces constructions n'ont pas d'équivalent.
+
+| Commande | cmd / PowerShell | Git Bash | WSL2 | macOS / Linux |
+|---|---|---|---|---|
+| `pnpm install` | ✅ | ✅ | ✅ | ✅ |
+| `pnpm dev`, `pnpm check` | ✅ | ✅ | ✅ | ✅ |
+| `pnpm serve`, `preview`, `deploy` | ✅ | ✅ | ✅ | ✅ |
+| `pnpm build:playground` | ✅ | ✅ | ✅ | ✅ |
+| **`pnpm build`** | ❌ | ⚠️ | ✅ | ✅ |
+| `./scripts/*.sh` en direct | ❌ | ✅ | ✅ | ✅ |
+
+**Sous Windows, utilise WSL2.** C'est exactement l'environnement de la CI
+(`runs-on: ubuntu-latest`) : même système, même bash, mêmes scripts. « Ça marche chez moi » veut
+alors dire quelque chose.
+
+Dans PowerShell, une fois :
+
+```powershell
+wsl --install -d Ubuntu
+```
+
+Redémarre si l'installateur le demande, puis ouvre le terminal **Ubuntu** — c'est là que tout se
+passe désormais.
+
+> ⚠️ **Le piège qui coûte le plus cher.** Clone le dépôt dans le système de fichiers Linux
+> (`~/dev/justdummies.io`), **jamais** sous `/mnt/c/...`. Chaque accès à un fichier traversant la
+> frontière Windows↔Linux paie un coût fixe, et ce build écrit des milliers de petits fichiers —
+> 129 rien que dans `_framework`. Sur `/mnt/c`, une construction de trente secondes en prend
+> plusieurs minutes.
+
+*Sur macOS ou Linux, il n'y a rien à faire : ton terminal convient déjà.*
+
+Si tu tiens absolument à rester en Windows natif, pnpm sait déléguer à Git Bash :
+
+```powershell
+pnpm config set scriptShell "C:\Program Files\Git\bin\bash.exe"
+```
+
+Ça fonctionne, mais tu construis alors dans un bash différent de celui de la CI, et Git Bash
+n'embarque pas tous les outils que les scripts appellent. C'est un repli, pas un choix.
+
+### 0.2 La chaîne d'outils
+
+Trois outils, et **le dépôt fixe lui-même les versions** — ne les choisis pas, laisse-les être
+lues :
+
+| Outil | Version | Fixée par |
+|---|---|---|
+| Node | 22 | `.nvmrc` |
+| pnpm | 10.33.0 | le champ `packageManager` de `package.json` |
+| .NET SDK | 10.0.100 | `global.json` |
+
+Dans Ubuntu (WSL) ou sur Linux :
+
+```bash
+# Node — installe nvm en suivant son README, puis, dans le dépôt :
+#   https://github.com/nvm-sh/nvm#installing-and-updating
+nvm install          # lit .nvmrc, donc installe la version que le dépôt exige
+
+# pnpm — corepack est livré avec Node et lit le champ packageManager
+corepack enable
+
+# .NET SDK — le canal correspond à global.json
+curl -sSL https://dot.net/v1/dotnet-install.sh | bash -s -- --channel 10.0
+echo 'export PATH="$HOME/.dotnet:$PATH"' >> ~/.bashrc
+exec "$SHELL"
+```
+
+Puis récupère le dépôt et active le hook de message de commit :
+
+```bash
+git clone https://github.com/Reefact/justdummies.io.git
+cd justdummies.io
+git config core.hooksPath .githooks    # une fois par clone
+```
+
+### ✅ Contrôle des prérequis
+
+```bash
+node --version
+pnpm --version
+dotnet --version
+bash --version | head -1
+pwd | grep -q '^/mnt/' \
+  && echo '⚠️  dépôt sur le disque Windows — le build sera très lent' \
+  || echo '✅ dépôt sur le système de fichiers natif'
+```
+
+Attendu :
+
+```
+v22.x.x
+10.33.0
+10.0.1xx
+GNU bash, version 5.x.x(1)-release ...
+✅ dépôt sur le système de fichiers natif
+```
+
+Un `node: command not found` après `nvm install` signifie que le shell n'a pas rechargé son
+environnement : `exec "$SHELL"`. Une version de Node en 20 ou 24 au lieu de 22 fera échouer
+`pnpm install` sur le champ `engines` — c'est voulu.
+
+---
+
+## Le vocabulaire, en cinq mots
 
 | Mot | Ce que c'est |
 |---|---|
 | **Worker** | Une unité de déploiement chez Cloudflare. Elle peut contenir du code, des fichiers, ou — comme ici — seulement des fichiers. |
-| **Static assets** | Les fichiers de `dist/`, servis directement par le réseau de Cloudflare. Les requêtes sur ces fichiers sont **gratuites et illimitées**. |
-| **wrangler** | L'outil en ligne de commande de Cloudflare. Il est déjà dans les dépendances du dépôt, épinglé — jamais `npx wrangler@latest`. |
+| **Static assets** | Les fichiers de `dist/`, servis directement par le réseau de Cloudflare. Ces requêtes sont **gratuites et illimitées**. |
+| **wrangler** | L'outil en ligne de commande de Cloudflare. Déjà dans les dépendances du dépôt, épinglé — jamais `npx wrangler@latest`. |
 | **Version** | Un téléversement. Il existe, il a une URL, et il n'est pas en production tant qu'on ne l'y promeut pas. |
 | **Déploiement** | La version que le domaine sert réellement. |
 
-Le point le plus important, et celui qui explique la moitié de la configuration du dépôt :
+Le point le plus important, celui qui explique la moitié de la configuration du dépôt :
 
 > **Ce site n'a aucun script serveur.** `wrangler.jsonc` n'a délibérément pas de champ `main`.
-> Les requêtes servies comme assets sont gratuites et illimitées ; celles qui invoquent un
-> script comptent dans un quota, et sur le plan gratuit l'épuisement de ce quota répond une
-> erreur au lieu de se replier sur les fichiers. C'est la différence entre un site qui se
-> dégrade et un site qui tombe.
+> Les requêtes servies comme assets sont gratuites et illimitées ; celles qui invoquent un script
+> comptent dans un quota, et sur le plan gratuit l'épuisement de ce quota répond une erreur au
+> lieu de se replier sur les fichiers. C'est la différence entre un site qui se dégrade et un
+> site qui tombe.
 
-Le raisonnement complet est dans `docs/design/decisions-inventory.md`, fiches **A1** (pourquoi
-Workers et pas Pages) et **A6** (pourquoi aucun script).
+Le raisonnement complet est dans [`design/decisions-inventory.md`](design/decisions-inventory.md),
+fiches **A1** (pourquoi Workers et pas Pages) et **A6** (pourquoi aucun script).
 
 ---
 
 ## Ce que le dépôt fait déjà pour toi
 
-Rien de tout ceci n'est à écrire — c'est déjà en place et vérifié :
+Rien de tout ceci n'est à écrire :
 
 | Fichier | Rôle |
 |---|---|
-| `wrangler.jsonc` | Le nom du Worker (`justdummies-site`), le dossier à publier (`dist/`), et le traitement des 404. |
-| `apps/site/public/_headers` *(généré)* | La Content Security Policy et les règles de cache. Généré à chaque build par `scripts/generate-headers.mjs`, parce que la politique doit nommer un hash que seul le build connaît. |
+| `wrangler.jsonc` | Le nom du Worker (`justdummies-site`), le dossier à publier (`dist/`), le traitement des 404. |
+| `dist/_headers` *(généré)* | La Content Security Policy et les règles de cache. Régénéré à chaque build par `scripts/generate-headers.mjs`, parce que la politique doit nommer un hash que seul le build connaît. |
 | `apps/site/public/_redirects` | La réécriture qui fait survivre les routes du playground à un lien à froid. |
 | `apps/site/public/.assetsignore` | Ce qui ne doit **jamais** monter dans le téléversement. |
-| `scripts/verify-output.sh` | Vingt assertions sur la forme de l'artefact, dont plusieurs n'existent que parce que leur échec est invisible jusqu'à ce qu'un visiteur le rencontre. |
+| `scripts/verify-output.sh` | Dix-sept assertions sur la forme de l'artefact. Plusieurs n'existent que parce que leur échec est invisible jusqu'à ce qu'un visiteur le rencontre. |
 | `.github/workflows/build.yml` | Construit, vérifie, puis publie — dès que les identifiants existeront. |
 
 Sur Workers, `_headers` et `_redirects` **ne sont pas servis comme des fichiers** : ils sont
-analysés, et leurs règles sont appliquées aux réponses. C'est pourquoi les exclure du
-téléversement ne les rendrait pas privés — ils ne le sont pas — mais les ferait disparaître,
-et le site perdrait sa politique de sécurité sans qu'aucune page cesse de répondre 200.
-`.assetsignore` le dit, et `verify-output.sh` le vérifie.
+analysés, et leurs règles sont appliquées aux réponses. Les exclure du téléversement ne les
+rendrait donc pas privés — ils ne le sont pas — mais les ferait *disparaître*, et le site
+perdrait sa politique de sécurité sans qu'aucune page cesse de répondre 200. C'est ce que dit
+`.assetsignore`, et ce que `verify-output.sh` vérifie.
 
 ---
 
-## Étape 1 — Voir le site comme Cloudflare le verra
+## Étape 1 — Construire l'artefact
 
-**Aucun compte n'est nécessaire.** Commence par là.
+**Pourquoi** — Tout le reste part de `dist/`. Cette étape ne touche pas au réseau et ne demande
+aucun compte : c'est le bon endroit pour découvrir un problème.
+
+**Faire**
 
 ```bash
 pnpm install
-pnpm build      # construit dist/ : le site, le playground dedans, les en-têtes, puis vérifie
-pnpm serve      # sert dist/ exactement comme Workers le fera, sur http://localhost:8787
+pnpm build 2>&1 | tee /tmp/build.log
 ```
 
-`pnpm serve` n'est pas un serveur de fichiers statiques. C'est le moteur de Workers en local :
-il **analyse `_headers` et `_redirects`** et applique leurs règles. La différence est tout
-sauf théorique — c'est cette commande qui a révélé que l'ancienne règle de réécriture du
-playground était rejetée par la plateforme et n'avait jamais fonctionné.
+La première exécution est longue : elle télécharge les paquets NuGet et compile le playground.
 
-Au démarrage, lis les deux lignes que wrangler affiche :
+### ✅ Contrôle
+
+```bash
+tail -3 /tmp/build.log                                   # la conclusion
+grep -c '  ✓' /tmp/build.log                             # assertions réussies
+grep '  ✗' /tmp/build.log || echo 'aucune assertion en échec'
+```
+
+Attendu :
+
+```
+▸ Artefact looks well formed.
+
+▸ Ready: /home/…/justdummies.io/dist
+17
+aucune assertion en échec
+```
+
+Le nombre d'assertions grandira avec le dépôt ; **ce qui compte est l'absence de `✗` et la
+présence de la dernière ligne.** Si `pnpm build` s'arrête sur
+`./scripts/build-site.sh: not found` ou une erreur de syntaxe, relis l'étape 0.1 : tu n'es pas
+dans bash.
+
+Vérifie ensuite la forme de ce qui a été produit :
+
+```bash
+ls -a dist/ | head -20
+ls dist/playground/_framework/ | wc -l
+```
+
+`dist/` doit contenir `index.html`, `404.html`, `_headers`, `_redirects`, `.assetsignore`, `fr/`,
+`_astro/` et `playground/`. Le compte de `_framework` tourne autour de 130 fichiers.
+
+---
+
+## Étape 2 — Servir le site comme Cloudflare le servira
+
+**Pourquoi** — C'est l'étape la plus rentable du guide. `pnpm serve` n'est **pas** un serveur de
+fichiers : c'est le moteur de Workers en local, qui **analyse `_headers` et `_redirects`** et
+applique leurs règles. Aucun autre serveur local n'a d'opinion sur ces deux fichiers, et ce sont
+eux qui portent la politique de sécurité et le routage du playground.
+
+**Faire**
+
+```bash
+pnpm serve       # occupe le terminal — sert sur http://localhost:8787
+```
+
+> Cette commande ne rend pas la main. **Ouvre un second terminal** pour les contrôles.
+
+### ✅ Contrôle 2a — les règles sont-elles chargées ?
+
+Lis les deux lignes que wrangler affiche au démarrage :
 
 ```
 ✨ Parsed 1 valid redirect rule.
 ✨ Parsed 5 valid header rules.
 ```
 
-**`Parsed 0 valid redirect rules` est un échec silencieux**, pas une information. Le site se
-déploie très bien sans ses règles ; simplement, elles n'existent pas. Si tu vois `invalid
-redirect rule`, lis le message : wrangler explique précisément ce qui cloche.
+**`Parsed 0 valid redirect rules` est un échec, pas une information.** Le site se déploie
+parfaitement sans ses règles ; simplement, elles n'existent pas. Si tu lis
+`invalid redirect rule`, le message de wrangler dit précisément ce qui cloche.
 
-Puis vérifie les quatre choses qui comptent :
+### ✅ Contrôle 2b — les six URL qui comptent
+
+Dans le second terminal :
 
 ```bash
-# 1. L'accueil répond, et porte sa politique de sécurité
-curl -sD - -o /dev/null http://localhost:8787/ | grep -i content-security-policy
-
-# 2. Une URL inventée donne la page 404 du site, dans la bonne langue
-curl -s http://localhost:8787/nexiste-pas   | grep -o '<title>[^<]*</title>'
-curl -s http://localhost:8787/fr/nexiste-pas | grep -o '<title>[^<]*</title>'
-
-# 3. Le playground démarre
-open http://localhost:8787/playground/
-
-# 4. Un lien à froid vers une route du playground répond 200, pas 307 ni 404
-curl -so /dev/null -w '%{http_code}\n' http://localhost:8787/playground/not-found
+B=http://localhost:8787
+for u in / /fr/ /playground/ /playground/not-found /nexiste-pas /fr/nexiste-pas; do
+  printf '%-24s %s\n' "$u" "$(curl -so /dev/null -w '%{http_code}' $B$u)"
+done
 ```
 
-Le dernier point mérite son explication, parce que c'est le piège le plus coûteux de cette
-plateforme et qu'il a deux formes qui se ressemblent :
+Attendu — **exactement** ces codes :
 
-- Une règle `/playground/*  /playground/index.html  200` est **rejetée** par Cloudflare
-  (« Infinite loop detected ») : la plateforme normalise `/playground/index.html` en
-  `/playground/`, qui correspond de nouveau au motif. Zéro règle analysée, déploiement
-  réussi, aucune route couverte.
-- Une règle qui cible `index.html` répond **307** vers le dossier. Elle est acceptée, et elle
-  détruit l'URL que la réécriture existait pour préserver : Blazor démarre à sa racine et la
-  route a disparu.
+```
+/                        200
+/fr/                     200
+/playground/             200
+/playground/not-found    200
+/nexiste-pas             404
+/fr/nexiste-pas          404
+```
 
-La forme qui fonctionne cible le **dossier** : `/playground/not-found  /playground/  200`.
-`verify-output.sh` refuse désormais les deux autres, et exige qu'une règle existe pour chaque
-`@page` déclaré par le playground. Le commentaire en tête de `_redirects` raconte tout.
+Le quatrième est le seul qui surprenne, et c'est le plus important : un **307** ou un **404** à
+cette ligne signifie que la réécriture du playground est cassée. Voir l'encadré ci-dessous.
+
+### ✅ Contrôle 2c — le bon contenu, dans la bonne langue
+
+```bash
+B=http://localhost:8787
+curl -sD - -o /dev/null $B/ | grep -i '^content-security-policy' | cut -c1-60
+for u in / /fr/ /playground/ /nexiste-pas /fr/nexiste-pas; do
+  printf '%-18s %s\n' "$u" "$(curl -s $B$u | grep -o '<title>[^<]*</title>')"
+done
+```
+
+Attendu :
+
+```
+content-security-policy: default-src 'self'; base-uri 'self'
+/                  <title>JustDummies — Focused, fluent test values for .NET.</title>
+/fr/               <title>JustDummies — Des valeurs de test fluides et ciblées, pour .NET.</title>
+/playground/       <title>Playground — JustDummies</title>
+/nexiste-pas       <title>Page not found — JustDummies</title>
+/fr/nexiste-pas    <title>Page introuvable — JustDummies</title>
+```
+
+Les deux dernières lignes vérifient une subtilité voulue : `not_found_handling` sert le `404.html`
+**le plus proche**, donc une URL française invalide répond en français.
+
+### ✅ Contrôle 2d — le runtime .NET est servi tel quel
+
+```bash
+B=http://localhost:8787
+J=$(basename $(ls dist/playground/_framework/dotnet.*.js | head -1))
+curl -so /dev/null -w '%{http_code} %{content_type} %{size_download} octets\n' \
+  "$B/playground/_framework/$J"
+```
+
+Attendu — un vrai fichier JavaScript de plusieurs dizaines de kilo-octets :
+
+```
+200 text/javascript; charset=utf-8 50017 octets
+```
+
+Si tu obtiens `text/html` et environ deux kilo-octets, le shell HTML a été servi à la place du
+runtime : une règle de `_redirects` avale les fichiers du framework, et le playground restera une
+page blanche.
+
+> ### 📎 Le piège des réécritures, et pourquoi ces contrôles existent
+>
+> Le playground est une application monopage : ses routes n'existent qu'une fois Blazor démarré.
+> Une requête *à froid* sur l'une d'elles doit donc recevoir le shell de l'application. Deux
+> formes de règle paraissent correctes et échouent :
+>
+> ```
+> /playground/*  /playground/index.html  200
+> ```
+> est **rejetée** par la plateforme — « *Infinite loop detected* ». Cloudflare normalise
+> `/playground/index.html` en `/playground/`, qui correspond de nouveau au motif. Zéro règle
+> analysée, déploiement réussi, aucune route couverte.
+>
+> ```
+> /playground/not-found  /playground/index.html  200
+> ```
+> est acceptée et répond **307** vers `/playground/`. C'est la même normalisation, et elle détruit
+> l'URL que la réécriture existait pour préserver : Blazor démarre à sa racine, la route a
+> disparu.
+>
+> La forme qui fonctionne cible le **dossier** :
+> ```
+> /playground/not-found  /playground/  200
+> ```
+>
+> `verify-output.sh` refuse désormais les deux mauvaises formes et exige une règle par `@page`
+> déclaré. Le commentaire en tête de `_redirects` raconte tout. **Une nouvelle route dans le
+> playground demande une nouvelle ligne dans `_redirects`** — sans quoi elle marche à la souris et
+> échoue sur un lien partagé.
+
+Arrête le serveur avec `Ctrl+C` quand les quatre contrôles passent.
 
 ---
 
-## Étape 2 — Créer le compte Cloudflare
+## Étape 3 — Créer le compte Cloudflare
+
+**Pourquoi** — Il faut un compte pour publier. Rien de plus à cette étape.
+
+**Faire**
 
 1. Va sur [dash.cloudflare.com/sign-up](https://dash.cloudflare.com/sign-up).
-2. Crée le compte avec ton adresse, valide l'e-mail.
+2. Crée le compte, valide l'e-mail.
 3. Le plan **Free** suffit : les assets statiques y sont gratuits et illimités.
 
-Ne rien créer dans l'interface pour l'instant. Le Worker sera créé par `wrangler` à l'étape
-suivante, à partir de `wrangler.jsonc` — c'est le fichier du dépôt qui doit être la source de
-vérité, pas des cases cochées dans un navigateur.
+**Ne crée rien dans l'interface.** Le Worker sera créé par `wrangler` à partir de
+`wrangler.jsonc` : c'est le fichier du dépôt qui doit être la source de vérité, pas des cases
+cochées dans un navigateur.
 
 ---
 
-## Étape 3 — Le premier déploiement, à la main
+## Étape 4 — S'authentifier
+
+**Faire**
 
 ```bash
 pnpm wrangler login
 ```
 
-Un navigateur s'ouvre, tu autorises, et wrangler garde un jeton local dans ton dossier
-personnel. Rien n'est écrit dans le dépôt.
+Un navigateur s'ouvre, tu autorises. wrangler garde un jeton dans ton dossier personnel — rien
+n'est écrit dans le dépôt.
+
+> Sous WSL, si aucun navigateur ne s'ouvre, wrangler affiche une URL : copie-la dans ton
+> navigateur Windows, l'autorisation revient au terminal.
+
+### ✅ Contrôle
 
 ```bash
-pnpm build     # toujours avant : `deploy` publie dist/ tel quel, il ne le reconstruit pas
-pnpm deploy
+pnpm wrangler whoami
 ```
 
-Au premier déploiement, Cloudflare peut te demander de choisir un sous-domaine `workers.dev`
-— c'est un identifiant pour ton compte, choisis ce que tu veux. Le Worker prend le nom
-déclaré dans `wrangler.jsonc`, `justdummies-site`, et le site devient accessible sur :
+Attendu : ton adresse e-mail, et le compte avec son **Account ID**. Note cet identifiant, il
+servira à l'étape 7.
 
-```
-https://justdummies-site.<ton-sous-domaine>.workers.dev
-```
+---
 
-Si tu veux voir ce qui serait téléversé sans rien publier :
+## Étape 5 — Le premier déploiement
+
+**Pourquoi** — Voir le site vivre sur une URL réelle avant d'automatiser quoi que ce soit.
+
+**Faire**
+
+Regarde d'abord ce qui partirait, sans rien publier :
 
 ```bash
 pnpm wrangler deploy --dry-run
 ```
 
----
+Attendu : `✨ Read 158 files from the assets directory …/dist` — le nombre bougera, mais il doit
+se compter en centaines, pas en unités.
 
-## Étape 4 — Vérifier ce qui ne se voit pas
-
-Rejoue la liste de l'étape 1 contre l'URL réelle, en remplaçant `localhost:8787`. Puis les
-deux vérifications qui ne peuvent se faire **que** sur un déploiement réel, parce que le
-serveur local ne les reproduit pas :
-
-**a. La compression du runtime .NET.** C'est une question ouverte que le dépôt a délibérément
-laissée ouverte, dans le commentaire de `.assetsignore` : la publication Blazor émet un jumeau
-`.br` de chaque fichier du framework (une grande partie de l'artefact) que le chargeur .NET ne
-demande jamais. Les exclure allégerait beaucoup le téléversement — à condition que Cloudflare
-compresse `application/wasm` à sa périphérie. Réponds-y avec une mesure, pas au jugé :
+Puis publie :
 
 ```bash
-URL=https://justdummies-site.<ton-sous-domaine>.workers.dev
-WASM=$(basename $(ls dist/playground/_framework/dotnet.native.*.wasm | head -1))
-curl -sD - -o /dev/null -H 'Accept-Encoding: br, gzip' "$URL/playground/_framework/$WASM" \
+pnpm build && pnpm deploy
+```
+
+`pnpm deploy` publie `dist/` **tel quel** et ne le reconstruit pas : `pnpm build` d'abord, donc,
+toujours. Au premier déploiement, Cloudflare peut demander de choisir un sous-domaine
+`workers.dev` — c'est un identifiant de compte, prends ce que tu veux.
+
+Le Worker prend le nom déclaré dans `wrangler.jsonc` :
+
+```
+https://justdummies-site.<ton-sous-domaine>.workers.dev
+```
+
+### ✅ Contrôle
+
+Rejoue les contrôles 2b, 2c et 2d contre l'URL réelle — c'est le même bloc, avec un `B`
+différent :
+
+```bash
+B=https://justdummies-site.<ton-sous-domaine>.workers.dev
+for u in / /fr/ /playground/ /playground/not-found /nexiste-pas /fr/nexiste-pas; do
+  printf '%-24s %s\n' "$u" "$(curl -so /dev/null -w '%{http_code}' $B$u)"
+done
+```
+
+Les six codes doivent être identiques à ceux de l'étape 2. **S'ils diffèrent, la différence est
+la plateforme réelle, pas ton poste** — et c'est exactement l'information que cette étape sert à
+produire.
+
+Ouvre ensuite `/playground/` dans un navigateur et regarde la console. Une page blanche *sans*
+erreur réseau mais *avec* une erreur de Content Security Policy signifie que le hash de
+l'importmap n'a pas suivi ; c'est ce que `generate-headers.mjs` calcule à chaque build.
+
+---
+
+## Étape 6 — La mesure qui tranche une question ouverte
+
+**Pourquoi** — Le dépôt a délibérément laissé une question sans réponse, dans le commentaire de
+`.assetsignore` : la publication Blazor émet un jumeau `.br` pré-compressé de chaque fichier du
+framework, que le chargeur .NET ne demande jamais. Les exclure allégerait le téléversement des
+deux tiers — **à condition** que Cloudflare compresse `application/wasm` à sa périphérie. Le
+serveur local ne peut pas répondre : seule la périphérie le peut.
+
+**Faire**
+
+```bash
+B=https://justdummies-site.<ton-sous-domaine>.workers.dev
+W=$(basename $(ls dist/playground/_framework/dotnet.native.*.wasm | head -1))
+curl -sD - -o /dev/null -H 'Accept-Encoding: br, gzip' "$B/playground/_framework/$W" \
   | grep -iE 'content-encoding|content-length|content-type'
 ```
 
-- `content-encoding: br` ou `gzip` → la périphérie compresse, les jumeaux `.br` sont du poids
-  mort et peuvent être exclus.
-- Aucun `content-encoding` → **ne les exclus pas** : le runtime partirait non compressé,
-  contre un budget de 3 Mio pour le premier chargement.
+### ✅ Comment lire le résultat
 
-Note le résultat dans `.assetsignore`, puisque c'est là que la question est posée.
+| Sortie | Conclusion |
+|---|---|
+| `content-encoding: br` ou `gzip` | La périphérie compresse. Les jumeaux `.br` sont du poids mort : tu peux les exclure dans `.assetsignore`. |
+| *aucun* `content-encoding` | **Ne les exclus pas.** Le runtime partirait non compressé, contre un budget de 3 Mio pour le premier chargement. |
 
-**b. Le playground démarre vraiment.** Ouvre `/playground/` et regarde la console du
-navigateur. Une page blanche sans erreur réseau mais avec une erreur de Content Security
-Policy signifie que le hash de l'importmap n'a pas suivi — c'est ce que
-`generate-headers.mjs` calcule à chaque build, et `verify-output.sh` vérifie.
+Note le résultat dans `.assetsignore`, là où la question est posée. Une question tranchée qui
+n'est pas écrite se repose au prochain passage.
 
 ---
 
-## Étape 5 — Automatiser : deux secrets, et c'est tout
+## Étape 7 — Automatiser
 
-La CI construit déjà l'artefact et le vérifie à chaque poussée. Le job `deploy` s'exécute sur
-`main` uniquement, et publie dès que ces deux secrets existent — sans eux, il annonce ce qui
-manque et n'échoue pas.
+**Pourquoi** — La CI construit et vérifie déjà à chaque poussée. Le job `deploy` publie sur
+`main` dès que deux secrets existent ; sans eux, il annonce ce qui manque et n'échoue pas.
 
-### 5a. Le jeton d'API
+### 7.1 Le jeton d'API
 
 1. Dashboard → avatar en haut à droite → **My Profile** → **API Tokens**.
 2. **Create Token**.
-3. Choisis le modèle **Edit Cloudflare Workers**. C'est le chemin documenté par Cloudflare ; il
-   accorde ce qu'il faut pour publier un Worker. Le minimum strict est
-   *Account · Workers Scripts · Edit* — tu pourras resserrer plus tard, une fois le premier
-   déploiement automatique réussi.
-4. Vérifie que le compte visé est le bon, crée le jeton, **copie-le**. Il ne s'affiche
-   qu'une fois.
+3. Modèle **Edit Cloudflare Workers** — le chemin documenté par Cloudflare. Le minimum strict est
+   *Account · Workers Scripts · Edit* ; tu resserreras une fois le déploiement automatique
+   éprouvé.
+4. Vérifie que le compte visé est le bon, crée le jeton, **copie-le**. Il ne s'affiche qu'une
+   fois.
 
-Ce jeton vaut le droit de publier sur ton compte. Il ne doit jamais être écrit dans un
-fichier du dépôt : il ne va que dans les secrets GitHub.
+> Ce jeton vaut le droit de publier sur ton compte. Il ne va **que** dans les secrets GitHub,
+> jamais dans un fichier du dépôt.
 
-### 5b. L'identifiant de compte
+### 7.2 L'identifiant de compte
 
-Dashboard → **Workers & Pages** → l'**Account ID** est dans le panneau latéral droit. Ce n'est
-pas un secret au sens strict, mais on le range au même endroit.
+Celui affiché par `pnpm wrangler whoami` à l'étape 4, ou : Dashboard → **Workers & Pages** →
+panneau latéral droit.
 
-### 5c. Les déposer dans GitHub
+### 7.3 Les déposer
 
-Dans `Reefact/justdummies.io` → **Settings** → **Secrets and variables** → **Actions** →
-**New repository secret**. Deux secrets, ces noms exactement :
+`Reefact/justdummies.io` → **Settings** → **Secrets and variables** → **Actions** → **New
+repository secret**. Deux secrets, ces noms exactement :
 
 | Nom | Valeur |
 |---|---|
-| `CLOUDFLARE_API_TOKEN` | le jeton de 5a |
-| `CLOUDFLARE_ACCOUNT_ID` | l'identifiant de 5b |
+| `CLOUDFLARE_API_TOKEN` | le jeton de 7.1 |
+| `CLOUDFLARE_ACCOUNT_ID` | l'identifiant de 7.2 |
 
-### Ce que fait la CI ensuite
+### ✅ Contrôle
+
+Pousse n'importe quoi sur `main` (ou relance le workflow depuis l'onglet **Actions** —
+`workflow_dispatch` est activé), puis ouvre le job **Deploy** :
+
+- **Attendu :** l'étape *Publish to Cloudflare Workers* se termine sur un déploiement wrangler.
+- Une annotation « **Deployment skipped** » nommant un secret ⇒ ce secret manque ou son nom est
+  mal orthographié.
+- « **Authentication error** » ⇒ jeton expiré, révoqué, ou créé sur un autre compte que
+  `CLOUDFLARE_ACCOUNT_ID`.
+
+Vérifie enfin que la publication vient bien de la CI :
+
+```bash
+pnpm wrangler deployments list
+```
+
+Le déploiement le plus récent doit correspondre à l'heure de ton workflow, pas à ton essai
+manuel de l'étape 5.
+
+### Ce que fait la CI, et pourquoi ainsi
 
 À chaque poussée sur `main` :
 
-1. **build** — installe, contrôle les types, construit l'artefact, vérifie sa forme, contrôle
-   les budgets de taille, et le téléverse comme artefact GitHub.
+1. **build** — installe, valide les extraits, contrôle les types, construit, vérifie la forme,
+   contrôle les budgets, téléverse l'artefact.
 2. **deploy** — récupère **cet artefact-là** plutôt que de reconstruire, rejoue
    `verify-output.sh` sur les octets téléchargés, puis lance `pnpm run deploy`.
 
-Deux choix méritent d'être compris, parce qu'ils ne se devinent pas :
+Trois choix qui ne se devinent pas :
 
 - **Le job de déploiement ne reconstruit pas.** Il publie l'artefact que les vérifications ont
-  examiné. Un job qui reconstruit publie des octets qu'aucun contrôle n'a jamais vus.
-- **Il revérifie après téléchargement.** `upload-artifact` ignore les fichiers cachés par
-  défaut, et `dist/.assetsignore` en est un ; le workflow passe donc
-  `include-hidden-files: true`, et la revérification est ce qui transforme cette ligne en
-  garantie plutôt qu'en intention.
+  examiné ; un job qui reconstruit publie des octets qu'aucun contrôle n'a vus.
+- **Il revérifie après téléchargement.** `upload-artifact` ignore les fichiers cachés par défaut,
+  et `dist/.assetsignore` en est un. Le workflow passe donc `include-hidden-files: true`, et la
+  revérification est ce qui transforme cette ligne en garantie plutôt qu'en intention.
+- **Pas de `wrangler-action`.** Le dépôt épingle un wrangler dans `package.json` ; un pipeline qui
+  en télécharge un autre publie avec une version que personne n'a testée.
 
-Une pull request ne peut pas publier : le job est conditionné à `push` sur `main`.
+Une pull request ne peut pas publier : le job est conditionné à un `push` sur `main`.
 
 ---
 
-## Étape 6 — Brancher `justdummies.io`
+## Étape 8 — Brancher `justdummies.io`
 
-Un domaine personnalisé exige que la **zone soit active chez Cloudflare** — c'est-à-dire que
-les serveurs de noms du domaine pointent vers Cloudflare.
+**Pourquoi** — C'est la première étape difficile à défaire : elle change les serveurs de noms du
+domaine. Fais-la quand les sept précédentes sont vertes.
+
+Un domaine personnalisé exige que la **zone soit active chez Cloudflare**.
 
 **Si le domaine est enregistré ailleurs** (OVH, Gandi, Namecheap…) :
 
-1. Dashboard → **Add a domain** → saisis `justdummies.io` → plan Free.
-2. Cloudflare scanne les enregistrements DNS existants ; relis-les, surtout les MX si une
-   adresse e-mail utilise ce domaine.
-3. Cloudflare affiche deux serveurs de noms. Va chez ton registrar et remplace les siens par
-   ceux-là.
+1. Dashboard → **Add a domain** → `justdummies.io` → plan Free.
+2. Cloudflare scanne les enregistrements DNS existants. **Relis-les**, surtout les `MX` si une
+   adresse e-mail utilise ce domaine : un MX oublié coupe le courrier.
+3. Cloudflare affiche deux serveurs de noms. Chez ton registrar, remplace les siens par ceux-là.
 4. La propagation prend de quelques minutes à quelques heures. La zone passe **Active**.
 
-**Puis, pour rattacher le Worker :**
+**Puis rattache le Worker :**
 
 1. **Workers & Pages** → `justdummies-site` → **Settings** → **Domains & Routes** → **Add** →
    **Custom Domain**.
-2. Saisis `justdummies.io`. Recommence pour `www.justdummies.io` si tu veux les deux.
+2. `justdummies.io`. Recommence pour `www.justdummies.io` si tu veux les deux.
 3. Cloudflare crée l'enregistrement DNS et émet le certificat TLS tout seul.
 
-Un **Custom Domain** envoie tous les chemins du domaine vers le Worker, ce qui est exactement
-ce que veut un site. Une **Route** sert à n'en envoyer qu'une partie — inutile ici.
+Un **Custom Domain** envoie tous les chemins du domaine vers le Worker — ce que veut un site. Une
+**Route** n'en envoie qu'une partie : inutile ici. Rien à changer dans `wrangler.jsonc`.
 
-Rien à changer dans `wrangler.jsonc` : le rattachement d'un domaine se fait côté compte, et le
-déploiement continue de fonctionner à l'identique.
+### ✅ Contrôle
+
+```bash
+B=https://justdummies.io
+curl -sI $B/ | head -1                       # le certificat est-il valide, le site répond-il ?
+for u in / /fr/ /playground/ /playground/not-found /nexiste-pas; do
+  printf '%-24s %s\n' "$u" "$(curl -so /dev/null -w '%{http_code}' $B$u)"
+done
+```
+
+Attendu : `HTTP/2 200`, puis les mêmes codes qu'aux étapes 2 et 5. Une erreur de certificat juste
+après l'ajout est normale — Cloudflare met quelques minutes à l'émettre. Un `curl: (6) Could not
+resolve host` signifie que la zone n'est pas encore active ou que les serveurs de noms n'ont pas
+été changés chez le registrar.
 
 ---
 
-## Étape 7 — Prévisualiser sans publier
+## Étape 9 — Prévisualiser sans publier
+
+**Pourquoi** — Faire relire une modification visuelle avant de la fusionner.
+
+**Faire**
 
 ```bash
 pnpm build
-pnpm preview     # = wrangler versions upload
+pnpm preview                              # téléverse une version, sans la promouvoir
+pnpm preview --preview-alias ma-branche   # avec un nom lisible
 ```
 
-Cette commande téléverse une **version** et renvoie son URL, **sans** la promouvoir en
-production. C'est le mécanisme de preview de Workers, et il diffère de celui de Pages : ici
-une version existe et attend, au lieu qu'un déploiement par branche soit créé
-automatiquement. On peut lui donner un nom lisible :
+La commande renvoie l'URL de la version. C'est le mécanisme de preview de Workers, et il diffère
+de celui de Pages : ici une version *existe et attend*, au lieu qu'un déploiement par branche
+soit créé automatiquement.
+
+### ✅ Contrôle
+
+Ouvre l'URL renvoyée, puis vérifie que la production **n'a pas bougé** :
 
 ```bash
-pnpm preview --preview-alias ma-branche
+pnpm wrangler deployments list
 ```
 
-C'est le bon outil pour faire relire une modification visuelle avant de la fusionner.
+Le déploiement actif doit être inchangé — c'est tout l'intérêt d'une version non promue.
+
+---
+
+## Récapitulatif des contrôles
+
+| # | Étape | Ce que ça prouve |
+|---|---|---|
+| 0 | versions + chemin du clone | La chaîne d'outils correspond au dépôt, et le disque n'est pas le mauvais. |
+| 1 | `Artefact looks well formed.`, zéro `✗` | L'artefact a la forme attendue. |
+| 2a | `Parsed 1 valid redirect rule.` | Les règles sont chargées, pas silencieusement rejetées. |
+| 2b | les six codes HTTP | Le routage, les 404 et la réécriture du playground fonctionnent. |
+| 2c | les titres + l'en-tête CSP | Le bon contenu, la bonne langue, la politique appliquée. |
+| 2d | `text/javascript`, ~50 ko | Aucune règle n'avale les fichiers du framework. |
+| 4 | `wrangler whoami` | Authentifié, sur le bon compte. |
+| 5 | les six codes sur l'URL réelle | La plateforme se comporte comme le local. |
+| 6 | `content-encoding` du `.wasm` | Tranche la question des jumeaux `.br`. |
+| 7 | le job **Deploy** + `deployments list` | La CI publie vraiment, avec les bons secrets. |
+| 8 | `HTTP/2 200` sur le domaine | DNS, TLS et rattachement du Worker en place. |
+| 9 | `deployments list` inchangé | Une preview ne touche pas la production. |
 
 ---
 
@@ -300,24 +656,28 @@ C'est le bon outil pour faire relire une modification visuelle avant de la fusio
 
 | Symptôme | Cause la plus probable |
 |---|---|
-| `Parsed 0 valid redirect rules` | Une règle est rejetée. Lis l'avertissement de wrangler : une cible qui se normalise vers son propre motif produit « Infinite loop detected ». |
-| Un lien à froid vers le playground répond **307** | La règle cible `index.html`. Cible le dossier. |
-| Un lien à froid vers le playground répond **404** | La route est déclarée dans Blazor mais absente de `_redirects`. `pnpm build` le dit maintenant. |
-| Playground blanc, aucune erreur réseau | Content Security Policy. Regarde la console : le hash de l'importmap est recalculé à chaque build, donc un `_headers` modifié à la main casse le playground au build suivant. |
+| `./scripts/build-site.sh: not found`, erreurs de syntaxe | Tu n'es pas dans bash. Voir 0.1. |
+| `pnpm install` refuse la version de Node | `engines` exige Node ≥ 22 : `nvm install`. |
+| Le build met plusieurs minutes | Dépôt sous `/mnt/c/`. Voir l'avertissement en 0.1. |
+| `Parsed 0 valid redirect rules` | Une règle est rejetée. Une cible qui se normalise vers son propre motif donne « Infinite loop detected ». |
+| Lien à froid vers le playground en **307** | La règle cible `index.html`. Cible le dossier. |
+| Lien à froid vers le playground en **404** | Route déclarée dans Blazor, absente de `_redirects`. `pnpm build` le dit maintenant. |
+| Le runtime revient en `text/html` | Une règle avale `_framework`. Contrôle 2d. |
+| Playground blanc, aucune erreur réseau | Content Security Policy. Un `_headers` modifié à la main casse le playground au build suivant, car le hash est recalculé. |
 | Playground blanc, tous les assets en 404 | Le `<base href>` ne correspond plus à l'endroit où le playground a été copié. `verify-output.sh` l'attrape. |
-| `Authentication error` en CI | Jeton absent, expiré, ou créé sur un autre compte que `CLOUDFLARE_ACCOUNT_ID`. |
-| Le job `deploy` annonce « Deployment skipped » | Un des deux secrets manque. Le nom manquant est dans l'annotation. |
-| Le domaine sert encore l'ancien site | La zone n'est pas encore **Active**, ou les serveurs de noms n'ont pas été changés chez le registrar. |
+| CI : « Deployment skipped » | Un secret manque. Son nom est dans l'annotation. |
+| CI : `Authentication error` | Jeton absent, expiré, ou créé sur un autre compte. |
+| `curl: (6) Could not resolve host` | Zone pas encore **Active**, ou serveurs de noms inchangés chez le registrar. |
+| Le domaine sert encore l'ancien site | Même cause, ou cache DNS local. |
 
 ---
 
 ## Ce qui reste à trancher
 
-- **Les jumeaux `.br` du framework.** Question ouverte, posée dans `.assetsignore`, à régler
-  avec la mesure de l'étape 4a.
+- **Les jumeaux `.br` du framework.** Question ouverte, posée dans `.assetsignore`, à régler avec
+  la mesure de l'étape 6.
 - **Resserrer le jeton d'API.** Le modèle « Edit Cloudflare Workers » est plus large que
-  nécessaire pour un Worker sans script. À réduire une fois le déploiement automatique
-  éprouvé.
-- **Les previews en CI.** Elles se font à la main aujourd'hui (étape 7). Les automatiser sur
-  les pull requests demanderait de donner à une PR l'accès au jeton, ce qui n'est pas une
-  décision de configuration mais une décision de sécurité.
+  nécessaire pour un Worker sans script. À réduire une fois le déploiement automatique éprouvé.
+- **Les previews en CI.** Elles se font à la main aujourd'hui (étape 9). Les automatiser sur les
+  pull requests demanderait de donner à une PR l'accès au jeton — pas une décision de
+  configuration, une décision de sécurité.
