@@ -56,7 +56,8 @@ pnpm run deploy # publish dist/ as built — it does not rebuild, so build first
 headers and the redirect rules are the real ones. Prefer it over any other local server when
 checking anything that depends on them.
 
-Pushing to `main` builds and verifies. **A `v*` tag publishes** — a branch never does.
+Pushing to `main` builds and verifies. **A `release/*` tag publishes** — a branch never does:
+`git tag -a "release/$(date -u +%Y-%m-%dT%H-%M-%SZ)" -m …`
 
 The step-by-step setup — prerequisites, account, API token, GitHub secrets, custom domain — with a
 check to run after every step:
