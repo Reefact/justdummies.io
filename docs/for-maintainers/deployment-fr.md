@@ -749,14 +749,33 @@ en faire. Une question tranchée qui n'est pas écrite se repose au prochain pas
 
 1. Dashboard → avatar en haut à droite → **My Profile** → **API Tokens**.
 2. **Create Token**.
-3. Modèle **Edit Cloudflare Workers** — le chemin documenté par Cloudflare. Le minimum strict est
-   *Account · Workers Scripts · Edit* ; tu resserreras une fois le déploiement automatique
-   éprouvé.
-4. Vérifie que le compte visé est le bon, crée le jeton, **copie-le**. Il ne s'affiche qu'une
-   fois.
+3. Modèle **Edit Cloudflare Workers** — le chemin documenté par Cloudflare.
 
-> Ce jeton vaut le droit de publier sur ton compte. Il ne va **que** dans les secrets GitHub,
-> jamais dans un fichier du dépôt.
+Le modèle préremplit treize permissions et **laisse vides deux champs qui bloquent la création** :
+
+| Champ | À faire | Pourquoi |
+|---|---|---|
+| **Account Resources** | `Include` → **ton compte** | un jeton sans compte associé n'a aucune portée, et wrangler échouerait |
+| **Zone Resources** | `Include` → **All zones from an account** → ton compte | le modèle inclut une permission de zone (`Workers Routes`), et Cloudflare refuse une permission de zone sans zone |
+| **TTL** | **laisse vide** | un jeton qui expire fait échouer la CI des mois plus tard, sur un message d'authentification qui ne dit pas « expiré » |
+
+Pour `Zone Resources`, l'autre issue est de **supprimer** la ligne `Zone · Workers Routes · Edit`
+avec son `✕` : ce dépôt publie sur `workers.dev`, et le domaine de l'étape 8 s'attache depuis le
+dashboard, pas par ce jeton.
+
+4. **Continue to summary** → **Create Token** → **copie le jeton**. Il ne s'affiche qu'une fois :
+   garde l'onglet ouvert jusqu'à l'avoir déposé en 7.3.
+
+> Ce jeton vaut le droit de publier sur ton compte, et le modèle accorde bien plus que ce dépôt
+> n'utilise — KV, R2, Pages, Containers, Observability, tous en écriture. Le minimum strict serait
+> *Account · Workers Scripts · Edit*.
+>
+> **Ne taille pas dedans maintenant.** Un déploiement qui échouerait sur une permission manquante
+> serait un problème de plus à isoler, au moment précis où tu essaies d'en valider un autre. Le
+> resserrage est inscrit dans « Ce qui reste à trancher », à faire une fois le déploiement
+> automatique éprouvé.
+>
+> Le jeton ne va **que** dans les secrets GitHub, jamais dans un fichier du dépôt.
 
 ### 7.2 L'identifiant de compte
 
@@ -766,17 +785,30 @@ panneau latéral droit.
 ### 7.3 Les déposer
 
 `Reefact/justdummies.io` → **Settings** → **Secrets and variables** → **Actions** → **New
-repository secret**. Deux secrets, ces noms exactement :
+repository secret**. Deux entrées, ces noms exactement :
 
 | Nom | Valeur |
 |---|---|
 | `CLOUDFLARE_API_TOKEN` | le jeton de 7.1 |
 | `CLOUDFLARE_ACCOUNT_ID` | l'identifiant de 7.2 |
 
+> ⚠️ **Onglet Secrets, pas Variables.** La page en propose deux, et ce sont deux espaces de noms
+> distincts : le workflow lit `${{ secrets.… }}`, donc une valeur créée comme *variable* lui est
+> invisible. Le job répondrait « Deployment skipped » sans que rien n'indique que la valeur existe
+> à côté.
+>
+> L'identifiant de compte n'est pourtant pas une donnée d'accès — `vars` serait le rangement juste,
+> et le workflow le lirait en clair dans ses logs au lieu de le masquer. Il est en `secrets` parce
+> que c'est la forme de l'exemple de Cloudflare, recopiée. À revoir, mais pas pendant la mise en
+> place.
+
 ### ✅ Contrôle
 
-Pousse n'importe quoi sur `main` (ou relance le workflow depuis l'onglet **Actions** —
-`workflow_dispatch` est activé), puis ouvre le job **Deploy** :
+Ouvre l'onglet **Actions** → workflow **build** → bouton **Run workflow** → branche `main` →
+**Run workflow**. Aucune commande à taper : le bouton prend le `main` du serveur, ton dépôt local
+n'intervient pas. *(Une poussée sur `main` déclenche la même chose.)*
+
+Puis ouvre le job **Deploy** :
 
 - **Attendu :** l'étape *Publish to Cloudflare Workers* se termine sur un déploiement wrangler.
 - Une annotation « **Deployment skipped** » nommant un secret ⇒ ce secret manque ou son nom est
