@@ -674,7 +674,23 @@ toujours. Au premier déploiement, Cloudflare peut demander de choisir un sous-d
 > `serve` et `preview` n'ont pas ce problème — vérifié, aucune commande pnpm ne porte ces noms — et
 > s'écrivent donc sans `run`. C'est `deploy` qui est le cas particulier, pas l'inverse.
 
-Le Worker prend le nom déclaré dans `wrangler.jsonc` :
+> ⚠️ **Ce dépôt ne publie sur aucun nom d'hôte `workers.dev`.** `wrangler.jsonc` fixe
+> `"workers_dev": false`, donc une fois l'étape 8 passée et `justdummies.io` rattaché, le site
+> répond là et nulle part ailleurs — le raisonnement est
+> [ADR-0002](adr/0002-the-site-answers-on-one-hostname-fr.md).
+>
+> Ce qui laisse un premier déploiement **sans adresse à contrôler**, puisque le domaine n'est pas
+> encore rattaché. Deux issues, et la seconde est la plus honnête :
+>
+> * Mets `"workers_dev": true` le temps de cette étape, déploie, lance le contrôle ci-dessous contre
+>   `https://justdummies-site.<ton-sous-domaine>.workers.dev`, puis remets `false`. Rien d'autre dans
+>   le dépôt ne dépend de cette valeur.
+> * Ou fais l'étape 8 maintenant et reviens. L'ordre de ce guide n'est pas porteur ici : rattacher un
+>   domaine à un Worker déployé et déployer sur un domaine déjà rattaché aboutissent au même état.
+>
+> Dans les deux cas le contrôle ci-dessous est le même bloc, avec `B` sur l'adresse que tu as.
+
+Le Worker prend le nom déclaré dans `wrangler.jsonc` — avec `workers_dev` activé, c'est :
 
 ```
 https://justdummies-site.<ton-sous-domaine>.workers.dev
@@ -761,8 +777,9 @@ Le modèle préremplit treize permissions et **laisse vides deux champs qui bloq
 | **TTL** | **laisse vide** | un jeton qui expire fait échouer la CI des mois plus tard, sur un message d'authentification qui ne dit pas « expiré » |
 
 Pour `Zone Resources`, l'autre issue est de **supprimer** la ligne `Zone · Workers Routes · Edit`
-avec son `✕` : ce dépôt publie sur `workers.dev`, et le domaine de l'étape 8 s'attache depuis le
-dashboard, pas par ce jeton.
+avec son `✕` : `wrangler.jsonc` ne déclare aucune route, publier ne touche donc aucune zone. Le
+domaine personnalisé de l'étape 8 s'attache depuis le dashboard et reste attaché d'un déploiement à
+l'autre — ce jeton ne le gère jamais.
 
 4. **Continue to summary** → **Create Token** → **copie le jeton**. Il ne s'affiche qu'une fois :
    garde l'onglet ouvert jusqu'à l'avoir déposé en 7.3.

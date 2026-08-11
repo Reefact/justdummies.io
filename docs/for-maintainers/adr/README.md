@@ -132,6 +132,7 @@ requests, issues, diagrams.
 | ADR | Title | Status |
 |---|---|---|
 | [ADR-0001](0001-a-release-tag-publishes-not-a-merge-en.md) | A release tag publishes, not a merge | Accepted |
+| [ADR-0002](0002-the-site-answers-on-one-hostname-en.md) | The site answers on one hostname | Proposed |
 
 ## How this base differs from the library's
 

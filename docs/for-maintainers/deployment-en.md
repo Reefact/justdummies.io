@@ -665,7 +665,22 @@ an account identifier, take what you like.
 > `serve` and `preview` do not have this problem — verified, no pnpm command carries those names —
 > and so are written without `run`. `deploy` is the special case, not the other way round.
 
-The Worker takes the name declared in `wrangler.jsonc`:
+> ⚠️ **This repository publishes to no `workers.dev` hostname.** `wrangler.jsonc` sets
+> `"workers_dev": false`, so once step 8 has attached `justdummies.io` the site answers there and
+> nowhere else — the reasoning is [ADR-0002](adr/0002-the-site-answers-on-one-hostname-en.md).
+>
+> Which leaves a first deployment with **no address to check**, since the domain is not attached
+> yet. Two ways out, and the second is the honest one:
+>
+> * Set `"workers_dev": true` for the length of this step, deploy, run the check below against
+>   `https://justdummies-site.<your-subdomain>.workers.dev`, then put it back to `false`. Nothing
+>   else in the repository depends on the value.
+> * Or do step 8 now and come back. The order in this guide is not load-bearing here: attaching a
+>   domain to a deployed Worker and deploying to an attached domain reach the same state.
+>
+> Either way the check below is the same block with `B` pointing at whichever address you have.
+
+The Worker takes the name declared in `wrangler.jsonc` — with `workers_dev` enabled, that is:
 
 ```
 https://justdummies-site.<your-subdomain>.workers.dev
@@ -750,8 +765,9 @@ The template prefills thirteen permissions and **leaves two fields empty that bl
 | **TTL** | **leave it empty** | a token that expires fails CI months later, under an authentication message that does not say "expired" |
 
 For `Zone Resources`, the other way out is to **delete** the `Zone · Workers Routes · Edit` row
-with its `✕`: this repository publishes to `workers.dev`, and step 8's domain is attached from the
-dashboard, not by this token.
+with its `✕`: `wrangler.jsonc` declares no routes, so publishing touches no zone. Step 8's custom
+domain is attached from the dashboard and stays attached across deployments — this token never
+manages it.
 
 4. **Continue to summary** → **Create Token** → **copy the token**. It is shown once: keep the tab
    open until you have stored it in 7.3.
