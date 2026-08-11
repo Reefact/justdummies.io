@@ -34,10 +34,10 @@ déboguer deux choses à la fois.
 ### 0.1 Choisir son terminal
 
 Le point important, et il n'est pas cosmétique : **la construction du site repose sur des scripts
-bash**. `pnpm build` appelle `scripts/build-site.sh`, et les cinq scripts du dépôt utilisent des
-constructions propres à bash (`set -euo pipefail`, la substitution de processus `< <(...)`,
-`compgen`). Ni `cmd.exe` ni PowerShell ne peuvent les exécuter — ce n'est pas une question de
-préférence, ces constructions n'ont pas d'équivalent.
+bash**. `pnpm build` appelle `scripts/build-site.sh`, et tous les scripts de `scripts/` portent le
+shebang `#!/usr/bin/env bash`. Tous utilisent `set -euo pipefail`, et certains la substitution de
+processus `< <(...)` ou `compgen`. Ni `cmd.exe` ni PowerShell ne peuvent les exécuter — ce n'est
+pas une question de préférence, ces constructions n'ont pas d'équivalent.
 
 | Commande | cmd / PowerShell | Git Bash | WSL2 | macOS / Linux |
 |---|---|---|---|---|
@@ -63,9 +63,9 @@ passe désormais.
 
 > ⚠️ **Le piège qui coûte le plus cher.** Clone le dépôt dans le système de fichiers Linux
 > (`~/dev/justdummies.io`), **jamais** sous `/mnt/c/...`. Chaque accès à un fichier traversant la
-> frontière Windows↔Linux paie un coût fixe, et ce build écrit des milliers de petits fichiers —
-> 129 rien que dans `_framework`. Sur `/mnt/c`, une construction de trente secondes en prend
-> plusieurs minutes.
+> frontière Windows↔Linux paie un coût fixe, et ce build en écrit énormément de petits — le seul
+> runtime .NET en compte plus d'une centaine sous `_framework`. Sur `/mnt/c`, une construction de
+> trente secondes en prend plusieurs minutes.
 
 *Sur macOS ou Linux, il n'y a rien à faire : ton terminal convient déjà.*
 
@@ -275,7 +275,9 @@ ls dist/playground/_framework/ | wc -l
 ```
 
 `dist/` doit contenir `index.html`, `404.html`, `_headers`, `_redirects`, `.assetsignore`, `fr/`,
-`_astro/` et `playground/`. Le compte de `_framework` tourne autour de 130 fichiers.
+`_astro/` et `playground/`. `_framework` en compte plus d'une centaine — le nombre exact bouge à
+chaque changement du playground, donc ne le compare pas à une valeur écrite ici : ce qui compte est
+qu'il ne soit pas vide.
 
 ---
 
@@ -286,28 +288,25 @@ fichiers : c'est le moteur de Workers en local, qui **analyse `_headers` et `_re
 applique leurs règles. Aucun autre serveur local n'a d'opinion sur ces deux fichiers, et ce sont
 eux qui portent la politique de sécurité et le routage du playground.
 
-**Faire**
+**Faire** — deux commandes, dans cet ordre, et l'ordre compte :
 
 ```bash
-pnpm serve       # occupe le terminal — sert sur http://localhost:8787
+scripts/check-served-headers.sh   # 1. le contrôle automatique : démarre son runtime, l'interroge, s'arrête
+pnpm serve                        # 2. puis le serveur, pour naviguer et pour les contrôles manuels
 ```
 
-> Cette commande ne rend pas la main. **Ouvre un second terminal** pour les contrôles.
+Le script en premier, parce qu'il ne demande rien et répond d'un coup.
+
+> ⚠️ **Jamais les deux en même temps.** Ils veulent tous les deux le port 8787 : le script lancé
+> par-dessus un `pnpm serve` en cours interroge le serveur de l'autre au lieu du sien, ou échoue à
+> démarrer. Si `pnpm serve` tourne déjà, arrête-le (`Ctrl+C`) avant le script.
+
+`pnpm serve` ne rend pas la main. **Ouvre un second terminal** pour les contrôles manuels qui
+suivent.
 
 ### ✅ Contrôle 2 — en une seule commande
 
-Tout ce qui suit existe aussi sous forme de script, et la CI l'exécute à chaque build :
-
-```bash
-scripts/check-served-headers.sh    # démarre le runtime, l'interroge, s'arrête
-```
-
-> ⚠️ **Arrête `pnpm serve` avant de le lancer** (`Ctrl+C`). Le script démarre son **propre**
-> runtime, et les deux veulent le port 8787 : lancé par-dessus un `pnpm serve` en cours, il
-> interroge le serveur de l'autre ou échoue à démarrer le sien. Il n'a besoin de rien en
-> parallèle.
-
-Attendu :
+C'est le script ci-dessus, et la CI l'exécute à chaque build. Attendu :
 
 ```
 ▸ Starting the runtime
@@ -438,7 +437,7 @@ page blanche.
 > playground demande une nouvelle ligne dans `_redirects`** — sans quoi elle marche à la souris et
 > échoue sur un lien partagé.
 
-Arrête le serveur avec `Ctrl+C` quand les quatre contrôles passent.
+Arrête le serveur avec `Ctrl+C` quand les contrôles 2a à 2d passent.
 
 ---
 
@@ -495,8 +494,10 @@ Regarde d'abord ce qui partirait, sans rien publier :
 pnpm wrangler deploy --dry-run
 ```
 
-Attendu : `✨ Read 158 files from the assets directory …/dist` — le nombre bougera, mais il doit
-se compter en centaines, pas en unités.
+Attendu : une ligne `✨ Read N files from the assets directory …/dist`. **Ne compare pas `N` à un
+nombre écrit ici** — il change à chaque modification du playground. Ce qui compte est qu'il se
+compte en centaines et non en unités : quelques fichiers seulement voudrait dire que `dist/` est
+incomplet.
 
 Puis publie :
 
@@ -555,7 +556,8 @@ en local. Ce qui reste à confirmer, c'est la périphérie — le runtime local 
 contrôles de l'artefact ne verraient pas la différence, puisqu'ils mesurent des fichiers et non
 des transferts.
 
-**Faire** — une seule commande, celle que `.assetsignore` nomme :
+**Faire** — rien de nouveau : **tu as déjà lancé la commande au contrôle de l'étape 5**, et c'est
+celle que `.assetsignore` nomme. Relis sa dernière ligne `✓`/`✗`. Si tu ne l'as plus sous les yeux :
 
 ```bash
 scripts/check-served-headers.sh https://justdummies-site.<ton-sous-domaine>.workers.dev
@@ -630,8 +632,9 @@ manuel de l'étape 5.
 
 À chaque poussée sur `main` :
 
-1. **build** — installe, valide les extraits, contrôle les types, construit, vérifie la forme,
-   contrôle les budgets, téléverse l'artefact.
+1. **build** — valide les extraits publiés, installe, contrôle les types, construit, vérifie que
+   le contenu généré committé est à jour, contrôle les budgets de taille, **demande au runtime ce
+   qu'il sert vraiment** (le script de l'étape 2), puis téléverse l'artefact.
 2. **deploy** — récupère **cet artefact-là** plutôt que de reconstruire, rejoue
    `verify-output.sh` sur les octets téléchargés, puis lance `pnpm run deploy`.
 
@@ -652,7 +655,7 @@ Une pull request ne peut pas publier : le job est conditionné à un `push` sur 
 ## Étape 8 — Brancher `justdummies.io`
 
 **Pourquoi** — C'est la première étape difficile à défaire : elle change les serveurs de noms du
-domaine. Fais-la quand les sept précédentes sont vertes.
+domaine. Fais-la quand toutes les précédentes sont vertes.
 
 Un domaine personnalisé exige que la **zone soit active chez Cloudflare**.
 
