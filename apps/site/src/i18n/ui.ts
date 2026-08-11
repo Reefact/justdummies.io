@@ -159,6 +159,8 @@ const en = {
     'hero.loading': 'Loading the .NET runtime…',
     'hero.cost': 'about 1.2 MB, downloaded only if you ask',
     'hero.frameTitle': 'The JustDummies expression, running in your browser',
+    /** The name of the chevron at the foot of the first screen. It is a link, so it needs one. */
+    'hero.scrollCue': 'Read the first act',
 
     'sample.produced': 'produced',
     'sample.producedEachRun': 'produced, run after run',
@@ -296,6 +298,7 @@ const fr: Record<UiKey, string> = {
     'hero.loading': 'Chargement du runtime .NET…',
     'hero.cost': "environ 1,2 Mo, téléchargés seulement si vous le demandez",
     'hero.frameTitle': "L'expression JustDummies, exécutée dans votre navigateur",
+    'hero.scrollCue': 'Lire le premier acte',
 
     'sample.produced': 'produit',
     'sample.producedEachRun': 'produit, exécution après exécution',

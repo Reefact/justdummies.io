@@ -7,7 +7,6 @@
  * (§28.2: only the narrative around the code is translated, never the code).
  */
 import LiveHero from './LiveHero.astro';
-import InstallBlock from './InstallBlock.astro';
 import ActOne from './narrative/ActOne.astro';
 import ActTwo from './narrative/ActTwo.astro';
 import ActThree from './narrative/ActThree.astro';
@@ -26,9 +25,6 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
 
         <LiveHero />
 
-        <h2 class="install-label">{t('home.install.label')}</h2>
-        <InstallBlock placement="hero" />
-
         <nav class="links" aria-label={t('nav.primary')}>
             {/*
               The one internal link that deliberately leaves the current locale.
@@ -43,6 +39,20 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
                 twice on one screen makes the reader wonder which is which. */}
             <a href={site.repository}>{t('nav.github')}</a>
         </nav>
+
+        {/*
+          The invitation to go on, and a link rather than an ornament: a reader who cannot
+          use a mouse wheel gets the same offer, and it goes exactly where it points.
+          `aria-hidden` on the chevron itself, because "Read the first act" is the whole
+          message and the drawing repeats it.
+        */}
+        <a class="cue" href="#act-one">
+            <span class="cue-label">{t('hero.scrollCue')}</span>
+            <svg class="chevrons" viewBox="0 0 24 26" width="24" height="26" aria-hidden="true" focusable="false">
+                <path class="chevron chevron-first" d="M4 5l8 8 8-8" />
+                <path class="chevron chevron-second" d="M4 13l8 8 8-8" />
+            </svg>
+        </a>
     </header>
 
     {/* NOT BUILT: §7.4's reduced install block in the site header, which is what the
@@ -66,6 +76,106 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
 
     .hero {
         max-width: 56rem;
+    }
+
+    /*
+     * The first screen is a scene of its own, and it holds the whole of it — so a reader
+     * arriving has the brand, one real expression and one real value in front of them, and
+     * nothing of the first act yet.
+     *
+     * The subtraction is the room the site header and this shell's own top padding take
+     * above it. Without it the hero would be a viewport tall *starting below them*, and the
+     * chevron meant to sit at the bottom edge would sit just under it.
+     *
+     * `100svh` rather than `100vh`: on a phone `vh` is the viewport with the browser's
+     * chrome retracted, which is not the height anything is ever laid out at, so a hero
+     * measured in `vh` is always a little taller than the screen showing it.
+     *
+     * THE INSTALL BLOCK IS NOT HERE, and its absence is what makes the rest fit. It was
+     * 254 pixels of the 837 this screen had, which put the chevron below the fold on any
+     * ordinary laptop — the one thing this screen exists to show. §7.4 places the block at
+     * the narrative's reward moments and, in reduced form, in the site header; the hero was
+     * never one of those, and it carried one only because no act had an exit yet. All three
+     * do now.
+     *
+     * What that leaves undone is the visitor who already knows the product and wants the
+     * command: until §7.4's header form exists, the nearest one is the first act's exit,
+     * one screen down.
+     */
+    .hero {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: calc(100svh - 7.5rem);
+        /* So the chevron does not sit on the first act's rule, four pixels below it. */
+        padding-bottom: var(--jd-space-8);
+    }
+
+    .cue {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--jd-space-2);
+        align-self: center;
+        margin-top: auto;
+        padding-top: var(--jd-space-12);
+        color: var(--jd-text-muted);
+        font-size: var(--jd-text-sm);
+        text-decoration: none;
+    }
+
+    /* Enough to read as the foot of the screen, not so much that it pushes itself off it. */
+    .cue {
+        padding-top: var(--jd-space-8);
+    }
+
+    .cue:hover {
+        color: var(--jd-text-primary);
+    }
+
+    .chevrons {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    /*
+     * The two strokes fade in turn, downward, which reads as a direction rather than as a
+     * thing bouncing. Slow on purpose: a cue that insists is a cue that annoys on the
+     * second visit.
+     */
+    .chevron {
+        opacity: 0.25;
+        animation: cue 2.4s ease-in-out infinite;
+    }
+
+    .chevron-second {
+        animation-delay: 0.25s;
+    }
+
+    @keyframes cue {
+        0%,
+        60%,
+        100% {
+            opacity: 0.25;
+        }
+
+        30% {
+            opacity: 1;
+        }
+    }
+
+    /*
+     * Asked for no movement, given none. The chevrons still point down, which is the half
+     * of the message that does not need to move.
+     */
+    @media (prefers-reduced-motion: reduce) {
+        .chevron {
+            animation: none;
+            opacity: 0.6;
+        }
     }
 
     h1 {
