@@ -1,0 +1,122 @@
+@page "/hero"
+@layout BareLayout
+@inject IJSRuntime JS
+@using System.Reflection
+@using JustDummies
+
+@*
+    The landing page's live hero (§9.8), which the site embeds once the visitor asks for it.
+
+    WHAT IS EDITABLE, AND WHY THAT MUCH. The chain itself is compiled: the links are fixed,
+    their arguments are not. §9.8 asks for a pre-filled expression the visitor can modify,
+    and the modification that carries the demonstration is the one that changes what must be
+    true of the value — a prefix, a fragment, a length.
+
+    Changing *which* links are in the chain is the playground's job, and it needs what §10.4
+    decides: a catalogue generated at build time from the assembly's metadata, and a parser
+    over it. Neither exists yet. Faking it with a hand-written registry is the option §10.4
+    rejects by name, so this page does not: it runs one real chain and lets its arguments
+    move.
+
+    WHAT MUST NOT BE NEUTRALISED (§9.9). Shorten the length below what the prefix and the
+    fragment already require and the library refuses the declaration. That refusal is the
+    demonstration defending itself, and it is displayed as the library worded it. Catching it
+    to keep the home page tidy would remove the best argument on the page.
+*@
+
+<div class="hero-widget">
+    <div class="expression">
+        <span class="fixed">Any.String()</span>
+        <span class="link">.StartingWith(<input type="text" @bind="_prefix" @bind:event="oninput" aria-label="prefix" size="6" />)</span>
+        <span class="link">.Containing(<input type="text" @bind="_fragment" @bind:event="oninput" aria-label="contained text" size="6" />)</span>
+        <span class="link">.WithLength(<input type="number" @bind="_length" @bind:event="oninput" aria-label="length" min="1" max="64" />)</span>
+        <span class="fixed">.Generate()</span>
+    </div>
+
+    <div class="controls">
+        <button class="generate" @onclick="Draw">@GenerateLabel</button>
+        <span class="live">running here, JustDummies @LibraryVersion</span>
+    </div>
+
+    @if (_refusal is null) {
+        <output class="value">@_value</output>
+    } else {
+        <output class="refusal">@_refusal</output>
+    }
+</div>
+
+@code {
+
+    private const string GenerateLabel = "Generate";
+
+    private string _prefix   = "ORD-";
+    private string _fragment = "2026";
+    private int    _length   = 12;
+
+    private string  _value   = string.Empty;
+    private string? _refusal;
+
+    private static string LibraryVersion { get; } = ReadLibraryVersion();
+
+    protected override void OnInitialized() {
+        Draw();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        // The frame around this page cannot know how tall it is; it is told. Reported after
+        // every render because editing an argument can wrap a line or swap the value for a
+        // refusal, and a frame that only measured once would clip the very message the
+        // scene exists to show.
+        await JS.InvokeVoidAsync("jdHeroReportHeight");
+    }
+
+    /// <summary>
+    ///     Declares the chain, then draws from it.
+    ///
+    ///     The two are one call here, deliberately: the library refuses a contradictory
+    ///     declaration when it is declared, not when it is drawn, and the whole point of the
+    ///     scene is that the refusal arrives at that moment.
+    /// </summary>
+    private void Draw() {
+        try {
+            _value = Any.String()
+                        .StartingWith(_prefix)
+                        .Containing(_fragment)
+                        .WithLength(_length)
+                        .Generate();
+
+            _refusal = null;
+        } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+            // DummyException is the base of the library's own family, and catching it rather
+            // than a list of framework types is the whole difference between this scene
+            // working and not.
+            //
+            // The first version caught ArgumentException and InvalidOperationException, which
+            // is what a contradiction *looks* like it should throw. The library throws
+            // ConflictingAnyConstraintException, so the refusal escaped, Blazor's renderer
+            // took it as an unhandled error, and the widget showed nothing at all — the
+            // refusal neutralised by accident, which is exactly what §9.9 forbids. Found by
+            // shortening the length in a browser rather than by reading the code.
+            //
+            // ArgumentException stays for the guards in front of the constraint layer, such
+            // as a length below one.
+            //
+            // Displayed as the library worded it. A message rewritten here would be this
+            // page's opinion of the library's diagnostics rather than the diagnostics.
+            _refusal = refused.Message;
+            _value   = string.Empty;
+        }
+    }
+
+    private static string ReadLibraryVersion() {
+        Assembly assembly = typeof(Any).Assembly;
+        string version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+                         ?? assembly.GetName().Version?.ToString()
+                         ?? "unknown";
+
+        int metadata = version.IndexOf('+');
+
+        return metadata < 0 ? version : version.Substring(0, metadata);
+    }
+
+}

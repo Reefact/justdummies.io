@@ -38,4 +38,5 @@
 # A route added to the application and forgotten here works in every click-through,
 # because the router is already running by then, and 404s only on a cold link — which
 # is the version of this bug that reaches a visitor.
+/playground/hero       /playground/  200
 /playground/not-found  /playground/  200

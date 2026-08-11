@@ -150,6 +150,18 @@ const en = {
     'act3.exit.body':
         'The adapter is the piece that turns a red test into a seed you can replay, and it is the smallest of the three. Everything this page has shown is here.',
 
+    /**
+     * The hero's loading contract (§9.8). The mention is required, not optional: a value
+     * with no provenance reads as live, and the first press would then look like a refresh
+     * rather than the moment the library started running in the visitor's browser.
+     */
+    'hero.builtValue': 'produced at build time',
+    'hero.seed': 'seed',
+    'hero.run': 'Run it here',
+    'hero.loading': 'Loading the .NET runtime…',
+    'hero.cost': 'about 1.2 MB, downloaded only if you ask',
+    'hero.frameTitle': 'The JustDummies expression, running in your browser',
+
     'sample.produced': 'produced',
     'sample.producedEachRun': 'produced, run after run',
     'sample.refused': 'refused',
@@ -281,6 +293,13 @@ const fr: Record<UiKey, string> = {
     'act3.exit.title': 'Un package, un outil et un adaptateur',
     'act3.exit.body':
         "L'adaptateur est la pièce qui transforme un test rouge en un seed rejouable, et c'est la plus petite des trois. Tout ce que cette page a montré est là.",
+
+    'hero.builtValue': 'produite au build',
+    'hero.seed': 'graine',
+    'hero.run': 'Exécuter ici',
+    'hero.loading': 'Chargement du runtime .NET…',
+    'hero.cost': "environ 1,2 Mo, téléchargés seulement si vous le demandez",
+    'hero.frameTitle': "L'expression JustDummies, exécutée dans votre navigateur",
 
     'sample.produced': 'produit',
     'sample.producedEachRun': 'produit, exécution après exécution',

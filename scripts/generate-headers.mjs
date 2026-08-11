@@ -79,10 +79,26 @@ if (scriptHashes.length === 0) {
 
 const contentSecurityPolicy = [
     "default-src 'self'",
+    // The landing page frames the playground's hero route once the visitor asks for it
+    // (§9.8). Same origin and no wider: the policy names 'self', so a third-party frame
+    // is refused even if something on the page tried to add one.
+    "frame-src 'self'",
     "base-uri 'self'",
     "object-src 'none'",
-    // Nothing embeds this site, which is what CSP offers instead of X-Frame-Options.
-    "frame-ancestors 'none'",
+    // 'self' rather than 'none', and the change is worth stating because it narrows a
+    // security rule that used to be absolute.
+    //
+    // 'none' means no document anywhere may frame these pages — including these pages. The
+    // landing page frames the playground's hero route to run the library in the visitor's
+    // browser (§9.8), and under 'none' the browser refuses to render it: the frame stays
+    // blank and the refusal appears only in the console. Measured rather than reasoned
+    // about — that is exactly how this line was found.
+    //
+    // 'self' keeps every third-party frame refused, which is all the rule was defending
+    // against: an attacker's page cannot embed this site to trick a visitor into clicking
+    // through it, because their origin is not ours. What it now permits is this origin
+    // framing itself, which an attacker has no way to arrange.
+    "frame-ancestors 'self'",
     // The site posts no form anywhere. The day it does, this is the line to revisit.
     "form-action 'none'",
     "img-src 'self' data:",
