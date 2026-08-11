@@ -94,8 +94,39 @@ header_of() {
   curl -sSI --max-time 20 "${base}$1" | grep -i "^$2:" | sed 's/^[^:]*: *//' | tr -d '\r' | sed -n 1p || true
 }
 
+status_of() {
+  curl -sS -o /dev/null -w '%{http_code}' --max-time 30 "${base}$1" || echo 000
+}
+
+# Every check below reads headers off a response, and a 404 page has headers too — the
+# same policy, the same compression, everything but the thing that was asked for. So each
+# one establishes that the resource is actually there before believing anything else about
+# it, and says which of the two went wrong.
+#
+# This is not hypothetical. Run against a deployment built from a different commit, the
+# WebAssembly check asked for a fingerprint that no longer existed, was handed the 404 page,
+# found it compressed, and reported a cheerful green: "the runtime compresses the
+# WebAssembly payload (br: 1858 → 735 bytes)". Two kilobytes. The figure was absurd and the
+# tick was wrong, and nothing in the run said so.
+#
+# A path that 404s against a deployment is worth its own message rather than a silent skip:
+# it means the artefact on disk and the artefact on the host are different builds, which is
+# something the person running this needs told.
+present() {
+  actual="$(status_of "$1")"
+
+  if [ "${actual}" = "200" ]; then
+    return 0
+  fi
+
+  fail "$1 answers ${actual}, so $2 was measured on whatever the host sent instead"
+  return 1
+}
+
 # --- the policy reaches documents and assets alike ------------------------------
 for path in "/" "/fr/" "/playground/"; do
+  present "${path}" "its policy" || continue
+
   policy="$(header_of "${path}" "content-security-policy")"
   if [ -n "${policy}" ]; then
     pass "${path} is served with a content security policy"
@@ -108,7 +139,7 @@ done
 # If they replaced each other, every fingerprinted asset would lose the policy while
 # gaining its cache lifetime, and nothing on disk would look wrong.
 astro_asset="$(cd "${root}/dist" && find _astro -name '*.js' | sed -n 1p || true)"
-if [ -n "${astro_asset}" ]; then
+if [ -n "${astro_asset}" ] && present "/${astro_asset}" "the merging of its rules"; then
   policy="$(header_of "/${astro_asset}" "content-security-policy")"
   cache="$(header_of "/${astro_asset}" "cache-control")"
 
@@ -139,7 +170,7 @@ fi
 # uploading. If the runtime compresses, they are dead weight; if it does not,
 # removing them would ship a multi-megabyte runtime uncompressed.
 wasm="$(cd "${root}/dist" && find playground/_framework -name 'dotnet.native.*.wasm' | sed -n 1p || true)"
-if [ -n "${wasm}" ]; then
+if [ -n "${wasm}" ] && present "/${wasm}" "its compression"; then
   encoding="$(curl -sSI --max-time 30 -H 'Accept-Encoding: br, gzip' "${base}/${wasm}" | grep -i '^content-encoding:' | sed 's/^[^:]*: *//' | tr -d '\r' | sed -n 1p || true)"
 
   if [ -n "${encoding}" ]; then
