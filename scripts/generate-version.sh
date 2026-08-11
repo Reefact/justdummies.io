@@ -33,6 +33,30 @@ fi
 release="$(git -C "${root}" tag --points-at HEAD 2> /dev/null | grep '^release/' | head -1 || true)"
 commit="$(git -C "${root}" rev-parse HEAD 2> /dev/null || true)"
 
+# Second source, because the first is not guaranteed. CI checks a tag out as a
+# detached HEAD, and whether the checkout also leaves a local tag ref behind is the
+# checkout action's business, not a promise the build can rely on. Without this, a
+# release build on a tagless checkout stamps `release: null` and says nothing — the
+# stamp would be silently wrong on exactly the deployment it exists for.
+#
+# GITHUB_REF_NAME states the ref the run was triggered for, which is the fact wanted.
+ci_release=""
+case "${GITHUB_REF_TYPE:-}:${GITHUB_REF_NAME:-}" in
+  tag:release/*) ci_release="${GITHUB_REF_NAME}" ;;
+esac
+
+if [ -z "${release}" ] && [ -n "${ci_release}" ]; then
+  release="${ci_release}"
+  echo "  ! no local tag ref, so the release name comes from GITHUB_REF_NAME" >&2
+elif [ -n "${release}" ] && [ -n "${ci_release}" ] && [ "${release}" != "${ci_release}" ]; then
+  # Two sources naming different releases means the checkout is not at the commit the
+  # run is for. Guessing either way would publish a stamp that misreports what is
+  # live, which is the one outcome worse than having no stamp.
+  echo "generate-version: HEAD carries ${release}, but this run is for ${ci_release}." >&2
+  echo "  Refusing to guess which one is being published." >&2
+  exit 1
+fi
+
 # A checkout with no git — an exported tarball — still builds and still deploys.
 # Losing the stamp is worth a warning, not a failed build: the artefact is not wrong,
 # it just cannot say what it came from.

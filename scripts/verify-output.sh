@@ -71,6 +71,23 @@ else
   else
     fail "version.json names ${stamped:-null}, but HEAD is ${head_commit} — the stamp would misreport what is live"
   fi
+
+  # The failure this cannot afford to miss: the run publishes a release and the stamp
+  # does not name it. Reading the tag out of the checkout is not guaranteed to work, so
+  # the outcome is asserted rather than the mechanism trusted — a null release on a
+  # release build is a deployment that cannot say which release it is, on the one
+  # deployment where that is the whole question.
+  case "${GITHUB_REF_TYPE:-}:${GITHUB_REF_NAME:-}" in
+    tag:release/*)
+      stamped_release="$(node -e 'process.stdout.write(String(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).release))' \
+                         "${dist}/version.json" 2> /dev/null || true)"
+      if [ "${stamped_release}" = "${GITHUB_REF_NAME}" ]; then
+        pass "the stamp names the release this run publishes (${GITHUB_REF_NAME})"
+      else
+        fail "this run publishes ${GITHUB_REF_NAME} but the stamp says ${stamped_release:-null} — the live site would not name its own release"
+      fi
+      ;;
+  esac
 fi
 
 # The host's own migration guide invites this mistake, so it is checked rather
