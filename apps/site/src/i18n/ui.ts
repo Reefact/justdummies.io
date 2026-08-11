@@ -185,6 +185,13 @@ const en = {
      */
     'state.comingSoon': 'coming soon',
 
+    /**
+     * Said in hidden text on the one link that leaves the site. A link that replaces the
+     * window without warning is disorienting for anyone and unrecoverable for a reader
+     * whose only way back was the button that no longer goes anywhere.
+     */
+    'state.newTab': 'opens in a new tab',
+
     'notfound.title': 'Page not found',
     'notfound.body': 'There is nothing at this address. It may have moved, or never existed.',
     'notfound.home': 'Go to the home page',
@@ -318,6 +325,7 @@ const fr: Record<UiKey, string> = {
     'install.copyFailed': 'Copie impossible. Sélectionnez la commande et copiez-la à la main.',
 
     'state.comingSoon': 'en cours de construction',
+    'state.newTab': 'ouvre un nouvel onglet',
 
     'notfound.title': 'Page introuvable',
     'notfound.body': "Il n'y a rien à cette adresse. Elle a pu changer, ou n'avoir jamais existé.",

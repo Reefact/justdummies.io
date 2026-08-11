@@ -1,0 +1,332 @@
+---
+/**
+ * The install offer in one row's height, for the first screen.
+ *
+ * `InstallBlock` stacks its slots, which is right where a reader has just been given a
+ * reason to want them and the screen is theirs to spend. The first screen is not that
+ * place: it has to hold the brand, one real expression, one real value, the offer and
+ * the invitation to scroll, all above the fold, and stacking two commands and a link
+ * costs it 254 pixels it does not have.
+ *
+ * So the same content is put behind tabs — the reader picks the one door they use
+ * instead of scrolling past the two they do not.
+ *
+ * NUGET IS NOT A TAB, and that is deliberate. A tab shows a panel; this one leaves the
+ * site. Announcing it as "tab 3 of 3" and then navigating away is a small lie told to
+ * exactly the people who can least afford it, so it stays a link, outside the tablist,
+ * set apart by position and by the arrow it carries.
+ *
+ * WITHOUT SCRIPTING there are no tabs at all: the tablist is `hidden` in the markup and
+ * the roles are attached by the script, so what a reader without JavaScript gets is the
+ * stacked form — every command visible under its own heading — rather than a tab widget
+ * that announces itself and does nothing. Same rule as the copy button next door:
+ * reaching that line is the proof the control can do its job.
+ */
+import CopyableCommand from './CopyableCommand.astro';
+import { localeFromPath } from '../i18n/routing';
+import { useTranslations, type UiKey } from '../i18n/ui';
+import { site } from '../site';
+
+interface Props {
+    /** Stable, position-independent identifier passed to every command in the row. */
+    placement: string;
+}
+
+const { placement } = Astro.props;
+
+const t = useTranslations(localeFromPath(Astro.url.pathname));
+
+interface Door {
+    /** Part of the `id`s that wire a tab to its panel, so two blocks never collide. */
+    key: string;
+    label: UiKey;
+    command: string;
+    /** Which door was taken, as reported by the command's own measurement event. */
+    variant: string;
+}
+
+const doors: Door[] = [
+    { key: 'cli', label: 'install.cli', command: site.library.installCommand, variant: 'dotnet-cli' },
+    {
+        key: 'pm',
+        label: 'install.packageManager',
+        command: site.library.packageManagerCommand,
+        variant: 'package-manager',
+    },
+];
+
+const labelId: string = `${placement}-install-label`;
+---
+
+<section class="install" aria-labelledby={labelId} data-install-tabs>
+    <h2 class="label" id={labelId}>{t('home.install.label')}</h2>
+
+    <div class="row">
+        {/*
+          Labelled by the heading above it rather than by a string of its own: the heading
+          already says what this set of doors is for, and a second wording would be a second
+          thing to keep in step with it.
+        */}
+        <div class="tablist" role="tablist" aria-labelledby={labelId} hidden data-tablist>
+            {
+                doors.map((door: Door) => (
+                    <button
+                        type="button"
+                        class="tab"
+                        id={`${placement}-${door.key}-tab`}
+                        aria-controls={`${placement}-${door.key}-panel`}
+                        data-tab={door.key}
+                    >
+                        {t(door.label)}
+                    </button>
+                ))
+            }
+        </div>
+
+        {/*
+          `target="_blank"` because this is the one door that is somebody else's page and a
+          reader following it has not finished with this one. `rel` closes the hole that
+          opens with it — an opened page can otherwise reach back through `window.opener`.
+          The arrow says so to a reader who can see it and the hidden text says so to one
+          who cannot.
+        */}
+        <a
+            class="nuget"
+            href={site.library.nuget}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-placement={placement}
+            data-variant="nuget-link"
+        >
+            {t('install.nuget')}
+            <svg class="arrow" viewBox="0 0 12 12" width="10" height="10" aria-hidden="true" focusable="false">
+                <path d="M3 9L9 3M4.5 3H9v4.5" />
+            </svg>
+            <span class="visually-hidden">{t('state.newTab')}</span>
+        </a>
+    </div>
+
+    {
+        doors.map((door: Door) => (
+            <div class="panel" id={`${placement}-${door.key}-panel`} data-panel={door.key}>
+                {/*
+                  The heading a reader without scripting needs, and the one a tab makes
+                  redundant. The script hides it when it takes over, because by then the tab
+                  is the label and `aria-labelledby` says so.
+                */}
+                <h3 class="panel-label" data-panel-label>
+                    {t(door.label)}
+                </h3>
+                <CopyableCommand command={door.command} placement={placement} variant={door.variant} />
+            </div>
+        ))
+    }
+</section>
+
+<script>
+    /**
+     * Turns the stacked form into a tab widget, following the ARIA authoring practices'
+     * automatic-activation pattern: the panels are already in the page, so selection
+     * follows focus and there is nothing to wait for.
+     *
+     * The roles are attached here rather than written in the markup so that a page whose
+     * scripting never arrives has no half-built widget in it.
+     */
+    for (const block of document.querySelectorAll<HTMLElement>('[data-install-tabs]')) {
+        const tablist: HTMLElement | null = block.querySelector('[data-tablist]');
+        const tabs: HTMLButtonElement[] = Array.from(block.querySelectorAll<HTMLButtonElement>('[data-tab]'));
+        const panels: HTMLElement[] = Array.from(block.querySelectorAll<HTMLElement>('[data-panel]'));
+
+        if (tablist === null || tabs.length === 0 || tabs.length !== panels.length) {
+            continue;
+        }
+
+        function select(index: number, moveFocus: boolean): void {
+            tabs.forEach((tab: HTMLButtonElement, position: number) => {
+                const selected: boolean = position === index;
+
+                tab.setAttribute('aria-selected', String(selected));
+                // Roving tabindex: one stop for the whole set, then the arrow keys.
+                tab.tabIndex = selected ? 0 : -1;
+                panels[position].hidden = !selected;
+            });
+
+            if (moveFocus) {
+                tabs[index].focus();
+            }
+        }
+
+        tabs.forEach((tab: HTMLButtonElement, position: number) => {
+            tab.setAttribute('role', 'tab');
+
+            const panel: HTMLElement = panels[position];
+
+            panel.setAttribute('role', 'tabpanel');
+            panel.setAttribute('aria-labelledby', tab.id);
+            // NOT made focusable, which the authoring practices ask for only when a panel
+            // holds nothing focusable of its own. This one holds the copy button, so a tab
+            // stop here would announce the whole panel to somebody on their way to it; and
+            // on the page where that button never unhides, the panel's content is a line of
+            // text a screen reader reads in order without needing to land on it.
+
+            const panelLabel: HTMLElement | null = panel.querySelector('[data-panel-label]');
+
+            if (panelLabel !== null) {
+                panelLabel.hidden = true;
+            }
+
+            tab.addEventListener('click', () => select(position, false));
+
+            tab.addEventListener('keydown', (event: KeyboardEvent) => {
+                const last: number = tabs.length - 1;
+                let next: number | undefined;
+
+                if (event.key === 'ArrowRight') {
+                    next = position === last ? 0 : position + 1;
+                } else if (event.key === 'ArrowLeft') {
+                    next = position === 0 ? last : position - 1;
+                } else if (event.key === 'Home') {
+                    next = 0;
+                } else if (event.key === 'End') {
+                    next = last;
+                }
+
+                if (next === undefined) {
+                    return;
+                }
+
+                event.preventDefault();
+                select(next, true);
+            });
+        });
+
+        select(0, false);
+        tablist.hidden = false;
+    }
+</script>
+
+<style>
+    .install {
+        /* Explicit, because the implicit track would take its automatic minimum from the
+           widest command it holds and grow the whole block past the viewport. */
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--jd-space-3);
+        max-width: 46rem;
+    }
+
+    /* The one heading on this screen that is an offer rather than a claim, and the accent
+       is what the page reserves for that. */
+    .label {
+        margin: 0;
+        font-size: var(--jd-text-sm);
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--jd-accent);
+    }
+
+    /* Wraps rather than scrolls: a row that scrolls sideways hides half of itself behind a
+       gesture, and the French label for the package manager console is long enough that a
+       phone would need it. Two lines cost nothing here. */
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--jd-space-2) var(--jd-space-4);
+    }
+
+    .tablist {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--jd-space-2);
+    }
+
+
+    .tab {
+        font: inherit;
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+        background: transparent;
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-sm);
+        padding: var(--jd-space-1) var(--jd-space-3);
+        cursor: pointer;
+        transition:
+            color var(--jd-duration-fast) var(--jd-ease),
+            border-color var(--jd-duration-fast) var(--jd-ease);
+    }
+
+    .tab:hover {
+        color: var(--jd-text-primary);
+        border-color: var(--jd-accent);
+    }
+
+    .tab[aria-selected='true'] {
+        color: var(--jd-accent);
+        background: var(--jd-surface-raised);
+        border-color: var(--jd-accent);
+    }
+
+    .tab:focus-visible {
+        outline: 2px solid var(--jd-accent);
+        outline-offset: 2px;
+    }
+
+    /* Pushed to the far end, so its position says what the arrow says: this one is not one
+       of the tabs. On a narrow screen it wraps to its own line and keeps saying it. */
+    .nuget {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--jd-space-1);
+        margin-left: auto;
+        font-size: var(--jd-text-sm);
+    }
+
+    .arrow {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .panel-label {
+        font-size: var(--jd-text-sm);
+        font-weight: 400;
+        color: var(--jd-text-muted);
+        margin: 0 0 var(--jd-space-2);
+    }
+
+    /*
+     * A narrow screen is where this block costs the most, because that is where the tabs
+     * wrap onto a second line and the French label for the package manager console is long
+     * enough to force it on its own. What it takes back is air, never a door: the row keeps
+     * both commands and the link, and the screen below it keeps the invitation to scroll.
+     */
+    @media (max-width: 47.99rem) {
+        .install {
+            gap: var(--jd-space-2);
+        }
+
+        .row {
+            gap: var(--jd-space-1) var(--jd-space-3);
+        }
+
+        .tab {
+            padding: 0 var(--jd-space-2);
+        }
+    }
+
+    .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+        border: 0;
+    }
+</style>

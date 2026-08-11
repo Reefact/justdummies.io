@@ -6,7 +6,7 @@
  * the install command — come from `site.ts` and are identical in every locale
  * (§28.2: only the narrative around the code is translated, never the code).
  */
-import InstallBlock from './InstallBlock.astro';
+import InstallTabs from './InstallTabs.astro';
 import LiveHero from './LiveHero.astro';
 import ActOne from './narrative/ActOne.astro';
 import ActTwo from './narrative/ActTwo.astro';
@@ -29,25 +29,15 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
         {/*
           §7.4's reduced form. This screen is not one of the narrative's reward moments —
           the reader has been given no reason yet — but the offer does not belong to the
-          first act either, so it belongs here. One command and one link is what fits
-          without pushing the chevron off the screen.
-        */}
-        <InstallBlock placement="hero" variant="compact" />
+          first act either, so it belongs here. Behind tabs rather than stacked, because
+          what fits here is one row and the stacked form is three.
 
-        <nav class="links" aria-label={t('nav.primary')}>
-            {/*
-              The one internal link that deliberately leaves the current locale.
-              Internal links are supposed to stay in it (§25.1), but the playground is
-              a single Blazor application served in English only (§8.3), and
-              /fr/playground — a translated shell around that same application — is
-              phase 4 work. Sending a French reader to a route that does not exist
-              would be worse than sending them to one that does.
-            */}
-            <a href="/playground/">{t('nav.playground')}</a>
-            {/* No NuGet link here: the install block above owns it, and the same link
-                twice on one screen makes the reader wonder which is which. */}
-            <a href={site.repository}>{t('nav.github')}</a>
-        </nav>
+          The playground and the repository used to sit under it, and they are in the site
+          header now: a link that is true on every page belongs in the bar that is on every
+          page, and both of them were competing here with the one thing this screen asks
+          for.
+        */}
+        <InstallTabs placement="hero" />
 
         {/*
           The invitation to go on, and a link rather than an ornament: a reader who cannot
@@ -265,13 +255,6 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
         margin: 0 0 var(--jd-space-8);
     }
 
-    .install-label {
-        font-size: var(--jd-text-sm);
-        font-weight: 400;
-        color: var(--jd-text-muted);
-        margin: 0 0 var(--jd-space-2);
-    }
-
     .command {
         background: var(--jd-surface);
         border: 1px solid var(--jd-border);
@@ -280,13 +263,6 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
         margin: 0;
         overflow-x: auto;
         font-size: var(--jd-text-sm);
-    }
-
-    .links {
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--jd-space-6);
-        margin-top: var(--jd-space-6);
     }
 
 </style>
