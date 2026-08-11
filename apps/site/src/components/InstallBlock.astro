@@ -69,6 +69,9 @@ const documentationPending: boolean = site.documentation.status === 'pending';
 <style>
     .install {
         display: grid;
+        /* Explicit, because the implicit track would take its automatic minimum from
+           the widest command it holds and grow the whole row past the viewport. */
+        grid-template-columns: minmax(0, 1fr);
         gap: var(--jd-space-4);
         max-width: 46rem;
     }
