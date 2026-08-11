@@ -371,13 +371,22 @@ The script first, because it needs nothing and answers in one shot.
 stops it. While it runs you can open `http://localhost:8787` in your Windows browser — WSL forwards
 the port for you.
 
-The manual checks 2a to 2d therefore need **a second terminal**. On Windows that does not mean
-typing `wsl` again: it means a second window onto the distribution already running.
+The manual checks 2a to 2d therefore need **a second terminal**. That means a second window onto the
+distribution already running — nothing to reinstall.
 
-| How | Where |
-|---|---|
-| Windows Terminal | the `⌄` chevron beside the `+`, then **Ubuntu** — a new tab |
-| Start menu | launch the **Ubuntu** application again — a new window |
+| How | What to do | Reliability |
+|---|---|---|
+| **From any tab** | open a tab, PowerShell included, and type `wsl` | ✅ always works |
+| Start menu | launch the **Ubuntu** application again | ✅ |
+| Windows Terminal profile | the `⌄` chevron beside the `+`, then **Ubuntu** | ⚠️ only if the profile exists |
+
+**Start with `wsl`.** It is the one route that depends on no configuration: it attaches the current
+tab to the running distribution.
+
+> **No Ubuntu in the chevron?** Windows Terminal discovers WSL distributions **at startup**. Opened
+> before Ubuntu was installed, it never saw the new one: close it entirely — every window, not just
+> the tab — and reopen it. To confirm the distribution is registered while you are there, from
+> PowerShell: `wsl -l -v` should list `Ubuntu` at `VERSION 2`.
 
 > ⚠️ **That second terminal starts in your home directory, not in the repository.** First command to
 > type there, without which every check looks for `dist/` and `scripts/` where they are not:

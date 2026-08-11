@@ -373,13 +373,23 @@ Le script en premier, parce qu'il ne demande rien et répond d'un coup.
 l'arrête. Pendant qu'il tourne, tu peux ouvrir `http://localhost:8787` dans ton navigateur Windows —
 WSL expose le port automatiquement.
 
-Les contrôles manuels 2a à 2d demandent donc **un second terminal**. Sous Windows, ce n'est pas
-`wsl` à retaper : c'est une deuxième fenêtre sur la distribution qui tourne déjà.
+Les contrôles manuels 2a à 2d demandent donc **un second terminal**. Il s'agit d'une deuxième
+fenêtre sur la distribution qui tourne déjà — rien à réinstaller.
 
-| Comment | Où |
-|---|---|
-| Windows Terminal | le chevron `⌄` à côté du `+`, puis **Ubuntu** — nouvel onglet |
-| Menu Démarrer | relance l'application **Ubuntu** — nouvelle fenêtre |
+| Comment | Ce qu'il faut faire | Fiabilité |
+|---|---|---|
+| **Depuis n'importe quel onglet** | ouvre un onglet, même PowerShell, et tape `wsl` | ✅ marche toujours |
+| Menu Démarrer | relance l'application **Ubuntu** | ✅ |
+| Profil Windows Terminal | le chevron `⌄` à côté du `+`, puis **Ubuntu** | ⚠️ seulement si le profil existe |
+
+**Commence par `wsl`.** C'est la seule voie qui ne dépend d'aucune configuration : elle attache
+l'onglet courant à la distribution en cours.
+
+> **Ubuntu n'apparaît pas dans le chevron ?** Windows Terminal découvre les distributions WSL **à
+> son démarrage**. Ouvert avant l'installation d'Ubuntu, il n'a jamais vu la nouvelle : ferme-le
+> entièrement — toutes les fenêtres, pas seulement l'onglet — et rouvre-le. Pour confirmer au
+> passage que la distribution est bien enregistrée, depuis PowerShell : `wsl -l -v` doit lister
+> `Ubuntu` en `VERSION 2`.
 
 > ⚠️ **Ce second terminal démarre dans ton dossier personnel, pas dans le dépôt.** Première commande
 > à y taper, sans quoi tous les contrôles cherchent `dist/` et `scripts/` là où ils ne sont pas :
