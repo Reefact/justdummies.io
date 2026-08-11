@@ -3,8 +3,7 @@
 *🇫🇷 [Version française](deployment-fr.md)*
 
 This guide starts from nothing: no Cloudflare account, no knowledge of the platform. By the end,
-`justdummies.io` will be served by Cloudflare and every push to `main` will publish
-automatically.
+`justdummies.io` will be served by Cloudflare, and a tag will be all it takes to publish.
 
 **Allow about two hours**, much of which is waiting (DNS propagation, first downloads). Nothing is
 irreversible before step 8.
@@ -732,8 +731,9 @@ it. A settled question that is not written down gets asked again next time.
 
 ## Step 7 — Automate
 
-**Why** — CI already builds and verifies on every push. The `deploy` job publishes on `main` as
-soon as two secrets exist; without them it announces what is missing and does not fail.
+**Why** — CI already builds and verifies on every push. The `deploy` job publishes as soon as two
+secrets exist, and **only on a `v*` tag**; without them it announces what is missing and does not
+fail.
 
 ### 7.1 The API token
 
@@ -791,18 +791,25 @@ repository secret**. Two entries, exactly these names:
 
 ### ✅ Check
 
-Open the **Actions** tab → the **build** workflow → **Run workflow** → branch `main` → **Run
-workflow**. No commands to type: the button uses the server's `main`, your local clone plays no
-part. *(A push to `main` triggers the same thing.)*
+**A tag is what publishes.** Put one on the commit you want online:
 
-> ⚠️ **That button publishes to production.** From `main` it does exactly what a push does — it is
-> not a dry run. From any other branch, the `Deploy` job is skipped.
+```bash
+git checkout main && git pull origin main
+git tag v0.1.0
+git push origin v0.1.0
+```
 
-> **Job showing as "skipped"?** Check the branch first: `Deploy` only runs on `main`. If it is
-> skipped *from* `main`, the workflow's condition is excluding your event — which happened here,
-> `workflow_dispatch` having been left out, and the run went green with `Deploy` greyed out. A
-> skipped job never says why: it is the least talkative way of not deploying, and the only way to see
-> it is to read the job's `if:`.
+> ⚠️ **This publishes to production.** It is not a dry run. A push to `main`, by contrast, publishes
+> nothing: it builds and verifies.
+
+The tag triggers a full run — `build`, then `Deploy`. You can also replay it later without
+re-tagging: **Actions** → the **build** workflow → **Run workflow**, and pick the **tag** in the ref
+selector, which lists tags as well as branches.
+
+> **`Deploy` showing as "skipped"?** On a branch, `main` included, **that is normal** — only a `v*`
+> tag publishes. Skipped *from a tag* is something else: check the name really begins with `v`. A
+> skipped job never says why, it is the least talkative way of not deploying, and the only way to
+> settle it is to read the job's `if:`.
 
 Then open the **Deploy** job:
 
@@ -818,10 +825,12 @@ pnpm wrangler deployments list
 ```
 
 The most recent deployment must match your workflow's time, not your manual attempt from step 5.
+Since a tag published it, you can also line this list up against `git tag`: every deployment carries
+a name, not just a date.
 
 ### What CI does, and why this way
 
-On every push to `main`:
+On every push to `main` **and** on every `v*` tag:
 
 1. **build** — validates the published snippets, installs, type-checks, builds, verifies the
    committed generated content is current, checks the size budgets, **asks the runtime what it
@@ -839,7 +848,12 @@ Three choices that do not guess themselves:
 - **No `wrangler-action`.** The repository pins one wrangler in `package.json`; a pipeline that
   downloads another publishes with a version nobody has tested.
 
-A pull request cannot publish: the job is conditioned on a `push` to `main`.
+And **a branch does not publish** — not a pull request, not `main`. The job is conditioned on
+`refs/tags/v*`, so whatever reaches production always carries a name you chose.
+
+The cost of that choice deserves saying: `main` can run ahead of production indefinitely, and
+nothing here will tell you. A skipped `Deploy` on a push to `main` is the expected state, not a
+symptom.
 
 ---
 
