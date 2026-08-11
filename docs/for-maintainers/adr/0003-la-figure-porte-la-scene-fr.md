@@ -60,31 +60,61 @@ repère disant sur quelle scène se trouve le lecteur.
 
 ## Alternatives envisagées
 
-**Garder le panneau et élargir sa colonne.** Cela supprime la barre de défilement et laisse le
-défaut d'appariement, qui est le pire des deux.
+### Garder le panneau et élargir sa colonne
 
-**Garder le panneau et rendre chaque scène plus haute,** pour qu'une seule soit jamais à l'écran.
-Cela corrige l'appariement en rendant le panneau superflu — si une scène remplit l'écran, sa figure
-n'a nulle part ailleurs où être.
+Envisagée parce que c'est le plus petit changement et qu'elle préserve la lecture en panneau
+adhérent de la spécification. Rejetée parce qu'elle ne traite que la barre de défilement : le défaut
+d'appariement survit intact, et c'est le pire des deux.
 
-**Garder les deux colonnes et rétrécir les terminaux.** La largeur du récapitulatif n'est pas
-décorative : les deux mots qui rendent cette scène digne d'être montrée — `unread guards` — sont à
-la fin de sa plus longue ligne. La rétrécir masque l'intérêt de la scène.
+### Garder le panneau et rendre chaque scène plus haute, pour qu'une seule soit jamais à l'écran
+
+Envisagée parce qu'elle corrige l'appariement tout en gardant le mécanisme. Rejetée parce qu'elle
+corrige l'appariement en rendant le panneau superflu — si une scène remplit l'écran, sa figure n'a
+nulle part ailleurs où être — et qu'il ne reste alors qu'un script, une largeur d'écran et une
+préférence de mouvement qui ne paient plus rien.
+
+### Garder les deux colonnes et rétrécir les terminaux
+
+Envisagée parce qu'elle ferait tenir les figures dans la demi-mesure et laisserait la mise en page
+telle qu'elle était conçue. Rejetée parce que la largeur du récapitulatif n'est pas décorative : les
+deux mots qui rendent cette scène digne d'être montrée — `unread guards` — sont à la fin de sa plus
+longue ligne. La rétrécir masque l'intérêt de la scène.
 
 ## Conséquences
 
+### Positives
+
+Le lien entre une figure et les mots qui la commentent est énoncé par le document au lieu d'être
+déduit de la position : il ne peut donc plus être faussé par une scène courte ou un écran haut.
+
+Chaque figure publiée tient dans la largeur de la page, si bien qu'aucune scène ne réclame de barre
+de défilement horizontale.
+
+Quatre rendus se réduisent à un : bureau, mobile, mouvement réduit et sans JavaScript affichent le
+même document, et la seule chose que le script ajoute encore est le repère disant sur quelle scène
+se trouve le lecteur.
+
+### Négatives
+
+La page est bien plus longue. C'est voulu — le défilement fait avancer l'histoire au lieu de faire
+glisser un document — mais c'est un coût réel pour un lecteur qui voulait parcourir.
+
 La variante de scène `wide` disparaît. Elle existait pour que deux figures puissent occuper la
-pleine mesure pendant que les autres restaient en colonne ; toutes les figures ont la pleine mesure
-désormais.
+pleine mesure pendant que les autres restaient en colonne, et il ne reste plus de colonne dont elle
+serait l'exception.
 
-La page est bien plus longue, et c'est voulu : le défilement fait avancer l'histoire au lieu de
-faire glisser un document.
+Le commentaire réclame une mesure de lecture qui lui est propre plutôt que d'hériter de la largeur
+de la figure : deux largeurs coexistent donc désormais au sein d'une même scène.
 
-Le commentaire garde une mesure de lecture qui lui est propre plutôt que d'hériter de la largeur de
-la figure. Un paragraphe aussi large qu'un bloc de code est un paragraphe que personne ne termine.
+### Risques
 
-Le *scroll snapping* n'est **pas** adopté. Les scènes pleine hauteur donnent la sensation d'avancer
-sans lui, et le snap s'applique au scroller racine, ce qui ferait aussi snapper le hero.
+Une figure plus large que la mesure ramènerait la barre de défilement, en silence, dans une seule
+scène. Le garde-fou est la vérification de largeur de `check-narrative.sh` ; la marge est nulle
+aujourd'hui, la figure publiée la plus large faisant exactement les 130 caractères que la mesure
+accepte.
+
+Le *scroll snapping* n'est **pas** adopté, et l'adopter plus tard serait une nouvelle décision
+plutôt qu'un réglage : il s'applique au scroller racine, ce qui ferait aussi snapper le hero.
 
 ## Actions de suivi
 
