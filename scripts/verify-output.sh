@@ -179,6 +179,42 @@ if [ -n "${pending_html}" ]; then
   [ "${bad_focus}" -eq 0 ] && pass "pending elements stay focusable and say their state"
 fi
 
+# A control that needs scripting is hidden until its script proves it can act, and what
+# makes that real is the `[hidden] { display: none !important }` in base.css: a
+# component's own layout rule beats the user agent's, so without it the attribute is set,
+# the control is shown anyway, and a reader with no scripting gets exactly the dead
+# control the pattern exists to prevent. That is how it failed once (ADR-0004).
+#
+# Three assertions, because each one alone passes while the feature is broken: the rule
+# survives the build, the shipped markup really does hide the widget, and what is left
+# once it is hidden is the whole offer rather than an empty box.
+css="$(find "${dist}/_astro" -name '*.css' 2> /dev/null || true)"
+if [ -n "${css}" ]; then
+  # shellcheck disable=SC2086 # deliberately split: there is one stylesheet per build, but never assume it.
+  if grep -qE '\[hidden\][^{]*\{[^}]*display: *none *!important' ${css}; then
+    pass "hidden means hidden — no component's display can overrule it"
+  else
+    fail "base.css's [hidden] { display: none !important } did not survive the build, so a control hidden until its script runs will be shown before it can act"
+  fi
+fi
+
+home="${dist}/index.html"
+if [ -f "${home}" ]; then
+  if grep -qE '<div[^>]*role="tablist"[^>]*[[:space:]]hidden' "${home}"; then
+    pass "the install tablist ships hidden, so no tab appears before it can switch"
+  else
+    fail "the install tablist does not ship hidden — without scripting it is a row of buttons that do nothing"
+  fi
+
+  # Hiding the tabs is only honest because the stacked form is underneath them.
+  stacked="$(grep -oE 'data-panel="[a-z]+"' "${home}" | wc -l)"
+  if [ "${stacked}" -ge 2 ]; then
+    pass "and every command those tabs would switch between is in the page regardless"
+  else
+    fail "the install block ships ${stacked} panel(s), so with the tablist hidden a reader without scripting reaches only that many commands"
+  fi
+fi
+
 # not_found_handling is set to "404-page" in wrangler.jsonc, and it serves the
 # nearest 404.html. Without the files, the setting points at nothing and a
 # mistyped URL gets the host's default page rather than the site's.
