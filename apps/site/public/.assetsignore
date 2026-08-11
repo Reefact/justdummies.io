@@ -24,8 +24,21 @@
 # compresses at the edge, and excluding them would cut the upload by roughly two
 # thirds.
 #
-# They stay because the saving cannot be measured from here and the risk can. If
-# Cloudflare does not compress application/wasm at the edge, excluding them ships
-# a 2.9 MiB runtime uncompressed, against a 3 MiB budget for the whole first load.
-# Settle it on the first real deployment, by looking at the content-encoding of
-# dotnet.native.<hash>.wasm — not before.
+# The question that kept them was whether the host compresses application/wasm on
+# the way out. Against the local runtime it does, measured rather than assumed:
+# 3,002,102 bytes become 1,197,764 with Content-Encoding: br. The twins are
+# therefore unused *and* unnecessary — and they are publicly fetchable at their own
+# URLs into the bargain.
+#
+# They stay for one remaining reason, and it is small: the local runtime is not the
+# edge. Excluding them on the strength of a local measurement risks shipping a
+# 2.9 MiB runtime uncompressed against a 3 MiB budget for the whole first load, and
+# the artefact's own checks would not notice, because they measure files rather than
+# transfers.
+#
+# That is now one command away from settled, against the deployed site:
+#
+#     scripts/check-served-headers.sh https://justdummies.io
+#
+# If it reports the payload compressed there too, delete this paragraph and add
+# *.br and *.gz below.
