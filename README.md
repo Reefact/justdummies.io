@@ -53,8 +53,13 @@ pnpm deploy     # publish dist/ as built — it does not rebuild, so build first
 headers and the redirect rules are the real ones. Prefer it over any other local server when
 checking anything that depends on them.
 
-Pushing to `main` builds, verifies and publishes. The step-by-step setup — account, API token,
-GitHub secrets, custom domain — is [`docs/deployment.md`](docs/deployment.md).
+Pushing to `main` builds, verifies and publishes. The step-by-step setup — prerequisites, account,
+API token, GitHub secrets, custom domain — with a check to run after every step:
+[`docs/deployment-en.md`](docs/deployment-en.md) ·
+[`docs/deployment-fr.md`](docs/deployment-fr.md).
+
+On Windows, build under WSL2: `pnpm build` runs bash scripts, which `cmd.exe` and PowerShell
+cannot execute. The guide's step 0 covers it.
 
 ## How the two halves meet
 
