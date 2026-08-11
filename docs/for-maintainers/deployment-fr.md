@@ -163,9 +163,17 @@ exec "$SHELL"
 
 #### d. Le dépôt, dans le disque Linux
 
-Le shell Ubuntu démarre souvent dans `/mnt/c/Users/<toi>`, c'est-à-dire du côté Windows. Le chemin
-de destination est donc écrit en entier ci-dessous, et ce n'est pas du zèle : voir l'avertissement
-de l'étape 0.1.
+Depuis Ubuntu, tu vois **deux** systèmes de fichiers, et le guide t'a demandé d'en choisir un sans
+te dire comment on y va :
+
+| Chemin | Ce que c'est | Vitesse |
+|---|---|---|
+| `~`, c'est-à-dire `/home/<toi>` | le disque **Linux** | rapide |
+| `/mnt/c/...` | ton disque **Windows**, monté dans Linux | lent à traverser |
+
+Le shell Ubuntu démarre souvent dans `/mnt/c/Users/<toi>`, donc du mauvais côté. **Il n'y a rien à
+faire pour ça** : ce qui décide, c'est la destination écrite dans la commande, pas l'endroit d'où tu
+la lances. `~/dev/justdummies.io` atterrit sur le disque Linux même en tapant depuis `/mnt/c`.
 
 ```bash
 git clone https://github.com/Reefact/justdummies.io.git ~/dev/justdummies.io
@@ -173,6 +181,23 @@ cd ~/dev/justdummies.io
 ```
 
 ✅ **Contrôle :** `pwd` affiche `/home/<toi>/dev/justdummies.io`, sans `/mnt/`.
+
+> **Déjà cloné du mauvais côté ?** Déplace-le au lieu de recloner, sinon tu gardes deux copies :
+>
+> ```bash
+> mkdir -p ~/dev
+> mv /mnt/c/chemin/vers/justdummies.io ~/dev/
+> cd ~/dev/justdummies.io
+> ```
+>
+> Si `node_modules/` a déjà été installé là-bas, supprime-le après le déplacement et refais
+> `pnpm install`. Les liens internes de pnpm sont relatifs et survivent au déplacement, mais les
+> lanceurs de `node_modules/.bin/` embarquent le chemin **absolu** du dépôt dans leur `NODE_PATH`,
+> et `.pnpm-workspace-state-v1.json` aussi. Déplacé, l'arbre garde des chemins qui n'existent plus.
+>
+> ```bash
+> rm -rf node_modules dist && pnpm install
+> ```
 
 > **À partir d'ici, toutes les commandes de ce guide se lancent depuis la racine du dépôt.** Les
 > chemins `scripts/…` et `dist/…` en dépendent, et `pnpm` aussi.
