@@ -4,6 +4,25 @@
     "name": "justdummies-site",
     "compatibility_date": "2026-07-01",
 
+    // The site answers on justdummies.io and nowhere else.
+    //
+    // Left at its default, this Worker also answers on
+    // justdummies-site.<subdomain>.workers.dev — the same bytes under a second
+    // hostname, which search engines index, visitors bookmark and links point at,
+    // none of it intended. Turning it off is the only way to make the custom domain
+    // the site's address rather than one of its addresses.
+    //
+    // The cost is real and lands on the deployment guide: a first deployment then
+    // has no hostname at all until step 8 attaches the domain. Step 5 says what to
+    // do about that.
+    //
+    // This does NOT govern preview URLs. Those are <version>-<name>.<subdomain>
+    // .workers.dev, controlled by the separate "preview_urls" field, which is why
+    // `pnpm preview` is not what this line switches off. Whether a preview URL still
+    // resolves once the production hostname is gone is stated in ADR-0002 as
+    // unverified, and the check that settles it is written there.
+    "workers_dev": false,
+
     // No "main": this Worker has no script, deliberately.
     //
     // Requests served as static assets are free and unmetered; requests that invoke
