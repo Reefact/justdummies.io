@@ -808,6 +808,15 @@ Ouvre l'onglet **Actions** → workflow **build** → bouton **Run workflow** �
 **Run workflow**. Aucune commande à taper : le bouton prend le `main` du serveur, ton dépôt local
 n'intervient pas. *(Une poussée sur `main` déclenche la même chose.)*
 
+> ⚠️ **Ce bouton publie en production.** Depuis `main`, il fait exactement ce qu'une poussée fait —
+> ce n'est pas un essai à blanc. Depuis une autre branche, le job `Deploy` est sauté.
+
+> **Le job apparaît « skipped » ?** Regarde d'abord la branche : `Deploy` ne s'exécute que sur
+> `main`. S'il est sauté *depuis* `main`, c'est la condition du workflow qui exclut ton événement —
+> c'est arrivé ici, `workflow_dispatch` en avait été oublié, et le run passait au vert avec `Deploy`
+> en grisé. Un job sauté ne dit jamais pourquoi : c'est la façon la moins bavarde de ne pas
+> déployer, et la seule manière de le voir est de lire le `if:` du job.
+
 Puis ouvre le job **Deploy** :
 
 - **Attendu :** l'étape *Publish to Cloudflare Workers* se termine sur un déploiement wrangler.

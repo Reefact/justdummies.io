@@ -125,7 +125,19 @@ jobs:
     # Production, and only production. A pull request must never be able to publish.
     # A preview is made deliberately, by hand, with `pnpm run preview` — see
     # docs/for-maintainers/deployment-en.md.
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    #
+    # workflow_dispatch is listed alongside push, and its absence was a bug: the
+    # workflow offers a Run workflow button, the guide sends readers to it to prove
+    # their credentials work, and the condition then skipped the whole job. Nothing
+    # failed — the run went green with Deploy greyed out, which is the least
+    # informative way to not deploy.
+    #
+    # The gate is the ref, not the event. A pull_request run carries
+    # refs/pull/N/merge, so it cannot reach this either way; naming both events keeps
+    # the intent readable rather than resting on that.
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
