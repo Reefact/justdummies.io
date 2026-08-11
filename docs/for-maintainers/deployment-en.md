@@ -875,12 +875,22 @@ symptom.
 
 ## Step 8 — Attach `justdummies.io`
 
-**Why** — This is the first step that is hard to undo: it changes the domain's nameservers. Do it
-once every previous step is green.
+**Why** — A custom domain requires the **zone to be active at Cloudflare**. Getting it there is the
+one part of this guide that is hard to undo, because it changes the domain's nameservers. Whether
+you have to do it at all is the first thing to establish.
 
-A custom domain requires the **zone to be active at Cloudflare**.
+**Start by looking, not by adding.** At <https://dash.cloudflare.com/>, the account home lists
+**Websites** — the DNS zones Cloudflare holds for you. This is not the same list as **Workers &
+Pages**: a Worker can exist with no domain attached, which is exactly the state step 5 left you in.
 
-**If the domain is registered elsewhere** (OVH, Gandi, Namecheap…):
+| What the zone shows | What is left to do |
+|---|---|
+| `justdummies.io`, **Active**, *DNS Setup: Full* | Nothing. Skip the block below. |
+| `justdummies.io`, **Pending Nameserver Update** | The nameservers are not switched yet — block below, from 3. |
+| Not listed at all | The whole block below. |
+
+**Only if the zone is not there yet**, and the domain is registered elsewhere (OVH, Gandi,
+Namecheap…):
 
 1. Dashboard → **Add a domain** → `justdummies.io` → Free plan.
 2. Cloudflare scans the existing DNS records. **Read them back**, especially the `MX` ones if an
@@ -888,15 +898,29 @@ A custom domain requires the **zone to be active at Cloudflare**.
 3. Cloudflare shows two nameservers. At your registrar, replace its own with those.
 4. Propagation takes minutes to hours. The zone becomes **Active**.
 
-**Then attach the Worker:**
+**Then attach the Worker.** Note the first move: the zone page has no Workers menu, because a Worker
+belongs to the account and not to one domain. Click the account name, top left, to get out of the
+zone.
 
-1. **Workers & Pages** → `justdummies-site` → **Settings** → **Domains & Routes** → **Add** →
-   **Custom Domain**.
-2. `justdummies.io`. Repeat for `www.justdummies.io` if you want both.
-3. Cloudflare creates the DNS record and issues the TLS certificate on its own.
+1. **Workers & Pages** — labelled **Compute (Workers)** in some versions of the dashboard.
+2. `justdummies-site` → **Settings** → **Domains & Routes** → **Add** → **Custom Domain**.
+3. `justdummies.io`, with no `https://` and no `www`.
+4. Cloudflare creates the DNS record and issues the TLS certificate on its own.
 
 A **Custom Domain** sends every path of the domain to the Worker — what a site wants. A **Route**
-sends only part of it: not needed here. Nothing to change in `wrangler.jsonc`.
+sends only the part matching a pattern: if you land in a form asking for a pattern with a `*` in it,
+you are in the wrong one. Nothing to change in `wrangler.jsonc`.
+
+The zone's own DNS panel offers a **Connect Worker** button, which looks like a shortcut to the
+same thing. Prefer the path above: it names Custom Domain explicitly, and this guide has not
+measured what the shortcut creates.
+
+**Your mail is not at risk.** A Custom Domain creates or replaces the address record of *that
+hostname only*. The `MX` records are untouched. If Cloudflare offers to replace an existing record
+for `justdummies.io`, that is the expected prompt — accept it.
+
+`www.justdummies.io` is a separate decision and a separate Custom Domain. Until you add one, the
+name does not resolve at all — a `000` from `curl` there is the absence of a record, not a fault.
 
 ### ✅ Check
 
@@ -908,10 +932,26 @@ for u in / /fr/ /playground/ /playground/not-found /does-not-exist; do
 done
 ```
 
-Expected: `HTTP/2 200`, then the same codes as at steps 2 and 5. A certificate error immediately
-after adding the domain is normal — Cloudflare takes a few minutes to issue it. A
+Expected: `HTTP/2 200`, then the same codes as at steps 2 and 5 — `200` for the first four,
+including the playground's cold link, and `404` for the last. A certificate error immediately after
+adding the domain is normal — Cloudflare takes a few minutes to issue it. A
 `curl: (6) Could not resolve host` means the zone is not active yet, or the nameservers were not
 changed at the registrar.
+
+`scripts/check-served-headers.sh https://justdummies.io` runs the fuller check against the domain —
+but **read one of its failures before believing it**. It picks a fingerprinted asset out of the
+local `dist/`, so if your working copy has been rebuilt since the deployment went out, that
+filename does not exist online and the script says so:
+
+```
+✗ …/dotnet.native.<hash>.wasm answers 404, so its compression was measured on
+  whatever the host sent instead
+```
+
+That is the guard doing its job, not a broken deployment: .NET fingerprints hash content, and a
+rebuild on a different SDK patch level renames the file. Rebuild and redeploy, or point the script
+at the URL you actually deployed. To check the compression by hand, take the name from what the
+live loader references rather than from your disk.
 
 ---
 

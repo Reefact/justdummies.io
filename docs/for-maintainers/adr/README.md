@@ -131,7 +131,7 @@ requests, issues, diagrams.
 
 | ADR | Title | Status |
 |---|---|---|
-| [ADR-0001](0001-a-release-tag-publishes-not-a-merge-en.md) | A release tag publishes, not a merge | Proposed |
+| [ADR-0001](0001-a-release-tag-publishes-not-a-merge-en.md) | A release tag publishes, not a merge | Accepted |
 
 ## How this base differs from the library's
 

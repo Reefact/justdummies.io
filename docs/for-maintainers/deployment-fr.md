@@ -890,12 +890,23 @@ un symptôme.
 
 ## Étape 8 — Brancher `justdummies.io`
 
-**Pourquoi** — C'est la première étape difficile à défaire : elle change les serveurs de noms du
-domaine. Fais-la quand toutes les précédentes sont vertes.
+**Pourquoi** — Un domaine personnalisé exige que la **zone soit active chez Cloudflare**. L'y amener
+est la seule partie de ce guide qui soit difficile à défaire, parce qu'elle change les serveurs de
+noms du domaine. Savoir si tu as à le faire du tout est donc la première chose à établir.
 
-Un domaine personnalisé exige que la **zone soit active chez Cloudflare**.
+**Commence par regarder, pas par ajouter.** Sur <https://dash.cloudflare.com/>, l'accueil du compte
+affiche la liste **Websites** — les zones DNS que Cloudflare détient pour toi. Ce n'est pas la même
+liste que **Workers & Pages** : un Worker peut exister sans aucun domaine rattaché, et c'est
+exactement l'état dans lequel l'étape 5 t'a laissé.
 
-**Si le domaine est enregistré ailleurs** (OVH, Gandi, Namecheap…) :
+| Ce que montre la zone | Ce qu'il reste à faire |
+|---|---|
+| `justdummies.io`, **Active**, *DNS Setup: Full* | Rien. Saute le bloc ci-dessous. |
+| `justdummies.io`, **Pending Nameserver Update** | Les serveurs de noms ne sont pas basculés — bloc ci-dessous, à partir de 3. |
+| Absent de la liste | Tout le bloc ci-dessous. |
+
+**Seulement si la zone n'y est pas encore**, et que le domaine est enregistré ailleurs (OVH, Gandi,
+Namecheap…) :
 
 1. Dashboard → **Add a domain** → `justdummies.io` → plan Free.
 2. Cloudflare scanne les enregistrements DNS existants. **Relis-les**, surtout les `MX` si une
@@ -903,15 +914,30 @@ Un domaine personnalisé exige que la **zone soit active chez Cloudflare**.
 3. Cloudflare affiche deux serveurs de noms. Chez ton registrar, remplace les siens par ceux-là.
 4. La propagation prend de quelques minutes à quelques heures. La zone passe **Active**.
 
-**Puis rattache le Worker :**
+**Puis rattache le Worker.** Attention au premier geste : la page de la zone n'a pas de menu
+Workers, parce qu'un Worker appartient au compte et non à un domaine. Clique le nom du compte, en
+haut à gauche, pour sortir de la zone.
 
-1. **Workers & Pages** → `justdummies-site` → **Settings** → **Domains & Routes** → **Add** →
-   **Custom Domain**.
-2. `justdummies.io`. Recommence pour `www.justdummies.io` si tu veux les deux.
-3. Cloudflare crée l'enregistrement DNS et émet le certificat TLS tout seul.
+1. **Workers & Pages** — libellé **Compute (Workers)** selon la version du dashboard.
+2. `justdummies-site` → **Settings** → **Domains & Routes** → **Add** → **Custom Domain**.
+3. `justdummies.io`, sans `https://` et sans `www`.
+4. Cloudflare crée l'enregistrement DNS et émet le certificat TLS tout seul.
 
 Un **Custom Domain** envoie tous les chemins du domaine vers le Worker — ce que veut un site. Une
-**Route** n'en envoie qu'une partie : inutile ici. Rien à changer dans `wrangler.jsonc`.
+**Route** n'envoie que la partie qui correspond à un motif : si tu tombes sur un formulaire qui
+demande un motif avec une `*`, tu n'es pas dans le bon. Rien à changer dans `wrangler.jsonc`.
+
+Le panneau DNS de la zone propose un bouton **Connect Worker**, qui ressemble à un raccourci vers la
+même chose. Préfère le chemin ci-dessus : il nomme Custom Domain explicitement, et ce guide n'a pas
+mesuré ce que le raccourci crée.
+
+**Ton courrier n'est pas menacé.** Un Custom Domain crée ou remplace l'enregistrement d'adresse *de
+cet hôte-là uniquement*. Les `MX` ne sont pas touchés. Si Cloudflare propose de remplacer un
+enregistrement existant pour `justdummies.io`, c'est l'invite attendue — accepte.
+
+`www.justdummies.io` est une décision séparée et un Custom Domain séparé. Tant que tu n'en ajoutes
+pas un, le nom ne résout pas du tout — un `000` de `curl` là-dessus est l'absence d'enregistrement,
+pas une panne.
 
 ### ✅ Contrôle
 
@@ -923,10 +949,26 @@ for u in / /fr/ /playground/ /playground/not-found /nexiste-pas; do
 done
 ```
 
-Attendu : `HTTP/2 200`, puis les mêmes codes qu'aux étapes 2 et 5. Une erreur de certificat juste
+Attendu : `HTTP/2 200`, puis les mêmes codes qu'aux étapes 2 et 5 — `200` pour les quatre premiers,
+y compris le lien à froid du playground, et `404` pour le dernier. Une erreur de certificat juste
 après l'ajout est normale — Cloudflare met quelques minutes à l'émettre. Un `curl: (6) Could not
 resolve host` signifie que la zone n'est pas encore active ou que les serveurs de noms n'ont pas
 été changés chez le registrar.
+
+`scripts/check-served-headers.sh https://justdummies.io` lance le contrôle complet contre le
+domaine — mais **lis un de ses échecs avant de le croire**. Il prend un actif empreinté dans le
+`dist/` local, donc si ta copie de travail a été reconstruite depuis la mise en ligne, ce nom de
+fichier n'existe pas en ligne et le script le dit :
+
+```
+✗ …/dotnet.native.<hash>.wasm answers 404, so its compression was measured on
+  whatever the host sent instead
+```
+
+C'est le garde-fou qui fait son travail, pas un déploiement cassé : les empreintes .NET hachent le
+contenu, et une reconstruction sur un autre correctif du SDK renomme le fichier. Reconstruis et
+redéploie, ou pointe le script sur l'URL que tu as réellement déployée. Pour vérifier la compression
+à la main, prends le nom dans ce que le chargeur en ligne référence, pas sur ton disque.
 
 ---
 
