@@ -1,0 +1,57 @@
+---
+/**
+ * ACT III — reproducibility.
+ *
+ * The three beats of §9.2: the green test that turns red now and then, the failure handing
+ * back its seed, and the same seed bringing the same failure back.
+ *
+ * THE HINGE IS COMPULSORY (§9.4). This is the most delicate seam on the page — a test has
+ * just gone green and the page is about to show it going red — and without a sentence
+ * joining the two, a reader takes the third act for a second site glued onto the first.
+ *
+ * THE RED IS NOT DRAMATISED (§9.5). The intermittence is a statement about what an
+ * arbitrary value does to a test that forgot to constrain it, not a failure the library
+ * caused. The scenes state it; nothing here is styled as an alarm.
+ *
+ * WHAT IT DOES NOT PROMISE (§9.6). The seed replays the test case that reported it. That is
+ * what the adapter does — a seed per test case, so a suite running in parallel still hands
+ * back the seed of the case that failed — and the page says exactly that and no more.
+ *
+ * The exit is the complete offer, because by here the reader has seen all three pieces.
+ */
+import Act from './Act.astro';
+import Scene from './Scene.astro';
+import ToolRun from './ToolRun.astro';
+---
+
+<Act
+    name="act-three"
+    hinge="act3.hinge"
+    label="act3.label"
+    title="act3.title"
+    summary="act3.summary"
+    exitTitle="act3.exit.title"
+    exitBody="act3.exit.body"
+    offer="everything"
+>
+    <Scene
+        name="the-forgotten-line"
+        title="act3.forgotten.title"
+        body="act3.forgotten.body"
+        sample="intermittent-test"
+        outcome="sequence"
+    />
+
+    {/* Wide: the report line is 130 characters, and it is the scene. */}
+    <Scene name="the-seed" title="act3.seed.title" body="act3.seed.body" wide>
+        <ToolRun id="replayed-failure" from="test" />
+    </Scene>
+
+    <Scene
+        name="the-replay"
+        title="act3.replay.title"
+        body="act3.replay.body"
+        sample="replayed-test"
+        outcome="none"
+    />
+</Act>

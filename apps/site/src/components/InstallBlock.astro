@@ -28,7 +28,7 @@ interface Props {
      * asks the reader to judge something they have no way to judge yet, and reads as
      * noise rather than as a door.
      */
-    offer?: 'library' | 'library-and-tool';
+    offer?: 'library' | 'library-and-tool' | 'everything';
 }
 
 const { placement, offer = 'library' } = Astro.props;
@@ -36,7 +36,8 @@ const { placement, offer = 'library' } = Astro.props;
 const t = useTranslations(localeFromPath(Astro.url.pathname));
 
 const documentationPending: boolean = site.documentation.status === 'pending';
-const withTool: boolean = offer === 'library-and-tool';
+const withTool: boolean = offer === 'library-and-tool' || offer === 'everything';
+const withAdapter: boolean = offer === 'everything';
 ---
 
 <div class="install">
@@ -63,6 +64,15 @@ const withTool: boolean = offer === 'library-and-tool';
         )
     }
 
+    {
+        withAdapter && (
+            <div class="slot">
+                <h3>{t('install.adapter')}</h3>
+                <CopyableCommand command={site.xunit.installCommand} placement={placement} variant="xunit-adapter" />
+            </div>
+        )
+    }
+
     <nav class="links" aria-label={t('install.nuget')}>
         <a href={site.library.nuget} data-placement={placement} data-variant="nuget-link">
             {t('install.nuget')}
@@ -72,6 +82,14 @@ const withTool: boolean = offer === 'library-and-tool';
             withTool && (
                 <a href={site.cli.nuget} data-placement={placement} data-variant="nuget-tool-link">
                     {t('install.nugetTool')}
+                </a>
+            )
+        }
+
+        {
+            withAdapter && (
+                <a href={site.xunit.nuget} data-placement={placement} data-variant="nuget-adapter-link">
+                    {t('install.nugetAdapter')}
                 </a>
             )
         }

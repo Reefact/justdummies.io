@@ -8,14 +8,22 @@ set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-# Before the site is built, because the site imports what these produce. All three write
-# into apps/site/src/generated/, and all three are committed: the values only move when
+# Before the site is built, because the site imports what these produce. All four write
+# into apps/site/src/generated/, and all four are committed: what they hold only moves when
 # something real moves, so the diff is worth reading rather than noise to skip.
+#
+# Two of them are checks as much as generators. The reproducibility step runs the third act's
+# suite until it goes red and then replays the reported seed three times, and the tool step
+# fails if the scaffolder stops reporting the guard it cannot read. Both would rather stop the
+# build than let the page keep a claim whose evidence has moved.
 echo "▸ Extracting the validated snippets"
 node "${root}/scripts/extract-snippets.mjs"
 
 echo "▸ Generating the sample values"
 "${root}/scripts/generate-sample-values.sh"
+
+echo "▸ Checking the third act still holds"
+"${root}/scripts/generate-reproducibility.sh"
 
 echo "▸ Recording what the tool prints"
 "${root}/scripts/generate-tool-output.sh"

@@ -24,16 +24,24 @@ interface Props {
     exitTitle: UiKey;
     exitBody: UiKey;
     /** What this act has earned the right to offer. See InstallBlock's own note. */
-    offer?: 'library' | 'library-and-tool';
+    offer?: 'library' | 'library-and-tool' | 'everything';
+    /**
+     * The sentence that joins this act to the one before it. §9.4 makes it compulsory at
+     * the opening of the third act — the test has just gone green and the page is about to
+     * show it going red, and without a hinge the reader takes that for a second site glued
+     * onto the first. Its wording is editorial; that it exists is a decision.
+     */
+    hinge?: UiKey;
 }
 
-const { name, label, title, summary, exitTitle, exitBody, offer = 'library' } = Astro.props;
+const { name, label, title, summary, exitTitle, exitBody, offer = 'library', hinge } = Astro.props;
 
 const t = useTranslations(localeFromPath(Astro.url.pathname));
 ---
 
 <section class="act" id={name} aria-labelledby={`${name}-title`}>
     <header>
+        {hinge !== undefined && <p class="hinge">{t(hinge)}</p>}
         <p class="label">{t(label)}</p>
         <h2 id={`${name}-title`}>{t(title)}</h2>
         <p class="summary">{t(summary)}</p>
@@ -57,6 +65,19 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
     header {
         margin-bottom: var(--jd-space-12);
         max-width: 40rem;
+    }
+
+    /* Set apart from the act's own opening, because it belongs to the seam rather than to
+       either side of it: it is the last thing said about the act just finished and the first
+       about the one starting. */
+    .hinge {
+        margin: 0 0 var(--jd-space-8);
+        max-width: 34rem;
+        font-size: var(--jd-text-lg);
+        line-height: var(--jd-line-body);
+        color: var(--jd-text-primary);
+        border-left: 2px solid var(--jd-border);
+        padding-left: var(--jd-space-4);
     }
 
     .label {

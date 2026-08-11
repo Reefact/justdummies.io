@@ -13,10 +13,12 @@
  */
 import samplesDocument from './generated/sample-values.json';
 import snippetsDocument from './generated/snippets.json';
+import reproducibilityDocument from './generated/reproducibility.json';
 import toolDocument from './generated/tool-output.json';
 
 const code: Record<string, string> = snippetsDocument;
 const printed: Record<string, string> = toolDocument;
+const ran: Record<string, string> = reproducibilityDocument;
 const drawn: Record<string, string[]> = samplesDocument.values;
 const refused: Record<string, string> = samplesDocument.refusals;
 
@@ -62,6 +64,24 @@ export function toolOutput(id: string): string {
 
     if (found === undefined) {
         throw new Error(`No recorded output for "${id}". scripts/generate-tool-output.sh has to run the command.`);
+    }
+
+    return found;
+}
+
+/**
+ * What a test run printed.
+ *
+ * Recorded by running the suite, and by running it more than once: the build replays the
+ * pinned seed three times and refuses to record anything unless the three outputs are
+ * byte-identical. The third act's whole claim is that a seed brings a failure back, so an
+ * artefact that had not been checked to come back would be the wrong thing to publish.
+ */
+export function testRun(id: string): string {
+    const found: string | undefined = ran[id];
+
+    if (found === undefined) {
+        throw new Error(`No recorded test run for "${id}". scripts/generate-reproducibility.sh has to run the suite.`);
     }
 
     return found;

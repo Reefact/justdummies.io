@@ -14,22 +14,28 @@
  * The command comes from the same central metadata the install block reads, so the command
  * shown and the command recorded cannot drift apart.
  */
-import { toolOutput } from '../../samples';
+import { testRun, toolOutput } from '../../samples';
 
 interface Props {
     /** The recorded run, by identifier. */
     id: string;
-    /** The command line as the visitor should type it. */
-    command: string;
+    /**
+     * The command line as the visitor should type it. Omitted for a recorded test run:
+     * how a reader invokes their own suite is their business, and inventing a command
+     * line for it would be the one line on this page nobody had run.
+     */
+    command?: string;
+    /** Which recording to read: a command's output, or a test run's. */
+    from?: 'tool' | 'test';
 }
 
-const { id, command } = Astro.props;
+const { id, command, from = 'tool' } = Astro.props;
 
-const output: string = toolOutput(id);
+const output: string = from === 'tool' ? toolOutput(id) : testRun(id);
 ---
 
 <figure class="run">
-    <pre class="typed"><span class="prompt" aria-hidden="true">$</span> <code>{command}</code></pre>
+    {command !== undefined && <pre class="typed"><span class="prompt" aria-hidden="true">$</span> <code>{command}</code></pre>}
     <pre class="printed">{output}</pre>
 </figure>
 
