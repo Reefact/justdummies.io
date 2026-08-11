@@ -894,7 +894,11 @@ Trois propriétés de ce fichier méritent d'être connues avant de s'y fier :
 
 - **`release` vaut `null` sauf si le commit portait un tag `release/*`.** Il est lu avec
   `git tag --points-at HEAD`, jamais `git describe`, il nomme donc la release que *ce* commit est —
-  jamais la plus proche derrière lui.
+  jamais la plus proche derrière lui. En CI, il se replie sur la référence pour laquelle
+  l'exécution a été déclenchée, parce qu'un checkout n'est pas obligé de laisser une ref de tag
+  locale derrière lui, et un build de release qui estampillerait `null` serait faux sur le seul
+  déploiement pour lequel ce fichier existe. Si les deux sources se contredisent, la build
+  s'arrête au lieu d'en choisir une.
 - **Il est écrit par la build, pas par le job de déploiement.** Ce dernier publie l'artefact qu'il a
   téléchargé et ne reconstruit jamais : un fichier estampillé au moment du téléversement serait le
   seul octet du déploiement qu'aucun contrôle n'aurait examiné. L'engendrer dans la build fait que

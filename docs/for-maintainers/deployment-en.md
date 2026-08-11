@@ -878,7 +878,10 @@ Three properties of that file are worth knowing before you rely on it:
 
 - **`release` is `null` unless the commit carried a `release/*` tag.** It is read with
   `git tag --points-at HEAD`, never `git describe`, so it names the release *this* commit is —
-  never the nearest one behind it.
+  never the nearest one behind it. In CI it falls back to the ref the run was triggered for,
+  because a checkout is not obliged to leave a local tag ref behind, and a release build that
+  stamped `null` would be wrong on the one deployment the file exists for. If the two sources
+  disagree the build stops rather than picking one.
 - **It is written by the build, not by the deploy job.** The deploy job publishes the artefact it
   downloaded and never rebuilds, so a file stamped at upload time would be the one byte in the
   deployment no check had ever examined. Being generated in the build means `verify-output.sh`
