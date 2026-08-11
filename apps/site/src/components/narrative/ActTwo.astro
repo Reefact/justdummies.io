@@ -1,0 +1,67 @@
+---
+/**
+ * ACT II — concision.
+ *
+ * The four beats of §9.2: the installation, a generator scaffolded by the tool, the test
+ * reduced to its intention, and the test passing.
+ *
+ * It is the same test as the first act, word for word in its act and its assert. That is
+ * the continuity rule (§9.2) doing its work: what changed is that the six scenes of
+ * arrangement collapsed into one line, not that a new example was introduced.
+ *
+ * THE THIRD BEAT IS NOT A CONCESSION. `dum generate Order` reports the reference parameter
+ * as `unread guards`: the domain rejects a string without an "ORD-" prefix, and a prefix
+ * rule is not in the closed set of guard idioms the tool reads. So the tool emits the
+ * neutral recipe, says where it stopped, and does not guess — which means the file it wrote
+ * compiles and throws on every draw until one link is added.
+ *
+ * That link is the first act's chain, unchanged, and telling the act this way is both the
+ * only honest reading and the stronger one: the tool writes what nobody wants to write and
+ * stops where the reader already knows the answer. The alternative — a demonstration domain
+ * whose every rule the tool happens to read — would be a page arranged to flatter the tool
+ * rather than to show it.
+ *
+ * The exit offers the library and the tool, because by here both have been shown.
+ */
+import Act from './Act.astro';
+import Scene from './Scene.astro';
+import ToolRun from './ToolRun.astro';
+import CopyableCommand from '../CopyableCommand.astro';
+import { site } from '../../site';
+---
+
+<Act
+    name="act-two"
+    label="act2.label"
+    title="act2.title"
+    summary="act2.summary"
+    exitTitle="act2.exit.title"
+    exitBody="act2.exit.body"
+    offer="library-and-tool"
+>
+    <Scene name="the-tool" title="act2.install.title" body="act2.install.body">
+        <CopyableCommand command={site.cli.installCommand} placement="act-two-scene" variant="dotnet-tool" />
+    </Scene>
+
+    {/* Wide: the recap's longest line is 128 characters, and the two words that make this
+        scene worth showing sit at the end of it. */}
+    <Scene name="the-scaffold" title="act2.scaffold.title" body="act2.scaffold.body" wide>
+        <ToolRun id="generate-order" command={site.cli.example} />
+    </Scene>
+
+    <Scene
+        name="the-missing-link"
+        title="act2.link.title"
+        body="act2.link.body"
+        sample="completed-recipe"
+        outcome="sequence"
+    />
+
+    <Scene
+        name="the-concise-test"
+        title="act2.concise.title"
+        body="act2.concise.body"
+        sample="concise-test"
+        outcome="none"
+    />
+</Act>

@@ -53,6 +53,13 @@ public static class Program {
             // Scene six: the arrangement that works and still says too much.
             ["order-reference"] = [ActOne.VerboseArrangement().Reference.Value],
             ["order-total"]     = [ActOne.VerboseArrangement().Total.Amount.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)],
+
+            // The second act. Drawn through the scaffolded generator with the one link the
+            // tool could not read added back, which is the whole of what the act shows: the
+            // file the tool wrote throws on every draw until that line exists, so these
+            // values existing at all is the claim being made.
+            ["completed-recipe"]       = Repeat(static () => new AnyOrder().Generate().Reference.Value),
+            ["scaffolded-arrangement"] = Repeat(static () => Arranged().Reference.Value),
         };
 
         // Scene two shows the domain refusing a careless value. What it refused with is
@@ -104,6 +111,28 @@ public static class Program {
         throw new InvalidOperationException(
             "The expression the second scene shows being refused was accepted. Either the draw or the domain moved, "
           + "and the scene has to be rewritten rather than published without its evidence.");
+    }
+
+    /// <summary>
+    ///     The second act's arrangement, drawn and then checked against the only thing its
+    ///     test needs to be true.
+    ///
+    ///     The check is here rather than implied. The act's claim is that the arrangement
+    ///     disappears without the test losing what it was about, and a page that says so
+    ///     while the arrangement quietly produced a shipped order would be worse than one
+    ///     that said nothing. This turns the claim into a build failure if it stops holding.
+    /// </summary>
+    private static Order Arranged() {
+        Order order = ActTwo.PendingOrder();
+
+        if (order.Status != OrderStatus.Pending) {
+            throw new InvalidOperationException(
+                $"The second act's arrangement drew an order in status {order.Status}, and the act's test is about "
+              + "cancelling a pending one. The scene has to be rewritten rather than published beside a claim it no "
+              + "longer supports.");
+        }
+
+        return order;
     }
 
     private static string[] Repeat(Func<string> expression) {

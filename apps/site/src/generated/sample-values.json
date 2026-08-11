@@ -4,6 +4,12 @@
   },
   "seed": 20260810,
   "values": {
+    "completed-recipe": [
+      "ORD-QlF0066wYuCM2",
+      "ORD-RK",
+      "ORD-I496ZT",
+      "ORD-Lcw86jQP2gC6Jcb3"
+    ],
     "constrained-reference": [
       "ORD-5f5xO2T",
       "ORD-zvrxyEBwfd1o",
@@ -27,6 +33,12 @@
     ],
     "order-total": [
       "544006.13"
+    ],
+    "scaffolded-arrangement": [
+      "ORD-qSs",
+      "ORD-jeaqJ3PaxL8",
+      "ORD-3DIDcW2s1s",
+      "ORD-efQqo2"
     ]
   }
 }

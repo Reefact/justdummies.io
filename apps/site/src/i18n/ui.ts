@@ -55,7 +55,7 @@ const en = {
     'home.meta.description':
         'JustDummies generates arbitrary test values for .NET that satisfy the constraints you declare, so a test can say what it is about and nothing else.',
     'home.progress.note':
-        'Act I is built. Acts II and III — the tool that removes this arrangement, and the seed that reproduces a failure exactly — are specified and not yet here.',
+        'Acts I and II are built. Act III — the green test that turns red now and then, and the seed that reproduces the failure exactly — is specified and not yet here.',
 
     /**
      * ACT I — validity. The claim is that a value a test does not care about still has
@@ -94,13 +94,43 @@ const en = {
     'act1.exit.body':
         'Everything above is the library on its own. If it is what you came for, take it now — the rest of this page is about making that arrangement disappear.',
 
+    /**
+     * ACT II — concision. The claim is that the arrangement can go away without the test
+     * losing what it was about, and that the tool writes the part nobody wants to write.
+     */
+    'act2.label': 'Act II',
+    'act2.title': 'Four lines of arrangement, and none of them yours to write',
+    'act2.summary': 'A generator you own, scaffolded from the type you already have.',
+
+    'act2.install.title': 'One tool, once',
+    'act2.install.body':
+        'A global .NET tool. It reads your project the way the compiler does, so it needs nothing from you but the name of a type.',
+
+    'act2.scaffold.title': 'It reads the type and writes the generator',
+    'act2.scaffold.body':
+        'The constructor, every parameter, the factory each value object exposes, and the guard clauses behind them — read from your own source and turned into a recipe. Note the last column: it says what it inferred, and where it stopped.',
+
+    'act2.link.title': 'It stops where you already know the answer',
+    'act2.link.body':
+        'A prefix rule is not one of the guard shapes it reads, so it marked that parameter and left the recipe neutral rather than guessing — which means the file it wrote throws on every draw until you add the link. That link is the chain from the first act, unchanged. You paste it once, into a file that is now yours.',
+
+    'act2.concise.title': 'The test, and nothing else',
+    'act2.concise.body':
+        'Same test as before, down to the assertion. One line of arrangement, and it names the only thing the test needs to be true: the order is pending. Everything else about that order is arbitrary, valid, and none of the test’s business.',
+
+    'act2.exit.title': 'A package and a tool',
+    'act2.exit.body':
+        'The tool is optional — everything the second act removed, the first act had already made possible. Take both if the arrangement was your complaint; take the library alone if it was not.',
+
     'sample.produced': 'produced',
     'sample.producedEachRun': 'produced, run after run',
     'sample.refused': 'refused',
 
     'install.cli': '.NET CLI',
     'install.packageManager': 'Package Manager',
+    'install.tool': 'The scaffolding tool',
     'install.nuget': 'View on NuGet',
+    'install.nugetTool': 'The tool on NuGet',
     'install.documentation': 'Documentation',
     'install.copy': 'Copy',
     'install.copyCommand': 'Copy this command',
@@ -140,7 +170,7 @@ const fr: Record<UiKey, string> = {
     'home.meta.description':
         "JustDummies produit pour .NET des valeurs de test arbitraires qui respectent les contraintes que vous déclarez, pour qu'un test dise ce dont il parle, et rien d'autre.",
     'home.progress.note':
-        "L'acte I est construit. Les actes II et III — le tool qui fait disparaître cet arrangement, et le seed qui reproduit un échec à l'identique — sont spécifiés et pas encore là.",
+        "Les actes I et II sont construits. L'acte III — le test vert qui redevient rouge par intermittence, et le seed qui reproduit l'échec à l'identique — est spécifié et pas encore là.",
 
     'act1.label': 'Acte I',
     'act1.title': 'La valeur dont votre test se moque',
@@ -174,13 +204,39 @@ const fr: Record<UiKey, string> = {
     'act1.exit.body':
         "Tout ce qui précède, c'est la bibliothèque seule. Si c'est ce que vous êtes venu chercher, prenez-la maintenant — la suite de cette page parle de faire disparaître cet arrangement.",
 
+    'act2.label': 'Acte II',
+    'act2.title': "Quatre lignes d'arrangement, et aucune à écrire",
+    'act2.summary': 'Un generator qui vous appartient, engendré depuis le type que vous avez déjà.',
+
+    'act2.install.title': 'Un outil, une fois',
+    'act2.install.body':
+        "Un outil .NET global. Il lit votre projet comme le fait le compilateur : il n'attend de vous que le nom d'un type.",
+
+    'act2.scaffold.title': 'Il lit le type et écrit le generator',
+    'act2.scaffold.body':
+        "Le constructeur, chaque paramètre, la fabrique que chaque value object expose, et les clauses de garde derrière — lus dans vos propres sources et transformés en recette. Regardez la dernière colonne : elle dit ce qu'il a déduit, et où il s'est arrêté.",
+
+    'act2.link.title': "Il s'arrête là où vous savez déjà répondre",
+    'act2.link.body':
+        "Une règle de préfixe ne fait pas partie des formes de garde qu'il sait lire : il a donc marqué ce paramètre et laissé la recette neutre plutôt que de deviner — ce qui veut dire que le fichier qu'il a écrit échoue à chaque tirage tant que vous n'avez pas ajouté le maillon. Ce maillon, c'est la chaîne du premier acte, inchangée. Vous la collez une fois, dans un fichier qui est désormais le vôtre.",
+
+    'act2.concise.title': 'Le test, et rien d’autre',
+    'act2.concise.body':
+        "Le même test qu'avant, jusqu'à l'assertion. Une ligne d'arrangement, et elle nomme la seule chose que le test a besoin de voir vraie : la commande est en attente. Tout le reste de cette commande est arbitraire, valide, et ne regarde pas le test.",
+
+    'act2.exit.title': 'Un package et un outil',
+    'act2.exit.body':
+        "L'outil est facultatif — tout ce que le second acte a retiré, le premier l'avait déjà rendu possible. Prenez les deux si c'était l'arrangement qui vous gênait ; prenez la bibliothèque seule sinon.",
+
     'sample.produced': 'produit',
     'sample.producedEachRun': 'produit, exécution après exécution',
     'sample.refused': 'refusé',
 
     'install.cli': 'CLI .NET',
     'install.packageManager': 'Console du gestionnaire de packages',
+    'install.tool': "L'outil de scaffolding",
     'install.nuget': 'Voir sur NuGet',
+    'install.nugetTool': "L'outil sur NuGet",
     'install.documentation': 'Documentation',
     'install.copy': 'Copier',
     'install.copyCommand': 'Copier cette commande',

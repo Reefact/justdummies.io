@@ -37,24 +37,41 @@ interface Props {
     name: string;
     title: UiKey;
     body: UiKey;
-    /** The identifier marked in the validated C# source. */
-    sample: string;
+    /**
+     * The identifier marked in the validated C# source. Omitted when the scene supplies
+     * its own figure through the slot — a recorded terminal, say, which is neither an
+     * expression nor a value.
+     */
+    sample?: string;
     outcome?: 'value' | 'sequence' | 'refusal' | 'none';
+    /**
+     * Puts the figure across the full width with the prose above it, for content the
+     * two-column measure would force a reader to scroll sideways through. Used
+     * sparingly: it costs the sticky column, and a page of wide scenes is a page with
+     * no rhythm.
+     */
+    wide?: boolean;
 }
 
-const { name, title, body, sample, outcome = 'value' } = Astro.props;
+const { name, title, body, sample, outcome = 'value', wide = false } = Astro.props;
 
 const t = useTranslations(localeFromPath(Astro.url.pathname));
+
+const ownFigure: boolean = Astro.slots.has('default');
+
+if (!ownFigure && sample === undefined) {
+    throw new Error(`Scene "${name}" has neither a sample nor a figure of its own, so it would render prose alone.`);
+}
 ---
 
-<section class="scene" id={name} data-scene={name} aria-labelledby={`${name}-title`}>
+<section class="scene" id={name} data-scene={name} aria-labelledby={`${name}-title`} data-wide={wide ? '' : undefined}>
     <div class="prose">
         <h3 id={`${name}-title`}>{t(title)}</h3>
         <p>{t(body)}</p>
     </div>
 
     <div class="figure">
-        <CodeSample id={sample} outcome={outcome} />
+        {ownFigure ? <slot /> : <CodeSample id={sample!} outcome={outcome} />}
     </div>
 </section>
 
@@ -183,6 +200,17 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
             position: sticky;
             top: var(--jd-space-8);
             align-self: start;
+        }
+
+        /* A wide scene gives the figure the whole measure and puts the prose above it.
+           Nothing sticks here: there is no second column for it to stick beside. */
+        .scene[data-wide] {
+            grid-template-columns: minmax(0, 1fr);
+            gap: var(--jd-space-6);
+        }
+
+        .scene[data-wide] .figure {
+            position: static;
         }
     }
 </style>

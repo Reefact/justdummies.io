@@ -1,0 +1,75 @@
+---
+/**
+ * A command, and what running it printed.
+ *
+ * Same rule as every other figure on this site: the output is not transcribed. A script
+ * runs the command against the same project the snippets compile in and records what came
+ * back, so what a visitor reads is the tool speaking rather than a claim about the tool.
+ *
+ * That matters most where it is least visible. The recap this renders is the tool saying
+ * which parameters it inferred and which guard it could not read — and a transcribed
+ * version of that line would be exactly the sentence somebody would later be tempted to
+ * tidy up.
+ *
+ * The command comes from the same central metadata the install block reads, so the command
+ * shown and the command recorded cannot drift apart.
+ */
+import { toolOutput } from '../../samples';
+
+interface Props {
+    /** The recorded run, by identifier. */
+    id: string;
+    /** The command line as the visitor should type it. */
+    command: string;
+}
+
+const { id, command } = Astro.props;
+
+const output: string = toolOutput(id);
+---
+
+<figure class="run">
+    <pre class="typed"><span class="prompt" aria-hidden="true">$</span> <code>{command}</code></pre>
+    <pre class="printed">{output}</pre>
+</figure>
+
+<style>
+    .run {
+        margin: 0;
+        background: var(--jd-surface);
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-md);
+        overflow: hidden;
+    }
+
+    pre {
+        margin: 0;
+        padding: var(--jd-space-4);
+        overflow-x: auto;
+        font-family: var(--jd-font-mono);
+        line-height: 1.5;
+    }
+
+    .typed {
+        font-size: var(--jd-text-sm);
+        border-bottom: 1px solid var(--jd-border);
+        background: var(--jd-surface-raised);
+    }
+
+    .prompt {
+        color: var(--jd-accent);
+        user-select: none;
+    }
+
+    /*
+     * Smaller than the code blocks, and deliberately. The recap's widest line is 128
+     * characters, and the words that make this scene worth showing — the ones naming the
+     * guard the tool could not read — are at the far right of it. At the ordinary size
+     * that line needs a sideways scroll on a desktop screen, which is the same as not
+     * being there.
+     */
+    .printed {
+        font-size: 0.75rem;
+        color: var(--jd-text-muted);
+    }
+</style>
