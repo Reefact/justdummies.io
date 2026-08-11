@@ -24,16 +24,25 @@ set -euo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 base="${1:-}"
 runtime_pid=""
+runtime_pgid=""
 runtime_log=""
 
 failures=0
 fail() { echo "  ✗ $1" >&2; failures=$((failures + 1)); }
 pass() { echo "  ✓ $1"; }
 
+# The runtime is a tree, not a process: pnpm spawns node, node spawns wrangler,
+# wrangler spawns workerd. Killing the one process this script started leaves the
+# rest running — it holds its port, so the next run finds it busy and reports on a
+# server nobody meant to still be there. Under CI it surfaces as the runner
+# terminating orphan workerd processes after the step has already reported success.
+#
+# So the runtime is started in its own process group, and the whole group is what
+# gets signalled.
 cleanup() {
-  if [ -n "${runtime_pid}" ]; then
-    kill "${runtime_pid}" 2> /dev/null || true
-    wait "${runtime_pid}" 2> /dev/null || true
+  if [ -n "${runtime_pgid}" ]; then
+    kill -- "-${runtime_pgid}" 2> /dev/null || true
+    wait 2> /dev/null || true
   fi
   [ -n "${runtime_log}" ] && rm -f "${runtime_log}"
 }
@@ -47,8 +56,15 @@ if [ -z "${base}" ]; then
 
   runtime_log="$(mktemp)"
   echo "▸ Starting the runtime"
-  (cd "${root}" && pnpm serve > "${runtime_log}" 2>&1) &
+  setsid bash -c "cd '${root}' && exec pnpm serve" > "${runtime_log}" 2>&1 &
   runtime_pid=$!
+
+  # setsid makes the child a session leader, so its process group id is its own pid —
+  # read back rather than assumed, because a setsid that had to fork would leave $!
+  # pointing at the wrapper.
+  sleep 1
+  runtime_pgid="$(ps -o pgid= -p "${runtime_pid}" 2> /dev/null | tr -d ' ' || true)"
+  runtime_pgid="${runtime_pgid:-${runtime_pid}}"
 
   # Waiting on the line the runtime prints, rather than on a fixed sleep: a sleep is
   # either too short on a slow machine or wasted on a fast one.
