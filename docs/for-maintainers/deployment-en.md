@@ -819,10 +819,10 @@ The tag triggers a full run — `build`, then `Deploy`. You can also replay it l
 re-tagging: **Actions** → the **build** workflow → **Run workflow**, and pick the **tag** in the ref
 selector, which lists tags as well as branches.
 
-> **`Deploy` showing as "skipped"?** On a branch, `main` included, **that is normal** — only a `v*`
-> tag publishes. Skipped *from a tag* is something else: check the name really begins with
-> `release/`. A skipped job never says why, it is the least talkative way of not deploying, and the
-> only way to settle it is to read the job's `if:`.
+> **`Deploy` showing as "skipped"?** On a branch, `main` included, **that is normal** — only a
+> `release/*` tag publishes. Skipped *from a tag* is something else: check the name really begins
+> with `release/`. A skipped job never says why, it is the least talkative way of not deploying,
+> and the only way to settle it is to read the job's `if:`.
 
 Then open the **Deploy** job:
 

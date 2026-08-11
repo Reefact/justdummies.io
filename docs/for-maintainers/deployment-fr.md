@@ -836,8 +836,7 @@ sélecteur de référence, qui liste les tags autant que les branches.
 > **`Deploy` apparaît « skipped » ?** Sur une branche, y compris `main`, **c'est normal** — seul un
 > tag `release/*` publie. Sauté *depuis un tag*, c'est autre chose : vérifie que le nom commence bien
 > par `release/`. Un job sauté ne dit jamais pourquoi, c'est la façon la moins bavarde de ne pas
-> déployer, et la
-> seule manière de trancher est de lire le `if:` du job.
+> déployer, et la seule manière de trancher est de lire le `if:` du job.
 
 Puis ouvre le job **Deploy** :
 
