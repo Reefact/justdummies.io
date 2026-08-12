@@ -296,6 +296,7 @@ Rien de tout ceci n'est à écrire :
 | `apps/site/public/.assetsignore` | Ce qui ne doit **jamais** monter dans le téléversement. |
 | `scripts/verify-output.sh` | Dix-sept assertions sur la forme de l'artefact, lue sur le disque. Plusieurs n'existent que parce que leur échec est invisible jusqu'à ce qu'un visiteur le rencontre. |
 | `scripts/check-served-headers.sh` | Six assertions sur ce que le runtime **sert réellement** : il démarre le moteur et l'interroge. Un fichier de règles peut être présent, bien formé, et ignoré — c'est exactement ce qui est arrivé ici. |
+| `scripts/check-in-browser.sh` | Quarante-trois contrôles qui rendent l'artefact au lieu de le lire : le playground démarre, le navigateur accepte la politique, aucun contrôle n'est proposé à un lecteur sans script, rien n'est plus large que la fenêtre. Décision : [ADR-0009](adr/0009-les-controles-navigateur-sont-pilotes-par-playwright-fr.md). |
 | `scripts/check-release-tag.sh` | Trois assertions sur le tag qui publie : il est annoté, son message est son nom, et son nom est le moment où il a été posé. Les huit premiers tags de release échouaient à la troisième. |
 | `.github/workflows/build.yml` | Construit, vérifie, puis publie — dès que les identifiants existeront. |
 
@@ -967,7 +968,8 @@ geste.
 
 1. **build** — valide les extraits publiés, installe, contrôle les types, construit, vérifie que
    le contenu généré committé est à jour, contrôle les budgets de taille, **demande au runtime ce
-   qu'il sert vraiment** (le script de l'étape 2), puis téléverse l'artefact.
+   qu'il sert vraiment** (le script de l'étape 2), **rend l'artefact dans un navigateur**, puis le
+   téléverse.
 2. **deploy** — récupère **cet artefact-là** plutôt que de reconstruire, rejoue
    `verify-output.sh` sur les octets téléchargés, puis lance `pnpm run deploy`.
 3. **Release notes** — relit le tag avec `check-release-tag.sh`, puis écrit la page de release à

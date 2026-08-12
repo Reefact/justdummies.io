@@ -45,6 +45,20 @@ with `pnpm build:site` and `pnpm build:playground`.
 
 `dist/` is the deployment — the directory uploaded to Cloudflare Workers, exactly as built.
 
+## Checking it in a browser
+
+```bash
+pnpm test:browser          # every check
+pnpm test:browser controls # the checks whose file name matches
+```
+
+The scripts the build runs read the artefact. This one renders it, against `dist/` served by the
+runtime production uses, and checks what only a rendered page can say: the playground starts and
+draws a value, the browser agrees to the Content-Security-Policy, no control is offered to a reader
+whose scripting never arrives, nothing is wider than the viewport. It needs a full `pnpm build`
+first, because one of the checks is that the playground runs. Playwright rather than the
+alternatives: [ADR-0009](docs/for-maintainers/adr/0009-the-browser-checks-are-driven-by-playwright-en.md).
+
 ## Deploying
 
 ```bash

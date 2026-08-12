@@ -293,6 +293,7 @@ None of this needs writing:
 | `apps/site/public/.assetsignore` | What must **never** go up in the upload. |
 | `scripts/verify-output.sh` | Seventeen assertions on the artefact's shape, read from disk. Several exist only because their failure is invisible until a visitor meets it. |
 | `scripts/check-served-headers.sh` | Six assertions on what the runtime **actually serves**: it starts the engine and asks it. A rules file can be present, well formed, and ignored — which is exactly what happened here. |
+| `scripts/check-in-browser.sh` | Forty-three checks that render the artefact instead of reading it: the playground starts, the browser agrees to the policy, no control is offered to a reader without scripting, nothing is wider than the viewport. Decision: [ADR-0009](adr/0009-the-browser-checks-are-driven-by-playwright-en.md). |
 | `scripts/check-release-tag.sh` | Three assertions on the tag that publishes: it is annotated, its message is its name, and its name is the moment it was made. The first eight release tags failed the third. |
 | `.github/workflows/build.yml` | Builds, verifies, then publishes — as soon as the credentials exist. |
 
@@ -946,7 +947,7 @@ On every push to `main` **and** on every `release/*` tag:
 
 1. **build** — validates the published snippets, installs, type-checks, builds, verifies the
    committed generated content is current, checks the size budgets, **asks the runtime what it
-   actually serves** (step 2's script), then uploads the artefact.
+   actually serves** (step 2's script), **renders the artefact in a browser**, then uploads it.
 2. **deploy** — fetches **that** artefact rather than rebuilding, replays `verify-output.sh` on
    the downloaded bytes, then runs `pnpm run deploy`.
 3. **Release notes** — reads the tag back with `check-release-tag.sh`, then writes the release page
