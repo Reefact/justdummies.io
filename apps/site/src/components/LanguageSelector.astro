@@ -77,6 +77,48 @@ const t = useTranslations(current);
     )
 }
 
+<script>
+    /**
+     * Closes the menu when the reader clicks away from it, and on Escape.
+     *
+     * `<details>` on its own only closes by its own summary, so a reader who opens the
+     * languages and then clicks anywhere else is left with a panel hanging over the page.
+     * Reported as exactly that, and it is a fair complaint: every menu they have ever
+     * used closes.
+     *
+     * Additive, so the control still works without it (ADR-0004): without scripting the
+     * summary opens and closes the panel, which is the whole of what it has to do.
+     */
+    const menus: HTMLDetailsElement[] = Array.from(
+        document.querySelectorAll<HTMLDetailsElement>('.language-selector details'),
+    );
+
+    if (menus.length > 0) {
+        document.addEventListener('click', (event: MouseEvent) => {
+            for (const menu of menus) {
+                if (menu.open && !menu.contains(event.target as Node)) {
+                    menu.open = false;
+                }
+            }
+        });
+
+        document.addEventListener('keydown', (event: KeyboardEvent) => {
+            if (event.key !== 'Escape') {
+                return;
+            }
+
+            for (const menu of menus) {
+                if (menu.open) {
+                    menu.open = false;
+                    // Focus goes back to the control that opened it, rather than being
+                    // dropped somewhere the reader cannot see.
+                    menu.querySelector('summary')?.focus();
+                }
+            }
+        });
+    }
+</script>
+
 <style>
     .language-selector {
         position: relative;

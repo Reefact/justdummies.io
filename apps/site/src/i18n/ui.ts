@@ -60,17 +60,20 @@ const en = {
      * to be valid, and that declaring what must be true is a different job from writing
      * a value down.
      */
-    'act1.label': 'Act I',
     'act1.title': 'The value your test does not care about',
     'act1.summary': 'It still has to be valid.',
 
-    'act1.test.title': 'The test is already written',
+    'act1.test.title': 'Your test probably looks like this',
     'act1.test.body':
-        'Two lines do the real work here: cancel the order, check that it was cancelled. Everything above them exists so those two can run, and none of it is what the test is about.',
+        'Two lines do the work: cancel the order, check that it was. The other three are named for any value and hand you one specific one, typed in by hand — you have to read the right of each assignment to notice, and none of it has anything to do with cancelling.',
 
-    'act1.careless.title': 'The shortest thing that could work',
+    'act1.factories.title': 'One factory per value',
+    'act1.factories.body':
+        "The test reads at last: three names, and you know straight away what matters. But nothing moved underneath. AnyOrderReference still returns the same string it always did — the lie did not go away, it moved to another file.",
+
+    'act1.careless.title': 'The factory stops lying',
     'act1.careless.body':
-        "Your test doesn't care what the reference says. The domain does, and it tells you right away — when the value is built, not three assertions later.",
+        "Any.String() draws a genuinely arbitrary string, so the name is finally true. The domain disagrees. It refuses the value the moment it is built — not three assertions later — and it says exactly what it was missing.",
 
     'act1.invariants.title': 'What the domain is asking for',
     'act1.invariants.body':
@@ -78,15 +81,7 @@ const en = {
 
     'act1.constraints.title': 'Declare the constraints, not the value',
     'act1.constraints.body':
-        "One link per rule. What comes out is different every time, and valid every time. The chain describes what has to be true of the value — never what you're about to assert about it.",
-
-    'act1.derivation.title': 'One more link and you have a domain object',
-    'act1.derivation.body':
-        "That last link hands the value to the factory your domain already exposes. You don't add a constructor for tests, and you don't copy a single rule. The type on the left changes; nothing else does.",
-
-    'act1.verbose.title': 'It works. It also says far too much.',
-    'act1.verbose.body':
-        'Every value here is valid, and not one of them has anything to do with cancelling an order. Four lines of setup for one line of behaviour: the test reads like documentation for the constructor.',
+        "One link per rule, inside the factory. What comes out is different every time, and valid every time. The chain describes what has to be true of the value — never what you're about to assert about it.",
 
     'act1.exit.title': 'That much is one package',
     'act1.exit.body':
@@ -96,7 +91,6 @@ const en = {
      * ACT II — concision. The claim is that the arrangement can go away without the test
      * losing what it was about, and that the tool writes the part nobody wants to write.
      */
-    'act2.label': 'Act II',
     'act2.title': 'Four lines of setup, and not one of them yours to write',
     'act2.summary': 'A generator that belongs to you, written from the type you already have.',
 
@@ -110,7 +104,7 @@ const en = {
 
     'act2.link.title': 'It stops where you already know the answer',
     'act2.link.body':
-        "It marked that parameter rather than guess at it, so the file it wrote throws on every draw until you add the link. What goes there is the chain from the first act, unchanged — you paste it once, into a file that's now yours.",
+        "It marked that parameter rather than guess at it, so the file it wrote throws on every draw until you add the link. What goes there is the chain you already wrote, unchanged — you paste it once, into a file that's now yours.",
 
     'act2.concise.title': 'The test, and nothing else',
     'act2.concise.body':
@@ -118,7 +112,7 @@ const en = {
 
     'act2.exit.title': 'A package and a tool',
     'act2.exit.body':
-        "The tool is optional. Everything the second act removed, the first act had already made possible. Take both if the setup was what bothered you; take the library alone if it wasn't.",
+        "The tool is optional. Everything it removed here, the library on its own had already made possible. Take both if the setup was what bothered you; take the library alone if it wasn't.",
 
     /**
      * ACT III — reproducibility. The claim is that a test which forgot to constrain a value
@@ -128,7 +122,6 @@ const en = {
     'act3.hinge':
         "The test you just watched go green stays green, because one line in it says the only thing that test needs. Here's what happens when a test forgets one.",
 
-    'act3.label': 'Act III',
     'act3.title': 'A red that comes back when you ask it to',
     'act3.summary':
         'Arbitrary values make a forgetful test fail every so often. When it fails, it hands you back the seed.',
@@ -161,12 +154,13 @@ const en = {
     'hero.cost': 'about 1.2 MB, downloaded only if you ask',
     'hero.frameTitle': 'The JustDummies expression, running in your browser',
     /** The name of the chevron at the foot of the first screen. It is a link, so it needs one. */
-    'hero.scrollCue': 'Read the first act',
+    'hero.scrollCue': 'Find out more',
 
     'sample.produced': 'produced',
     'sample.producedEachRun': 'produced, run after run',
     'sample.refused': 'refused',
 
+    'install.library': 'The library',
     'install.cli': '.NET CLI',
     'install.packageManager': 'Package Manager',
     'install.tool': 'The scaffolding tool',
@@ -179,6 +173,8 @@ const en = {
     'install.copyCommand': 'Copy this command',
     'install.copied': 'Copied',
     'install.copyFailed': 'Could not copy. Select the command and copy it manually.',
+    /** Said where a Package Manager panel cannot offer a command, because none exists. */
+    'install.toolIsCliOnly': 'A global .NET tool is installed from the command line.',
 
     /**
      * The state marker of §5.7. It is displayed next to the label, never behind a
@@ -220,17 +216,20 @@ const fr: Record<UiKey, string> = {
     'home.meta.description':
         "JustDummies produit pour .NET des valeurs de test arbitraires qui respectent les contraintes que vous déclarez, pour qu'un test dise ce dont il parle, et rien d'autre.",
 
-    'act1.label': 'Acte I',
     'act1.title': 'La valeur dont votre test se moque',
     'act1.summary': 'Elle doit quand même être valide.',
 
-    'act1.test.title': 'Le test est déjà écrit',
+    'act1.test.title': 'En général, votre test ressemble à ça',
     'act1.test.body':
-        "Deux lignes font le vrai travail : annuler la commande, vérifier qu'elle l'est. Tout ce qui est au-dessus n'existe que pour qu'elles puissent tourner, et rien de tout ça n'est le sujet du test.",
+        "Deux lignes font le travail : annuler la commande, vérifier qu'elle l'est. Les trois autres portent le nom d'une valeur quelconque et vous en donnent une précise, tapée à la main — il faut lire la droite de chaque assignation pour s'en rendre compte, et rien là-dedans ne parle d'annulation.",
 
-    'act1.careless.title': 'Le plus court qui pourrait marcher',
+    'act1.factories.title': 'Une factory par valeur',
+    'act1.factories.body':
+        "Le test se lit enfin : trois noms, et on sait tout de suite ce qui compte. Mais rien n'a bougé en dessous. AnyOrderReference renvoie toujours la même chaîne qu'avant — le mensonge n'a pas disparu, il a changé de fichier.",
+
+    'act1.careless.title': 'La factory arrête de mentir',
     'act1.careless.body':
-        "Votre test se moque du contenu de la référence. Le domaine, lui, ne s'en moque pas — et il vous le dit tout de suite, au moment où la valeur est construite, pas trois assertions plus loin.",
+        "Any.String() tire une chaîne vraiment quelconque, et le nom devient enfin vrai. Le domaine, lui, n'est pas d'accord. Il refuse la valeur au moment où elle est construite — pas trois assertions plus loin — et il dit exactement ce qui lui manquait.",
 
     'act1.invariants.title': 'Ce que le domaine réclame',
     'act1.invariants.body':
@@ -238,21 +237,12 @@ const fr: Record<UiKey, string> = {
 
     'act1.constraints.title': 'Déclarez les contraintes, pas la valeur',
     'act1.constraints.body':
-        "Un maillon par règle. Ce qui en sort est différent à chaque fois, et valide à chaque fois. La chaîne décrit ce qui doit être vrai de la valeur, jamais ce que vous vous apprêtez à vérifier.",
-
-    'act1.derivation.title': 'Un maillon de plus, et vous tenez un objet du domaine',
-    'act1.derivation.body':
-        "Ce dernier maillon passe la valeur à la fabrique que votre domaine expose déjà. Vous n'ajoutez pas de constructeur pour les tests, et vous ne recopiez aucune règle. Le type à gauche change, rien d'autre.",
-
-    'act1.verbose.title': 'Ça marche. Ça en dit aussi beaucoup trop.',
-    'act1.verbose.body':
-        "Chaque valeur ici est valide, et pas une seule ne parle d'annuler une commande. Quatre lignes de préparation pour une ligne de comportement : le test se lit comme la documentation du constructeur.",
+        "Un maillon par règle, dans la factory. Ce qui en sort est différent à chaque fois, et valide à chaque fois. La chaîne décrit ce qui doit être vrai de la valeur, jamais ce que vous vous apprêtez à vérifier.",
 
     'act1.exit.title': 'Tout ça tient dans un package',
     'act1.exit.body':
         "Tout ce qui précède, c'est la bibliothèque seule. Si c'est ce que vous êtes venu chercher, prenez-la maintenant : la suite de cette page raconte comment faire disparaître toute cette préparation.",
 
-    'act2.label': 'Acte II',
     'act2.title': 'Quatre lignes de préparation, et pas une seule à écrire',
     'act2.summary': 'Un generator qui vous appartient, écrit à partir du type que vous avez déjà.',
 
@@ -266,7 +256,7 @@ const fr: Record<UiKey, string> = {
 
     'act2.link.title': "Il s'arrête là où vous savez déjà répondre",
     'act2.link.body':
-        "Plutôt que de deviner, il a marqué ce paramètre : le fichier qu'il a écrit échoue à chaque tirage tant que vous n'avez pas ajouté le maillon. Ce qui va là, c'est la chaîne du premier acte, inchangée. Vous la collez une fois, dans un fichier qui est désormais le vôtre.",
+        "Plutôt que de deviner, il a marqué ce paramètre : le fichier qu'il a écrit échoue à chaque tirage tant que vous n'avez pas ajouté le maillon. Ce qui va là, c'est la chaîne que vous avez déjà écrite, inchangée. Vous la collez une fois, dans un fichier qui est désormais le vôtre.",
 
     'act2.concise.title': 'Le test, et rien d’autre',
     'act2.concise.body':
@@ -274,12 +264,11 @@ const fr: Record<UiKey, string> = {
 
     'act2.exit.title': 'Un package et un outil',
     'act2.exit.body':
-        "L'outil est facultatif. Tout ce que le deuxième acte a retiré, le premier l'avait déjà rendu possible. Prenez les deux si c'était la préparation qui vous gênait ; prenez la bibliothèque seule sinon.",
+        "L'outil est facultatif. Tout ce qu'il a retiré ici, la bibliothèque seule l'avait déjà rendu possible. Prenez les deux si c'était la préparation qui vous gênait ; prenez la bibliothèque seule sinon.",
 
     'act3.hinge':
         "Le test que vous venez de voir passer au vert y reste, parce qu'une ligne y dit la seule chose dont ce test a besoin. Voici ce qui se passe quand un test oublie cette ligne.",
 
-    'act3.label': 'Acte III',
     'act3.title': 'Un rouge qui revient quand vous le demandez',
     'act3.summary':
         'Des valeurs arbitraires font échouer de temps en temps un test distrait. Quand il échoue, il vous rend son seed.',
@@ -306,12 +295,13 @@ const fr: Record<UiKey, string> = {
     'hero.loading': 'Chargement du runtime .NET…',
     'hero.cost': "environ 1,2 Mo, téléchargés seulement si vous le demandez",
     'hero.frameTitle': "L'expression JustDummies, exécutée dans votre navigateur",
-    'hero.scrollCue': 'Lire le premier acte',
+    'hero.scrollCue': 'En savoir plus',
 
     'sample.produced': 'produit',
     'sample.producedEachRun': 'produit, exécution après exécution',
     'sample.refused': 'refusé',
 
+    'install.library': 'La bibliothèque',
     'install.cli': 'CLI .NET',
     'install.packageManager': 'Console du gestionnaire de packages',
     'install.tool': "L'outil de scaffolding",
@@ -324,6 +314,7 @@ const fr: Record<UiKey, string> = {
     'install.copyCommand': 'Copier cette commande',
     'install.copied': 'Copié',
     'install.copyFailed': 'Copie impossible. Sélectionnez la commande et copiez-la à la main.',
+    'install.toolIsCliOnly': "Un outil .NET global s'installe en ligne de commande.",
 
     'state.comingSoon': 'en cours de construction',
     'state.newTab': 'ouvre un nouvel onglet',

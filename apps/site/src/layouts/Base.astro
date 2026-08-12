@@ -141,6 +141,69 @@ const t = useTranslations(locale);
 
         <script>
             /**
+             * Eases the jump to an in-page anchor, so following the chevron reads as
+             * travelling rather than as the page being replaced.
+             *
+             * WHY NOT `scroll-behavior: smooth`. It smooths, but its curve is the
+             * browser's and cannot be shaped: Chrome eases out only, which starts fast and
+             * lands slowly — the opposite of the accelerate-then-settle a reader reads as
+             * natural. The curve below is the same one the reveal uses, so the two
+             * movements on this page belong to each other.
+             *
+             * The link keeps working if this never runs: the browser's own jump is what
+             * happens, and `preventDefault` is only reached once a target is found. A
+             * reader who asked for no motion is given the jump too — animating a scroll
+             * for them would be the one thing they said not to do.
+             */
+            const still: MediaQueryList = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+            document.addEventListener('click', (event: MouseEvent) => {
+                if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey) {
+                    return;
+                }
+
+                const link: HTMLAnchorElement | null = (event.target as Element | null)?.closest?.('a[href^="#"]') ?? null;
+                const id: string | undefined = link?.getAttribute('href')?.slice(1);
+                const target: HTMLElement | null = id ? document.getElementById(id) : null;
+
+                if (link === null || target === null || still.matches) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                const start: number = window.scrollY;
+                const end: number = start + target.getBoundingClientRect().top;
+                const distance: number = end - start;
+                // Long enough to read as travel, short enough not to be a wait. Scaled by
+                // distance so a short hop is not given the same six hundred milliseconds
+                // as a jump down the page.
+                const duration: number = Math.min(900, Math.max(320, Math.abs(distance) * 0.6));
+                const began: number = performance.now();
+
+                // Accelerate, then settle: slow at both ends, quickest in the middle.
+                const ease = (t: number): number => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+                const step = (now: number): void => {
+                    const elapsed: number = Math.min(1, (now - began) / duration);
+
+                    window.scrollTo(0, start + distance * ease(elapsed));
+
+                    if (elapsed < 1) {
+                        requestAnimationFrame(step);
+                    } else {
+                        // The address bar and the back button expect the anchor to have
+                        // been followed; easing the scroll must not quietly cost that.
+                        history.pushState(null, '', `#${id}`);
+                    }
+                };
+
+                requestAnimationFrame(step);
+            });
+        </script>
+
+        <script>
+            /**
              * Reveals each marked group as it comes into view, once.
              *
              * One observer for the document rather than one per component: the things that

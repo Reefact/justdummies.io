@@ -40,8 +40,11 @@ assert_prose "§9.9 the tool marked the parameter rather than guess" \
   "act2\.link\.body[\s\S]{0,200}?rather than guess"
 assert_prose "§9.9 the file it wrote throws until the link is added" \
   "act2\.link\.body[\s\S]{0,260}?throws on every draw until you add the link"
-assert_prose "§9.2 that link is the first act's chain" \
-  "act2\.link\.body[\s\S]{0,400}?chain from the first act, unchanged"
+# The wording moved when the page dropped its act numbering — "the first act" named a
+# division that only ever existed in the specification. What §9.2 requires is that the
+# link be identified as the chain the reader already wrote, not that it be called an act.
+assert_prose "§9.2 that link is the chain the reader already wrote" \
+  "act2\.link\.body[\s\S]{0,400}?chain you already wrote, unchanged"
 assert_prose "§9.5 the red is not dramatised — nothing is broken" \
   "act3\.forgotten\.body[\s\S]{0,300}?Nothing is broken"
 assert_prose "§9.6 a seed per test case, and no wider a promise" \
