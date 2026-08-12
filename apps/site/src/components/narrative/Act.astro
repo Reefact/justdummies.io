@@ -11,14 +11,14 @@
  * mentioned it is noise — it asks the reader to evaluate something they have no way to
  * judge yet.
  */
-import InstallBlock from '../InstallBlock.astro';
+import InstallTabs from '../InstallTabs.astro';
+import Scene from './Scene.astro';
 import { localeFromPath } from '../../i18n/routing';
 import { useTranslations, type UiKey } from '../../i18n/ui';
 
 interface Props {
     /** Stable identifier, used for the anchor and by the exit's measurement. */
     name: string;
-    label: UiKey;
     title: UiKey;
     summary: UiKey;
     exitTitle: UiKey;
@@ -44,7 +44,7 @@ interface Props {
     ground?: 'page' | 'raised';
 }
 
-const { name, label, title, summary, exitTitle, exitBody, offer = 'library', hinge, ground = 'page' } = Astro.props;
+const { name, title, summary, exitTitle, exitBody, offer = 'library', hinge, ground = 'page' } = Astro.props;
 
 const t = useTranslations(localeFromPath(Astro.url.pathname));
 ---
@@ -52,24 +52,32 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
 <section class="act" id={name} data-ground={ground} aria-labelledby={`${name}-title`}>
     <header>
         {hinge !== undefined && <p class="hinge" data-reveal>{t(hinge)}</p>}
-        {/* The label, the claim and its summary arrive together: they are one sentence
-            broken across three lines, not three things. */}
+        {/* The claim and its summary arrive together: they are one sentence broken across
+            two lines, not two things.
+
+            THERE IS NO "ACT I" LABEL ANY MORE. The numbering was the specification's way
+            of talking about the page, never the reader's — nothing else here explains
+            what an act is, so the eyebrow asked a question it did not answer. What marks
+            the passage now is the ground changing under it and the size of the title. */}
         <div class="opening" data-reveal>
-            <p class="label">{t(label)}</p>
             <h2 id={`${name}-title`}>{t(title)}</h2>
             <p class="summary">{t(summary)}</p>
         </div>
     </header>
 
+    {/*
+      The exit is a step like any other — same bullet, same rail, same title, and the
+      words after the offer rather than before it. It used to be a footer of its own
+      shape, which made the one thing a convinced reader is looking for the one thing on
+      the page that looked like nothing else.
+    */}
     <div class="scenes" data-scenes>
         <slot />
-    </div>
 
-    <footer class="exit" data-reveal>
-        <h3>{t(exitTitle)}</h3>
-        <p>{t(exitBody)}</p>
-        <InstallBlock placement={`${name}-exit`} offer={offer} />
-    </footer>
+        <Scene name={`${name}-exit`} title={exitTitle} body={exitBody}>
+            <InstallTabs placement={`${name}-exit`} offer={offer} />
+        </Scene>
+    </div>
 </section>
 
 <style>
@@ -88,7 +96,6 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
         --jd-act-ground: var(--jd-background);
 
         padding: var(--jd-space-16) 0 var(--jd-space-12);
-        border-top: 1px solid var(--jd-border);
         background: var(--jd-act-ground);
     }
 
@@ -97,13 +104,14 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
 
         margin: 0 calc(50% - 50vw);
         padding-inline: max(var(--jd-space-4), calc(50vw - 36rem));
-        /* The ground is the seam now; a rule on top of it would draw the same line twice. */
-        border-top: 0;
     }
 
+    /* No measure on the header itself: the title needs the page's width and the summary
+       needs a reading one, and a single `max-width` here gave both the narrower of the
+       two. At 54 pixels "La valeur dont votre test se moque" wanted 1029 and had 608,
+       so it broke across two lines a reader would never have chosen. */
     header {
         margin-bottom: var(--jd-space-12);
-        max-width: 40rem;
     }
 
     /* Set apart from the act's own opening, because it belongs to the seam rather than to
@@ -119,14 +127,6 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
         padding-left: var(--jd-space-4);
     }
 
-    .label {
-        margin: 0 0 var(--jd-space-2);
-        font-size: var(--jd-text-sm);
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--jd-accent);
-    }
-
     /*
      * A step above the scene titles, which have just taken the size this one used to have.
      * Left alone the two would be identical, and an act would open on a heading no larger
@@ -140,36 +140,25 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
         line-height: var(--jd-line-tight);
         letter-spacing: -0.02em;
         margin: 0;
-        text-wrap: balance;
+        /* No measure of its own: a title breaks where the words run out, at the same
+           width the scenes below it get. 56rem was still 133 pixels short of "La valeur
+           dont votre test se moque", which is exactly the arbitrary break being fixed.
+           And no `text-wrap: balance` — it splits a heading into two even lines rather
+           than filling the first, which is the opposite of a natural break. */
     }
 
     .summary {
         margin: var(--jd-space-3) 0 0;
-        font-size: var(--jd-text-lg);
-        color: var(--jd-text-muted);
-    }
-
-    .exit {
-        max-width: 46rem;
-        padding-top: var(--jd-space-8);
-        border-top: 1px solid var(--jd-border);
-    }
-
-    .exit h3 {
-        font-size: var(--jd-text-lg);
-        line-height: var(--jd-line-tight);
-        margin: 0 0 var(--jd-space-2);
-    }
-
-    .exit p {
-        margin: 0 0 var(--jd-space-6);
-        color: var(--jd-text-muted);
         max-width: 40rem;
+        font-size: var(--jd-text-lg);
+        color: var(--jd-text-muted);
     }
+
+
+
 
     @media (min-width: 48rem) {
-        header,
-        .exit {
+        header {
             padding-left: var(--jd-space-8);
         }
 

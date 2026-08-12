@@ -1,17 +1,13 @@
 ---
 /**
- * The install offer in one row's height, for the first screen.
+ * The install offer, behind tabs, wherever the page makes one.
  *
- * `InstallBlock` stacks its slots, which is right where a reader has just been given a
- * reason to want them and the screen is theirs to spend. The first screen is not that
- * place: it has to hold the brand, one real expression, one real value, the offer and
- * the invitation to scroll, all above the fold, and stacking two commands and a link
- * costs it 254 pixels it does not have.
+ * A TAB IS AN INSTALL METHOD, NOT A PACKAGE. A reader picks the tool they already use —
+ * the .NET CLI, or the console in Visual Studio — and finds every command that offer
+ * carries, in one place. Tabs per package would ask them to choose between things they
+ * want all of, and would grow a tab every time the product does.
  *
- * So the same content is put behind tabs — the reader picks the one door they use
- * instead of scrolling past the two they do not.
- *
- * NUGET IS NOT A TAB, and that is deliberate. A tab shows a panel; this one leaves the
+ * NUGET IS NOT A TAB, and that is deliberate. A tab shows a panel; that one leaves the
  * site. Announcing it as "tab 3 of 3" and then navigating away is a small lie told to
  * exactly the people who can least afford it, so it stays a link, outside the tablist,
  * set apart by position and by the arrow it carries.
@@ -19,8 +15,7 @@
  * WITHOUT SCRIPTING there are no tabs at all: the tablist is `hidden` in the markup and
  * the roles are attached by the script, so what a reader without JavaScript gets is the
  * stacked form — every command visible under its own heading — rather than a tab widget
- * that announces itself and does nothing. Same rule as the copy button next door:
- * reaching that line is the proof the control can do its job.
+ * that announces itself and does nothing (ADR-0004).
  */
 import CopyableCommand from './CopyableCommand.astro';
 import { localeFromPath } from '../i18n/routing';
@@ -30,44 +25,99 @@ import { site } from '../site';
 interface Props {
     /** Stable, position-independent identifier passed to every command in the row. */
     placement: string;
+    /**
+     * What this instance offers, which is what the visitor has been shown by the time
+     * they reach it (§9.3). An exit that offers the tool before the tool has appeared
+     * asks the reader to judge something they have no way to judge yet.
+     */
+    offer?: 'library' | 'library-and-tool' | 'everything';
+    /**
+     * Whether to print the offer's own heading. The first screen needs one, because
+     * nothing above it says what the block is for; an exit does not, because the step's
+     * own title is already that heading.
+     */
+    heading?: boolean;
 }
 
-const { placement } = Astro.props;
+const { placement, offer = 'library', heading = false } = Astro.props;
 
 const t = useTranslations(localeFromPath(Astro.url.pathname));
+
+const withTool: boolean = offer === 'library-and-tool' || offer === 'everything';
+const withAdapter: boolean = offer === 'everything';
+
+interface Command {
+    /** Names which package this command installs. Printed only when there is more than one. */
+    label: UiKey;
+    command?: string;
+    /** Shown in place of a command where the method genuinely has none. */
+    instead?: UiKey;
+    /** Which door was taken, as reported by the command's own measurement event. */
+    variant: string;
+}
 
 interface Door {
     /** Part of the `id`s that wire a tab to its panel, so two blocks never collide. */
     key: string;
     label: UiKey;
-    command: string;
-    /** Which door was taken, as reported by the command's own measurement event. */
-    variant: string;
+    commands: Command[];
+}
+
+const cli: Command[] = [{ label: 'install.library', command: site.library.installCommand, variant: 'dotnet-cli' }];
+const packageManager: Command[] = [
+    { label: 'install.library', command: site.library.packageManagerCommand, variant: 'package-manager' },
+];
+
+if (withTool) {
+    cli.push({ label: 'install.tool', command: site.cli.installCommand, variant: 'dotnet-tool' });
+    // No command, and none invented: a global .NET tool has no Package Manager Console
+    // equivalent. Saying so is more use than an empty panel or a command that does not work.
+    packageManager.push({ label: 'install.tool', instead: 'install.toolIsCliOnly', variant: 'dotnet-tool-unavailable' });
+}
+
+if (withAdapter) {
+    cli.push({ label: 'install.adapter', command: site.xunit.installCommand, variant: 'xunit-adapter' });
+    packageManager.push({
+        label: 'install.adapter',
+        command: site.xunit.packageManagerCommand,
+        variant: 'xunit-adapter-pm',
+    });
 }
 
 const doors: Door[] = [
-    { key: 'cli', label: 'install.cli', command: site.library.installCommand, variant: 'dotnet-cli' },
-    {
-        key: 'pm',
-        label: 'install.packageManager',
-        command: site.library.packageManagerCommand,
-        variant: 'package-manager',
-    },
+    { key: 'cli', label: 'install.cli', commands: cli },
+    { key: 'pm', label: 'install.packageManager', commands: packageManager },
 ];
+
+/** With one command in a panel, naming it repeats what the offer already said. */
+const named: boolean = cli.length > 1;
 
 const labelId: string = `${placement}-install-label`;
 ---
 
-<section class="install" aria-labelledby={labelId} data-install-tabs>
-    <h2 class="label" id={labelId}>{t('home.install.label')}</h2>
+<section class="install" aria-labelledby={heading ? labelId : undefined} data-install-tabs>
+    {
+        heading && (
+            <h2 class="label" id={labelId}>
+                {t('home.install.label')}
+            </h2>
+        )
+    }
 
     <div class="row">
         {/*
-          Labelled by the heading above it rather than by a string of its own: the heading
-          already says what this set of doors is for, and a second wording would be a second
-          thing to keep in step with it.
+          Labelled by the heading when there is one, and by its own name when there is
+          not — a tablist with no accessible name is a set of controls a screen reader
+          announces without saying what they switch between.
         */}
-        <div class="tablist" role="tablist" aria-labelledby={labelId} hidden data-tablist>
+        <div
+            class="tablist"
+            role="tablist"
+            aria-labelledby={heading ? labelId : undefined}
+            aria-label={heading ? undefined : t('home.install.label')}
+            hidden
+            data-tablist
+        >
             {
                 doors.map((door: Door) => (
                     <button
@@ -84,40 +134,89 @@ const labelId: string = `${placement}-install-label`;
         </div>
 
         {/*
-          `target="_blank"` because this is the one door that is somebody else's page and a
-          reader following it has not finished with this one. `rel` closes the hole that
-          opens with it — an opened page can otherwise reach back through `window.opener`.
-          The arrow says so to a reader who can see it and the hidden text says so to one
-          who cannot.
+          `target="_blank"` because this is somebody else's page and a reader following it
+          has not finished with this one. `rel` closes the hole that opens with it — an
+          opened page can otherwise reach back through `window.opener`.
         */}
-        <a
-            class="nuget"
-            href={site.library.nuget}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-placement={placement}
-            data-variant="nuget-link"
-        >
-            {t('install.nuget')}
-            <svg class="arrow" viewBox="0 0 12 12" width="10" height="10" aria-hidden="true" focusable="false">
-                <path d="M3 9L9 3M4.5 3H9v4.5" />
-            </svg>
-            <span class="visually-hidden">{t('state.newTab')}</span>
-        </a>
+        <nav class="nuget-links" aria-label={t('install.nuget')}>
+            <a
+                href={site.library.nuget}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-placement={placement}
+                data-variant="nuget-link"
+            >
+                {t('install.nuget')}
+                <svg class="arrow" viewBox="0 0 12 12" width="10" height="10" aria-hidden="true" focusable="false">
+                    <path d="M3 9L9 3M4.5 3H9v4.5" />
+                </svg>
+                <span class="visually-hidden">{t('state.newTab')}</span>
+            </a>
+
+            {
+                withTool && (
+                    <a
+                        href={site.cli.nuget}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        data-placement={placement}
+                        data-variant="nuget-tool-link"
+                    >
+                        {t('install.nugetTool')}
+                        <svg class="arrow" viewBox="0 0 12 12" width="10" height="10" aria-hidden="true" focusable="false">
+                            <path d="M3 9L9 3M4.5 3H9v4.5" />
+                        </svg>
+                        <span class="visually-hidden">{t('state.newTab')}</span>
+                    </a>
+                )
+            }
+
+            {
+                withAdapter && (
+                    <a
+                        href={site.xunit.nuget}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        data-placement={placement}
+                        data-variant="nuget-adapter-link"
+                    >
+                        {t('install.nugetAdapter')}
+                        <svg class="arrow" viewBox="0 0 12 12" width="10" height="10" aria-hidden="true" focusable="false">
+                            <path d="M3 9L9 3M4.5 3H9v4.5" />
+                        </svg>
+                        <span class="visually-hidden">{t('state.newTab')}</span>
+                    </a>
+                )
+            }
+        </nav>
     </div>
 
     {
         doors.map((door: Door) => (
             <div class="panel" id={`${placement}-${door.key}-panel`} data-panel={door.key}>
                 {/*
-                  The heading a reader without scripting needs, and the one a tab makes
-                  redundant. The script hides it when it takes over, because by then the tab
-                  is the label and `aria-labelledby` says so.
+                  What a reader without scripting needs to tell the panels apart, and
+                  what a tab makes redundant — the script hides it when it takes over,
+                  because by then the tab is the label.
+
+                  A paragraph rather than a heading: the step's own title is the heading
+                  here, and a sibling `h3` under it would claim to be its equal in the
+                  document outline while being a caption for one panel.
                 */}
-                <h3 class="panel-label" data-panel-label>
+                <p class="panel-label" data-panel-label>
                     {t(door.label)}
-                </h3>
-                <CopyableCommand command={door.command} placement={placement} variant={door.variant} />
+                </p>
+
+                {door.commands.map((entry: Command) => (
+                    <div class="command">
+                        {named && <p class="command-label">{t(entry.label)}</p>}
+                        {entry.command !== undefined ? (
+                            <CopyableCommand command={entry.command} placement={placement} variant={entry.variant} />
+                        ) : (
+                            <p class="unavailable">{t(entry.instead!)}</p>
+                        )}
+                    </div>
+                ))}
             </div>
         ))
     }
@@ -165,9 +264,7 @@ const labelId: string = `${placement}-install-label`;
             panel.setAttribute('aria-labelledby', tab.id);
             // NOT made focusable, which the authoring practices ask for only when a panel
             // holds nothing focusable of its own. This one holds the copy button, so a tab
-            // stop here would announce the whole panel to somebody on their way to it; and
-            // on the page where that button never unhides, the panel's content is a line of
-            // text a screen reader reads in order without needing to land on it.
+            // stop here would announce the whole panel to somebody on their way to it.
 
             const panelLabel: HTMLElement | null = panel.querySelector('[data-panel-label]');
 
@@ -215,8 +312,9 @@ const labelId: string = `${placement}-install-label`;
         max-width: 46rem;
     }
 
-    /* The one heading on this screen that is an offer rather than a claim, and the accent
-       is what the page reserves for that. */
+    /* The one heading on the first screen that is an offer rather than a claim, and the
+       accent is what the page reserves for that. Exits do not print it: their step title
+       is already the heading, and four of these would make the accent ordinary. */
     .label {
         margin: 0;
         font-size: var(--jd-text-sm);
@@ -226,9 +324,9 @@ const labelId: string = `${placement}-install-label`;
         color: var(--jd-accent);
     }
 
-    /* Wraps rather than scrolls: a row that scrolls sideways hides half of itself behind a
-       gesture, and the French label for the package manager console is long enough that a
-       phone would need it. Two lines cost nothing here. */
+    /* Wraps rather than scrolls: a row that scrolls sideways hides half of itself behind
+       a gesture, and the French label for the package manager console is long enough that
+       a phone would need it. Two lines cost nothing here. */
     .row {
         display: flex;
         flex-wrap: wrap;
@@ -241,7 +339,6 @@ const labelId: string = `${placement}-install-label`;
         flex-wrap: wrap;
         gap: var(--jd-space-2);
     }
-
 
     .tab {
         font: inherit;
@@ -273,14 +370,20 @@ const labelId: string = `${placement}-install-label`;
         outline-offset: 2px;
     }
 
-    /* Pushed to the far end, so its position says what the arrow says: this one is not one
-       of the tabs. On a narrow screen it wraps to its own line and keeps saying it. */
-    .nuget {
+    /* Pushed to the far end, so position says what the arrow says: these are not tabs.
+       On a narrow screen they wrap to their own line and keep saying it. */
+    .nuget-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--jd-space-2) var(--jd-space-4);
+        margin-left: auto;
+        font-size: var(--jd-text-sm);
+    }
+
+    .nuget-links a {
         display: inline-flex;
         align-items: center;
         gap: var(--jd-space-1);
-        margin-left: auto;
-        font-size: var(--jd-text-sm);
     }
 
     .arrow {
@@ -291,19 +394,28 @@ const labelId: string = `${placement}-install-label`;
         stroke-linejoin: round;
     }
 
-    .panel-label {
+    .panel {
+        display: grid;
+        gap: var(--jd-space-3);
+    }
+
+    .panel-label,
+    .command-label {
         font-size: var(--jd-text-sm);
         font-weight: 400;
         color: var(--jd-text-muted);
         margin: 0 0 var(--jd-space-2);
     }
 
-    /*
-     * A narrow screen is where this block costs the most, because that is where the tabs
-     * wrap onto a second line and the French label for the package manager console is long
-     * enough to force it on its own. What it takes back is air, never a door: the row keeps
-     * both commands and the link, and the screen below it keeps the invitation to scroll.
-     */
+    .unavailable {
+        margin: 0;
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+        font-style: italic;
+    }
+
+    /* A narrow screen is where this block costs the most, because that is where the tabs
+       wrap onto a second line. What it takes back is air, never a door. */
     @media (max-width: 47.99rem) {
         .install {
             gap: var(--jd-space-2);
@@ -315,6 +427,10 @@ const labelId: string = `${placement}-install-label`;
 
         .tab {
             padding: 0 var(--jd-space-2);
+        }
+
+        .nuget-links {
+            margin-left: 0;
         }
     }
 
