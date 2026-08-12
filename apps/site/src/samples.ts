@@ -15,9 +15,11 @@ import samplesDocument from './generated/sample-values.json';
 import snippetsDocument from './generated/snippets.json';
 import reproducibilityDocument from './generated/reproducibility.json';
 import toolDocument from './generated/tool-output.json';
+import writtenDocument from './generated/tool-written.json';
 
 const code: Record<string, string> = snippetsDocument;
 const printed: Record<string, string> = toolDocument;
+const scaffolded: Record<string, string> = writtenDocument;
 const ran: Record<string, string> = reproducibilityDocument;
 const drawn: Record<string, string[]> = samplesDocument.values;
 const refused: Record<string, string> = samplesDocument.refusals;
@@ -32,6 +34,24 @@ export function snippet(id: string): string {
         throw new Error(
             `No snippet "${id}". It has to exist between // <snippet:${id}> markers in tools/snippet-validation/Snippets.`,
         );
+    }
+
+    return found;
+}
+
+/**
+ * A file the tool wrote, as it wrote it.
+ *
+ * Recorded by running `dum` rather than copied, for the reason every other figure is: a
+ * hundred lines transcribed by hand is a hundred lines that go stale in silence. The build
+ * also compiles a copy of it, and fails when the two stop matching — see
+ * scripts/generate-tool-output.sh.
+ */
+export function toolWritten(id: string): string {
+    const found: string | undefined = scaffolded[id];
+
+    if (found === undefined) {
+        throw new Error(`No file recorded for "${id}". scripts/generate-tool-output.sh has to run the tool.`);
     }
 
     return found;
