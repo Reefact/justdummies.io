@@ -34,8 +34,12 @@ assert_prose() {
   fi
 }
 
-assert_prose "§9.4 the hinge joins a test going green to the same test going red" \
-  "act3\.hinge[\s\S]{0,300}?go green stays green[\s\S]{0,200}?forgets one"
+# §9.4 asks for a hinge and ADR-0007 says what it now has to carry: the reader's own
+# question, and the answer to it, before any figure on this page has failed. A hinge that
+# announced the red instead would put the objection two scenes ahead of its answer, which is
+# the ordering that decision reverses.
+assert_prose "§9.4 / ADR-0007 the hinge asks the reader's question and points at the answer" \
+  "act3\.hinge[\s\S]{0,300}?change on every run[\s\S]{0,200}?attribute you have been looking at"
 assert_prose "§9.9 the tool marked the parameter rather than guess" \
   "act2\.link\.body[\s\S]{0,200}?rather than guess"
 assert_prose "§9.9 the file it wrote throws until the link is added" \
@@ -162,6 +166,48 @@ process.stdout.write(bad.join(", "));
     pass "every figure sits under the heading it belongs to"
   else
     fail "a figure comes before its heading, so a reader has to pair them by eye: ${orphans}"
+  fi
+
+  # --- the third act answers before it fails anything (ADR-0007) ------------------
+  #
+  # Prose can be reworded; an ordering cannot be checked by reading it. This asserts the
+  # decision itself on the built page: in the third act the attribute comes first, and the
+  # scene where a test goes red comes after it. Moving the red back to the front is exactly
+  # the change this record was written to stop, and it would pass every prose check above.
+  ordering="$(node -e '
+const { readFileSync, readdirSync } = require("node:fs");
+const { join } = require("node:path");
+
+function html(directory) {
+    const found = [];
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+        const path = join(directory, entry.name);
+        if (entry.isDirectory()) { found.push(...html(path)); }
+        else if (entry.name.endsWith(".html")) { found.push(path); }
+    }
+    return found;
+}
+
+const bad = [];
+for (const file of html(process.argv[1])) {
+    const page = readFileSync(file, "utf8");
+    const act = page.indexOf(`id="act-three"`);
+    if (act < 0) { continue; }
+
+    const scenes = [...page.slice(act).matchAll(/data-scene="([^"]+)"/g)].map((m) => m[1]);
+    const attribute = scenes.indexOf("the-attribute");
+    const red = scenes.indexOf("the-forgotten-line");
+
+    if (attribute !== 0) { bad.push(`${file}: the third act opens on ${scenes[0]}, not the attribute`); }
+    else if (red >= 0 && red < attribute) { bad.push(`${file}: a test goes red before the attribute explains it`); }
+}
+process.stdout.write(bad.join(", "));
+' "${dist}")"
+
+  if [ -z "${ordering}" ]; then
+    pass "ADR-0007 the third act names the attribute before anything in it fails"
+  else
+    fail "${ordering}"
   fi
 
   # --- an exit offers what the reader has been shown, and no more (§9.3) ----------
