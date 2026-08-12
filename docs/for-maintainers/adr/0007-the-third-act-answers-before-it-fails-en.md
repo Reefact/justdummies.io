@@ -2,16 +2,10 @@
 
 🌍 🇬🇧 English (this file) · 🇫🇷 [Français](0007-le-troisieme-acte-repond-avant-dechouer-fr.md)
 
-**Status:** Accepted — superseded in part by [ADR-0008](0008-a-scene-is-titled-by-what-the-reader-gets-en.md)
+**Status:** Accepted
 **Proposed:** 2026-08-12
 **Accepted:** 2026-08-12
 **Decision Makers:** Reefact
-
-**What went and what stands.** The ordering stands: the third act makes its claim before anything
-in it fails, and the assertion protecting it is unchanged. What ADR-0008 replaces is the second
-half of the Decision below — that the claim is made *by naming an attribute the reader has already
-been shown*. The opening scene states the benefit instead, and the attribute stays in the figure
-without being the subject.
 
 ## Context
 
