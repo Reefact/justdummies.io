@@ -91,28 +91,28 @@ const en = {
      * ACT II — concision. The claim is that the arrangement can go away without the test
      * losing what it was about, and that the tool writes the part nobody wants to write.
      */
-    'act2.title': 'Four lines of setup, and not one of them yours to write',
-    'act2.summary': 'A generator that belongs to you, written from the type you already have.',
+    'act2.title': 'That setup is no longer yours to write',
+    'act2.summary': 'A tool reads your type and writes the generator; the file it produces is yours.',
 
-    'act2.install.title': 'One tool, once',
+    'act2.install.title': 'One tool, installed once',
     'act2.install.body':
-        'A global .NET tool. It reads your project the way the compiler does, so all it needs from you is the name of a type.',
+        'A global .NET tool. It reads your project the way the compiler reads it, so the only thing it asks of you is the name of a type.',
 
     'act2.scaffold.title': 'It reads the type and writes the generator',
     'act2.scaffold.body':
-        'It reads your own source and turns it into a recipe. The last column tells you what it worked out on its own, and where it stopped.',
+        'It works from your own source and decides, parameter by parameter, how to draw a value. The last column says what it worked out on its own — and where it stopped.',
 
     'act2.link.title': 'It stops where you already know the answer',
     'act2.link.body':
-        "It marked that parameter rather than guess at it, so the file it wrote throws on every draw until you add the link. What goes there is the chain you already wrote, unchanged — you paste it once, into a file that's now yours.",
+        "It marked that parameter rather than guess at it, so the file it wrote throws on every draw until you add the link. What goes there is the chain you already wrote, unchanged — pasted once, into a file that is now yours.",
 
     'act2.concise.title': 'The test, and nothing else',
     'act2.concise.body':
         'Same test as before, right down to the assertion. One line of setup, naming the only thing this test needs to be true: the order is pending.',
 
-    'act2.exit.title': 'A package and a tool',
+    'act2.exit.title': 'The tool as well',
     'act2.exit.body':
-        "The tool is optional. Everything it removed here, the library on its own had already made possible. Take both if the setup was what bothered you; take the library alone if it wasn't.",
+        "The tool is optional. Everything it removed here, the library on its own had already made possible — what the tool saves you is the writing of it.",
 
     /**
      * ACT III — reproducibility. The claim is that a test which forgot to constrain a value
@@ -243,28 +243,28 @@ const fr: Record<UiKey, string> = {
     'act1.exit.body':
         "Tout ce qui précède, c'est la bibliothèque seule. Si c'est ce que vous êtes venu chercher, prenez-la maintenant — et prenez l'adaptateur avec : c'est lui qui vous rendra le tirage exact, le jour où une valeur quelconque fera échouer un test. La suite de cette page raconte comment faire disparaître toute cette préparation.",
 
-    'act2.title': 'Quatre lignes de préparation, et pas une seule à écrire',
-    'act2.summary': 'Un generator qui vous appartient, écrit à partir du type que vous avez déjà.',
+    'act2.title': "Cette préparation, ce n'est plus à vous de l'écrire",
+    'act2.summary': "Un outil lit votre type et écrit le générateur ; le fichier qu'il produit est le vôtre.",
 
-    'act2.install.title': 'Un outil, une fois',
+    'act2.install.title': 'Un outil, installé une fois',
     'act2.install.body':
-        "Un outil .NET global. Il lit votre projet comme le fait le compilateur : tout ce qu'il vous demande, c'est le nom d'un type.",
+        "Un outil .NET global. Il lit votre projet comme le compilateur le lit : la seule chose qu'il vous demande, c'est le nom d'un type.",
 
-    'act2.scaffold.title': 'Il lit le type et écrit le generator',
+    'act2.scaffold.title': 'Il lit le type et écrit le générateur',
     'act2.scaffold.body':
-        "Il lit vos propres sources et les transforme en recette. La dernière colonne vous dit ce qu'il a déduit tout seul, et où il s'est arrêté.",
+        "Il part de vos propres sources et décide, paramètre par paramètre, comment tirer une valeur. La dernière colonne dit ce qu'il a trouvé tout seul — et où il s'est arrêté.",
 
     'act2.link.title': "Il s'arrête là où vous savez déjà répondre",
     'act2.link.body':
-        "Plutôt que de deviner, il a marqué ce paramètre : le fichier qu'il a écrit échoue à chaque tirage tant que vous n'avez pas ajouté le maillon. Ce qui va là, c'est la chaîne que vous avez déjà écrite, inchangée. Vous la collez une fois, dans un fichier qui est désormais le vôtre.",
+        "Plutôt que de deviner, il a marqué ce paramètre : tant que le maillon manque, le fichier qu'il a écrit échoue à chaque tirage. Ce qui va là, c'est la chaîne que vous avez déjà écrite, inchangée — collée une fois, dans un fichier qui est désormais le vôtre.",
 
     'act2.concise.title': 'Le test, et rien d’autre',
     'act2.concise.body':
         "Le même test qu'avant, jusqu'à l'assertion comprise. Une ligne de préparation, qui nomme la seule chose dont ce test a besoin : la commande est en attente.",
 
-    'act2.exit.title': 'Un package et un outil',
+    'act2.exit.title': "L'outil en plus",
     'act2.exit.body':
-        "L'outil est facultatif. Tout ce qu'il a retiré ici, la bibliothèque seule l'avait déjà rendu possible. Prenez les deux si c'était la préparation qui vous gênait ; prenez la bibliothèque seule sinon.",
+        "L'outil est facultatif. Tout ce qu'il a retiré ici, la bibliothèque seule l'avait déjà rendu possible — ce que l'outil vous épargne, c'est de l'écrire.",
 
     'act3.hinge':
         "Le test que vous venez de voir passer au vert y reste, parce qu'une ligne y dit la seule chose dont ce test a besoin. Voici ce qui se passe quand un test oublie cette ligne.",
