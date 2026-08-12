@@ -192,15 +192,34 @@ const value: string = sampleValue('hero-expression');
         font-size: var(--jd-text-sm);
     }
 
+    /*
+     * The border is here, on the holder, and not on the frame it holds. That is the whole
+     * fix for the scrollbar that ran down the widget on the deployed page.
+     *
+     * What arrives by message is the framed *document's* height, and this stylesheet sizes
+     * everything as a border box. So the height set from that number was a border box too,
+     * and the two-pixel border came out of the viewport the document had just been measured
+     * for: 225 pixels reported, 223 of room. One pixel of overshoot is all a scrollbar
+     * needs, and it was there from the first frame.
+     *
+     * Moving the border out means the number means what it meant when it was measured.
+     * `content-box` on the frame would have fixed the height and broken the width — 100%
+     * plus two pixels is two pixels past the container — which is the same trap wearing the
+     * other hat.
+     */
     .frame {
         margin-top: var(--jd-space-4);
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-md);
+        background: var(--jd-surface);
+        /* So the corners the radius rounds are the ones the reader sees, rather than square
+           frame corners sitting a pixel proud of them. */
+        overflow: hidden;
     }
 
     .frame :global(iframe) {
         display: block;
         width: 100%;
-        border: 1px solid var(--jd-border);
-        border-radius: var(--jd-radius-md);
-        background: var(--jd-surface);
+        border: 0;
     }
 </style>
