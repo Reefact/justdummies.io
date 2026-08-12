@@ -93,6 +93,30 @@ jobs:
       - name: Check what the runtime actually serves
         run: ./scripts/check-served-headers.sh
 
+      # The runner carries no browser, so the suite's own is fetched here. --with-deps
+      # because a headless Chromium on a bare ubuntu image is missing shared libraries
+      # it will not name clearly when it fails to start. Only chromium: the suite checks
+      # one engine and ADR-0009 says so rather than leaving it to be discovered.
+      - name: Install the browser
+        run: npx playwright install --with-deps chromium
+
+      # And this one renders the artefact. Everything above reads it — on disk, or as the
+      # host describes it — and a page has facts that exist only once it is rendered: the
+      # playground actually starting, the browser agreeing to the policy, a control that
+      # is absent until its script arrives, a document no wider than its viewport. Each
+      # of those has been wrong here at least once while every check above was green.
+      - name: Check the artefact in a browser
+        run: ./scripts/check-in-browser.sh
+
+      - name: Keep the traces of anything that failed
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: browser-traces
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+
       - name: Upload the artefact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
