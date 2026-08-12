@@ -2,8 +2,9 @@
 
 🌍 🇬🇧 English (this file) · 🇫🇷 [Français](0006-le-premier-acte-suit-une-seule-factory-fr.md)
 
-**Status:** Proposed
+**Status:** Accepted
 **Proposed:** 2026-08-12
+**Accepted:** 2026-08-12
 **Decision Makers:** Reefact
 
 ## Context
@@ -102,9 +103,11 @@ evolution the act describes is the evolution the compiler checks.
 
 ### Negative
 
-**The specification's §9.2 no longer describes the first act.** Two of the six beats it lists are
-not on the page. Until §9.2 is updated, the document and the site disagree, and this record is the
-only place that says why.
+**The specification's §9.2 lists six beats and the page carries five.** The document is staying as
+it is: §17 sends a decision that deserves to outlive it to this base, and that is what this record
+is. So a reader of §9.2 alone finds a sequence the page no longer follows and has to come here to
+learn why — the price of the specification keeping the reasoning it recorded rather than turning
+into a description of the site.
 
 The library's shortest expression is no longer on the page before the first exit. A reader who
 leaves at that exit has not seen `.As(...)` at all.
@@ -120,8 +123,9 @@ decision comes undone by ordinary good intentions.
 - `check-narrative.sh` asserts the deferral on the published snippets: `.As(` appears in the
   second act's recipe and in nothing the first act publishes. It runs in the build, and it was
   checked by breaking it.
-- Specification §9.2's first-act sequence needs updating to the five beats the page carries. That
-  is the maintainer's edit, not this record's.
+- §9.2's first-act sequence is deliberately left as written. The specification keeps the reasoning
+  it recorded; this base carries the decision that replaced part of it (§17), and the check above
+  is what holds the page to it.
 
 ## References
 

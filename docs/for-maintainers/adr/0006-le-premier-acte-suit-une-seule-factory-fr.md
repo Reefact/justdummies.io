@@ -2,8 +2,9 @@
 
 🌍 🇫🇷 Français (ce fichier) · 🇬🇧 [English](0006-the-first-act-follows-one-factory-en.md)
 
-**Statut :** Proposé
+**Statut :** Accepté
 **Proposé le :** 2026-08-12
+**Accepté le :** 2026-08-12
 **Décideurs :** Reefact
 
 ## Contexte
@@ -109,9 +110,11 @@ classe, si bien que l'évolution que l'acte décrit est celle que le compilateur
 
 ### Négatives
 
-**Le §9.2 de la spécification ne décrit plus le premier acte.** Deux des six temps qu'il énumère ne
-sont pas sur la page. Tant que le §9.2 n'est pas mis à jour, le document et le site se
-contredisent, et ce compte rendu est le seul endroit qui dise pourquoi.
+**Le §9.2 de la spécification énumère six temps et la page en porte cinq.** Le document reste tel
+quel : son §17 envoie vers cette base une décision qui mérite de lui survivre, et c'est ce qu'est
+ce compte rendu. Un lecteur du seul §9.2 trouve donc une séquence que la page ne suit plus et doit
+venir ici pour savoir pourquoi — le prix à payer pour que la spécification garde le raisonnement
+qu'elle a consigné au lieu de devenir une description du site.
 
 L'expression la plus courte de la bibliothèque n'est plus sur la page avant la première sortie. Un
 lecteur qui part à cette sortie n'aura pas vu `.As(...)` du tout.
@@ -127,8 +130,9 @@ vérification, cette décision se défait à force de bonnes intentions ordinair
 - `check-narrative.sh` vérifie ce report sur les extraits publiés : `.As(` apparaît dans la recette
   du deuxième acte et dans rien de ce que le premier acte publie. La vérification tourne dans le
   build, et elle a été contrôlée en la cassant.
-- Le §9.2 de la spécification doit être mis à jour pour la séquence en cinq temps que porte la
-  page. C'est l'édition du mainteneur, pas celle de ce compte rendu.
+- La séquence du premier acte au §9.2 est délibérément laissée telle quelle. La spécification
+  garde le raisonnement qu'elle a consigné ; cette base porte la décision qui en a remplacé une
+  partie (§17), et la vérification ci-dessus est ce qui tient la page à cette décision.
 
 ## Références
 

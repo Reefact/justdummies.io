@@ -2,8 +2,9 @@
 
 🌍 🇬🇧 English (this file) · 🇫🇷 [Français](0007-le-troisieme-acte-repond-avant-dechouer-fr.md)
 
-**Status:** Proposed
+**Status:** Accepted
 **Proposed:** 2026-08-12
+**Accepted:** 2026-08-12
 **Decision Makers:** Reefact
 
 ## Context
@@ -113,8 +114,10 @@ The act keeps its demonstration whole. Nothing was removed to obtain the reassur
 ### Negative
 
 **The specification's §9.2 no longer describes the third act, and §9.4's stated purpose for the
-hinge no longer matches what the hinge says.** Both need updating, and until they are, the document
-and the page disagree.
+hinge no longer matches what the hinge says.** Neither is being edited: §17 sends a decision that
+deserves to outlive the document to this base, so §9.2 and §9.4 keep the reasoning they recorded
+and this record carries what replaced part of it. A reader of those sections alone will not know
+that, and has to come here.
 
 The act is four scenes rather than three, on a page whose length is already a standing concern
 (ADR-0005).
@@ -136,8 +139,9 @@ place.
   attribute, and the scene where a test goes red comes after it — and asserts that every published
   test drawing its values carries `[Reproducible]` while the ones written before the library draws
   anything do not. Both were checked by breaking them, and they run in the build.
-- Specification §9.2's third-act sequence and §9.4's description of what the hinge joins both need
-  updating. That is the maintainer's edit, not this record's.
+- §9.2's third-act sequence and §9.4's description of what the hinge joins are deliberately left
+  as written. The specification keeps the reasoning it recorded; this base carries the decision
+  that replaced part of it (§17), and the checks above are what hold the page to it.
 
 ## References
 
