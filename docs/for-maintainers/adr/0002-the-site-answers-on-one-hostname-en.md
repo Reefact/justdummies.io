@@ -2,8 +2,9 @@
 
 🌍 🇬🇧 English (this file) · 🇫🇷 [Français](0002-the-site-answers-on-one-hostname-fr.md)
 
-**Status:** Proposed
+**Status:** Accepted
 **Proposed:** 2026-08-11
+**Accepted:** 2026-08-12
 **Decision Makers:** Reefact
 
 ## Context

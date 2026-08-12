@@ -2,8 +2,9 @@
 
 🌍 🇫🇷 Français (ce fichier) · 🇬🇧 [English](0004-a-control-appears-only-when-it-can-act-en.md)
 
-**Statut :** Proposé
+**Statut :** Accepté
 **Proposé le :** 2026-08-12
+**Accepté le :** 2026-08-12
 **Décideurs :** Reefact
 
 ## Contexte
