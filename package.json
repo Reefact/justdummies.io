@@ -10,11 +10,11 @@
     "node": ">=22"
   },
   "scripts": {
-    "dev": "pnpm --filter @justdummies/site dev",
+    "dev": "./scripts/generate-version.sh && pnpm --filter @justdummies/site dev",
     "build:site": "pnpm --filter @justdummies/site build",
     "build:playground": "dotnet publish apps/playground/JustDummies.Playground.csproj -c Release",
     "build": "./scripts/build-site.sh",
-    "check": "pnpm --filter @justdummies/site check",
+    "check": "./scripts/generate-version.sh && pnpm --filter @justdummies/site check",
     "test:browser": "./scripts/check-in-browser.sh",
     "serve": "wrangler dev",
     "preview": "wrangler versions upload",
