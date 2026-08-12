@@ -97,6 +97,20 @@ const t = useTranslations(locale);
                 ))
         }
         <meta name="twitter:card" content="summary_large_image" />
+
+        {/*
+          Arms the reveal, and it has to happen here rather than in the module below.
+          A deferred script runs after first paint, so the page would render with every
+          section already in place and then snatch them away to fade them back in. One
+          attribute, set before anything is painted, is what makes the difference between
+          a reveal and a flicker.
+
+          Its counterpart is that nothing hides until this line runs: a reader with no
+          scripting gets the whole page, laid out, unanimated. See base.css.
+        */}
+        <script is:inline>
+            document.documentElement.dataset.revealArmed = '';
+        </script>
     </head>
     <body>
         <header class="site-header">
@@ -114,11 +128,105 @@ const t = useTranslations(locale);
             <nav class="site-nav" aria-label={t('nav.primary')}>
                 <a href="/playground/">{t('nav.playground')}</a>
                 <a href={site.repository}>{t('nav.github')}</a>
+                {/*
+                  The language control is not a third destination and must not read as one.
+                  The rule says so before the reader has parsed a word of it.
+                */}
+                <span class="divider" aria-hidden="true"></span>
                 <LanguageSelector pathname={pathname} />
             </nav>
         </header>
 
         <slot />
+
+        <script>
+            /**
+             * Reveals each marked group as it comes into view, once.
+             *
+             * One observer for the document rather than one per component: the things that
+             * reveal belong to four components, they all reveal the same way, and a page
+             * with four observers watching the same scroll is four times the work for one
+             * effect.
+             *
+             * ONCE, NEVER AGAIN. `unobserve` on the way out is not an optimisation — a
+             * group that faded back on the way up would make scrolling backwards a
+             * different page from scrolling forwards, and re-reading something you have
+             * already read is the most ordinary thing a reader does.
+             *
+             * If this never runs, the head's inline script has still armed the CSS, so the
+             * page would stay hidden — which is why the arming is undone here on the way
+             * in rather than trusted. `IntersectionObserver` has been everywhere for years;
+             * the browser that lacks it gets the page unanimated instead of empty.
+             */
+            const groups: HTMLElement[] = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]'));
+
+            function reveal(group: HTMLElement): void {
+                group.dataset.revealed = '';
+            }
+
+            if (groups.length > 0) {
+                if ('IntersectionObserver' in window) {
+                    const observer: IntersectionObserver = new IntersectionObserver(
+                        (entries: IntersectionObserverEntry[]) => {
+                            for (const entry of entries) {
+                                if (!entry.isIntersecting) {
+                                    continue;
+                                }
+
+                                reveal(entry.target as HTMLElement);
+                                observer.unobserve(entry.target);
+                            }
+                        },
+                        // A group has arrived once any part of it is inside the top 85% of
+                        // the viewport — early enough that the movement is over by the time
+                        // the reader's eye gets there.
+                        //
+                        // Expressed as a margin rather than a `threshold`, because a
+                        // threshold is a *fraction of the element*: a scene taller than the
+                        // viewport can never be 15% visible, and would sit invisible
+                        // forever. The recorded terminals are that tall.
+                        { rootMargin: '0px 0px -15% 0px' },
+                    );
+
+                    for (const group of groups) {
+                        observer.observe(group);
+                    }
+
+                    /**
+                     * The backstop, and it is not belt-and-braces — without it the page has
+                     * content nobody can ever read.
+                     *
+                     * That -15% shrinks the observer's root, so a group sitting in the last
+                     * 15% of the *document* never enters it: the reader scrolls to the
+                     * bottom, the page stops moving, and the group stays at zero opacity for
+                     * good. Two of them did, and it took scrolling the built page to the end
+                     * to find out — every one was revealed correctly on the way down.
+                     *
+                     * So the bottom of the document reveals whatever is left. Once, then it
+                     * detaches.
+                     */
+                    const atBottom = (): void => {
+                        if (window.scrollY + window.innerHeight < document.documentElement.scrollHeight - 2) {
+                            return;
+                        }
+
+                        for (const group of groups) {
+                            reveal(group);
+                            observer.unobserve(group);
+                        }
+
+                        window.removeEventListener('scroll', atBottom);
+                    };
+
+                    window.addEventListener('scroll', atBottom, { passive: true });
+                    atBottom();
+                } else {
+                    // No observer, no reveal — but the CSS is armed, so hand the page back
+                    // rather than leaving it blank.
+                    delete document.documentElement.dataset.revealArmed;
+                }
+            }
+        </script>
     </body>
 </html>
 
@@ -143,8 +251,21 @@ const t = useTranslations(locale);
         display: flex;
         align-items: center;
         flex-wrap: wrap;
-        gap: var(--jd-space-6);
+        gap: var(--jd-space-4);
         font-size: var(--jd-text-sm);
+    }
+
+    /* Tighter around the rule than between the links, so the rule reads as separating two
+       groups rather than as a third item with space of its own. */
+    .site-nav > a {
+        margin-right: var(--jd-space-2);
+    }
+
+    .divider {
+        width: 1px;
+        align-self: stretch;
+        min-height: 1rem;
+        background: var(--jd-border);
     }
 
     /*
