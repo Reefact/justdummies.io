@@ -17,6 +17,20 @@ const t = useTranslations('en');
     <main class="shell">
         <h1>{t('notfound.title')}</h1>
         <p class="body">{t('notfound.body')}</p>
+
+        {/*
+          `alt=""`, on purpose. The picture says what the heading and the sentence above it
+          have already said, as a joke rather than in words — and the "404" it draws is a
+          status code the response already carries. A screen reader announcing it would be
+          reading the same page a third time.
+
+          The width and height are the file's own, so the box is reserved before the image
+          lands and the link below does not jump out from under a pointer on its way in. Not
+          lazily loaded: here it is above the fold, and deferring it would only move the jump
+          later.
+        */}
+        <img class="crash" src="/404.png" alt="" width="1253" height="637" decoding="async" />
+
         <p><a href="/">{t('notfound.home')}</a></p>
     </main>
 </Base>
@@ -37,5 +51,17 @@ const t = useTranslations('en');
     .body {
         color: var(--jd-text-muted);
         max-width: 46rem;
+    }
+
+    /* Narrower than the prose it sits under: it is the page's joke, not the page's subject,
+       and at its own 1253 pixels it would be the only thing on the screen. `height: auto`
+       with the intrinsic attributes above keeps the reserved box the right shape at every
+       width. */
+    .crash {
+        display: block;
+        width: 100%;
+        max-width: 36rem;
+        height: auto;
+        margin: var(--jd-space-8) 0;
     }
 </style>

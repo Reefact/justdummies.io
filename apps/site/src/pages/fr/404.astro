@@ -11,6 +11,11 @@ const t = useTranslations('fr');
     <main class="shell">
         <h1>{t('notfound.title')}</h1>
         <p class="body">{t('notfound.body')}</p>
+
+        {/* Empty `alt` and intrinsic dimensions, for the reasons written out on the English
+            twin. Same file: the mark belongs to the product, not to one language. */}
+        <img class="crash" src="/404.png" alt="" width="1253" height="637" decoding="async" />
+
         <p><a href="/fr/">{t('notfound.home')}</a></p>
     </main>
 </Base>
@@ -31,5 +36,14 @@ const t = useTranslations('fr');
     .body {
         color: var(--jd-text-muted);
         max-width: 46rem;
+    }
+
+    /* See the English twin. */
+    .crash {
+        display: block;
+        width: 100%;
+        max-width: 36rem;
+        height: auto;
+        margin: var(--jd-space-8) 0;
     }
 </style>
