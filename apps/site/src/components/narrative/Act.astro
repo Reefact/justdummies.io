@@ -32,26 +32,40 @@ interface Props {
      * onto the first. Its wording is editorial; that it exists is a decision.
      */
     hinge?: UiKey;
+    /**
+     * Which of the two grounds this act stands on.
+     *
+     * The change belongs to the seam between acts, never inside one: a ground that
+     * changed under every scene would turn a continuous argument into a stack of
+     * unrelated cards. Passed in rather than counted here, because an act does not know
+     * how many came before it, and `:nth-of-type` cannot see across the components that
+     * wrap them.
+     */
+    ground?: 'page' | 'raised';
 }
 
-const { name, label, title, summary, exitTitle, exitBody, offer = 'library', hinge } = Astro.props;
+const { name, label, title, summary, exitTitle, exitBody, offer = 'library', hinge, ground = 'page' } = Astro.props;
 
 const t = useTranslations(localeFromPath(Astro.url.pathname));
 ---
 
-<section class="act" id={name} aria-labelledby={`${name}-title`}>
+<section class="act" id={name} data-ground={ground} aria-labelledby={`${name}-title`}>
     <header>
-        {hinge !== undefined && <p class="hinge">{t(hinge)}</p>}
-        <p class="label">{t(label)}</p>
-        <h2 id={`${name}-title`}>{t(title)}</h2>
-        <p class="summary">{t(summary)}</p>
+        {hinge !== undefined && <p class="hinge" data-reveal>{t(hinge)}</p>}
+        {/* The label, the claim and its summary arrive together: they are one sentence
+            broken across three lines, not three things. */}
+        <div class="opening" data-reveal>
+            <p class="label">{t(label)}</p>
+            <h2 id={`${name}-title`}>{t(title)}</h2>
+            <p class="summary">{t(summary)}</p>
+        </div>
     </header>
 
     <div class="scenes" data-scenes>
         <slot />
     </div>
 
-    <footer class="exit">
+    <footer class="exit" data-reveal>
         <h3>{t(exitTitle)}</h3>
         <p>{t(exitBody)}</p>
         <InstallBlock placement={`${name}-exit`} offer={offer} />
@@ -59,9 +73,32 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
 </section>
 
 <style>
+    /*
+     * THE GROUND CHANGES AT THE SEAM BETWEEN ACTS AND NOWHERE ELSE.
+     *
+     * Full-bleed rather than inset: the shell that holds this page is 72rem wide and
+     * centred, so a ground painted inside it would be a wide stripe with the page showing
+     * down both sides. The negative margin takes the panel out to the viewport edge and
+     * the padding puts the content back where the shell had it.
+     *
+     * `--jd-act-ground` is declared here and read by the scene markers, which punch a hole
+     * in the rail and have to be filled with whatever this act is standing on.
+     */
     .act {
+        --jd-act-ground: var(--jd-background);
+
         padding: var(--jd-space-16) 0 var(--jd-space-12);
         border-top: 1px solid var(--jd-border);
+        background: var(--jd-act-ground);
+    }
+
+    .act[data-ground='raised'] {
+        --jd-act-ground: var(--jd-surface-sunken);
+
+        margin: 0 calc(50% - 50vw);
+        padding-inline: max(var(--jd-space-4), calc(50vw - 36rem));
+        /* The ground is the seam now; a rule on top of it would draw the same line twice. */
+        border-top: 0;
     }
 
     header {
@@ -90,10 +127,20 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
         color: var(--jd-accent);
     }
 
+    /*
+     * A step above the scene titles, which have just taken the size this one used to have.
+     * Left alone the two would be identical, and an act would open on a heading no larger
+     * than the six beats inside it — the chapter break stops reading as one.
+     *
+     * It matches the brand in the hero, and that is not a collision: the two are never on
+     * the screen together, the hero being a full viewport the reader has already left.
+     */
     h2 {
-        font-size: var(--jd-text-xl);
+        font-size: var(--jd-text-2xl);
         line-height: var(--jd-line-tight);
+        letter-spacing: -0.02em;
         margin: 0;
+        text-wrap: balance;
     }
 
     .summary {

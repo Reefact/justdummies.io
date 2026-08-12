@@ -18,17 +18,19 @@
  *   goes wrong: a heading reads next to code belonging to a scene three below it. Under
  *   its own heading, there is nothing left to pair.
  *
- * A SCENE HOLDS THE SCREEN, so scrolling advances the story rather than sliding a
- * document past. What that buys is the figure landing in roughly the same place from one
- * scene to the next, which is what makes the code read as transforming rather than as
- * being restated — §9.1's continuous transformation, obtained from the layout instead of
- * from a script.
+ * A SCENE ARRIVES, it no longer holds the screen. It did — a full viewport each — and
+ * that was ADR-0003's way of making scrolling feel like advancing rather than sliding a
+ * document past. It bought the feeling with empty space, roughly a screen of it between
+ * every code block, and the emptiness was reported before the feeling was. The reveal
+ * below buys the same thing and costs no space at all, so the height goes. Decision:
+ * ADR-0005, which supersedes that half of ADR-0003; the other half — a figure at full
+ * width under its own heading — is untouched and is what the two defects above bought.
  *
  * WHAT IT COSTS TO EXIST (§9.7). A scene is built four times — desktop, mobile, reduced
- * motion, and without JavaScript — and this one is the same build in all four. The
- * layout is CSS, the figure sits in the document under the heading it belongs to, and
- * the only thing script adds is the rail marker saying where the reader is. Without it
- * every marker stays hollow and not one word moves.
+ * motion, and without JavaScript — and this one is the same build in all four. What
+ * changes between them is whether the scene fades in: reduced motion is handed the
+ * finished state, and a page with no scripting is never given the unfinished one. Not
+ * one word moves in either, and nothing is missing from either.
  */
 import CodeSample from '../CodeSample.astro';
 import { localeFromPath } from '../../i18n/routing';
@@ -64,13 +66,18 @@ if (!ownFigure && sample === undefined) {
 ---
 
 <section class="scene" id={name} data-scene={name} aria-labelledby={`${name}-title`}>
-    <h3 id={`${name}-title`}>{t(title)}</h3>
+    {/*
+      Three reveal groups rather than one on the section, so the heading, the figure and
+      the words about it arrive in the order they are read. The section itself is not a
+      group: a scene taller than the viewport would then be waiting on its own bottom edge.
+    */}
+    <h3 id={`${name}-title`} data-reveal>{t(title)}</h3>
 
-    <div class="figure">
+    <div class="figure" data-reveal data-reveal-delay="1">
         {ownFigure ? <slot /> : <CodeSample id={sample!} outcome={outcome} />}
     </div>
 
-    <p class="commentary">{t(body)}</p>
+    <p class="commentary" data-reveal data-reveal-delay="2">{t(body)}</p>
 </section>
 
 <script>
@@ -120,13 +127,20 @@ if (!ownFigure && sample === undefined) {
         display: flex;
         flex-direction: column;
         gap: var(--jd-space-4);
-        padding-bottom: var(--jd-space-16);
+        padding-bottom: var(--jd-space-12);
     }
 
+    /*
+     * A size up from the rest of the page's subheadings, because on this page a scene
+     * title is not a subheading: it is the claim, and the code under it is the evidence.
+     * At the old size it read as a caption for the block below it.
+     */
     h3 {
-        font-size: var(--jd-text-lg);
+        font-size: var(--jd-text-xl);
         line-height: var(--jd-line-tight);
+        letter-spacing: -0.015em;
         margin: 0;
+        text-wrap: balance;
     }
 
     /*
@@ -150,12 +164,16 @@ if (!ownFigure && sample === undefined) {
          * grows rather than clipping, and the recorded terminals are the tallest things on
          * this page.
          */
+        /*
+         * No `min-height` any more. What it was for — the figure landing in the same place
+         * from one scene to the next, so the code read as transforming — is now the
+         * reveal's job, and the reveal does it without a screen of emptiness between every
+         * pair of blocks.
+         */
         .scene {
             position: relative;
-            min-height: 100vh;
-            justify-content: center;
             gap: var(--jd-space-6);
-            padding: var(--jd-space-16) 0 var(--jd-space-16) var(--jd-space-8);
+            padding: var(--jd-space-12) 0 var(--jd-space-12) var(--jd-space-8);
         }
 
         /*
@@ -193,7 +211,7 @@ if (!ownFigure && sample === undefined) {
             height: 0.9375rem;
             border: 1px solid var(--jd-border);
             border-radius: 50%;
-            background: var(--jd-background);
+            background: var(--jd-act-ground, var(--jd-background));
             transition:
                 background-color var(--jd-duration-base) var(--jd-ease),
                 border-color var(--jd-duration-base) var(--jd-ease);
