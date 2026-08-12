@@ -296,6 +296,7 @@ Rien de tout ceci n'est à écrire :
 | `apps/site/public/.assetsignore` | Ce qui ne doit **jamais** monter dans le téléversement. |
 | `scripts/verify-output.sh` | Dix-sept assertions sur la forme de l'artefact, lue sur le disque. Plusieurs n'existent que parce que leur échec est invisible jusqu'à ce qu'un visiteur le rencontre. |
 | `scripts/check-served-headers.sh` | Six assertions sur ce que le runtime **sert réellement** : il démarre le moteur et l'interroge. Un fichier de règles peut être présent, bien formé, et ignoré — c'est exactement ce qui est arrivé ici. |
+| `scripts/check-release-tag.sh` | Trois assertions sur le tag qui publie : il est annoté, son message est son nom, et son nom est le moment où il a été posé. Les huit premiers tags de release échouaient à la troisième. |
 | `.github/workflows/build.yml` | Construit, vérifie, puis publie — dès que les identifiants existeront. |
 
 Sur Workers, `_headers` et `_redirects` **ne sont pas servis comme des fichiers** : ils sont
@@ -822,26 +823,74 @@ repository secret**. Deux entrées, ces noms exactement :
 
 ### ✅ Contrôle
 
-**C'est un tag qui publie.** Pose-en un sur le commit que tu veux mettre en ligne :
+**C'est un tag qui publie.** Pose-en un sur le commit que tu veux mettre en ligne. En PowerShell,
+qui est le shell depuis lequel les releases de ce dépôt sont taguées :
+
+```powershell
+git checkout main; git pull origin main
+$tag = 'release/{0:yyyy-MM-dd}T{0:HH-mm-ss}Z' -f [DateTime]::UtcNow
+git tag -a $tag -m $tag
+git push origin $tag
+```
+
+Les mêmes quatre étapes en bash, sous Linux, macOS ou WSL :
 
 ```bash
 git checkout main && git pull origin main
-git tag -a "release/$(date -u +%Y-%m-%dT%H-%M-%SZ)" -m "ce que cette mise en ligne apporte"
-git push origin --tags
+tag="release/$(date -u +%Y-%m-%dT%H-%M-%SZ)"
+git tag -a "$tag" -m "$tag"
+git push origin "$tag"
 ```
+
+Les deux formes lisent l'horloge **une seule fois** et réutilisent la réponse trois fois. Deux
+lectures finiraient par tomber de part et d'autre d'une seconde : deux appels à `date` sur une même
+ligne ont divergé 5 fois sur 2000 essais ici. Un tag dont le nom et le message diffèrent a l'air
+trafiqué, et la dernière étape pousserait le mauvais des deux.
+
+La dernière étape pousse **ce tag-là**, pas `--tags`. `git push origin --tags` publie tous les tags
+du clone, y compris celui que tu as posé sur une branche sans jamais vouloir l'envoyer — c'est une
+erreur que ce dépôt a déjà commise une fois.
 
 Le nom du tag est un **horodatage UTC**, pas un numéro de version. Rien ne consomme ce site, donc la
 question à laquelle répond le semver — « est-ce compatible avec ce que j'ai ? » — ne se pose jamais,
 tandis que l'arbitrage qu'il exige (mineure ou patch, pour une page d'accueil ?) est un coût sec.
-`date -u` produit le nom sans que tu aies à consulter `git tag` d'abord, il ne peut pas entrer en
+L'horloge produit le nom sans que tu aies à consulter `git tag` d'abord, il ne peut pas entrer en
 collision, et l'ordre lexical suit l'ordre chronologique.
 
 Il correspond surtout à l'unité que Cloudflare te rend : `wrangler deployments list` affiche des
 horodatages, donc un tag horodaté s'aligne dessus directement — ce qui est toute la raison de nommer
 des releases.
 
-Le tag est **annoté** (`-a -m`) et non léger : il porte un auteur, une date et un message, donc
-`git show` sur le tag dira *pourquoi* cette mise en ligne a eu lieu. Un tag léger ne dit rien.
+> ⚠️ **`date -u` lit la mauvaise horloge sous PowerShell, et ne le dit pas.** Windows PowerShell
+> résout `date` vers son alias `Get-Date`, et `-u` se lie à `-UFormat`. `-UFormat` formate l'horloge
+> **locale** et écrit le `Z` comme une lettre ordinaire. Sous `Europe/Paris` en août,
+> `Get-Date -UFormat "+%Y-%m-%dT%H-%M-%SZ"` a répondu `2026-08-12T17-06-40Z` alors qu'UTC affichait
+> `15:06:41`. Les huit premiers tags de release de ce dépôt portent ce mensonge de deux heures dans
+> leur nom. PowerShell 7, lui, rejette `-u` comme ambigu — `-UFormat` et `-UnixTimeSeconds`
+> correspondent tous les deux — donc une même ligne bash échoue sur une machine et ment sur la
+> suivante. `[DateTime]::UtcNow` est de l'UTC sur toutes les versions, et c'est pour ça que le bloc
+> ci-dessus l'utilise.
+
+Le tag est **annoté** (`-a -m`) et non léger : il porte un auteur et une date de création, là où un
+tag léger ne porte ni l'un ni l'autre. Cette date est ce qui rend le nom vérifiable — c'est le moment
+où le tag a réellement été posé, donc le nom peut être confronté à elle.
+
+Le message reprend le nom, et ne dit rien d'autre volontairement. Ce qu'une mise en ligne apporte,
+c'est la liste des commits qu'elle embarque, et la CI publie exactement cette liste sur la page de
+release (`--generate-notes`). Une phrase tapée à `git tag -m` redit cette liste de mémoire, une fois,
+et jamais plus. La release GitHub prend son titre dans le message, donc le titre est le nom du tag
+lui aussi.
+
+Relis le tag dès que tu l'as poussé — depuis WSL sous Windows, comme tout ce qui est sous
+`scripts/` :
+
+```bash
+./scripts/check-release-tag.sh
+```
+
+Il prend le dernier tag `release/*`, et il échoue quand le tag est léger, quand le message n'est pas
+le nom, ou quand le nom s'écarte de plus d'une minute du moment où le tag a été posé. La CI lance le
+même script sur le tag publié, dans le job **Release notes**, avant d'écrire la page de release.
 
 Pourquoi un tag plutôt qu'une fusion, ce que ça coûte, et les schémas de nommage écartés en
 chemin : [`ADR-0001`](adr/0001-a-release-tag-publishes-not-a-merge-fr.md).
@@ -921,6 +970,9 @@ geste.
    qu'il sert vraiment** (le script de l'étape 2), puis téléverse l'artefact.
 2. **deploy** — récupère **cet artefact-là** plutôt que de reconstruire, rejoue
    `verify-output.sh` sur les octets téléchargés, puis lance `pnpm run deploy`.
+3. **Release notes** — relit le tag avec `check-release-tag.sh`, puis écrit la page de release à
+   partir des commits que le tag embarque. Il ne tourne que sur les tags, et il est le dernier des
+   trois.
 
 Trois choix qui ne se devinent pas :
 
