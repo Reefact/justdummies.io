@@ -148,6 +148,13 @@ if (!ownFigure && sample === undefined) {
      * paragraph as wide as a code block is a paragraph nobody finishes: the eye loses the
      * start of the next line somewhere in the middle of this one.
      */
+    /* A scene may hold more than one figure — the beat that shows a test and the factory
+       under it — so the holder is a stack rather than a single slot. */
+    .figure {
+        display: grid;
+        gap: var(--jd-space-4);
+    }
+
     .commentary {
         margin: 0;
         max-width: 42rem;

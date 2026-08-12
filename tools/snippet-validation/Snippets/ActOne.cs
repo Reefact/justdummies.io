@@ -1,6 +1,7 @@
 namespace JustDummies.SnippetValidation.Snippets;
 
 using JustDummies.SnippetValidation.Domain;
+using JustDummies.SnippetValidation.Snippets.Handwritten;
 
 using Xunit;
 
@@ -14,26 +15,19 @@ using Xunit;
 public sealed class OrderCancellation {
 
     /// <summary>
-    ///     The first scene: two lines about cancelling, and five about everything else.
+    ///     The first scene: the test as it is written before any of this, with three
+    ///     values named for what they are not.
     ///
-    ///     IT SHOWS THE SETUP RATHER THAN HIDING IT BEHIND A HELPER. An earlier version
-    ///     opened on <c>Order order = APendingOrder();</c> and left the page to say that
-    ///     the missing line was all the work. A reader had to take that on trust; here
-    ///     they can count it. The whole act argues that this is too much to write for a
-    ///     test about cancelling, and an argument a reader can see beats one they are
-    ///     told.
+    ///     The names say *any*, and every one of them is one specific value written by
+    ///     hand. That is the lie the act pulls apart, and it has to be visible rather
+    ///     than described — which is why the literals are here and not behind a helper.
     ///
-    ///     The Arrange/Act/Assert markers are what make the imbalance legible at a
-    ///     glance, and they appear in this snippet alone. Where the page's point is that
-    ///     the test has become one line — the second act's concise test — three lines of
+    ///     The Arrange/Act/Assert markers appear in this snippet and the next one alone.
+    ///     Where the page's point is that a test has become one line, three lines of
     ///     comment above it would be exactly the "everything else" that scene claims to
     ///     have removed.
-    ///
-    ///     The values are hand-written on purpose, magic string included: this is the
-    ///     test as it exists before the library, and that string is what the next scene
-    ///     tries to replace.
     /// </summary>
-    // <snippet:incomplete-test>
+    // <snippet:literal-test>
     [Fact]
     public void A_pending_order_can_be_cancelled() {
         // Arrange
@@ -50,81 +44,61 @@ public sealed class OrderCancellation {
         // Assert
         Assert.Equal(OrderStatus.Cancelled, order.Status);
     }
-    // </snippet:incomplete-test>
+    // </snippet:literal-test>
+
+    /// <summary>
+    ///     The second scene: the same test with the values moved behind factories.
+    ///
+    ///     It reads. That is the whole of what it buys, and the act says so plainly
+    ///     before taking it away again — the factory is named `Any` and returns one
+    ///     value, so the lie has moved rather than gone.
+    /// </summary>
+    // <snippet:factory-test>
+    [Fact]
+    public void A_pending_order_can_be_cancelled_with_factories() {
+        // Arrange
+        OrderReference anyReference  = AnyOrderReference.Generate();
+        CustomerId     anyCustomerId = AnyCustomerId.Generate();
+        Money          anyTotal      = AnyMoney.Generate();
+
+        Order order = new Order(anyReference, anyCustomerId, anyTotal,
+                                OrderStatus.Pending);
+
+        // Act
+        order.Cancel();
+
+        // Assert
+        Assert.Equal(OrderStatus.Cancelled, order.Status);
+    }
+    // </snippet:factory-test>
 
 }
 
 /// <summary>
-///     The first act of the narrative: a value that does not matter to the test, and that
-///     the domain refuses unless it is valid anyway.
+///     What the first act still needs compiled, now that its factories live beside it.
 ///
-///     Each region between a <c>snippet</c> marker and its closing marker is what the site
-///     may display. What surrounds it — the method, the return, the using directives — is
-///     scaffolding so this compiles, and is never shown.
+///     The scenes the act used to end on — the chain producing a domain object in one
+///     link, and the four-argument arrangement — were removed from the page (ADR-0006).
+///     `.As(OrderReference.Create)` returns later, in the recipe the tool writes, which
+///     is where a reader meets it having already written the chain by hand.
 /// </summary>
 public static class ActOne {
 
     /// <summary>
-    ///     The second scene: the shortest thing that could work, and the domain's answer to
-    ///     it. This is the one expression in the repository written to fail — it compiles,
-    ///     it runs, and it throws, which is precisely what the scene is about.
+    ///     The value the fourth scene shows several draws of. It is read through the
+    ///     constrained factory rather than a chain of its own, so the value on the page is
+    ///     produced by the code on the page.
     /// </summary>
-    public static OrderReference NaiveReference() {
-        // <snippet:naive-reference>
-        OrderReference reference = OrderReference.Create(Any.String().Generate());
-        // </snippet:naive-reference>
-
-        return reference;
-    }
-
-    /// <summary>The chain the fourth scene builds one link at a time.</summary>
     public static string ConstrainedReference() {
-        // <snippet:constrained-reference>
-        string reference = Any.String()
-                              .NonEmpty()
-                              .WithMaxLength(20)
-                              .StartingWith("ORD-")
-                              .Generate();
-        // </snippet:constrained-reference>
-
-        return reference;
-    }
-
-    /// <summary>The fifth scene: the constrained value becomes an object of the domain.</summary>
-    public static OrderReference DerivedReference() {
-        // <snippet:derived-reference>
-        OrderReference reference = Any.String()
-                                      .NonEmpty()
-                                      .WithMaxLength(20)
-                                      .StartingWith("ORD-")
-                                      .As(OrderReference.Create)
-                                      .Generate();
-        // </snippet:derived-reference>
-
-        return reference;
+        return Constrained.AnyOrderReference.Generate().Value;
     }
 
     /// <summary>
-    ///     The sixth scene: valid values everywhere, and a test that still says too much.
-    ///
-    ///     Wrapped to stay inside the width the site gives a figure. This one is the
-    ///     punchline of the act — the arrangement that works and reads like a description
-    ///     of the constructor — and a line clipped at the right edge reads as a broken
-    ///     page rather than as the point being made.
+    ///     The refusal the third scene is built on, provoked through the same factory the
+    ///     page displays.
     /// </summary>
-    public static Order VerboseArrangement() {
-        // <snippet:verbose-arrangement>
-        Order order = new Order(
-            reference: Any.String().NonEmpty().WithMaxLength(20)
-                          .StartingWith("ORD-")
-                          .As(OrderReference.Create).Generate(),
-            customerId: Any.Guid().As(CustomerId.Create).Generate(),
-            total: Any.Decimal().GreaterThan(0).WithScale(2)
-                      .As(Money.Create).Generate(),
-            status: OrderStatus.Pending);
-        // </snippet:verbose-arrangement>
-
-        return order;
+    public static OrderReference CarelessReference() {
+        return Careless.AnyOrderReference.Generate();
     }
 
 }

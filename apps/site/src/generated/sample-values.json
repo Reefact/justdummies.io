@@ -1,26 +1,20 @@
 {
   "refusals": {
-    "naive-reference": "An order reference must start with ORD-. (Parameter 'value')"
+    "factory-careless": "An order reference must start with ORD-. (Parameter 'value')"
   },
   "seed": 20260810,
   "values": {
     "completed-recipe": [
-      "ORD-QlF0066wYuCM2",
-      "ORD-RK",
-      "ORD-I496ZT",
-      "ORD-Lcw86jQP2gC6Jcb3"
+      "ORD-w",
+      "ORD-",
+      "ORD-LiXKtoP",
+      "ORD-jjS4e"
     ],
-    "constrained-reference": [
+    "factory-constrained": [
       "ORD-5f5xO2T",
       "ORD-zvrxyEBwfd1o",
       "ORD-IqYioSFBhEelxl",
       "ORD-TVSd"
-    ],
-    "derived-reference": [
-      "ORD-w",
-      "ORD-T7VRNINHbAKeNu51",
-      "ORD-w4C2i1iL8T",
-      "ORD-KDpr"
     ],
     "hero-expression": [
       "ORD-h2026Mhf",
@@ -34,17 +28,11 @@
       "Cancelled",
       "Cancelled"
     ],
-    "order-reference": [
-      "ORD-toPq3Y7sWwdaz"
-    ],
-    "order-total": [
-      "544006.13"
-    ],
     "scaffolded-arrangement": [
-      "ORD-qSs",
-      "ORD-jeaqJ3PaxL8",
-      "ORD-3DIDcW2s1s",
-      "ORD-efQqo2"
+      "ORD-9OFO6Y2",
+      "ORD-shXh7CM6FzVkb",
+      "ORD-8rX5RCvwI496Z",
+      "ORD-zJLcw86jQP2gC6"
     ]
   }
 }

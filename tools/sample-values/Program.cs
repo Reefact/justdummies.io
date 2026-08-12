@@ -42,17 +42,9 @@ public static class Program {
             // to display: every draw is twelve characters, never the bare prefix.
             ["hero-expression"] = Repeat(static () => Hero.PreFilledExpression()),
 
-            // Scene three builds this chain one link at a time, and shows several draws
-            // to make "arbitrary" visible before "constrained" is explained.
-            ["constrained-reference"] = Repeat(static () => ActOne.ConstrainedReference()),
-
-            // Scene four: the same chain, now producing an object of the domain. The
-            // value shown is what the domain accepted, not what the string was.
-            ["derived-reference"] = Repeat(static () => ActOne.DerivedReference().Value),
-
-            // Scene six: the arrangement that works and still says too much.
-            ["order-reference"] = [ActOne.VerboseArrangement().Reference.Value],
-            ["order-total"]     = [ActOne.VerboseArrangement().Total.Amount.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)],
+            // The scene where the constraints are declared, showing several draws so
+            // "different every time" is visible before "valid every time" is claimed.
+            ["factory-constrained"] = Repeat(static () => ActOne.ConstrainedReference()),
 
             // The second act. Drawn through the scaffolded generator with the one link the
             // tool could not read added back, which is the whole of what the act shows: the
@@ -71,7 +63,7 @@ public static class Program {
         // read off the exception rather than written beside it, for the same reason every
         // other value here is: a message typed onto a page is right on the day it is typed.
         SortedDictionary<string, string> refusals = new() {
-            ["naive-reference"] = Refusal(static () => ActOne.NaiveReference()),
+            ["factory-careless"] = Refusal(static () => ActOne.CarelessReference()),
         };
 
         SortedDictionary<string, object> document = new() {
