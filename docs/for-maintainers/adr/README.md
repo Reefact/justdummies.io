@@ -122,6 +122,14 @@ Under three subheadings:
 Work that becomes necessary because of this decision: documentation to update, components to
 migrate, guidelines to write, something to monitor, a review to schedule.
 
+It also names **what will fail when this decision is broken**, and that thing exists before the
+pull request is opened — a global rule that makes the mistake unavailable, an assertion in
+`verify-output.sh` or `check-narrative.sh`, or, where neither is possible, a measurement recorded
+in the commit message. An assertion nobody has seen fail is not evidence: break what it protects,
+watch it go red, put it back. Where a decision genuinely admits no check, say so here rather than
+leaving the section empty. The rule and its reasoning are in
+[`CONTRIBUTING.md`](../../../CONTRIBUTING.md#a-decision-comes-with-something-that-fails-when-it-is-broken).
+
 ### References
 
 Optional supporting material: related ADRs, specifications, benchmarks, design documents, pull
