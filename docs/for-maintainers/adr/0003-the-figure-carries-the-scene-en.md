@@ -2,9 +2,16 @@
 
 🌍 🇬🇧 English (this file) · 🇫🇷 [Français](0003-la-figure-porte-la-scene-fr.md)
 
-**Status:** Proposed
+**Status:** Accepted — superseded in part by
+[ADR-0005](0005-a-scene-arrives-rather-than-holding-the-screen-en.md)
 **Proposed:** 2026-08-12
+**Accepted:** 2026-08-12
 **Decision Makers:** Reefact
+
+> **What ADR-0005 replaced, and what it did not.** The half that is gone is *a scene holds the
+> screen* — `min-height: 100vh` — which bought the sense of advancing with a screen of empty ground
+> between every pair of code blocks. The half that stands is the one this record was written for: a
+> figure at full width, under its own heading, with the commentary beneath it.
 
 ## Context
 

@@ -2,8 +2,9 @@
 
 🌍 🇬🇧 English (this file) · 🇫🇷 [Français](0005-une-scene-arrive-au-lieu-doccuper-lecran-fr.md)
 
-**Status:** Proposed
+**Status:** Accepted
 **Proposed:** 2026-08-12
+**Accepted:** 2026-08-12
 
 Supersedes part of [ADR-0003](0003-the-figure-carries-the-scene-en.md).
 
@@ -138,7 +139,9 @@ backstop exists for that and has to survive any later tuning of the margin.
 - `verify-output.sh` asserts both halves of the blank-page risk against the built artefact: every
   rule that hides a reveal group is gated behind the arming attribute, and no shipped page carries
   that attribute in its markup. Both were checked by breaking them. They run in the build.
-- ADR-0003's status and its link to this record are the maintainer's to set, as is this one's.
+- ADR-0003 carries the link to this record next to its status, and is marked as superseded **in
+  part**: its full-width figure under its own heading is untouched and remains the standing
+  decision.
 
 ## References
 

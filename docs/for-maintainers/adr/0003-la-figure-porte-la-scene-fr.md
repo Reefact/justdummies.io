@@ -2,9 +2,17 @@
 
 🌍 🇫🇷 Français (ce fichier) · 🇬🇧 [English](0003-the-figure-carries-the-scene-en.md)
 
-**Statut :** Proposé
+**Statut :** Accepté — remplacé en partie par
+[ADR-0005](0005-une-scene-arrive-au-lieu-doccuper-lecran-fr.md)
 **Proposé le :** 2026-08-12
+**Accepté le :** 2026-08-12
 **Décideurs :** Reefact
+
+> **Ce que l'ADR-0005 a remplacé, et ce qu'il n'a pas touché.** La moitié qui disparaît est *une
+> scène occupe l'écran* — `min-height: 100vh` —, qui achetait la sensation d'avancer au prix d'un
+> écran de fond vide entre chaque paire de blocs de code. La moitié qui demeure est celle pour
+> laquelle cet enregistrement a été écrit : une figure en pleine largeur, sous son propre titre,
+> avec le commentaire en dessous.
 
 ## Contexte
 

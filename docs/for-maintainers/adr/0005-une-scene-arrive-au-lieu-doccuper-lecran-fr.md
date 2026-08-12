@@ -2,8 +2,9 @@
 
 🌍 🇫🇷 Français (ce fichier) · 🇬🇧 [English](0005-a-scene-arrives-rather-than-holding-the-screen-en.md)
 
-**Statut :** Proposé
+**Statut :** Accepté
 **Proposé le :** 2026-08-12
+**Accepté le :** 2026-08-12
 
 Remplace une partie d'[ADR-0003](0003-la-figure-porte-la-scene-fr.md).
 
@@ -146,8 +147,9 @@ page construite jusqu'au bout, pas en lisant le code. Le garde-fou en bas de doc
   toute règle qui masque un groupe de fondu est conditionnée à l'attribut d'armement, et aucune
   page livrée ne porte cet attribut dans son balisage. Les deux ont été éprouvées en les cassant.
   Le contrôle tourne dans le build.
-- Le statut de l'ADR-0003 et son lien vers cet enregistrement appartiennent au mainteneur, comme
-  celui-ci.
+- L'ADR-0003 porte le lien vers cet enregistrement à côté de son statut, et est marqué comme
+  remplacé **en partie** : sa figure pleine largeur sous son propre titre reste intacte et demeure
+  la décision en vigueur.
 
 ## Références
 
