@@ -57,12 +57,28 @@ export default defineConfig({
 
     projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 
+    /*
+     * The same runtime `pnpm serve` starts, spawned directly rather than through pnpm.
+     *
+     * Two things are deliberate here, and both were learned from a run where the server
+     * stopped answering a third of the way through and 17 checks reported
+     * ERR_CONNECTION_REFUSED — seventeen confusing reds for one failure that had nothing to
+     * do with the site.
+     *
+     * `wrangler` rather than `pnpm serve`: Playwright supervises the process it spawns, and
+     * `pnpm serve` puts a shell and a package manager between it and workerd. Every layer in
+     * that chain is a place where a signal reaches one process and not the rest.
+     *
+     * `stdout: 'pipe'` rather than 'ignore': the server's own words are the first thing
+     * anybody needs when it goes away, and the first version of this file threw them out.
+     * A quiet log is not a tidy one when the quiet part is the evidence.
+     */
     webServer: {
-        command:             `pnpm serve --port ${PORT}`,
+        command:             `npx wrangler dev --ip 127.0.0.1 --port ${PORT}`,
         url:                 BASE_URL,
         reuseExistingServer: false,
         timeout:             120_000,
-        stdout:              'ignore',
+        stdout:              'pipe',
         stderr:              'pipe',
     },
 });
