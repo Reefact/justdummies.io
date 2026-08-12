@@ -215,6 +215,39 @@ if [ -f "${home}" ]; then
   fi
 fi
 
+# The reveal hides what has not been scrolled to yet, and the one way that fails
+# silently is by hiding it for a reader who will never be un-hidden. Two halves,
+# because either one alone lets the blank page through (ADR-0005).
+if [ -n "${css}" ]; then
+  # Every rule that hides a reveal group must be gated behind the arming attribute a
+  # script sets. Move the `opacity: 0` onto the bare selector — the obvious
+  # simplification, correct-looking in any browser that runs the script — and a reader
+  # without scripting gets an empty document instead of an unanimated one.
+  ungated=0
+  for sheet in ${css}; do
+    # Selectors mentioning [data-reveal] but not the arming attribute, whose block sets
+    # opacity to 0. tr splits the minified sheet into one rule per line first.
+    if tr '}' '\n' < "${sheet}" | grep -E '\[data-reveal[]=]' | grep -v 'data-reveal-armed' | grep -q 'opacity: *0[^.]'; then
+      ungated=1
+    fi
+  done
+  if [ "${ungated}" -eq 0 ]; then
+    pass "nothing is hidden for a reader whose scripting never arrives"
+  else
+    fail "a rule hides a [data-reveal] group without waiting for [data-reveal-armed] — without scripting that content never appears"
+  fi
+fi
+
+# And the arming attribute must be absent from the shipped markup. Written into the
+# HTML it would hide everything before any script could reveal it, which is the same
+# blank page reached from the other side.
+armed_in_markup="$(grep -rl 'data-reveal-armed' "${dist}" --include='*.html' | xargs -r grep -lE '<html[^>]*data-reveal-armed' || true)"
+if [ -z "${armed_in_markup}" ]; then
+  pass "and the reveal is armed at run time, never in the markup"
+else
+  fail "data-reveal-armed is in the shipped markup of ${armed_in_markup} — the page would hide itself before any script could show it"
+fi
+
 # not_found_handling is set to "404-page" in wrangler.jsonc, and it serves the
 # nearest 404.html. Without the files, the setting points at nothing and a
 # mistyped URL gets the host's default page rather than the site's.
