@@ -2,8 +2,9 @@
 
 🌍 🇫🇷 Français (ce fichier) · 🇬🇧 [English](0007-the-third-act-answers-before-it-fails-en.md)
 
-**Statut :** Proposé
+**Statut :** Accepté
 **Proposé le :** 2026-08-12
+**Accepté le :** 2026-08-12
 **Décideurs :** Reefact
 
 ## Contexte
@@ -120,8 +121,10 @@ L'acte garde sa démonstration entière. Rien n'a été retiré pour obtenir le 
 ### Négatives
 
 **Le §9.2 de la spécification ne décrit plus le troisième acte, et le rôle que le §9.4 prête à la
-charnière ne correspond plus à ce qu'elle dit.** Les deux doivent être mis à jour, et tant qu'ils
-ne le sont pas, le document et la page se contredisent.
+charnière ne correspond plus à ce qu'elle dit.** Ni l'un ni l'autre n'est modifié : le §17 du
+document envoie vers cette base une décision qui mérite de lui survivre, si bien que les §9.2 et
+§9.4 gardent le raisonnement qu'ils ont consigné et que ce compte rendu porte ce qui en a remplacé
+une partie. Un lecteur de ces seules sections ne le saura pas, et devra venir ici.
 
 L'acte fait quatre scènes au lieu de trois, sur une page dont la longueur est déjà une
 préoccupation constante (ADR-0005).
@@ -145,8 +148,9 @@ ainsi que cet acte a été construit la première fois.
   tire quoi que ce soit ne le portent pas. Les deux ont été contrôlées en les cassant, et elles
   tournent dans le build.
 - La séquence du troisième acte au §9.2 et la description de ce que relie la charnière au §9.4
-  doivent toutes deux être mises à jour. C'est l'édition du mainteneur, pas celle de ce compte
-  rendu.
+  sont délibérément laissées telles quelles. La spécification garde le raisonnement qu'elle a
+  consigné ; cette base porte la décision qui en a remplacé une partie (§17), et les vérifications
+  ci-dessus sont ce qui tient la page à cette décision.
 
 ## Références
 
