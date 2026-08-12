@@ -2,12 +2,20 @@
 /**
  * ACT III — reproducibility.
  *
- * The three beats of §9.2: the green test that turns red now and then, the failure handing
- * back its seed, and the same seed bringing the same failure back.
+ * THE ANSWER COMES BEFORE THE FAILURE (ADR-0007). A reader arrives here with one question,
+ * and it is not a neutral one: values that change on every run sound like tests that fail
+ * on their own. The title, the summary, the hinge and the first scene all answer it before
+ * anything on this page goes red — and what answers it is the attribute they have been
+ * looking at since the second act without being told what it was for.
  *
- * THE HINGE IS COMPULSORY (§9.4). This is the most delicate seam on the page — a test has
- * just gone green and the page is about to show it going red — and without a sentence
- * joining the two, a reader takes the third act for a second site glued onto the first.
+ * That ordering is the change. The act used to open on a test failing two runs in three,
+ * with the reassurance two scenes later, and the two scenes in between were exactly where a
+ * reader deciding whether to trust this would stop reading.
+ *
+ * THE HINGE IS COMPULSORY (§9.4). This is the most delicate seam on the page, and without a
+ * sentence joining what came before to what comes next, a reader takes the third act for a
+ * second site glued onto the first. What the hinge says changed with the ordering; that it
+ * exists did not.
  *
  * THE RED IS NOT DRAMATISED (§9.5). The intermittence is a statement about what an
  * arbitrary value does to a test that forgot to constrain it, not a failure the library
@@ -34,6 +42,18 @@ import ToolRun from './ToolRun.astro';
     exitBody="act3.exit.body"
     offer="everything"
 >
+    {/* The same test the second act ended on, shown a second time on purpose: the reader has
+        walked past that attribute once already, and this is where it is named. Nothing has
+        failed yet and nothing needs to have — what this scene says is that the values keep
+        moving *and* stay recoverable, which is the whole of the reassurance. */}
+    <Scene
+        name="the-attribute"
+        title="act3.attribute.title"
+        body="act3.attribute.body"
+        sample="concise-test"
+        outcome="none"
+    />
+
     <Scene
         name="the-forgotten-line"
         title="act3.forgotten.title"
