@@ -27,8 +27,23 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
               twice. Its size and its alignment are the script's job below; the width and height
               attributes are the file's own, so the box is reserved before the image lands and
               the heading does not jump.
+
+              THE SIZE IS CHOSEN AGAINST A MEASUREMENT, not against the largest file available.
+              `1cap` of this heading renders the mark at 32 CSS pixels, so 64 covers an ordinary
+              screen exactly and 128 covers a three-times one. The 512 that used to sit here was
+              173 KiB — 65% of everything the first view downloaded — to draw a 32-pixel square.
             */}
-            <h1><img class="mark" src="/favicon.png" alt="" width="512" height="512" decoding="async" />{site.name}</h1>
+            <h1>
+                <img
+                    class="mark"
+                    src="/favicon-64.png"
+                    srcset="/favicon-64.png 2x, /favicon-128.png 4x"
+                    alt=""
+                    width="64"
+                    height="64"
+                    decoding="async"
+                />{site.name}
+            </h1>
             <p class="tagline">{t('brand.tagline')}</p>
             <p class="subtitle">{t('brand.subtitle')}</p>
 
