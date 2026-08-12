@@ -35,8 +35,7 @@ public sealed class OrderCancellation {
         CustomerId     anyCustomerId = CustomerId.Create(Guid.NewGuid());
         Money          anyTotal      = Money.Create(42.00m);
 
-        Order order = new Order(anyReference, anyCustomerId, anyTotal,
-                                OrderStatus.Pending);
+        Order order = new Order(anyReference, anyCustomerId, anyTotal, OrderStatus.Pending);
 
         // Act
         order.Cancel();
@@ -61,8 +60,7 @@ public sealed class OrderCancellation {
         CustomerId     anyCustomerId = AnyCustomerId.Generate();
         Money          anyTotal      = AnyMoney.Generate();
 
-        Order order = new Order(anyReference, anyCustomerId, anyTotal,
-                                OrderStatus.Pending);
+        Order order = new Order(anyReference, anyCustomerId, anyTotal, OrderStatus.Pending);
 
         // Act
         order.Cancel();
