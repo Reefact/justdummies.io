@@ -68,6 +68,10 @@ export const site = {
         version: '1.0.0-preview.1',
         nuget: 'https://www.nuget.org/packages/JustDummies.Xunit',
         installCommand: 'dotnet add package JustDummies.Xunit --prerelease',
+        /* Same shape as the library's, because the adapter is an ordinary package. The
+           tool is not, and has no line here: a global .NET tool is installed from the
+           command line and the console offers no equivalent. */
+        packageManagerCommand: 'Install-Package JustDummies.Xunit -IncludePrerelease',
     },
 
     cli: {
