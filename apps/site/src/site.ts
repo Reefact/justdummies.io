@@ -48,16 +48,6 @@ export const site = {
     },
 
     /**
-     * The fourth slot of the install row, which has no target yet. It is declared
-     * rather than omitted so the row is designed at its final width now, instead of
-     * being redrawn the day the documentation exists.
-     */
-    documentation: {
-        status: 'pending',
-        url: null,
-    },
-
-    /**
      * The xUnit v3 adapter. It is what makes a failing test report the seed it drew from,
      * and the third act cannot be told without it. Every exit offers it, the first one
      * included: a reader who leaves with the library leaves able to draw a value, and the
