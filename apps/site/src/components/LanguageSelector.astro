@@ -2,11 +2,23 @@
 /**
  * The explicit language selector the specification requires (§7.3).
  *
- * It is plain links and no JavaScript. That is not minimalism for its own sake:
- * anything that reads a stored preference and *acts* on it becomes the automatic
- * redirection §7.3 forbids, and this way the control works before hydration, with
- * JavaScript disabled, and inside the reduced-motion and no-script variants the
+ * It is links inside a `<details>`, and no JavaScript. That is not minimalism for its
+ * own sake: anything that reads a stored preference and *acts* on it becomes the
+ * automatic redirection §7.3 forbids, and this way the control works before hydration,
+ * with JavaScript disabled, and inside the reduced-motion and no-script variants the
  * landing page has to ship anyway.
+ *
+ * WHY A DISCLOSURE RATHER THAN THE ROW OF LINKS IT REPLACES. Two languages side by side
+ * in a header that also carries the navigation read as four destinations of equal
+ * weight, and it was reported as unreadable. Five would be worse: the row grows with
+ * every translation, and the one thing a reader wants — *which language am I in* — is
+ * the one thing the row never says.
+ *
+ * A `<select>` is the reflex and is wrong here: it needs script to navigate on change,
+ * and a language control that only works with script is the half the specification
+ * cares about most. `<details>` is a menu with no script at all — it opens on click, it
+ * closes because the reader navigates away, it is reachable by keyboard, and it holds
+ * ten locales as readily as two.
  *
  * Locales the current page is not translated into do not appear at all (§7.4) —
  * an offer that leads to a 404 is worse than no offer.
@@ -28,41 +40,138 @@ const t = useTranslations(current);
 {
     available.length > 1 && (
         <nav class="language-selector" aria-label={t('language.label')}>
-            <ul>
-                {available.map((locale: Locale) => (
-                    <li>
-                        {locale === current ? (
-                            <span aria-current="true" lang={localeTags[locale]}>
-                                {localeNames[locale]}
-                            </span>
-                        ) : (
-                            <a
-                                href={pathForLocale(pathname, locale)}
-                                hreflang={localeTags[locale]}
-                                lang={localeTags[locale]}
-                            >
-                                <span class="visually-hidden">{t('language.switch')} </span>
-                                {localeNames[locale]}
-                            </a>
-                        )}
-                    </li>
-                ))}
-            </ul>
+            <details>
+                {/*
+                  The summary names the language the reader is *in*, which is the question
+                  the old row could not answer. What it opens onto is where to go instead.
+                */}
+                <summary>
+                    <span lang={localeTags[current]}>{localeNames[current]}</span>
+                    <svg class="caret" viewBox="0 0 10 6" width="10" height="6" aria-hidden="true" focusable="false">
+                        <path d="M1 1l4 4 4-4" />
+                    </svg>
+                </summary>
+
+                <ul>
+                    {available.map((locale: Locale) => (
+                        <li>
+                            {locale === current ? (
+                                <span aria-current="true" lang={localeTags[locale]}>
+                                    {localeNames[locale]}
+                                </span>
+                            ) : (
+                                <a
+                                    href={pathForLocale(pathname, locale)}
+                                    hreflang={localeTags[locale]}
+                                    lang={localeTags[locale]}
+                                >
+                                    <span class="visually-hidden">{t('language.switch')} </span>
+                                    {localeNames[locale]}
+                                </a>
+                            )}
+                        </li>
+                    ))}
+                </ul>
+            </details>
         </nav>
     )
 }
 
 <style>
-    .language-selector ul {
-        display: flex;
-        gap: var(--jd-space-3);
-        list-style: none;
-        margin: 0;
-        padding: 0;
+    .language-selector {
+        position: relative;
         font-size: var(--jd-text-sm);
     }
 
-    .language-selector [aria-current] {
+    summary {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--jd-space-2);
+        padding: var(--jd-space-1) var(--jd-space-2);
+        border-radius: var(--jd-radius-sm);
+        color: var(--jd-text-muted);
+        cursor: pointer;
+        /* The default disclosure triangle is replaced by the caret below, which can be
+           rotated and coloured. Both spellings are needed: WebKit ignores the first. */
+        list-style: none;
+    }
+
+    summary::-webkit-details-marker {
+        display: none;
+    }
+
+    summary:hover {
+        color: var(--jd-text-primary);
+    }
+
+    summary:focus-visible {
+        outline: 2px solid var(--jd-accent);
+        outline-offset: 2px;
+    }
+
+    .caret {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        transition: transform var(--jd-duration-fast) var(--jd-ease);
+    }
+
+    details[open] summary {
+        color: var(--jd-text-primary);
+    }
+
+    details[open] .caret {
+        transform: rotate(180deg);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .caret {
+            transition: none;
+        }
+    }
+
+    /*
+     * Out of the flow, so opening the menu does not push the header taller and shift the
+     * page under the reader's cursor. Anchored to the right edge because the control is
+     * itself at the right edge, and a menu that opened leftward off-screen would be the
+     * one bug this position invites.
+     */
+    ul {
+        position: absolute;
+        right: 0;
+        z-index: 10;
+        min-width: 100%;
+        margin: var(--jd-space-1) 0 0;
+        padding: var(--jd-space-2);
+        list-style: none;
+        background: var(--jd-surface-raised);
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-md);
+        display: flex;
+        flex-direction: column;
+        gap: var(--jd-space-1);
+        white-space: nowrap;
+    }
+
+    li a,
+    li [aria-current] {
+        display: block;
+        padding: var(--jd-space-1) var(--jd-space-2);
+        border-radius: var(--jd-radius-sm);
+    }
+
+    li a {
+        color: var(--jd-text-primary);
+        text-decoration: none;
+    }
+
+    li a:hover {
+        background: var(--jd-surface);
+    }
+
+    li [aria-current] {
         color: var(--jd-text-muted);
     }
 
