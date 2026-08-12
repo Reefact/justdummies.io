@@ -155,9 +155,12 @@ if (!ownFigure && sample === undefined) {
         gap: var(--jd-space-4);
     }
 
+    /* A reading measure, not the figure's — a paragraph as wide as a code block is one
+       nobody finishes. 42rem was chosen when the titles were narrow too, and left the
+       commentary looking like a lost column once they took the page's width. */
     .commentary {
         margin: 0;
-        max-width: 42rem;
+        max-width: 52rem;
         color: var(--jd-text-muted);
     }
 
