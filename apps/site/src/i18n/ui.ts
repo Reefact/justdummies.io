@@ -83,9 +83,9 @@ const en = {
     'act1.constraints.body':
         "One link per rule, inside the factory. What comes out is different every time, and valid every time. The chain describes what has to be true of the value — never what you're about to assert about it.",
 
-    'act1.exit.title': 'That much is one package',
+    'act1.exit.title': 'All of that is the library',
     'act1.exit.body':
-        "Everything above is the library on its own. If that's what you came for, take it now — the rest of this page is about making all that setup disappear.",
+        "Everything above is the library on its own. If that's what you came for, take it now — and take the adapter with it: that is what hands you back the exact draw, the day an arbitrary value makes a test fail. The rest of this page is about making all that setup disappear.",
 
     /**
      * ACT II — concision. The claim is that the arrangement can go away without the test
@@ -239,9 +239,9 @@ const fr: Record<UiKey, string> = {
     'act1.constraints.body':
         "Un maillon par règle, dans la factory. Ce qui en sort est différent à chaque fois, et valide à chaque fois. La chaîne décrit ce qui doit être vrai de la valeur, jamais ce que vous vous apprêtez à vérifier.",
 
-    'act1.exit.title': 'Tout ça tient dans un package',
+    'act1.exit.title': "Tout ça, c'est la bibliothèque",
     'act1.exit.body':
-        "Tout ce qui précède, c'est la bibliothèque seule. Si c'est ce que vous êtes venu chercher, prenez-la maintenant : la suite de cette page raconte comment faire disparaître toute cette préparation.",
+        "Tout ce qui précède, c'est la bibliothèque seule. Si c'est ce que vous êtes venu chercher, prenez-la maintenant — et prenez l'adaptateur avec : c'est lui qui vous rendra le tirage exact, le jour où une valeur quelconque fera échouer un test. La suite de cette page raconte comment faire disparaître toute cette préparation.",
 
     'act2.title': 'Quatre lignes de préparation, et pas une seule à écrire',
     'act2.summary': 'Un generator qui vous appartient, écrit à partir du type que vous avez déjà.',

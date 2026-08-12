@@ -21,7 +21,8 @@
  * whose every rule the tool happens to read — would be a page arranged to flatter the tool
  * rather than to show it.
  *
- * The exit offers the library and the tool, because by here both have been shown.
+ * The exit is the complete offer: the library and the adapter were already earned by the
+ * first act, and this one adds the tool.
  */
 import Act from './Act.astro';
 import Scene from './Scene.astro';
@@ -37,7 +38,7 @@ import { site } from '../../site';
     ground="page"
     exitTitle="act2.exit.title"
     exitBody="act2.exit.body"
-    offer="library-and-tool"
+    offer="everything"
 >
     <Scene name="the-tool" title="act2.install.title" body="act2.install.body">
         <CopyableCommand command={site.cli.installCommand} placement="act-two-scene" variant="dotnet-tool" />

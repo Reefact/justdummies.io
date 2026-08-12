@@ -59,8 +59,10 @@ export const site = {
 
     /**
      * The xUnit v3 adapter. It is what makes a failing test report the seed it drew from,
-     * and the third act cannot be told without it — which is why the last exit offers it
-     * and the earlier ones do not.
+     * and the third act cannot be told without it. Every exit offers it, the first one
+     * included: a reader who leaves with the library leaves able to draw a value, and the
+     * package that names the seed behind a draw is not something to learn about two acts
+     * later.
      */
     xunit: {
         status: 'available',

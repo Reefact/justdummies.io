@@ -3,7 +3,10 @@ namespace JustDummies.SnippetValidation.Snippets;
 using JustDummies.SnippetValidation.Domain;
 using JustDummies.SnippetValidation.Snippets.Handwritten;
 
-using Xunit;
+// `global::` because this file's own namespace begins with `JustDummies`, and a plain
+// `using Xunit;` is resolved against the enclosing namespaces first: it would bind to the
+// adapter's JustDummies.Xunit, and [Fact] would stop existing.
+using global::Xunit;
 
 /// <summary>
 ///     The test the first act is written around, and the hole in it.
