@@ -146,9 +146,9 @@ requests, issues, diagrams.
 | ADR | Title | Status |
 |---|---|---|
 | [ADR-0001](0001-a-release-tag-publishes-not-a-merge-en.md) | A release tag publishes, not a merge | Accepted |
-| [ADR-0002](0002-the-site-answers-on-one-hostname-en.md) | The site answers on one hostname | Proposed |
+| [ADR-0002](0002-the-site-answers-on-one-hostname-en.md) | The site answers on one hostname | Accepted |
 | [ADR-0003](0003-the-figure-carries-the-scene-en.md) | The figure carries the scene | Accepted — superseded in part by ADR-0005 |
-| [ADR-0004](0004-a-control-appears-only-when-it-can-act-en.md) | A control appears only when it can act | Proposed |
+| [ADR-0004](0004-a-control-appears-only-when-it-can-act-en.md) | A control appears only when it can act | Accepted |
 | [ADR-0005](0005-a-scene-arrives-rather-than-holding-the-screen-en.md) | A scene arrives rather than holding the screen | Accepted |
 
 ## How this base differs from the library's
