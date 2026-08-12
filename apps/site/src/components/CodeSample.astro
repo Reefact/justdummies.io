@@ -26,12 +26,21 @@ interface Props {
      *                such as a test body or a set of guard clauses.
      */
     outcome?: 'value' | 'sequence' | 'refusal' | 'none';
+    /**
+     * A second validated snippet, shown in the same box under a blank line.
+     *
+     * For the beat that has to show a test and the thing that makes it read at once:
+     * two boxes put a border and a gap through the middle of one argument, and read as
+     * two subjects. The source stays where it belongs — the two regions live in the
+     * files and namespaces that make them compile — and only the display joins them.
+     */
+    also?: string;
 }
 
-const { id, outcome = 'value' } = Astro.props;
+const { id, outcome = 'value', also } = Astro.props;
 
 const t = useTranslations(localeFromPath(Astro.url.pathname));
-const code: string = snippet(id);
+const code: string = also === undefined ? snippet(id) : `${snippet(id)}\n\n${snippet(also)}`;
 
 const drawn: string[] = outcome === 'sequence' ? sampleValues(id) : outcome === 'value' ? [sampleValue(id)] : [];
 const rejected: string = outcome === 'refusal' ? refusal(id) : '';

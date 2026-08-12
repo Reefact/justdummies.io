@@ -45,13 +45,11 @@ import CodeSample from '../CodeSample.astro';
         outcome="none"
     />
 
-    {/* Two figures in one beat, and they belong together: the test that finally reads,
-        and immediately underneath the factory that lets it read while still lying. Split
-        across two scenes the second would look like a new subject rather than the catch
-        in the first. */}
+    {/* One box holding both, not two: the test that finally reads and, under a blank
+        line, the factory that lets it read while still lying. They are one argument, and
+        a border through the middle of it reads as two subjects. */}
     <Scene name="the-factories" title="act1.factories.title" body="act1.factories.body">
-        <CodeSample id="factory-test" outcome="none" />
-        <CodeSample id="factory-handwritten" outcome="none" />
+        <CodeSample id="factory-test" also="factory-handwritten" outcome="none" />
     </Scene>
 
     <Scene
