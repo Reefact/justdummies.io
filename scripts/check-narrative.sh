@@ -65,6 +65,37 @@ assert_prose "§9.3 the third exit offers all three" \
 assert_prose "§9.2 the second act opens on the same test" \
   "act2\.concise\.body[\s\S]{0,200}?Same test as before"
 
+# --- the first act shows nothing the reader cannot use yet (ADR-0006) ------------
+#
+# `.As(...)` was on this page once, in a first-act scene that worked. It came off because a
+# reader has no use for it there, and it now arrives inside the file the tool writes — where
+# it removes work they have just done by hand. Nothing about that is visible in prose, and
+# putting it back is the change a well-meant editorial pass makes.
+deferred="$(node -e '
+const { readFileSync } = require("node:fs");
+const snippets = JSON.parse(readFileSync(`${process.argv[1]}/snippets.json`, "utf8"));
+const uses = (id) => String(snippets[id] ?? "").includes(".As(");
+const wrong = [];
+const act = ["literal-test", "factory-test", "factory-handwritten", "factory-careless",
+             "order-reference-invariants", "factory-constrained"];
+
+for (const id of act) {
+    if (uses(id)) { wrong.push(`${id} uses .As(...) before the reader has any use for it`); }
+}
+// Not belt-and-braces: if the recipe ever stops carrying it, the loop above passes on an
+// empty premise and this check silently stops meaning anything.
+if (!uses("completed-recipe")) {
+    wrong.push("the recipe the tool writes no longer uses .As(...), so the deferral checks nothing");
+}
+process.stdout.write(wrong.join("; "));
+' "${root}/apps/site/src/generated")"
+
+if [ -z "${deferred}" ]; then
+  pass "ADR-0006 .As(...) waits for the file the tool writes, and appears in no first-act figure"
+else
+  fail "${deferred}"
+fi
+
 # --- the attribute appears the moment the library draws --------------------------
 #
 # A test on this page that draws its values carries [Reproducible], and one that does not
