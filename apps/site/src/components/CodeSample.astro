@@ -8,9 +8,10 @@
  * expression that was never compiled, a value nobody drew, or a refusal that never
  * happened is not something a page is able to do.
  */
+import { highlight } from '../highlight';
 import { localeFromPath } from '../i18n/routing';
 import { useTranslations } from '../i18n/ui';
-import { refusal, sampleValue, sampleValues, snippet } from '../samples';
+import { refusal, sampleValue, sampleValues, snippet, testRun } from '../samples';
 
 interface Props {
     /** The identifier marked in the validated C# source. */
@@ -35,19 +36,35 @@ interface Props {
      * files and namespaces that make them compile — and only the display joins them.
      */
     also?: string;
+    /**
+     * A recorded test run to print under the code, by identifier.
+     *
+     * For the scene where the point is what running it does: the seed was read off a
+     * failure two scenes earlier, and the claim is that pasting it brings that same failure
+     * back. A reader should not have to take the second half on trust when the build has
+     * the output — it is the same recording, which is exactly what makes it evidence.
+     */
+    ran?: string;
 }
 
-const { id, outcome = 'value', also } = Astro.props;
+const { id, outcome = 'value', also, ran } = Astro.props;
 
 const t = useTranslations(localeFromPath(Astro.url.pathname));
 const code: string = also === undefined ? snippet(id) : `${snippet(id)}\n\n${snippet(also)}`;
 
 const drawn: string[] = outcome === 'sequence' ? sampleValues(id) : outcome === 'value' ? [sampleValue(id)] : [];
 const rejected: string = outcome === 'refusal' ? refusal(id) : '';
+const printed: string = ran === undefined ? '' : testRun(ran);
 ---
 
+{/*
+  `set:html` and not a template expression, because the colouring is markup. What it inserts
+  is what `highlight` produced, and that function escapes every character it was given before
+  wrapping any of it — it also reads its own output back and throws if a single character was
+  lost, so a page cannot publish code that differs from what compiled.
+*/}
 <figure class="sample" data-outcome={outcome}>
-    <pre><code>{code}</code></pre>
+    <pre><code set:html={highlight(code, 'csharp')} /></pre>
 
     {
         drawn.length > 0 && (

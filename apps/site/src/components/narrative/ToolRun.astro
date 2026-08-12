@@ -14,6 +14,7 @@
  * The command comes from the same central metadata the install block reads, so the command
  * shown and the command recorded cannot drift apart.
  */
+import { highlight } from '../../highlight';
 import { testRun, toolOutput } from '../../samples';
 
 interface Props {
@@ -35,8 +36,10 @@ const output: string = from === 'tool' ? toolOutput(id) : testRun(id);
 ---
 
 <figure class="run">
-    {command !== undefined && <pre class="typed"><span class="prompt" aria-hidden="true">$</span> <code>{command}</code></pre>}
-    <pre class="printed">{output}</pre>
+    {/* On one line, and it has to stay on one: a `pre` keeps every space and newline in its
+        markup, so laying this out over four indented lines prints the indentation. It did. */}
+    {command !== undefined && <pre class="typed"><span class="prompt" aria-hidden="true">$</span> <code set:html={highlight(command, 'shell')} /></pre>}
+    <pre class="printed" set:html={highlight(output, 'output')} />
 </figure>
 
 <style>
