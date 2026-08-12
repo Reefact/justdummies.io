@@ -39,11 +39,15 @@ public sealed partial class AnyOrder : IAny<Order> {
     private readonly IAny<OrderStatus>    _status;
 
     /// <summary>Creates the generator with a default recipe for every constructor parameter.</summary>
+    //
+    // On one line, and kept that way on purpose: the site shows this recipe directly under
+    // the one the tool wrote, and the whole of the difference between them is
+    // `.StartingWith("ORD-")`. Broken across three lines it reads as a rewrite of the
+    // parameter rather than as a link added to it. 111 characters once dedented, inside the
+    // 130 the page's measure holds.
     // <snippet:completed-recipe>
     public AnyOrder()
-        : this(reference:  Any.String().NonEmpty().WithMaxLength(20)
-                              .StartingWith("ORD-")
-                              .As(OrderReference.Create),
+        : this(reference:  Any.String().NonEmpty().WithMaxLength(20).StartingWith("ORD-").As(OrderReference.Create),
                customerId: Any.Guid().NonEmpty().As(CustomerId.Create),
                total:      Any.Decimal().Positive().As(Money.Create),
                status:     Any.Enum<OrderStatus>()) { }
