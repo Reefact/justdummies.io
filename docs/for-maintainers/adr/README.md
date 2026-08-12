@@ -143,6 +143,7 @@ requests, issues, diagrams.
 | [ADR-0002](0002-the-site-answers-on-one-hostname-en.md) | The site answers on one hostname | Proposed |
 | [ADR-0003](0003-the-figure-carries-the-scene-en.md) | The figure carries the scene | Proposed |
 | [ADR-0004](0004-a-control-appears-only-when-it-can-act-en.md) | A control appears only when it can act | Proposed |
+| [ADR-0005](0005-a-scene-arrives-rather-than-holding-the-screen-en.md) | A scene arrives rather than holding the screen | Proposed |
 
 ## How this base differs from the library's
 
