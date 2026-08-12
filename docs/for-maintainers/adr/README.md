@@ -152,7 +152,7 @@ requests, issues, diagrams.
 | [ADR-0005](0005-a-scene-arrives-rather-than-holding-the-screen-en.md) | A scene arrives rather than holding the screen | Accepted |
 | [ADR-0006](0006-the-first-act-follows-one-factory-en.md) | The first act follows one factory, not the library's surface | Accepted |
 | [ADR-0007](0007-the-third-act-answers-before-it-fails-en.md) | The third act answers before it shows a failure | Accepted |
-| [ADR-0009](0009-the-browser-checks-are-driven-by-playwright-en.md) | The browser checks are driven by Playwright | Proposed |
+| [ADR-0009](0009-the-browser-checks-are-driven-by-playwright-en.md) | The browser checks are driven by Playwright | Accepted |
 
 **0008 is absent on purpose.** It named a record that was written, merged, then withdrawn: how a
 scene is titled is an editorial principle, which this file sends to the specification rather than

@@ -2,8 +2,9 @@
 
 🌍 🇬🇧 English (this file) · 🇫🇷 [Français](0009-les-controles-navigateur-sont-pilotes-par-playwright-fr.md)
 
-**Status:** Proposed
+**Status:** Accepted
 **Proposed:** 2026-08-12
+**Accepted:** 2026-08-12
 **Decision Makers:** Reefact
 
 ## Context

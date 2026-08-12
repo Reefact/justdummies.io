@@ -2,8 +2,9 @@
 
 🌍 🇫🇷 Français (ce fichier) · 🇬🇧 [English](0009-the-browser-checks-are-driven-by-playwright-en.md)
 
-**Statut :** Proposé
+**Statut :** Accepté
 **Proposé le :** 2026-08-12
+**Accepté le :** 2026-08-12
 **Décideurs :** Reefact
 
 ## Contexte
