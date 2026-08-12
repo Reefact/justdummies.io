@@ -71,9 +71,14 @@ for (const path of PAGES) {
 
         // Named rather than left to the budget above, because this is the specific mistake:
         // the file is the right artwork at the wrong size, so it looks correct everywhere
-        // except on the wire. It stays in the artefact as the master; nothing a visitor
-        // loads should reach for it.
-        expect(asked, `${path} still reaches for /favicon.png`).not.toContain('/favicon.png');
+        // except on the wire. It stays in the artefact as the master, under a name that says
+        // which size it is; nothing a visitor loads should reach for it.
+        //
+        // The name matters to this assertion more than it looks. It first read
+        // `/favicon.png`, and the rename that followed would have left it asserting the
+        // absence of a path that could no longer exist — a check that cannot fail, which is
+        // worse than no check because it still reports green.
+        expect(asked, `${path} still reaches for /favicon-512.png`).not.toContain('/favicon-512.png');
     });
 
 }
