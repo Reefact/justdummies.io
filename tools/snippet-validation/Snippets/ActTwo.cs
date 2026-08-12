@@ -1,8 +1,14 @@
 namespace JustDummies.SnippetValidation.Snippets;
 
 using JustDummies.SnippetValidation.Domain;
+using JustDummies.Xunit;
 
-using Xunit;
+// `global::` because this file's own namespace begins with `JustDummies`, and a plain
+// `using Xunit;` is resolved against the enclosing namespaces first: it binds to
+// JustDummies.Xunit, and [Fact] stops existing. A reader's test file sits in a namespace
+// of their own, where the ordinary spelling works — which is why the snippet region below
+// starts under the attribute and not at the top of the file.
+using global::Xunit;
 
 /// <summary>
 ///     The second act: the same test as the first, with the arrangement gone.
@@ -10,11 +16,17 @@ using Xunit;
 ///     It is deliberately the same test method, word for word in its act and its assert.
 ///     What changed is the one line the first act spent six scenes filling in — and the
 ///     point of the act is that the line went away rather than got shorter.
+///
+///     [Reproducible] appears here without a word said about it. This is the first test the
+///     page shows in which the library draws the values, and a drawn value that cannot be
+///     replayed is the objection a reader raises on their own — so the answer is in the
+///     snippet from the first time the question can be asked. The third act is where they
+///     find out what it does.
 /// </summary>
 public sealed class ConciseOrderCancellation {
 
     // <snippet:concise-test>
-    [Fact]
+    [Fact, Reproducible]
     public void A_pending_order_can_be_cancelled() {
         Order order = new AnyOrder().WithStatus(OrderStatus.Pending).Generate();
 

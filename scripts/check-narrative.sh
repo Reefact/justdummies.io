@@ -49,14 +49,47 @@ assert_prose "§9.5 the red is not dramatised — nothing is broken" \
   "act3\.forgotten\.body[\s\S]{0,300}?Nothing is broken"
 assert_prose "§9.6 a seed per test case, and no wider a promise" \
   "act3\.replay\.body[\s\S]{0,300}?Each test case draws its own seed"
-assert_prose "§9.3 the first exit offers the library alone" \
-  "act1\.exit\.body[\s\S]{0,200}?the library on its own"
+# The first exit ships two packages and has to say why the second one is there — a reader
+# offered an adapter they have not been shown is a reader wondering what they are agreeing
+# to. The tool is still not offered here (asserted on the built document below).
+assert_prose "§9.3 the first exit offers the library, and says what the adapter is for" \
+  "act1\.exit\.body[\s\S]{0,200}?the library on its own[\s\S]{0,200}?take the adapter with it"
 assert_prose "§9.3 the second exit calls the tool optional" \
   "act2\.exit\.body[\s\S]{0,200}?tool is optional"
 assert_prose "§9.3 the third exit offers all three" \
   "act3\.exit\.body[\s\S]{0,200}?smallest of the three"
 assert_prose "§9.2 the second act opens on the same test" \
   "act2\.concise\.body[\s\S]{0,200}?Same test as before"
+
+# --- the attribute appears the moment the library draws --------------------------
+#
+# A test on this page that draws its values carries [Reproducible], and one that does not
+# draw them does not carry it. Both halves matter: the first is the answer to the question
+# the third act asks, put in front of the reader before they ask it, and the second is what
+# keeps it from being decoration — an attribute on the hand-written literals of the first
+# act would say the library was already at work when it was not.
+drawn="$(node -e '
+const { readFileSync } = require("node:fs");
+const snippets = JSON.parse(readFileSync(`${process.argv[1]}/snippets.json`, "utf8"));
+// Matches it in every spelling a snippet may reasonably use — `[Fact, Reproducible]`,
+// `[Reproducible]` on its own line, `[Reproducible(Seed = ...)]` — and in none of the
+// prose around them, because the word only ever appears here as the attribute.
+const carries = (id) => /\bReproducible\b/.test(String(snippets[id] ?? ""));
+const wrong = [];
+for (const id of ["concise-test", "intermittent-test", "replayed-test"]) {
+    if (!carries(id)) { wrong.push(`${id} draws its values and does not carry [Reproducible]`); }
+}
+for (const id of ["literal-test", "factory-test"]) {
+    if (carries(id)) { wrong.push(`${id} carries [Reproducible] before the library draws anything`); }
+}
+process.stdout.write(wrong.join("; "));
+' "${root}/apps/site/src/generated")"
+
+if [ -z "${drawn}" ]; then
+  pass "every published test that draws its values carries [Reproducible], and only those"
+else
+  fail "${drawn}"
+fi
 
 # --- the figures fit the measure they are given ----------------------------------
 #
@@ -129,6 +162,37 @@ process.stdout.write(bad.join(", "));
     pass "every figure sits under the heading it belongs to"
   else
     fail "a figure comes before its heading, so a reader has to pair them by eye: ${orphans}"
+  fi
+
+  # --- an exit offers what the reader has been shown, and no more (§9.3) ----------
+  #
+  # Read off the measurement attributes rather than off position, so the check survives the
+  # block moving. The first exit ships the adapter — the reader has been drawing values for
+  # a whole act by then — and does not ship the tool, which has not appeared at all.
+  offer="$(node -e '
+const { readFileSync } = require("node:fs");
+const page = readFileSync(process.argv[1], "utf8");
+const bad = [];
+
+const at = (placement) => [...page.matchAll(new RegExp(`<[^>]*data-placement="${placement}"[^>]*>`, "g"))].map((m) => m[0]);
+const first = at("act-one-exit");
+
+if (!first.some((tag) => tag.includes("JustDummies.Xunit"))) {
+    bad.push("the first exit does not offer the adapter");
+}
+if (first.some((tag) => tag.includes("tool install") || tag.includes("JustDummies.Cli"))) {
+    bad.push("the first exit offers the tool, which no scene above it has shown");
+}
+if (!at("act-two-exit").some((tag) => tag.includes("tool install"))) {
+    bad.push("the second exit does not offer the tool it has just demonstrated");
+}
+process.stdout.write(bad.join("; "));
+' "${dist}/index.html")"
+
+  if [ -z "${offer}" ]; then
+    pass "§9.3 each exit offers what its act has shown — the adapter from the first, the tool from the second"
+  else
+    fail "${offer}"
   fi
 else
   echo "  · dist/ not built, so the document checks were skipped"

@@ -34,6 +34,16 @@
     -->
     <PackageReference Include="xunit.v3.assert" />
     <PackageReference Include="xunit.v3.extensibility.core" />
+
+    <!--
+      For the same reason, and one more. Every test the site publishes from the moment
+      the library draws a value carries [Reproducible], so the attribute has to resolve
+      to the adapter's own: a page displaying an attribute that exists in no package
+      would be exactly the failure this project is here to prevent. The third act is
+      where a reader is told what it does; before that it is simply present, which is
+      how they will meet it in a suite of their own.
+    -->
+    <PackageReference Include="JustDummies.Xunit" />
   </ItemGroup>
 
 </Project>
