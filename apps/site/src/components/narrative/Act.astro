@@ -119,7 +119,10 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
        about the one starting. */
     .hinge {
         margin: 0 0 var(--jd-space-8);
-        max-width: 34rem;
+        /* The same measure a scene's commentary gets. Narrower was the reported defect
+           one level down — prose in a column while everything around it ran full width —
+           and the hinge is the same kind of text as the commentary it sits above. */
+        max-width: 52rem;
         font-size: var(--jd-text-lg);
         line-height: var(--jd-line-body);
         color: var(--jd-text-primary);
@@ -149,7 +152,7 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
 
     .summary {
         margin: var(--jd-space-3) 0 0;
-        max-width: 40rem;
+        max-width: 52rem;
         font-size: var(--jd-text-lg);
         color: var(--jd-text-muted);
     }
