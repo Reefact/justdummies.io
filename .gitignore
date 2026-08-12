@@ -24,6 +24,12 @@ artifacts/
 # stops halfway leaves it partial and a partial artefact must never be committed.
 /dist/
 
+# Browser checks ---------------------------------------------------------------
+# What a failed run leaves behind so it can be looked at afterwards: a trace per
+# failed check, and the report that opens them. Both are output, and both are large.
+test-results/
+playwright-report/
+
 # Cloudflare -------------------------------------------------------------------
 .wrangler/
 
