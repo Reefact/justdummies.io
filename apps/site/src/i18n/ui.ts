@@ -174,21 +174,12 @@ const en = {
     'install.tool': 'The scaffolding tool',
     'install.adapter': 'The xUnit adapter',
     'install.nuget': 'View on NuGet',
-    'install.nugetTool': 'The tool on NuGet',
-    'install.nugetAdapter': 'The adapter on NuGet',
-    'install.documentation': 'Documentation',
     'install.copy': 'Copy',
     'install.copyCommand': 'Copy this command',
     'install.copied': 'Copied',
     'install.copyFailed': 'Could not copy. Select the command and copy it manually.',
     /** Said where a Package Manager panel cannot offer a command, because none exists. */
     'install.toolIsCliOnly': 'A global .NET tool is installed from the command line.',
-
-    /**
-     * The state marker of §5.7. It is displayed next to the label, never behind a
-     * hover, because there is no hover on a phone.
-     */
-    'state.comingSoon': 'coming soon',
 
     /**
      * Said in hidden text on the one link that leaves the site. A link that replaces the
@@ -319,16 +310,12 @@ const fr: Record<UiKey, string> = {
     'install.tool': "L'outil de scaffolding",
     'install.adapter': "L'adaptateur xUnit",
     'install.nuget': 'Voir sur NuGet',
-    'install.nugetTool': "L'outil sur NuGet",
-    'install.nugetAdapter': "L'adaptateur sur NuGet",
-    'install.documentation': 'Documentation',
     'install.copy': 'Copier',
     'install.copyCommand': 'Copier cette commande',
     'install.copied': 'Copié',
     'install.copyFailed': 'Copie impossible. Sélectionnez la commande et copiez-la à la main.',
     'install.toolIsCliOnly': "Un outil .NET global s'installe en ligne de commande.",
 
-    'state.comingSoon': 'en cours de construction',
     'state.newTab': 'ouvre un nouvel onglet',
 
     'notfound.title': 'Page introuvable',
