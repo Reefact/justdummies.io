@@ -2,8 +2,8 @@
 /**
  * ACT II — concision.
  *
- * The four beats of §9.2: the installation, a generator scaffolded by the tool, the test
- * reduced to its intention, and the test passing.
+ * Four beats: the arrangement a reader wishes they could write, the tool reading the type
+ * and writing it, the one link it could not work out, and the test that results.
  *
  * It is the same test as the first act, word for word in its act and its assert. That is
  * the continuity rule (§9.2) doing its work: what changed is that the six scenes of
@@ -27,7 +27,7 @@
 import Act from './Act.astro';
 import Scene from './Scene.astro';
 import ToolRun from './ToolRun.astro';
-import CopyableCommand from '../CopyableCommand.astro';
+import CodeSample from '../CodeSample.astro';
 import { site } from '../../site';
 ---
 
@@ -40,21 +40,21 @@ import { site } from '../../site';
     exitBody="act2.exit.body"
     offer="everything"
 >
-    <Scene name="the-tool" title="act2.install.title" body="act2.install.body">
-        <CopyableCommand command={site.cli.installCommand} placement="act-two-scene" variant="dotnet-tool" />
-    </Scene>
+    {/* The act opens on what a reader wants, not on how to install the thing that provides
+        it. It used to open on `dotnet tool install`, which answers a question nobody has
+        asked yet — the command is in this act's exit, where a convinced reader looks for it. */}
+    <Scene name="the-wanted-test" title="act2.wanted.title" body="act2.wanted.body" sample="wanted-test" outcome="none" />
 
     <Scene name="the-scaffold" title="act2.scaffold.title" body="act2.scaffold.body">
         <ToolRun id="generate-order" command={site.cli.example} />
     </Scene>
 
-    <Scene
-        name="the-missing-link"
-        title="act2.link.title"
-        body="act2.link.body"
-        sample="completed-recipe"
-        outcome="sequence"
-    />
+    {/* Both states in one box: what the tool wrote, then the same recipe with the link the
+        reader has already written. The whole difference between them is `.StartingWith`, and
+        two boxes would make a reader hunt for it. */}
+    <Scene name="the-missing-link" title="act2.link.title" body="act2.link.body">
+        <CodeSample id="scaffolded-recipe" also="completed-recipe" outcome="none" />
+    </Scene>
 
     <Scene
         name="the-concise-test"

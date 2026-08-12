@@ -71,9 +71,9 @@ const en = {
     'act1.factories.body':
         "The test reads at last: three names, and you know straight away what matters. But nothing moved underneath. AnyOrderReference still returns the same string it always did — the lie did not go away, it moved to another file.",
 
-    'act1.careless.title': 'The factory stops lying',
+    'act1.careless.title': 'Making the factory tell the truth',
     'act1.careless.body':
-        "Any.String() draws a genuinely arbitrary string, so the name is finally true. The domain disagrees. It refuses the value the moment it is built — not three assertions later — and it says exactly what it was missing.",
+        "Any.String() draws a genuinely arbitrary string, so the name is finally true. Drawing at random in a test looks like the wrong instinct — a value you typed is at least a value you know — but that is also the whole of what it proves: that the test passes with that one. The domain, meanwhile, disagrees. It refuses the value the moment it is built, not three assertions later, and it says exactly what was missing.",
 
     'act1.invariants.title': 'What the domain is asking for',
     'act1.invariants.body':
@@ -81,7 +81,7 @@ const en = {
 
     'act1.constraints.title': 'Declare the constraints, not the value',
     'act1.constraints.body':
-        "One link per rule, inside the factory. What comes out is different every time, and valid every time. The chain describes what has to be true of the value — never what you're about to assert about it.",
+        "One link per rule, inside the factory. What comes out is different every time, and valid every time — and that is where drawing at random earns its place. This value was never what the test was about; it only ever had to be valid. Any value that satisfies the rules says exactly what this test had to say, and nothing more. The chain describes what has to be true of the value — never what you're about to assert about it.",
 
     'act1.exit.title': 'All of that is the library',
     'act1.exit.body':
@@ -91,26 +91,26 @@ const en = {
      * ACT II — concision. The claim is that the arrangement can go away without the test
      * losing what it was about, and that the tool writes the part nobody wants to write.
      */
-    'act2.title': 'That setup is no longer yours to write',
-    'act2.summary': 'A tool reads your type and writes the generator; the file it produces is yours.',
+    'act2.title': 'Most of that setup, a tool writes for you',
+    'act2.summary': 'It reads your type, writes the generator, and says where it stopped. The file is yours from then on.',
 
-    'act2.install.title': 'One tool, installed once',
-    'act2.install.body':
-        'A global .NET tool. It reads your project the way the compiler reads it, so the only thing it asks of you is the name of a type.',
+    'act2.wanted.title': 'What we would like to write',
+    'act2.wanted.body':
+        'One line for the arrangement, saying the one thing this test needs. You can write that helper yourself — it is the first act\'s chain, in a file of your own, and yours to keep in step with the type. The rest of this act is a tool writing it instead.',
 
     'act2.scaffold.title': 'It reads the type and writes the generator',
     'act2.scaffold.body':
-        'It works from your own source and decides, parameter by parameter, how to draw a value. The last column says what it worked out on its own — and where it stopped.',
+        'A global .NET tool, run once per type. It works from your own source and decides, parameter by parameter, how to draw a value — and the last column says what it worked out on its own, and where it stopped.',
 
-    'act2.link.title': 'It stops where you already know the answer',
+    'act2.link.title': 'What it could not work out, you have already written',
     'act2.link.body':
-        "It marked that parameter rather than guess at it, so the file it wrote throws on every draw until you add the link. What goes there is the chain you already wrote, unchanged — pasted once, into a file that is now yours.",
+        "Above, the recipe as the tool wrote it. The ORD- prefix rule is not among the guards it reads, so it marked that parameter rather than guess at it — and the file it wrote throws on every draw until you add the link. Below, the same recipe one link longer: the chain you already wrote, unchanged, pasted once into a file that is now yours.",
 
-    'act2.concise.title': 'The test, and nothing else',
+    'act2.concise.title': 'One line, and it tells the truth',
     'act2.concise.body':
-        'Same test as before, right down to the assertion. One line of setup, naming the only thing this test needs to be true: the order is pending.',
+        'Same test as before, right down to the assertion. One line of setup, naming the only thing this test needs to be true: the order is pending. Everything else is drawn, valid, and different on every run — nothing on that line pretends to be something it is not.',
 
-    'act2.exit.title': 'The tool as well',
+    'act2.exit.title': 'Install all of it',
     'act2.exit.body':
         "The tool is optional. Everything it removed here, the library on its own had already made possible — what the tool saves you is the writing of it.",
 
@@ -124,29 +124,30 @@ const en = {
      * that is what the page says and no more (§9.6).
      */
     'act3.hinge':
-        'A question comes up here on its own: if the values change on every run, how do you get back the one that made a test fail? That is what the attribute you have been looking at is for.',
+        'A question comes up here on its own: if the values change on every run, how do you get back the one that made a test fail?',
 
     'act3.title': 'A draw you can replay exactly',
     'act3.summary':
         'The values change on every run. The day one of them makes a test fail, you get that exact one back.',
 
-    'act3.attribute.title': 'The attribute you have already seen',
+    'act3.attribute.title': 'Catching a bug before it reaches production',
     'act3.attribute.body':
-        'It pins a seed for each test case, and says nothing at all while the test is green. It freezes nothing: the values still change from one run to the next — which is exactly what surfaces a test that was quietly depending on one of them.',
+        'A test that goes red when everything about it was arranged to be green has just told you something: the value drawn that day found a case your code does not hold. That is a bug that would otherwise have shipped. And that draw is not lost — the next two scenes are about getting it back, exactly, in one line.',
 
-    'act3.forgotten.title': 'One line lighter',
+    'act3.forgotten.title': 'Take an example',
     'act3.forgotten.body':
         "The same test, with the status left arbitrary. Two of the three statuses can't be cancelled, so it goes red on roughly two runs in three. Nothing is broken. The test has just found out it wasn't saying what it needed.",
 
-    'act3.seed.title': 'The failure hands back its seed',
+    'act3.seed.title': 'The failing test tells you how to replay it',
     'act3.seed.body':
-        'One line, in the output of the test that failed: the seed those values came from, and the attribute that replays it.',
+        'One line, in the output of the test that failed — the line you read in your build. It carries a number, the seed, and that number is all it takes to draw those same values again.',
 
     'act3.replay.title': 'Paste it, and you get the same draw back',
     'act3.replay.body':
-        'The same failure, on any machine — and these are the values that failed, not values that resemble them. Each test case draws its own seed, so a suite running in parallel hands you back the seed of the case that failed.',
+        'The seed your build reported, pasted into the test on your own machine: the same failure, and these are the values that failed rather than values resembling them. Each test case draws its own seed, so a suite running in parallel hands you back the seed of the case that failed.',
 
-    'act3.exit.title': 'Everything this page has shown you',
+    'act3.exit.title': 'Want to try it?',
+    'act3.exit.lead': 'Three packages, none of them large, and you have seen what each of them does.',
     'act3.exit.body':
         "The adapter turns a red test into a draw you can replay, and it's the smallest of the three. All three are here.",
 
@@ -167,6 +168,7 @@ const en = {
     'sample.produced': 'produced',
     'sample.producedEachRun': 'produced, run after run',
     'sample.refused': 'refused',
+    'sample.whenItRuns': 'what the build got when it ran it',
 
     'install.library': 'The library',
     'install.cli': '.NET CLI',
@@ -226,9 +228,9 @@ const fr: Record<UiKey, string> = {
     'act1.factories.body':
         "Le test se lit enfin : trois noms, et on sait tout de suite ce qui compte. Mais rien n'a bougé en dessous. AnyOrderReference renvoie toujours la même chaîne qu'avant — le mensonge n'a pas disparu, il a changé de fichier.",
 
-    'act1.careless.title': 'La factory arrête de mentir',
+    'act1.careless.title': 'Faire dire vrai à la factory',
     'act1.careless.body':
-        "Any.String() tire une chaîne vraiment quelconque, et le nom devient enfin vrai. Le domaine, lui, n'est pas d'accord. Il refuse la valeur au moment où elle est construite — pas trois assertions plus loin — et il dit exactement ce qui lui manquait.",
+        "Any.String() tire une chaîne vraiment quelconque, et le nom devient enfin vrai. Tirer au hasard dans un test paraît contre-intuitif — une valeur qu'on a tapée, au moins, on sait ce qu'elle vaut — mais c'est aussi tout ce qu'elle démontre : que le test passe avec celle-là. Le domaine, lui, n'est pas d'accord. Il refuse la valeur au moment où elle est construite, pas trois assertions plus loin, et il dit exactement ce qui lui manquait.",
 
     'act1.invariants.title': 'Ce que le domaine réclame',
     'act1.invariants.body':
@@ -236,59 +238,60 @@ const fr: Record<UiKey, string> = {
 
     'act1.constraints.title': 'Déclarez les contraintes, pas la valeur',
     'act1.constraints.body':
-        "Un maillon par règle, dans la factory. Ce qui en sort est différent à chaque fois, et valide à chaque fois. La chaîne décrit ce qui doit être vrai de la valeur, jamais ce que vous vous apprêtez à vérifier.",
+        "Un maillon par règle, dans la factory. Ce qui en sort est différent à chaque fois, et valide à chaque fois — et c'est là que le hasard prend tout son sens. Cette valeur n'a jamais été le sujet du test ; elle devait seulement être valide. N'importe quelle valeur qui respecte les règles dit donc exactement ce que ce test avait à dire, et rien de plus. La chaîne décrit ce qui doit être vrai de la valeur, jamais ce que vous vous apprêtez à vérifier.",
 
     'act1.exit.title': "Tout ça, c'est la bibliothèque",
     'act1.exit.body':
         "Tout ce qui précède, c'est la bibliothèque seule. Si c'est ce que vous êtes venu chercher, prenez-la maintenant — et prenez l'adaptateur avec : c'est lui qui vous rendra le tirage exact, le jour où une valeur quelconque fera échouer un test. La suite de cette page raconte comment faire disparaître toute cette préparation.",
 
-    'act2.title': "Cette préparation, ce n'est plus à vous de l'écrire",
-    'act2.summary': "Un outil lit votre type et écrit le générateur ; le fichier qu'il produit est le vôtre.",
+    'act2.title': "L'essentiel de cette préparation, un outil l'écrit",
+    'act2.summary': "Il lit votre type, écrit le générateur, et dit où il s'est arrêté. À partir de là, le fichier est le vôtre.",
 
-    'act2.install.title': 'Un outil, installé une fois',
-    'act2.install.body':
-        "Un outil .NET global. Il lit votre projet comme le compilateur le lit : la seule chose qu'il vous demande, c'est le nom d'un type.",
+    'act2.wanted.title': 'Ce qu\'on aimerait écrire',
+    'act2.wanted.body':
+        "Une ligne de préparation, qui dit la seule chose dont ce test a besoin. Ce helper, vous pouvez l'écrire vous-même — c'est la chaîne du premier acte, dans un fichier à vous, qu'il faudra tenir à jour avec le type. La suite de cet acte, c'est un outil qui l'écrit à votre place.",
 
     'act2.scaffold.title': 'Il lit le type et écrit le générateur',
     'act2.scaffold.body':
-        "Il part de vos propres sources et décide, paramètre par paramètre, comment tirer une valeur. La dernière colonne dit ce qu'il a trouvé tout seul — et où il s'est arrêté.",
+        "Un outil .NET global, lancé une fois par type. Il part de vos propres sources et décide, paramètre par paramètre, comment tirer une valeur — et la dernière colonne dit ce qu'il a trouvé tout seul, et où il s'est arrêté.",
 
-    'act2.link.title': "Il s'arrête là où vous savez déjà répondre",
+    'act2.link.title': "Ce qu'il n'a pas su deviner, vous l'avez déjà écrit",
     'act2.link.body':
-        "Plutôt que de deviner, il a marqué ce paramètre : tant que le maillon manque, le fichier qu'il a écrit échoue à chaque tirage. Ce qui va là, c'est la chaîne que vous avez déjà écrite, inchangée — collée une fois, dans un fichier qui est désormais le vôtre.",
+        "En haut, la recette telle que l'outil l'a écrite. La règle du préfixe ORD- ne fait pas partie des gardes qu'il sait lire : plutôt que de deviner, il a marqué ce paramètre — et le fichier qu'il a écrit échoue à chaque tirage tant que le maillon manque. En bas, la même recette avec un maillon de plus : la chaîne que vous avez déjà écrite, inchangée, collée une fois dans un fichier qui est désormais le vôtre.",
 
-    'act2.concise.title': 'Le test, et rien d’autre',
+    'act2.concise.title': 'Une ligne, et elle dit vrai',
     'act2.concise.body':
-        "Le même test qu'avant, jusqu'à l'assertion comprise. Une ligne de préparation, qui nomme la seule chose dont ce test a besoin : la commande est en attente.",
+        "Le même test qu'avant, jusqu'à l'assertion comprise. Une ligne de préparation, qui nomme la seule chose dont ce test a besoin : la commande est en attente. Tout le reste est tiré, valide, et différent à chaque exécution — plus rien sur cette ligne ne prétend être ce qu'il n'est pas.",
 
-    'act2.exit.title': "L'outil en plus",
+    'act2.exit.title': 'Installer tout ça',
     'act2.exit.body':
         "L'outil est facultatif. Tout ce qu'il a retiré ici, la bibliothèque seule l'avait déjà rendu possible — ce que l'outil vous épargne, c'est de l'écrire.",
 
     'act3.hinge':
-        "Une question se pose forcément ici : si les valeurs changent à chaque exécution, comment revenir sur celle qui a fait échouer un test ? C'est à ça que sert l'attribut que vous avez sous les yeux depuis tout à l'heure.",
+        'Une question se pose forcément ici : si les valeurs changent à chaque exécution, comment revenir sur celle qui a fait échouer un test ?',
 
     'act3.title': "Un tirage qui se rejoue à l'identique",
     'act3.summary':
         "Les valeurs changent à chaque exécution. Le jour où l'une d'elles fait échouer un test, vous récupérez exactement celle-là.",
 
-    'act3.attribute.title': 'Cet attribut que vous avez déjà vu',
+    'act3.attribute.title': "Attraper un bug avant qu'il n'arrive en production",
     'act3.attribute.body':
-        "Il fixe un seed pour chaque cas de test, et ne dit rien tant que le test passe. Il ne fige rien : les valeurs continuent de changer d'une exécution à l'autre — et c'est précisément ce qui révèle un test qui dépendait discrètement de l'une d'elles.",
+        "Un test qui passe au rouge alors que tout, en lui, était fait pour qu'il soit vert vient de vous apprendre quelque chose : la valeur tirée ce jour-là a trouvé un cas que votre code ne tient pas. C'est un bug qui serait parti en production. Et ce tirage n'est pas perdu : les deux étapes qui suivent servent à le récupérer, à l'identique, en une ligne.",
 
-    'act3.forgotten.title': 'Une ligne de moins',
+    'act3.forgotten.title': 'Prenons un exemple',
     'act3.forgotten.body':
         "Le même test, avec le statut laissé arbitraire. Deux des trois statuts ne s'annulent pas, donc il passe au rouge environ deux fois sur trois. Rien n'est cassé. Le test vient simplement de découvrir qu'il ne disait pas ce dont il avait besoin.",
 
-    'act3.seed.title': "L'échec rend son seed",
+    'act3.seed.title': 'Le test qui échoue vous dit comment le rejouer',
     'act3.seed.body':
-        "Une ligne, dans la sortie du test qui a échoué : le seed d'où venaient ces valeurs, et l'attribut qui les rejoue.",
+        "Une ligne, dans la sortie du test qui a échoué — celle que vous lisez dans votre build. Elle porte un numéro, le seed, et ce numéro suffit à retirer exactement les mêmes valeurs.",
 
     'act3.replay.title': 'Collez-le, et vous retrouvez le même tirage',
     'act3.replay.body':
-        "Le même échec, sur n'importe quelle machine — et ce sont bien les valeurs qui ont échoué, pas des valeurs qui leur ressemblent. Chaque cas de test tire son propre seed : une suite qui tourne en parallèle vous rend le seed du cas qui a échoué.",
+        "Le seed rapporté par votre build, collé dans le test sur votre machine : le même échec, et ce sont bien les valeurs qui ont échoué, pas des valeurs qui leur ressemblent. Chaque cas de test tire son propre seed : une suite qui tourne en parallèle vous rend le seed du cas qui a échoué.",
 
-    'act3.exit.title': 'Tout ce que cette page vous a montré',
+    'act3.exit.title': 'Envie d\'essayer ?',
+    'act3.exit.lead': "Trois packages, aucun n'est gros, et vous avez vu ce que chacun fait.",
     'act3.exit.body':
         "L'adaptateur transforme un test rouge en un tirage que vous rejouez, et c'est la plus petite des trois pièces. Elles sont toutes là.",
 
@@ -303,6 +306,7 @@ const fr: Record<UiKey, string> = {
     'sample.produced': 'produit',
     'sample.producedEachRun': 'produit, exécution après exécution',
     'sample.refused': 'refusé',
+    'sample.whenItRuns': "ce que le build a obtenu en l'exécutant",
 
     'install.library': 'La bibliothèque',
     'install.cli': 'CLI .NET',

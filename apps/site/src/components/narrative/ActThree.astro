@@ -39,6 +39,7 @@ import ToolRun from './ToolRun.astro';
     summary="act3.summary"
     ground="raised"
     exitTitle="act3.exit.title"
+    exitLead="act3.exit.lead"
     exitBody="act3.exit.body"
     offer="everything"
 >
@@ -66,11 +67,16 @@ import ToolRun from './ToolRun.astro';
         <ToolRun id="replayed-failure" from="test" />
     </Scene>
 
+    {/* The recorded run goes under the code, and it is the same recording the scene above
+        prints: the build reads that failure out of its own output, and pasting the seed puts
+        it back on your machine. Showing it twice is the point — one place is where you read
+        it, the other is where you reproduce it. */}
     <Scene
         name="the-replay"
         title="act3.replay.title"
         body="act3.replay.body"
         sample="replayed-test"
         outcome="none"
+        ran="replayed-failure"
     />
 </Act>

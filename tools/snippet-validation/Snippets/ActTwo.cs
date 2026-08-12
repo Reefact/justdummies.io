@@ -11,6 +11,42 @@ using JustDummies.Xunit;
 using global::Xunit;
 
 /// <summary>
+///     What the second act opens by wishing for: an arrangement of one line, naming the only
+///     thing the test needs to be true and nothing else.
+///
+///     A CLASS OF ITS OWN, for the same reason the first act's factories have namespaces of
+///     their own — the test method has to keep its name. §9.2's continuity rule is that this
+///     is the same test throughout, word for word, and C# will not hold two methods of one
+///     name in one class. The class name is never displayed.
+///
+///     The helper below is what makes the wish compile, and it is deliberately the first
+///     act's own chain: that is what a reader has at this point, and writing it is exactly
+///     the work this act removes. It sits outside the markers — the page shows the line a
+///     reader wants, not the ten behind it.
+/// </summary>
+public sealed class WantedOrderCancellation {
+
+    // <snippet:wanted-test>
+    [Fact, Reproducible]
+    public void A_pending_order_can_be_cancelled() {
+        Order order = CreateAnyPendingOrder();   // one line, and this is the one we want
+
+        order.Cancel();
+
+        Assert.Equal(OrderStatus.Cancelled, order.Status);
+    }
+    // </snippet:wanted-test>
+
+    private static Order CreateAnyPendingOrder() {
+        return new Order(Constrained.AnyOrderReference.Generate(),
+                         Handwritten.AnyCustomerId.Generate(),
+                         Handwritten.AnyMoney.Generate(),
+                         OrderStatus.Pending);
+    }
+
+}
+
+/// <summary>
 ///     The second act: the same test as the first, with the arrangement gone.
 ///
 ///     It is deliberately the same test method, word for word in its act and its assert.
