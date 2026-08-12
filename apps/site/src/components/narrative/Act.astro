@@ -44,39 +44,44 @@ interface Props {
     ground?: 'page' | 'raised';
 }
 
-const { name, title, summary, exitTitle, exitBody, offer = 'library', hinge, ground = 'page' } = Astro.props;
+const { name, title, summary, exitTitle, exitBody, exitLead, offer = 'library', hinge, ground = 'page' } = Astro.props;
 
 const t = useTranslations(localeFromPath(Astro.url.pathname));
 ---
 
+{/* The band is full width and its content is inset by the shell, rather than the band
+    being pulled out to the viewport edges. Full-bleed by negative margin needs `100vw`,
+    which counts the scrollbar the page is already showing — see base.css. */}
 <section class="act" id={name} data-ground={ground} aria-labelledby={`${name}-title`}>
-    <header>
-        {hinge !== undefined && <p class="hinge" data-reveal>{t(hinge)}</p>}
-        {/* The claim and its summary arrive together: they are one sentence broken across
-            two lines, not two things.
+    <div class="shell">
+        <header>
+            {hinge !== undefined && <p class="hinge" data-reveal>{t(hinge)}</p>}
+            {/* The claim and its summary arrive together: they are one sentence broken across
+                two lines, not two things.
 
-            THERE IS NO "ACT I" LABEL ANY MORE. The numbering was the specification's way
-            of talking about the page, never the reader's — nothing else here explains
-            what an act is, so the eyebrow asked a question it did not answer. What marks
-            the passage now is the ground changing under it and the size of the title. */}
-        <div class="opening" data-reveal>
-            <h2 id={`${name}-title`}>{t(title)}</h2>
-            <p class="summary">{t(summary)}</p>
+                THERE IS NO "ACT I" LABEL ANY MORE. The numbering was the specification's way
+                of talking about the page, never the reader's — nothing else here explains
+                what an act is, so the eyebrow asked a question it did not answer. What marks
+                the passage now is the ground changing under it and the size of the title. */}
+            <div class="opening" data-reveal>
+                <h2 id={`${name}-title`}>{t(title)}</h2>
+                <p class="summary">{t(summary)}</p>
+            </div>
+        </header>
+
+        {/*
+          The exit is a step like any other — same bullet, same rail, same title, and the
+          words after the offer rather than before it. It used to be a footer of its own
+          shape, which made the one thing a convinced reader is looking for the one thing on
+          the page that looked like nothing else.
+        */}
+        <div class="scenes" data-scenes>
+            <slot />
+
+            <Scene name={`${name}-exit`} title={exitTitle} lead={exitLead} body={exitBody}>
+                <InstallTabs placement={`${name}-exit`} offer={offer} />
+            </Scene>
         </div>
-    </header>
-
-    {/*
-      The exit is a step like any other — same bullet, same rail, same title, and the
-      words after the offer rather than before it. It used to be a footer of its own
-      shape, which made the one thing a convinced reader is looking for the one thing on
-      the page that looked like nothing else.
-    */}
-    <div class="scenes" data-scenes>
-        <slot />
-
-        <Scene name={`${name}-exit`} title={exitTitle} body={exitBody}>
-            <InstallTabs placement={`${name}-exit`} offer={offer} />
-        </Scene>
     </div>
 </section>
 
@@ -84,10 +89,10 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
     /*
      * THE GROUND CHANGES AT THE SEAM BETWEEN ACTS AND NOWHERE ELSE.
      *
-     * Full-bleed rather than inset: the shell that holds this page is 72rem wide and
-     * centred, so a ground painted inside it would be a wide stripe with the page showing
-     * down both sides. The negative margin takes the panel out to the viewport edge and
-     * the padding puts the content back where the shell had it.
+     * Full-bleed rather than inset: a ground painted inside the page's measure would be a
+     * wide stripe with the page showing down both sides. The band is therefore an ordinary
+     * full-width section, and `.shell` inside it puts the content back where the measure
+     * had it — no negative margin, and no `100vw`, which counts the scrollbar.
      *
      * `--jd-act-ground` is declared here and read by the scene markers, which punch a hole
      * in the rail and have to be filled with whatever this act is standing on.
@@ -101,9 +106,6 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
 
     .act[data-ground='raised'] {
         --jd-act-ground: var(--jd-surface-sunken);
-
-        margin: 0 calc(50% - 50vw);
-        padding-inline: max(var(--jd-space-4), calc(50vw - 36rem));
     }
 
     /* No measure on the header itself: the title needs the page's width and the summary

@@ -254,6 +254,25 @@ fi
 [ -f "${dist}/404.html" ] && pass "the English 404 page exists" || fail "dist/404.html is missing, and wrangler.jsonc asks for it"
 [ -f "${dist}/fr/404.html" ] && pass "the French 404 page exists" || fail "dist/fr/404.html is missing, so a mistyped French URL answers in English"
 
+# `100vw` is the viewport *including* the classic scrollbar, so anything sized by it on a
+# desktop showing one comes out about fifteen pixels wider than the page — and the document
+# scrolls sideways for no visible reason. It was the full-bleed act grounds, it was reported
+# twice, and it cannot be caught in a browser here: headless Chromium draws overlay
+# scrollbars that take no width, so the page measures clean on this machine and wrong on a
+# reader's. Nothing on this site needs the unit; the fractional `vw` inside the type scale's
+# `clamp()` is a different thing and is not matched.
+#
+# Matched by size rather than by property, which is what makes the two cases separable: a
+# layout written in `vw` uses tens of them — `50vw`, `100vw` — and the type scale uses
+# fractions of one, `0.12vw` through `2vw`. Two digits with something other than a digit or
+# a decimal point in front is the first and never the second.
+viewport_units="$(grep -roE '[^0-9.][0-9]{2,}vw' "${dist}"/_astro/*.css 2> /dev/null || true)"
+if [ -z "${viewport_units}" ]; then
+  pass "no layout is sized in vw, which would be wide by the width of the scrollbar"
+else
+  fail "vw used for layout in the shipped CSS: ${viewport_units} — that is wider than the page whenever a scrollbar is showing"
+fi
+
 # The code is coloured with classes rather than with the inline styles every
 # off-the-shelf highlighter writes, precisely because of the policy asserted just below.
 # Two ways that can silently come undone: the markup stops being produced, or it is
