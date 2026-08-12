@@ -21,10 +21,13 @@
 
       Absolute rather than relative because <base href="/playground/"> would otherwise
       resolve these into this directory, where they are deliberately no longer kept. Same
-      two files, same declarations, as the site's own pages.
+      files, same declarations, as the site's own pages — which is the point, and which is
+      why this block changes whenever Base.astro's does.
     -->
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
-    <link rel="icon" type="image/png" href="/favicon.png" sizes="512x512" />
+    <link rel="icon" type="image/png" href="/favicon-64.png" sizes="64x64" />
+    <link rel="icon" type="image/png" href="/favicon-128.png" sizes="128x128" />
+    <link rel="icon" type="image/png" href="/favicon-256.png" sizes="256x256" />
     <!--
       The scoped-CSS bundle the Blazor template links is deliberately absent. It is only
       emitted when a component has a .razor.css beside it, and none does: this application
