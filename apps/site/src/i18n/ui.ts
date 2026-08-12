@@ -40,7 +40,7 @@ export const openGraphLocales: Record<Locale, string> = {
 };
 
 const en = {
-    'brand.tagline': 'Just dummies. Seriously powerful ones.',
+    'brand.tagline': 'Just dummies — but seriously powerful ones.',
     'brand.subtitle': 'Focused, fluent test values for .NET.',
 
     'nav.playground': 'Playground',
@@ -201,7 +201,7 @@ const en = {
 export type UiKey = keyof typeof en;
 
 const fr: Record<UiKey, string> = {
-    'brand.tagline': 'Juste des dummies. Redoutablement efficaces.',
+    'brand.tagline': 'Juste des dummies, mais redoutablement efficaces.',
     'brand.subtitle': 'Des valeurs de test fluides et ciblées, pour .NET.',
 
     'nav.playground': 'Playground',
