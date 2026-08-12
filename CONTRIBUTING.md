@@ -251,6 +251,38 @@ An accepted record is never edited in place — a decision is revisited by writi
 a new record that supersedes it. Drafting one leaves it `Proposed`; accepting it
 is the maintainer's act.
 
+### A decision comes with something that fails when it is broken
+
+A record says what was decided. It does not keep the decision true. Between the
+two sits the thing this repository keeps learning: **a rule nobody can check is a
+rule that drifts, and the drift is silent.** The tablist that shipped visible
+without scripting was written to a pattern the repository already followed, in a
+file whose own comment said so, and it was wrong anyway.
+
+So a record's *Follow-up Actions* names what will fail when the decision is
+broken, and that thing exists before the pull request is opened. In order of
+preference:
+
+* **A guarantee by construction**, which beats a check — a rule declared once,
+  globally, so the mistake is no longer available. ADR-0004's
+  `[hidden] { display: none !important }` is one.
+* **An assertion in the build**, in `verify-output.sh` for the artefact's shape
+  or `check-narrative.sh` for what the page says. Both run in CI, so a branch
+  that breaks the decision does not merge.
+* **A measurement recorded in the commit message**, when the property is real but
+  not mechanically checkable — the seven viewport sizes behind the first screen's
+  layout. It does not fail on its own; it gives the next person the number to
+  compare against.
+
+An assertion nobody has seen fail is not evidence. **Break what the check
+protects, watch it go red, then put it back.** That is how the four assertions
+behind ADR-0004 were written, and one of them was blind on the first attempt —
+it reported a pass against a file the edit had never reached. Say in the pull
+request that this was done.
+
+Where a decision genuinely admits no check, say so in *Follow-up Actions* rather
+than leaving the section empty: a named gap is one somebody can close.
+
 ## What this repository does not inherit
 
 The library's guide carries rules that follow from publishing packages. They do
