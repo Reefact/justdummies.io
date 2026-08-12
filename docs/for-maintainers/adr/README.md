@@ -77,6 +77,12 @@ it was taken, and that is what the record keeps; the new date belongs to the suc
 connects the two is the link, not the date: a *Superseded* ADR links to the ADR that supersedes it,
 next to the status.
 
+**A supersession may be partial**, and then the status has to say so rather than round to the
+nearest of the four. A record that settled two things and has had one of them replaced is not
+*Superseded* — writing that would tell a future reader the surviving half is dead too. It stays
+*Accepted*, with `— superseded in part by [ADR-NNNN]` next to the status and a short block under
+the header naming which half went and which half stands. ADR-0003 is the worked example.
+
 ### Context
 
 Everything that led to the decision, so that someone unfamiliar with the project understands why a
@@ -141,9 +147,9 @@ requests, issues, diagrams.
 |---|---|---|
 | [ADR-0001](0001-a-release-tag-publishes-not-a-merge-en.md) | A release tag publishes, not a merge | Accepted |
 | [ADR-0002](0002-the-site-answers-on-one-hostname-en.md) | The site answers on one hostname | Proposed |
-| [ADR-0003](0003-the-figure-carries-the-scene-en.md) | The figure carries the scene | Proposed |
+| [ADR-0003](0003-the-figure-carries-the-scene-en.md) | The figure carries the scene | Accepted — superseded in part by ADR-0005 |
 | [ADR-0004](0004-a-control-appears-only-when-it-can-act-en.md) | A control appears only when it can act | Proposed |
-| [ADR-0005](0005-a-scene-arrives-rather-than-holding-the-screen-en.md) | A scene arrives rather than holding the screen | Proposed |
+| [ADR-0005](0005-a-scene-arrives-rather-than-holding-the-screen-en.md) | A scene arrives rather than holding the screen | Accepted |
 
 ## How this base differs from the library's
 
