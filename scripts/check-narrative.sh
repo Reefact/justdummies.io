@@ -64,10 +64,11 @@ assert_prose "§9.3 the third exit offers all three" \
   "act3\.exit\.body[\s\S]{0,200}?smallest of the three"
 assert_prose "§9.2 the second act opens on the same test" \
   "act2\.concise\.body[\s\S]{0,200}?Same test as before"
-# ADR-0008: a scene is titled by what the reader gets. The third act's opening scene is
-# where that decision is load-bearing — it was named after the mechanism, and the mechanism
-# is the least interesting thing about it.
-assert_prose "ADR-0008 the third act opens on what the reader gets, not on the mechanism" \
+# A scene is titled by what the reader gets from it, and this is the title where that
+# matters most: named after the attribute, the third act opened on the least interesting
+# thing about itself. Editorial, like every anchor above it — the specification is where
+# rules of this kind live, and this line is the half of one that fails.
+assert_prose "the third act opens on what the reader gets, not on the mechanism" \
   "act3\.attribute\.title[\s\S]{0,120}?before it reaches production"
 
 # --- the first act shows nothing the reader cannot use yet (ADR-0006) ------------

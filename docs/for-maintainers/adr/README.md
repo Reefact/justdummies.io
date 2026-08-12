@@ -151,8 +151,7 @@ requests, issues, diagrams.
 | [ADR-0004](0004-a-control-appears-only-when-it-can-act-en.md) | A control appears only when it can act | Accepted |
 | [ADR-0005](0005-a-scene-arrives-rather-than-holding-the-screen-en.md) | A scene arrives rather than holding the screen | Accepted |
 | [ADR-0006](0006-the-first-act-follows-one-factory-en.md) | The first act follows one factory, not the library's surface | Accepted |
-| [ADR-0007](0007-the-third-act-answers-before-it-fails-en.md) | The third act answers before it shows a failure | Accepted — superseded in part by ADR-0008 |
-| [ADR-0008](0008-a-scene-is-titled-by-what-the-reader-gets-en.md) | A scene is titled by what the reader gets, not by the mechanism | Proposed |
+| [ADR-0007](0007-the-third-act-answers-before-it-fails-en.md) | The third act answers before it shows a failure | Accepted |
 
 ## How this base differs from the library's
 

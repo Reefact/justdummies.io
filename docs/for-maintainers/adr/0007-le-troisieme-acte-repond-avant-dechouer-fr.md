@@ -2,16 +2,10 @@
 
 🌍 🇫🇷 Français (ce fichier) · 🇬🇧 [English](0007-the-third-act-answers-before-it-fails-en.md)
 
-**Statut :** Accepté — remplacé en partie par [ADR-0008](0008-une-scene-est-titree-par-ce-que-le-lecteur-y-gagne-fr.md)
+**Statut :** Accepté
 **Proposé le :** 2026-08-12
 **Accepté le :** 2026-08-12
 **Décideurs :** Reefact
-
-**Ce qui est parti et ce qui tient.** L'ordre tient : le troisième acte énonce sa proposition avant
-que quoi que ce soit n'y échoue, et la vérification qui le protège est inchangée. Ce que l'ADR-0008
-remplace, c'est la seconde moitié de la Décision ci-dessous — que la proposition est énoncée *en
-nommant un attribut que le lecteur a déjà vu*. La scène d'ouverture énonce le bénéfice à la place,
-et l'attribut reste dans la figure sans en être le sujet.
 
 ## Contexte
 
