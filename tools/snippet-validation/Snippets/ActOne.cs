@@ -13,26 +13,44 @@ using Xunit;
 /// </summary>
 public sealed class OrderCancellation {
 
-    /// <summary>The first scene: three lines about cancelling, and one about everything else.</summary>
+    /// <summary>
+    ///     The first scene: two lines about cancelling, and five about everything else.
+    ///
+    ///     IT SHOWS THE SETUP RATHER THAN HIDING IT BEHIND A HELPER. An earlier version
+    ///     opened on <c>Order order = APendingOrder();</c> and left the page to say that
+    ///     the missing line was all the work. A reader had to take that on trust; here
+    ///     they can count it. The whole act argues that this is too much to write for a
+    ///     test about cancelling, and an argument a reader can see beats one they are
+    ///     told.
+    ///
+    ///     The Arrange/Act/Assert markers are what make the imbalance legible at a
+    ///     glance, and they appear in this snippet alone. Where the page's point is that
+    ///     the test has become one line — the second act's concise test — three lines of
+    ///     comment above it would be exactly the "everything else" that scene claims to
+    ///     have removed.
+    ///
+    ///     The values are hand-written on purpose, magic string included: this is the
+    ///     test as it exists before the library, and that string is what the next scene
+    ///     tries to replace.
+    /// </summary>
     // <snippet:incomplete-test>
     [Fact]
     public void A_pending_order_can_be_cancelled() {
-        Order order = APendingOrder();
+        // Arrange
+        OrderReference anyReference  = OrderReference.Create("ORD-54XEM4545");
+        CustomerId     anyCustomerId = CustomerId.Create(Guid.NewGuid());
+        Money          anyTotal      = Money.Create(42.00m);
 
+        Order order = new Order(anyReference, anyCustomerId, anyTotal,
+                                OrderStatus.Pending);
+
+        // Act
         order.Cancel();
 
+        // Assert
         Assert.Equal(OrderStatus.Cancelled, order.Status);
     }
     // </snippet:incomplete-test>
-
-    /// <summary>
-    ///     The hole the act fills. It is deliberately the last scene's arrangement, so the
-    ///     file tells the same story as the page: the test above is already finished, and
-    ///     what remains is getting an order to hand it.
-    /// </summary>
-    private static Order APendingOrder() {
-        return ActOne.VerboseArrangement();
-    }
 
 }
 
