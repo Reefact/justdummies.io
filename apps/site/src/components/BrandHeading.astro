@@ -1,0 +1,142 @@
+---
+/**
+ * The product's name, its mark and its one-line claim.
+ *
+ * One component rather than one per page, because two copies of a name and a claim
+ * drift the day either changes — and both changed twice in the week this was written.
+ * A page that wants to say who the site belongs to renders this and gets exactly what
+ * the landing page says, in the reader's language.
+ *
+ * It carries the heading level with it: this is the page's `h1` wherever it appears, and
+ * a page that wanted it to be anything else would be a page saying it is about something
+ * other than JustDummies.
+ */
+import { localeFromPath } from '../i18n/routing';
+import { useTranslations } from '../i18n/ui';
+import { site } from '../site';
+
+const t = useTranslations(localeFromPath(Astro.url.pathname));
+---
+
+{/*
+  The mark is `alt=""` on purpose. The heading it sits in already says JustDummies, and an
+  icon that repeats the word beside it makes a screen reader say the name twice. Its size
+  and its alignment are the script's job below; the width and height attributes are the
+  file's own, so the box is reserved before the image lands and the heading does not jump.
+
+  THE SIZE IS CHOSEN AGAINST A MEASUREMENT, not against the largest file available. `1cap`
+  of this heading renders the mark at 32 CSS pixels, so 64 covers an ordinary screen
+  exactly and 128 covers a three-times one. The 512 that used to sit here was 173 KiB —
+  65% of everything the first view downloaded — to draw a 32-pixel square.
+*/}
+<h1 data-brand-heading>
+    <img
+        class="mark"
+        src="/favicon-64.png"
+        srcset="/favicon-64.png 2x, /favicon-128.png 4x"
+        alt=""
+        width="64"
+        height="64"
+        decoding="async"
+    />{site.name}
+</h1>
+<p class="tagline">{t('brand.tagline')}</p>
+
+<script>
+    /**
+     * Puts the mark on the same two lines as the `J` beside it.
+     *
+     * ALIGNED TO THE J, WHICH IS NOT THE SAME AS SITTING ON THE BASELINE. An image has no
+     * descender, and the `J` has one — so CSS can put the mark's top on the cap line or its
+     * bottom on the baseline, but not its bottom on the bottom of the `J`. The size of that
+     * drop is a property of the resolved font, and the font stack here is `ui-sans-serif,
+     * system-ui`: SF Pro on one machine, Segoe UI on another, something else again on a
+     * third. A number written into the stylesheet would be right on the machine it was
+     * measured on and wrong everywhere else.
+     *
+     * So it is measured where it is used. The stylesheet's `1cap` is what shows until this
+     * runs and if it never runs — a mark on the cap line, ending on the baseline, which is a
+     * normal-looking lockup rather than a broken one.
+     *
+     * The heading is found by its own attribute rather than by the hero around it: this
+     * heading now appears on more than one page, and only one of those pages has a hero.
+     */
+    const heading: HTMLElement | null = document.querySelector('[data-brand-heading]');
+    const mark: HTMLImageElement | null = document.querySelector('[data-brand-heading] .mark');
+
+    if (mark !== null && heading !== null) {
+        const canvas: CanvasRenderingContext2D | null = document.createElement('canvas').getContext('2d');
+
+        const align = (): void => {
+            if (canvas === null) {
+                return;
+            }
+
+            const style: CSSStyleDeclaration = getComputedStyle(heading);
+
+            // The shorthand canvas accepts, which is not the one CSS reports: a line height
+            // in it is either ignored or refused depending on the engine.
+            canvas.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+
+            const metrics: TextMetrics = canvas.measureText('J');
+            const above: number = metrics.actualBoundingBoxAscent;
+            const below: number = metrics.actualBoundingBoxDescent;
+
+            if (!Number.isFinite(above) || !Number.isFinite(below) || above <= 0) {
+                return;
+            }
+
+            mark.style.height = `${above + below}px`;
+            // Negative moves it down: `vertical-align` is measured up from the baseline, and
+            // the mark's bottom has to land where the tail of the `J` lands.
+            mark.style.verticalAlign = `${-below}px`;
+        };
+
+        align();
+
+        // The heading is smaller on a short screen and on a phone, so the glyph it must
+        // match changes with the viewport rather than only at load.
+        let pending: number | undefined;
+        window.addEventListener('resize', () => {
+            if (pending !== undefined) {
+                cancelAnimationFrame(pending);
+            }
+            pending = requestAnimationFrame(align);
+        });
+
+        // A face that arrives after first paint changes every number above. None is loaded
+        // here today — the stack is the platform's own — and that is a fact about today.
+        if (document.fonts !== undefined) {
+            document.fonts.ready.then(align);
+        }
+    }
+</script>
+
+<style>
+    h1 {
+        font-size: var(--jd-text-2xl);
+        line-height: var(--jd-line-tight);
+        margin: 0;
+    }
+
+    /*
+     * The fallback the script above replaces, and the closest CSS can state on its own:
+     * `1cap` is exactly the cap height, and a baseline-aligned image ends on the baseline.
+     * Top edge exact, bottom edge short by the descender.
+     */
+    .mark {
+        height: 1cap;
+        width: auto;
+        vertical-align: baseline;
+        /* Optical, not metric: the file carries 3 pixels of transparent margin down its left
+           side and 2 down its right, out of 64, so a gap set to the eye reads narrower than
+           the number says. */
+        margin-right: 0.18em;
+    }
+
+    .tagline {
+        font-size: var(--jd-text-lg);
+        color: var(--jd-accent);
+        margin: var(--jd-space-3) 0 0;
+    }
+</style>

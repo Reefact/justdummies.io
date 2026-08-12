@@ -6,6 +6,7 @@
  * the install command — come from `site.ts` and are identical in every locale
  * (§28.2: only the narrative around the code is translated, never the code).
  */
+import BrandHeading from './BrandHeading.astro';
 import InstallTabs from './InstallTabs.astro';
 import LiveHero from './LiveHero.astro';
 import ActOne from './narrative/ActOne.astro';
@@ -13,7 +14,6 @@ import ActTwo from './narrative/ActTwo.astro';
 import ActThree from './narrative/ActThree.astro';
 import { localeFromPath } from '../i18n/routing';
 import { useTranslations } from '../i18n/ui';
-import { site } from '../site';
 
 const t = useTranslations(localeFromPath(Astro.url.pathname));
 ---
@@ -21,30 +21,7 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
 <main>
     <div class="shell">
         <header class="hero">
-            {/*
-              The mark is `alt=""` on purpose. The heading it sits in already says JustDummies,
-              and an icon that repeats the word beside it makes a screen reader say the name
-              twice. Its size and its alignment are the script's job below; the width and height
-              attributes are the file's own, so the box is reserved before the image lands and
-              the heading does not jump.
-
-              THE SIZE IS CHOSEN AGAINST A MEASUREMENT, not against the largest file available.
-              `1cap` of this heading renders the mark at 32 CSS pixels, so 64 covers an ordinary
-              screen exactly and 128 covers a three-times one. The 512 that used to sit here was
-              173 KiB — 65% of everything the first view downloaded — to draw a 32-pixel square.
-            */}
-            <h1>
-                <img
-                    class="mark"
-                    src="/favicon-64.png"
-                    srcset="/favicon-64.png 2x, /favicon-128.png 4x"
-                    alt=""
-                    width="64"
-                    height="64"
-                    decoding="async"
-                />{site.name}
-            </h1>
-            <p class="tagline">{t('brand.tagline')}</p>
+            <BrandHeading />
             <p class="subtitle">{t('brand.subtitle')}</p>
 
             <LiveHero />
@@ -90,76 +67,6 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
     <ActTwo />
     <ActThree />
 </main>
-
-<script>
-    /**
-     * Sizes the mark to the `J` beside it, exactly, on whatever face the platform gave
-     * this heading.
-     *
-     * WHY NOT IN THE STYLESHEET. `1cap` states the cap height and nothing states a
-     * descender, and the `J` has one — so CSS can put the mark's top on the cap line or
-     * its bottom on the baseline, but not its bottom on the bottom of the `J`. The size of
-     * that drop is a property of the resolved font, and the font stack here is
-     * `ui-sans-serif, system-ui`: SF Pro on one machine, Segoe UI on another, something
-     * else again on a third. A number written into the stylesheet would be right on the
-     * machine it was measured on and wrong everywhere else.
-     *
-     * So it is measured where it is used. The stylesheet's `1cap` is what shows until this
-     * runs and if it never runs — a mark on the cap line, ending on the baseline, which is
-     * a normal-looking lockup rather than a broken one.
-     */
-    const HEADING = '.hero h1';
-
-    const mark: HTMLImageElement | null = document.querySelector(`${HEADING} .mark`);
-    const heading: HTMLElement | null = document.querySelector(HEADING);
-
-    if (mark !== null && heading !== null) {
-        const canvas: CanvasRenderingContext2D | null = document.createElement('canvas').getContext('2d');
-
-        const align = (): void => {
-            if (canvas === null) {
-                return;
-            }
-
-            const style: CSSStyleDeclaration = getComputedStyle(heading);
-
-            // The shorthand canvas accepts, which is not the one CSS reports: a line height
-            // in it is either ignored or refused depending on the engine.
-            canvas.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
-
-            const metrics: TextMetrics = canvas.measureText('J');
-            const above: number = metrics.actualBoundingBoxAscent;
-            const below: number = metrics.actualBoundingBoxDescent;
-
-            if (!Number.isFinite(above) || !Number.isFinite(below) || above <= 0) {
-                return;
-            }
-
-            mark.style.height = `${above + below}px`;
-            // Negative moves it down: `vertical-align` is measured up from the baseline, and
-            // the mark's bottom has to land where the tail of the `J` lands.
-            mark.style.verticalAlign = `${-below}px`;
-        };
-
-        align();
-
-        // The heading is smaller on a short screen and on a phone, so the glyph it must
-        // match changes with the viewport rather than only at load.
-        let pending: number | undefined;
-        window.addEventListener('resize', () => {
-            if (pending !== undefined) {
-                cancelAnimationFrame(pending);
-            }
-            pending = requestAnimationFrame(align);
-        });
-
-        // A face that arrives after first paint changes every number above. None is loaded
-        // here today — the stack is the platform's own — and that is a fact about today.
-        if (document.fonts !== undefined) {
-            document.fonts.ready.then(align);
-        }
-    }
-</script>
 
 <style>
     /* The measure itself is in base.css, shared with the acts. What belongs here is the air
@@ -251,7 +158,10 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
             padding-bottom: var(--jd-space-4);
         }
 
-        .hero h1 {
+        /* `:global`, because the heading is a component of its own now and Astro scopes
+           its elements to it. The `.hero` half stays scoped here, so this reaches the
+           heading on this page and no other. */
+        .hero :global(h1) {
             font-size: var(--jd-text-xl);
         }
 
@@ -344,40 +254,6 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
             animation: none;
             opacity: 0.6;
         }
-    }
-
-    h1 {
-        font-size: var(--jd-text-2xl);
-        line-height: var(--jd-line-tight);
-        margin: 0;
-    }
-
-    /*
-     * ALIGNED TO THE J, WHICH IS NOT THE SAME AS SITTING ON THE BASELINE. The heading's
-     * font stack resolves to whatever the platform's system face is, and in every one of
-     * them the `J` drops below the baseline — 11 pixels of 50 here. So its ink box runs
-     * from the cap line to below the line the rest of the word stands on, and matching it
-     * means matching both edges, not one.
-     *
-     * These values are the fallback, and they are the closest CSS can state on its own:
-     * `1cap` is exactly the cap height, and a baseline-aligned image ends on the baseline.
-     * Top edge exact, bottom edge short by the descender. The script below measures the
-     * real glyph and replaces both — see its own note for why that cannot be done here.
-     */
-    .mark {
-        height: 1cap;
-        width: auto;
-        vertical-align: baseline;
-        /* Optical, not metric: the file carries 28 pixels of transparent margin down its
-           left side and 21 down its right, out of 512, so a gap set to the eye reads
-           narrower than the number says. */
-        margin-right: 0.18em;
-    }
-
-    .tagline {
-        font-size: var(--jd-text-lg);
-        color: var(--jd-accent);
-        margin: var(--jd-space-3) 0 0;
     }
 
     .subtitle {
