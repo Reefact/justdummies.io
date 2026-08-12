@@ -163,3 +163,24 @@ kbd {
     color: var(--jd-success);
 }
 
+/*
+ * The page's measure, and where a full-bleed band puts its content back.
+ *
+ * Global because two components need the same one — the first screen and every act — and a
+ * second copy of a number is a second thing to keep in step.
+ *
+ * IT USES NO `vw`, AND THAT IS THE POINT. An act paints its ground edge to edge, and the
+ * obvious way to write that is `margin: 0 calc(50% - 50vw)` on the band itself. `100vw` is
+ * the viewport *including* the classic scrollbar, so on any desktop that shows one the band
+ * comes out about fifteen pixels wider than the page and the document scrolls sideways —
+ * reported as exactly that, and invisible here, because headless Chromium draws its
+ * scrollbars as an overlay that takes no width.
+ *
+ * So the band is an ordinary full-width block and this class is what insets its content.
+ * Nothing has to know how wide the viewport is.
+ */
+.shell {
+    max-width: 72rem;
+    margin-inline: auto;
+    padding-inline: var(--jd-space-4);
+}

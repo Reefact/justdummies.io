@@ -18,52 +18,57 @@ import { site } from '../site';
 const t = useTranslations(localeFromPath(Astro.url.pathname));
 ---
 
-<main class="shell">
-    <header class="hero">
-        {/*
-          The mark is `alt=""` on purpose. The heading it sits in already says JustDummies,
-          and an icon that repeats the word beside it makes a screen reader say the name
-          twice. Its size and its alignment are the script's job below; the width and height
-          attributes are the file's own, so the box is reserved before the image lands and
-          the heading does not jump.
-        */}
-        <h1><img class="mark" src="/favicon.png" alt="" width="512" height="512" decoding="async" />{site.name}</h1>
-        <p class="tagline">{t('brand.tagline')}</p>
-        <p class="subtitle">{t('brand.subtitle')}</p>
+<main>
+    <div class="shell">
+        <header class="hero">
+            {/*
+              The mark is `alt=""` on purpose. The heading it sits in already says JustDummies,
+              and an icon that repeats the word beside it makes a screen reader say the name
+              twice. Its size and its alignment are the script's job below; the width and height
+              attributes are the file's own, so the box is reserved before the image lands and
+              the heading does not jump.
+            */}
+            <h1><img class="mark" src="/favicon.png" alt="" width="512" height="512" decoding="async" />{site.name}</h1>
+            <p class="tagline">{t('brand.tagline')}</p>
+            <p class="subtitle">{t('brand.subtitle')}</p>
 
-        <LiveHero />
+            <LiveHero />
 
-        {/*
-          §7.4's reduced form. This screen is not one of the narrative's reward moments —
-          the reader has been given no reason yet — but the offer does not belong to the
-          first act either, so it belongs here. Behind tabs rather than stacked, because
-          what fits here is one row and the stacked form is three.
+            {/*
+              §7.4's reduced form. This screen is not one of the narrative's reward moments —
+              the reader has been given no reason yet — but the offer does not belong to the
+              first act either, so it belongs here. Behind tabs rather than stacked, because
+              what fits here is one row and the stacked form is three.
 
-          The playground and the repository used to sit under it, and they are in the site
-          header now: a link that is true on every page belongs in the bar that is on every
-          page, and both of them were competing here with the one thing this screen asks
-          for.
-        */}
-        <div class="offer">
-            <InstallTabs placement="hero" />
-        </div>
+              The playground and the repository used to sit under it, and they are in the site
+              header now: a link that is true on every page belongs in the bar that is on every
+              page, and both of them were competing here with the one thing this screen asks
+              for.
+            */}
+            <div class="offer">
+                <InstallTabs placement="hero" />
+            </div>
 
-        {/*
-          The invitation to go on, and a link rather than an ornament: a reader who cannot
-          use a mouse wheel gets the same offer, and it goes exactly where it points.
-          `aria-hidden` on the chevron itself, because "Read the first act" is the whole
-          message and the drawing repeats it.
-        */}
-        <a class="cue" href="#act-one">
-            <span class="cue-label">{t('hero.scrollCue')}</span>
-            <svg class="chevrons" viewBox="0 0 24 26" width="24" height="26" aria-hidden="true" focusable="false">
-                <path class="chevron chevron-first" d="M4 5l8 8 8-8" />
-                <path class="chevron chevron-second" d="M4 13l8 8 8-8" />
-            </svg>
-        </a>
-    </header>
+            {/*
+              The invitation to go on, and a link rather than an ornament: a reader who cannot
+              use a mouse wheel gets the same offer, and it goes exactly where it points.
+              `aria-hidden` on the chevron itself, because "Read the first act" is the whole
+              message and the drawing repeats it.
+            */}
+            <a class="cue" href="#act-one">
+                <span class="cue-label">{t('hero.scrollCue')}</span>
+                <svg class="chevrons" viewBox="0 0 24 26" width="24" height="26" aria-hidden="true" focusable="false">
+                    <path class="chevron chevron-first" d="M4 5l8 8 8-8" />
+                    <path class="chevron chevron-second" d="M4 13l8 8 8-8" />
+                </svg>
+            </a>
+        </header>
+    </div>
 
-    {/* NOT BUILT: §7.4's reduced install block in the site header, which is what the
+    {/* Outside the shell on purpose: each act paints its ground edge to edge, and is the
+        full-width band that does it. Its own `.shell` puts the content back on the measure.
+
+        NOT BUILT: §7.4's reduced install block in the site header, which is what the
         visitor who already knows the product is supposed to reach for. Until it
         exists, the hero's block is the only one above the first act's exit. */}
     <ActOne />
@@ -142,16 +147,16 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
 </script>
 
 <style>
-    /* Wider than the hero needs, because a scene's figure now takes the whole measure
-       and the widest of them is a recorded terminal 130 characters across. The hero keeps
-       its own measure below and stays left-aligned with the acts rather than being
-       centred against them. */
-    .shell {
-        max-width: 72rem;
-        margin: 0 auto;
-        padding: var(--jd-space-8) var(--jd-space-4) var(--jd-space-16);
+    /* The measure itself is in base.css, shared with the acts. What belongs here is the air
+       above the first screen and below the last act — the acts paint their own ground and
+       cannot carry the page's bottom margin for it. */
+    main {
+        padding-block: var(--jd-space-8) var(--jd-space-16);
     }
 
+    /* Narrower than the measure: the hero is prose and one expression, and a scene's figure
+       is what needs the whole 72rem. It stays left-aligned with the acts rather than being
+       centred against them. */
     .hero {
         max-width: 56rem;
     }
@@ -202,8 +207,8 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
      * strip the subtitle off an ordinary 900-pixel desktop that has room for it.
      */
     @media (max-width: 47.99rem) {
-        .shell {
-            padding-top: var(--jd-space-4);
+        main {
+            padding-block-start: var(--jd-space-4);
         }
 
         .hero {
@@ -222,8 +227,8 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
     }
 
     @media (max-height: 820px) {
-        .shell {
-            padding-top: var(--jd-space-4);
+        main {
+            padding-block-start: var(--jd-space-4);
         }
 
         .hero {
