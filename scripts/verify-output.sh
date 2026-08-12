@@ -254,6 +254,24 @@ fi
 [ -f "${dist}/404.html" ] && pass "the English 404 page exists" || fail "dist/404.html is missing, and wrangler.jsonc asks for it"
 [ -f "${dist}/fr/404.html" ] && pass "the French 404 page exists" || fail "dist/fr/404.html is missing, so a mistyped French URL answers in English"
 
+# The code is coloured with classes rather than with the inline styles every
+# off-the-shelf highlighter writes, precisely because of the policy asserted just below.
+# Two ways that can silently come undone: the markup stops being produced, or it is
+# produced and nothing colours it. Both leave a page that looks like the one before any of
+# this was built, so both are checked here.
+coloured="$(grep -l 'class="tok-keyword"' "${dist}"/index.html "${dist}"/fr/index.html 2> /dev/null | wc -l)"
+if [ "${coloured}" -eq 2 ]; then
+  pass "the code on both home pages is marked up for colouring"
+else
+  fail "only ${coloured} of the two home pages carry highlighted code — highlight.ts is not reaching them"
+fi
+
+if grep -rqs "\.tok-keyword{" "${dist}"/_astro/*.css; then
+  pass "and a stylesheet colours those marks"
+else
+  fail "nothing in the shipped CSS colours .tok-keyword, so the code renders in one colour"
+fi
+
 # The policy claims style-src 'self'. That claim is only true while no document
 # carries an inline <style>, and one inlined stylesheet turns the whole policy into
 # a lie that shows up as unstyled pages in production and nowhere else.

@@ -35,6 +35,23 @@
     --jd-success: #7CD992;
     --jd-error: #F2836B;
 
+    /* Colour — code ---------------------------------------------------------
+       Named for the role a fragment plays, never for its hue, so a light theme
+       redefines six values rather than hunting through a highlighter.
+
+       Half of them are the palette's own hues rather than new ones: a keyword
+       takes the accent and a type takes the generated teal, so a code block
+       stays in the family the rest of the page is drawn from. Every value
+       clears 4.5:1 on --jd-surface and on --jd-surface-raised, the two grounds
+       a code block is ever drawn on; the comment is the one that had to be
+       lightened to get there. */
+    --jd-code-comment: #848A94;
+    --jd-code-keyword: #FFB86B;
+    --jd-code-type: #7FD3C1;
+    --jd-code-member: #C7B8FF;
+    --jd-code-string: #9AD9A4;
+    --jd-code-number: #E6C384;
+
     /* Derived surfaces. Kept as tokens rather than inline rgba() so a light
        theme can redefine them without touching a component. */
     --jd-border: #262A30;

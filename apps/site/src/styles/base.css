@@ -107,3 +107,59 @@ pre,
 kbd {
     font-family: var(--jd-font-mono);
 }
+
+/*
+ * The code vocabulary, global on purpose.
+ *
+ * These classes are written by `highlight.ts` at build time and inserted with `set:html`,
+ * which puts them outside every component's scoped styles — an injected span carries no
+ * `data-astro-cid`, so a scoped `.tok-keyword` would never match it. Three components show
+ * code and they should show it the same way, so the vocabulary lives here once.
+ *
+ * A missing rule shows as plain text rather than as nothing, which is the right failure.
+ */
+.tok-comment {
+    color: var(--jd-code-comment);
+}
+
+.tok-keyword {
+    color: var(--jd-code-keyword);
+}
+
+.tok-type {
+    color: var(--jd-code-type);
+}
+
+.tok-member {
+    color: var(--jd-code-member);
+}
+
+.tok-string {
+    color: var(--jd-code-string);
+}
+
+.tok-number {
+    color: var(--jd-code-number);
+}
+
+/* A command line is not C#, and reads better for saying so: the program, then its flags. */
+.tok-command {
+    color: var(--jd-code-keyword);
+}
+
+.tok-flag {
+    color: var(--jd-code-member);
+}
+
+/*
+ * Recorded output is marked rather than coloured — it is a transcript, and a transcript in
+ * six colours starts to look composed. These two are the run's own verdict.
+ */
+.tok-fail {
+    color: var(--jd-error);
+}
+
+.tok-ok {
+    color: var(--jd-success);
+}
+
