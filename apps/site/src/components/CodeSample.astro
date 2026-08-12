@@ -168,7 +168,18 @@ const printed: string = ran === undefined ? '' : testRun(ran);
 
         const fold = (closed: boolean): void => {
             code.style.maxHeight = closed ? CLIPPED : '';
-            figure.dataset.folded = closed ? '' : undefined!;
+
+            // `delete`, not an assignment of `undefined`. Assigning it writes the *string*
+            // "undefined" into the attribute, so `data-folded` was still set on an open
+            // figure: the CSS that draws the fade kept matching, and the click handler's
+            // `=== undefined` was never true again — the button opened the file once and
+            // then did nothing for the rest of the page's life.
+            if (closed) {
+                figure.dataset.folded = '';
+            } else {
+                delete figure.dataset.folded;
+            }
+
             button.setAttribute('aria-expanded', String(!closed));
             // The count belongs on the opening label alone: "Fold (101 lines)" says nothing
             // a reader looking at the open file cannot already see.
