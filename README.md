@@ -57,8 +57,10 @@ pnpm run deploy # publish dist/ as built — it does not rebuild, so build first
 headers and the redirect rules are the real ones. Prefer it over any other local server when
 checking anything that depends on them.
 
-Pushing to `main` builds and verifies. **A `release/*` tag publishes** — a branch never does:
-`git tag -a "release/$(date -u +%Y-%m-%dT%H-%M-%SZ)" -m …`
+Pushing to `main` builds and verifies. **A `release/*` tag publishes** — a branch never does. The
+tag is named after the UTC instant it was made and its message repeats that name; the deployment
+guide gives the command for PowerShell and for bash, and `./scripts/check-release-tag.sh` reads the
+tag back once you have pushed it.
 
 `curl -s https://justdummies.io/version.json` says which release is live, with the commit it was
 built from. The build stamps it, `verify-output.sh` asserts it, and it is served `no-store`.

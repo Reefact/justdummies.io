@@ -293,6 +293,7 @@ None of this needs writing:
 | `apps/site/public/.assetsignore` | What must **never** go up in the upload. |
 | `scripts/verify-output.sh` | Seventeen assertions on the artefact's shape, read from disk. Several exist only because their failure is invisible until a visitor meets it. |
 | `scripts/check-served-headers.sh` | Six assertions on what the runtime **actually serves**: it starts the engine and asks it. A rules file can be present, well formed, and ignored — which is exactly what happened here. |
+| `scripts/check-release-tag.sh` | Three assertions on the tag that publishes: it is annotated, its message is its name, and its name is the moment it was made. The first eight release tags failed the third. |
 | `.github/workflows/build.yml` | Builds, verifies, then publishes — as soon as the credentials exist. |
 
 On Workers, `_headers` and `_redirects` **are not served as files**: they are parsed, and their
@@ -807,26 +808,72 @@ repository secret**. Two entries, exactly these names:
 
 ### ✅ Check
 
-**A tag is what publishes.** Put one on the commit you want online:
+**A tag is what publishes.** Put one on the commit you want online. In PowerShell, which is the
+shell this repository's releases are tagged from:
+
+```powershell
+git checkout main; git pull origin main
+$tag = 'release/{0:yyyy-MM-dd}T{0:HH-mm-ss}Z' -f [DateTime]::UtcNow
+git tag -a $tag -m $tag
+git push origin $tag
+```
+
+The same four steps in bash, on Linux, macOS or WSL:
 
 ```bash
 git checkout main && git pull origin main
-git tag -a "release/$(date -u +%Y-%m-%dT%H-%M-%SZ)" -m "what this release brings"
-git push origin --tags
+tag="release/$(date -u +%Y-%m-%dT%H-%M-%SZ)"
+git tag -a "$tag" -m "$tag"
+git push origin "$tag"
 ```
+
+Both forms read the clock **once** and use the answer three times. Two readings would sit on either
+side of a second sooner or later: two `date` calls on one line disagreed 5 times in 2000 runs here.
+A tag whose name and message disagree looks tampered with, and the last step would push the wrong
+one of the two.
+
+The last step pushes **that tag**, not `--tags`. `git push origin --tags` publishes every tag the
+clone holds, including one you made on a branch and never meant to send — which is a mistake this
+repository has already made once.
 
 The tag's name is a **UTC timestamp**, not a version number. Nothing consumes this site, so the
 question semver answers — "is this compatible with what I have?" — never arises, while the
-arbitration it demands (minor or patch, for a landing page?) is pure cost. `date -u` produces the
+arbitration it demands (minor or patch, for a landing page?) is pure cost. The clock produces the
 name without your having to consult `git tag` first, it cannot collide, and lexical order follows
 chronological order.
 
 Above all it matches the unit Cloudflare hands back: `wrangler deployments list` prints timestamps,
 so a timestamped tag lines up against it directly — which is the whole reason for naming releases.
 
-The tag is **annotated** (`-a -m`) rather than lightweight: it carries an author, a date and a
-message, so `git show` on the tag will say *why* that release happened. A lightweight tag says
-nothing.
+> ⚠️ **`date -u` reads the wrong clock in PowerShell, and does not say so.** Windows PowerShell
+> resolves `date` to its `Get-Date` alias, and `-u` binds to `-UFormat`. `-UFormat` formats the
+> **local** clock and prints the `Z` as an ordinary letter. Under `Europe/Paris` in August,
+> `Get-Date -UFormat "+%Y-%m-%dT%H-%M-%SZ"` answered `2026-08-12T17-06-40Z` while UTC read
+> `15:06:41`. The first eight release tags of this repository carry that two-hour lie in their
+> names. PowerShell 7 rejects `-u` as ambiguous instead — `-UFormat` and `-UnixTimeSeconds` both
+> match it — so one bash line fails on one machine and lies on the next. `[DateTime]::UtcNow` is
+> UTC on every version, which is why the block above uses it.
+
+The tag is **annotated** (`-a -m`) rather than lightweight: it carries an author and a creation
+date, and a lightweight tag carries neither. That date is what makes the name checkable — it is the
+moment the tag was really made, so the name can be held against it.
+
+The message repeats the name, and says nothing else on purpose. What a release brings is the list of
+commits it embarks, and CI publishes exactly that list on the release page (`--generate-notes`). A
+sentence typed at `git tag -m` restates that list from memory, once, and never again. The GitHub
+release takes its title from the message, so the title is the tag's name too.
+
+Read the tag back the moment you have pushed it — from WSL on Windows, like everything under
+`scripts/`:
+
+```bash
+./scripts/check-release-tag.sh
+```
+
+It takes the most recent `release/*` tag, and it fails when the tag is lightweight, when the message
+is not the name, or when the name is more than a minute from the moment the tag was made. CI runs
+the same script on the tag being published, in the **Release notes** job, before it writes the
+release page.
 
 Why a tag rather than a merge, what that costs, and the naming schemes rejected on the way:
 [`ADR-0001`](adr/0001-a-release-tag-publishes-not-a-merge-en.md).
@@ -902,6 +949,8 @@ On every push to `main` **and** on every `release/*` tag:
    actually serves** (step 2's script), then uploads the artefact.
 2. **deploy** — fetches **that** artefact rather than rebuilding, replays `verify-output.sh` on
    the downloaded bytes, then runs `pnpm run deploy`.
+3. **Release notes** — reads the tag back with `check-release-tag.sh`, then writes the release page
+   from the commits the tag embarks. It runs on tags only, and it is the last job of the three.
 
 Three choices that do not guess themselves:
 
