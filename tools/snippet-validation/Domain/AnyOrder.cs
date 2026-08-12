@@ -40,18 +40,17 @@ public sealed partial class AnyOrder : IAny<Order> {
 
     /// <summary>Creates the generator with a default recipe for every constructor parameter.</summary>
     //
-    // On one line, and kept that way on purpose: the site shows this recipe directly under
-    // the one the tool wrote, and the whole of the difference between them is
-    // `.StartingWith("ORD-")`. Broken across three lines it reads as a rewrite of the
-    // parameter rather than as a link added to it. 111 characters once dedented, inside the
-    // 130 the page's measure holds.
-    // <snippet:completed-recipe>
+    // On one line, and kept that way on purpose: the whole of the difference with the recipe
+    // the tool wrote is `.StartingWith("ORD-")`, and the page's prose names it. Broken across
+    // three lines it reads as a rewrite of the parameter rather than as a link added to it.
+    //
+    // No snippet markers: the page publishes the tool's own file, and this one is the edited
+    // copy the second act is *about* rather than a figure of its own.
     public AnyOrder()
         : this(reference:  Any.String().NonEmpty().WithMaxLength(20).StartingWith("ORD-").As(OrderReference.Create),
                customerId: Any.Guid().NonEmpty().As(CustomerId.Create),
                total:      Any.Decimal().Positive().As(Money.Create),
                status:     Any.Enum<OrderStatus>()) { }
-    // </snippet:completed-recipe>
 
     private AnyOrder(IAny<OrderReference> reference,
                      IAny<CustomerId>     customerId,

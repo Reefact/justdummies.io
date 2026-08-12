@@ -49,11 +49,12 @@ import { site } from '../../site';
         <ToolRun id="generate-order" command={site.cli.example} />
     </Scene>
 
-    {/* Both states in one box: what the tool wrote, then the same recipe with the link the
-        reader has already written. The whole difference between them is `.StartingWith`, and
-        two boxes would make a reader hunt for it. */}
+    {/* The whole file, exactly as the tool wrote it, and nothing beside it. A reader asked
+        what `dum` produces; an excerpt answers a smaller question than the one they have.
+        It folds — a hundred and one lines would bury the words under it — and it ships
+        unfolded for a reader whose scripting never arrives. */}
     <Scene name="the-missing-link" title="act2.link.title" body="act2.link.body">
-        <CodeSample id="scaffolded-recipe" also="completed-recipe" outcome="none" />
+        <CodeSample id="any-order" from="tool" outcome="none" />
     </Scene>
 
     <Scene

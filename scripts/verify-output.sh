@@ -254,6 +254,27 @@ fi
 [ -f "${dist}/404.html" ] && pass "the English 404 page exists" || fail "dist/404.html is missing, and wrangler.jsonc asks for it"
 [ -f "${dist}/fr/404.html" ] && pass "the French 404 page exists" || fail "dist/fr/404.html is missing, so a mistyped French URL answers in English"
 
+# The tallest figure on the page folds, and the button that unfolds it is attached by the
+# script. Two things have to be true of the shipped markup, and neither is visible in a
+# screenshot: the file is in the page whole, and the button is `hidden` until something can
+# act on it (ADR-0004). A reader whose scripting never arrives reads a hundred and one lines
+# rather than a clipped block no button will ever reopen.
+if grep -q 'data-fold' "${dist}/index.html"; then
+  if grep -qE '<button[^>]*class="fold"[^>]*hidden' "${dist}/index.html"; then
+    pass "the fold's button ships hidden, so no dead control appears without scripting"
+  else
+    fail "the fold's button is not hidden in the markup — without scripting it does nothing"
+  fi
+
+  if grep -q 'max-height' "${dist}/index.html"; then
+    fail "the shipped markup clips the folded figure — a reader without scripting could never open it"
+  else
+    pass "and the figure ships unfolded, clipped only once the button can reopen it"
+  fi
+else
+  fail "no folded figure in the shipped page — the file the tool writes is the one that needs it"
+fi
+
 # `100vw` is the viewport *including* the classic scrollbar, so anything sized by it on a
 # desktop showing one comes out about fifteen pixels wider than the page — and the document
 # scrolls sideways for no visible reason. It was the full-bleed act grounds, it was reported

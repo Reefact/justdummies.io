@@ -78,19 +78,22 @@ assert_prose "ADR-0008 the third act opens on what the reader gets, not on the m
 # putting it back is the change a well-meant editorial pass makes.
 deferred="$(node -e '
 const { readFileSync } = require("node:fs");
-const snippets = JSON.parse(readFileSync(`${process.argv[1]}/snippets.json`, "utf8"));
-const uses = (id) => String(snippets[id] ?? "").includes(".As(");
+const dir = process.argv[1];
+const snippets = JSON.parse(readFileSync(`${dir}/snippets.json`, "utf8"));
+const written = JSON.parse(readFileSync(`${dir}/tool-written.json`, "utf8"));
 const wrong = [];
 const act = ["literal-test", "factory-test", "factory-handwritten", "factory-careless",
              "order-reference-invariants", "factory-constrained"];
 
 for (const id of act) {
-    if (uses(id)) { wrong.push(`${id} uses .As(...) before the reader has any use for it`); }
+    if (String(snippets[id] ?? "").includes(".As(")) {
+        wrong.push(`${id} uses .As(...) before the reader has any use for it`);
+    }
 }
-// Not belt-and-braces: if the recipe ever stops carrying it, the loop above passes on an
-// empty premise and this check silently stops meaning anything.
-if (!uses("completed-recipe")) {
-    wrong.push("the recipe the tool writes no longer uses .As(...), so the deferral checks nothing");
+// Not belt-and-braces: if the file the tool writes ever stops carrying it, the loop above
+// passes on an empty premise and this check silently stops meaning anything.
+if (!String(written["any-order"] ?? "").includes(".As(")) {
+    wrong.push("the file the tool writes no longer uses .As(...), so the deferral checks nothing");
 }
 process.stdout.write(wrong.join("; "));
 ' "${root}/apps/site/src/generated")"
