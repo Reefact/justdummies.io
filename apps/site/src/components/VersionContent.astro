@@ -1,0 +1,150 @@
+---
+/**
+ * What the deployment says about itself, laid out for a reader.
+ *
+ * The three values come from `version.json` — the same file the site serves at
+ * /version.json, imported here at build time rather than fetched. Nothing is fetched
+ * because nothing needs to be: the document and the file are built together and shipped
+ * together, and the artefact's HTML is served `must-revalidate`, so a reader cannot hold
+ * a cached page whose figures are older than the file beside it. That also leaves this
+ * page with no script at all, which is the strongest form of the rule that a page works
+ * without one.
+ *
+ * A null value prints `#null` rather than an empty cell or a sentence. Both of the two
+ * that can be null mean something precise — `release: null` is a build that came from a
+ * branch, `commit: null` is a build with no git behind it — and a reader who came to this
+ * page came for the raw fact.
+ */
+import BrandHeading from './BrandHeading.astro';
+import { localeFromPath } from '../i18n/routing';
+import { useTranslations } from '../i18n/ui';
+import { commitUrl, version } from '../version';
+
+const t = useTranslations(localeFromPath(Astro.url.pathname));
+
+/** What a missing value looks like, everywhere, so it cannot be mistaken for a blank. */
+const NOTHING: string = '#null';
+---
+
+<main>
+    <div class="shell">
+        <header class="brand">
+            <BrandHeading />
+        </header>
+
+        <section class="build" aria-labelledby="build-heading">
+            <h2 id="build-heading">{t('version.heading')}</h2>
+            <p class="lead">{t('version.lead')}</p>
+
+            <table class="facts">
+                <tbody>
+                    <tr>
+                        <th scope="row">{t('version.release')}</th>
+                        <td class="value" data-field="release">
+                            {version.release === null ? <span class="nothing">{NOTHING}</span> : version.release}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">{t('version.commit')}</th>
+                        <td class="value" data-field="commit">
+                            {
+                                version.commit === null ? (
+                                    <span class="nothing">{NOTHING}</span>
+                                ) : (
+                                    <a
+                                        href={commitUrl(version.commit)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        title={t('version.commitLink')}
+                                    >
+                                        {version.commit}
+                                    </a>
+                                )
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">{t('version.built')}</th>
+                        <td class="value" data-field="built">
+                            <time datetime={version.built}>{version.built}</time>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
+</main>
+
+<style>
+    main {
+        padding-block: var(--jd-space-8) var(--jd-space-16);
+    }
+
+    .brand {
+        margin-bottom: var(--jd-space-8);
+    }
+
+    .build {
+        max-width: 56rem;
+    }
+
+    h2 {
+        font-size: var(--jd-text-xl);
+        line-height: var(--jd-line-tight);
+        margin: 0;
+    }
+
+    .lead {
+        color: var(--jd-text-muted);
+        margin: var(--jd-space-2) 0 var(--jd-space-6);
+    }
+
+    .facts {
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-md);
+        border-collapse: separate;
+        border-spacing: 0;
+        background: var(--jd-surface);
+        /* The table is as wide as its content needs and no wider: three short labels and
+           one long value, stretched to the measure, would put half a screen of nothing
+           between the two. */
+        width: 100%;
+        text-align: left;
+    }
+
+    th,
+    td {
+        padding: var(--jd-space-3) var(--jd-space-4);
+        vertical-align: baseline;
+    }
+
+    /* Between the rows, not around them: the outer border is the table's own, and doubling
+       it at the edges is what makes a bordered table look like a spreadsheet. */
+    tr + tr th,
+    tr + tr td {
+        border-top: 1px solid var(--jd-border);
+    }
+
+    th {
+        color: var(--jd-text-muted);
+        font-weight: 500;
+        white-space: nowrap;
+        width: 1%;
+    }
+
+    .value {
+        font-family: var(--jd-font-mono);
+        font-size: var(--jd-text-sm);
+        /* A commit is forty characters with nowhere to break. Left alone it is what makes a
+           phone scroll sideways, which the layout checks would catch — after it shipped. */
+        overflow-wrap: anywhere;
+    }
+
+    .nothing {
+        color: var(--jd-text-muted);
+    }
+
+    a {
+        color: var(--jd-accent);
+    }
+</style>

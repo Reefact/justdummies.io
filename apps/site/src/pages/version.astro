@@ -1,0 +1,19 @@
+---
+/**
+ * /version — what this deployment is.
+ *
+ * Nothing links to it today. That is a fact about the site's navigation, not a property
+ * of the page: it declares its canonical and its translation like any other, so the day
+ * something does link to it, nothing here has to change.
+ */
+import VersionContent from '../components/VersionContent.astro';
+import Base from '../layouts/Base.astro';
+import { useTranslations } from '../i18n/ui';
+import { site } from '../site';
+
+const t = useTranslations('en');
+---
+
+<Base title={`${t('version.heading')} — ${site.name}`} description={t('version.meta.description')}>
+    <VersionContent />
+</Base>

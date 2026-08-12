@@ -1,0 +1,19 @@
+---
+/**
+ * /fr/version — la même page, en français.
+ *
+ * Rien ne pointe vers elle aujourd'hui. C'est un fait sur la navigation du site, pas une
+ * propriété de la page : elle déclare sa canonique et sa traduction comme n'importe quelle
+ * autre, donc le jour où quelque chose y mènera, rien ici n'aura à changer.
+ */
+import VersionContent from '../../components/VersionContent.astro';
+import Base from '../../layouts/Base.astro';
+import { useTranslations } from '../../i18n/ui';
+import { site } from '../../site';
+
+const t = useTranslations('fr');
+---
+
+<Base title={`${t('version.heading')} — ${site.name}`} description={t('version.meta.description')}>
+    <VersionContent />
+</Base>

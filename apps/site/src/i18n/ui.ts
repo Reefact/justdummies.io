@@ -56,6 +56,19 @@ const en = {
         'JustDummies produces arbitrary test values that satisfy the constraints you declare. Your tests then say what they are about, and nothing else.',
 
     /**
+     * /version — what the deployment says about itself. The three labels name the three
+     * fields of version.json, which the page reads at build time out of the same file the
+     * site serves.
+     */
+    'version.heading': 'This build',
+    'version.lead': 'The site is serving this build.',
+    'version.release': 'Release',
+    'version.commit': 'Commit',
+    'version.built': 'Built',
+    'version.commitLink': 'Read this commit on GitHub',
+    'version.meta.description': 'The release, the commit and the build time of the site you are reading.',
+
+    /**
      * ACT I — validity. The claim is that a value a test does not care about still has
      * to be valid, and that declaring what must be true is a different job from writing
      * a value down.
@@ -220,6 +233,14 @@ const fr: Record<UiKey, string> = {
     'home.install.label': 'Installer le package',
     'home.meta.description':
         "JustDummies produit des valeurs de test arbitraires qui respectent les contraintes que vous déclarez. Vos tests ne disent plus que ce dont ils parlent.",
+
+    'version.heading': 'Ce build',
+    'version.lead': 'Le site sert ce build.',
+    'version.release': 'Release',
+    'version.commit': 'Commit',
+    'version.built': 'Construit le',
+    'version.commitLink': 'Lire ce commit sur GitHub',
+    'version.meta.description': 'La release, le commit et la date de construction du site que vous lisez.',
 
     'act1.title': 'La valeur dont votre test se moque',
     'act1.summary': 'Elle doit quand même être valide.',
