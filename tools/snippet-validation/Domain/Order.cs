@@ -25,10 +25,10 @@ public sealed record OrderReference {
 
     public string Value { get; }
 
-    // The site shows these guard clauses as they are written here, so their width is
-    // now part of what they have to get right: the throws below are wrapped rather
-    // than left on one line, because a code block a reader has to scroll sideways to
-    // finish reads as broken whatever it says.
+    // The site shows these guard clauses as they are written here, so their width is part
+    // of what they have to get right. One line each: dedented to the region's own margin
+    // they measure 95 and 101 characters, well inside the 130 the page's measure holds,
+    // and a throw broken in two makes a reader assemble a sentence that always fitted.
     //
     // Nothing between the markers is commentary. What a reader sees is the method.
     // <snippet:order-reference-invariants>
@@ -36,13 +36,11 @@ public sealed record OrderReference {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
 
         if (!value.StartsWith("ORD-", StringComparison.Ordinal)) {
-            throw new ArgumentException(
-                "An order reference must start with ORD-.", nameof(value));
+            throw new ArgumentException("An order reference must start with ORD-.", nameof(value));
         }
 
         if (value.Length > 20) {
-            throw new ArgumentException(
-                "An order reference cannot exceed 20 characters.", nameof(value));
+            throw new ArgumentException("An order reference cannot exceed 20 characters.", nameof(value));
         }
 
         return new OrderReference(value);
