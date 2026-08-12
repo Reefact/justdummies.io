@@ -2,33 +2,38 @@
 /**
  * ACT I — validity.
  *
- * The six beats the specification fixes (§9.2), in the order it fixes them:
+ * Five beats, following one factory as it stops lying:
  *
- *   an incomplete test
- *     → a value of no importance that has to be valid anyway
- *     → the invariants of the value object
- *     → the chain of constraints that satisfies them
- *     → the value becomes an object of the domain, in one operation
- *     → the test works, and still says too much
+ *   the test everyone writes, with three values named for what they are not
+ *     → the same test with the values behind factories, which reads and still lies
+ *     → the library draws a genuinely arbitrary value, and the domain refuses it
+ *     → the invariants of the value object, which say why
+ *     → the constraints declared as a chain, inside the factory
  *
- * It is one transformation, not six slides (§9.2): the same test, the same reference,
- * followed from the hole in the first scene to the arrangement in the last. The
- * snippet source says the same thing — the helper the first scene calls is the
- * arrangement the sixth scene shows.
+ * It is one transformation, not five slides (§9.2): the same test, the same factory,
+ * followed from the literal in the first scene to the chain in the last. The snippet
+ * source says the same thing — three namespaces holding three states of one class, so
+ * the page shows a class evolving rather than three different classes.
+ *
+ * WHAT IS NOT HERE ANY MORE, and why (ADR-0006). The chain producing a domain object in
+ * one link, and the four-argument arrangement that worked and said too much. The first
+ * was a step the reader could not use yet; `.As(OrderReference.Create)` comes back in
+ * the recipe the tool writes, where it arrives having been earned. The second restated
+ * what the act had already shown.
  *
  * The act ends on the library alone, which is all it has demonstrated. The tool has
  * not appeared yet, so the exit does not offer it.
  */
 import Act from './Act.astro';
 import Scene from './Scene.astro';
+import CodeSample from '../CodeSample.astro';
 ---
 
 <Act
     name="act-one"
-    label="act1.label"
     title="act1.title"
     summary="act1.summary"
-    ground="page"
+    ground="raised"
     exitTitle="act1.exit.title"
     exitBody="act1.exit.body"
 >
@@ -36,15 +41,24 @@ import Scene from './Scene.astro';
         name="the-test"
         title="act1.test.title"
         body="act1.test.body"
-        sample="incomplete-test"
+        sample="literal-test"
         outcome="none"
     />
+
+    {/* Two figures in one beat, and they belong together: the test that finally reads,
+        and immediately underneath the factory that lets it read while still lying. Split
+        across two scenes the second would look like a new subject rather than the catch
+        in the first. */}
+    <Scene name="the-factories" title="act1.factories.title" body="act1.factories.body">
+        <CodeSample id="factory-test" outcome="none" />
+        <CodeSample id="factory-handwritten" outcome="none" />
+    </Scene>
 
     <Scene
         name="the-careless-value"
         title="act1.careless.title"
         body="act1.careless.body"
-        sample="naive-reference"
+        sample="factory-careless"
         outcome="refusal"
     />
 
@@ -60,30 +74,7 @@ import Scene from './Scene.astro';
         name="the-constraints"
         title="act1.constraints.title"
         body="act1.constraints.body"
-        sample="constrained-reference"
+        sample="factory-constrained"
         outcome="sequence"
-    />
-
-    {/*
-      A sequence here as well as in the scene above, and the repetition is the point:
-      the two figures differ by one link and by the type on the left, and by nothing
-      else. Showing one draw instead would also make a short reference — the domain
-      allows `ORD-` plus a single character — read as a truncation rather than as the
-      arbitrary value it is. Four of them read as variety.
-    */}
-    <Scene
-        name="the-derivation"
-        title="act1.derivation.title"
-        body="act1.derivation.body"
-        sample="derived-reference"
-        outcome="sequence"
-    />
-
-    <Scene
-        name="the-verbose-test"
-        title="act1.verbose.title"
-        body="act1.verbose.body"
-        sample="verbose-arrangement"
-        outcome="none"
     />
 </Act>
