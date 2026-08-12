@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Stamp the artefact with what it is: dist/version.json.
+# Stamp the build with what it is: version.json.
 #
 # It answers one question the deployment could not answer about itself — which
 # release is live. ADR-0001 makes a release/* tag the unit of publication, and
@@ -9,19 +9,32 @@
 # Written by the BUILD, from git, not by the deploy job. The deploy job publishes
 # the artefact it downloads and never rebuilds, precisely so that nothing reaches
 # production unverified; a file written after verification would be the one byte in
-# the upload no check had ever seen. Generating it here means verify-output.sh
-# asserts it, and the deployment publishes exactly what was checked.
+# the upload no check had ever seen. Generating it in the build means
+# verify-output.sh asserts it, and the deployment publishes exactly what was checked.
 #
 # Every build produces one, not just a release build. A file that exists only
 # sometimes is a file every reader has to test for, and `release: null` says "this
 # is not a release" more usefully than a 404 does.
+#
+# IT IS WRITTEN BEFORE THE SITE IS BUILT, into src/generated/ beside everything else
+# the site imports, and copied into the artefact afterwards by build-site.sh. It used
+# to be written straight into dist/ after the build, which was simpler and stopped
+# being possible the moment a page had to display it: Astro clears its output
+# directory, so a file written after the build cannot be read during it. Writing it
+# twice — once for the page, once for the artefact — would put two timestamps on one
+# build, and the whole worth of this file is that it does not disagree with itself.
+#
+# Unlike its neighbours in src/generated/, this one is NOT committed: it changes on
+# every build by construction, so committing it would leave every build dirty. It is
+# in .gitignore, and CI's check that the generated content is current compares tracked
+# files, which this is not.
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-dist="${root}/dist"
+generated="${root}/apps/site/src/generated"
 
-if [ ! -d "${dist}" ]; then
-  echo "generate-version: no dist/ to stamp. This runs after the site is built." >&2
+if [ ! -d "${generated}" ]; then
+  echo "generate-version: no apps/site/src/generated/ to write into." >&2
   exit 1
 fi
 
@@ -68,7 +81,7 @@ json_or_null() {
   if [ -z "$1" ]; then printf 'null'; else printf '"%s"' "$1"; fi
 }
 
-cat > "${dist}/version.json" <<JSON
+cat > "${generated}/version.json" <<JSON
 {
   "release": $(json_or_null "${release}"),
   "commit": $(json_or_null "${commit}"),
@@ -76,4 +89,4 @@ cat > "${dist}/version.json" <<JSON
 }
 JSON
 
-echo "  dist/version.json  (release: ${release:-none}, commit: ${commit:0:7})"
+echo "  apps/site/src/generated/version.json  (release: ${release:-none}, commit: ${commit:0:7})"

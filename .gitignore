@@ -24,6 +24,15 @@ artifacts/
 # stops halfway leaves it partial and a partial artefact must never be committed.
 /dist/
 
+# The build's own stamp ---------------------------------------------------------
+# The one file in src/generated/ that is not committed. Its siblings only move when
+# something real moves, which is what makes their diffs worth reading; this one
+# carries the commit and the moment of the build, so it moves on every build and
+# would leave every working tree dirty. CI's check that the generated content is
+# current compares tracked files, so ignoring it keeps that check honest rather than
+# weakening it.
+apps/site/src/generated/version.json
+
 # Browser checks ---------------------------------------------------------------
 # What a failed run leaves behind so it can be looked at afterwards: a trace per
 # failed check, and the report that opens them. Both are output, and both are large.
