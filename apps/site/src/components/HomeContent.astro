@@ -44,7 +44,9 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
           page, and both of them were competing here with the one thing this screen asks
           for.
         */}
-        <InstallTabs placement="hero" />
+        <div class="offer">
+            <InstallTabs placement="hero" />
+        </div>
 
         {/*
           The invitation to go on, and a link rather than an ornament: a reader who cannot
@@ -213,6 +215,7 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
             display: none;
         }
 
+        .offer,
         .cue {
             padding-top: var(--jd-space-4);
         }
@@ -238,6 +241,7 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
             display: none;
         }
 
+        .offer,
         .cue {
             padding-top: var(--jd-space-4);
         }
@@ -249,15 +253,26 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
         align-items: center;
         gap: var(--jd-space-2);
         align-self: center;
-        margin-top: auto;
-        padding-top: var(--jd-space-12);
         color: var(--jd-text-muted);
         font-size: var(--jd-text-sm);
         text-decoration: none;
     }
 
-    /* Enough to read as the foot of the screen, not so much that it pushes itself off it. */
+    /*
+     * THE TWO GAPS ON THIS SCREEN ARE ONE GAP. Two `auto` margins in a flex column share
+     * whatever space is left over *equally*, so the room above the offer and the room above
+     * the chevron come out the same however tall the screen is. With the auto on the
+     * chevron alone — which is what this was — every spare pixel went to the bottom and the
+     * offer sat against the playground row, reported as exactly that.
+     *
+     * The padding is the floor under each of them, for the screen with no spare space to
+     * share: enough to read as a break, not so much that it pushes the chevron off. It is
+     * the same number on both, because a floor under one gap only is the asymmetry the auto
+     * margins are here to remove.
+     */
+    .offer,
     .cue {
+        margin-top: auto;
         padding-top: var(--jd-space-8);
     }
 
