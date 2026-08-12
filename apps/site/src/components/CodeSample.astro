@@ -83,6 +83,15 @@ const printed: string = ran === undefined ? '' : testRun(ran);
     }
 
     {
+        printed !== '' && (
+            <figcaption class="ran">
+                <span class="label">{t('sample.whenItRuns')}</span>
+                <pre class="printed" set:html={highlight(printed, 'output')} />
+            </figcaption>
+        )
+    }
+
+    {
         rejected !== '' && (
             <figcaption class="refused">
                 <span class="arrow" aria-hidden="true">
@@ -146,5 +155,22 @@ const printed: string = ran === undefined ? '' : testRun(ran);
     .message {
         font-family: var(--jd-font-mono);
         color: var(--jd-error);
+    }
+
+    /* The run stacks rather than sitting on one line: it is four lines of output, not a
+       value. Everything else about it is the caption strip the drawn values already use, so
+       the two read as the same kind of thing — what the build saw. */
+    .ran {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--jd-space-2);
+    }
+
+    .printed {
+        margin: 0;
+        overflow-x: auto;
+        font-size: 0.75rem;
+        line-height: 1.5;
+        color: var(--jd-text-muted);
     }
 </style>

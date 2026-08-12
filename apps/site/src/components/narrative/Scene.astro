@@ -52,9 +52,19 @@ interface Props {
      */
     sample?: string;
     outcome?: 'value' | 'sequence' | 'refusal' | 'none';
+    /**
+     * One sentence between the title and the figure, for a scene whose figure is an offer
+     * rather than an argument. The last exit needs it: "Envie d'essayer ?" is an invitation
+     * and a row of install commands underneath is the answer, but nothing between them says
+     * what a reader is agreeing to. Every other scene puts its words after the figure,
+     * because there the figure is the evidence and the words are what it shows.
+     */
+    lead?: UiKey;
+    /** A recorded run to print under the figure. Passed through to the sample. */
+    ran?: string;
 }
 
-const { name, title, body, sample, outcome = 'value' } = Astro.props;
+const { name, title, body, sample, outcome = 'value', lead, ran } = Astro.props;
 
 const t = useTranslations(localeFromPath(Astro.url.pathname));
 
@@ -73,8 +83,10 @@ if (!ownFigure && sample === undefined) {
     */}
     <h3 id={`${name}-title`} data-reveal>{t(title)}</h3>
 
+    {lead !== undefined && <p class="lead" data-reveal>{t(lead)}</p>}
+
     <div class="figure" data-reveal data-reveal-delay="1">
-        {ownFigure ? <slot /> : <CodeSample id={sample!} outcome={outcome} />}
+        {ownFigure ? <slot /> : <CodeSample id={sample!} outcome={outcome} ran={ran} />}
     </div>
 
     <p class="commentary" data-reveal data-reveal-delay="2">{t(body)}</p>
@@ -158,6 +170,14 @@ if (!ownFigure && sample === undefined) {
     /* A reading measure, not the figure's — a paragraph as wide as a code block is one
        nobody finishes. 42rem was chosen when the titles were narrow too, and left the
        commentary looking like a lost column once they took the page's width. */
+    /* Above the figure, so it reads as the sentence that introduces it rather than as a
+       caption for it. Same measure as the commentary; the two are the same kind of text. */
+    .lead {
+        margin: 0 0 var(--jd-space-4);
+        max-width: 52rem;
+        color: var(--jd-text-muted);
+    }
+
     .commentary {
         margin: 0;
         max-width: 52rem;

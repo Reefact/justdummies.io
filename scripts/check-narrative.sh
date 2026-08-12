@@ -34,12 +34,12 @@ assert_prose() {
   fi
 }
 
-# §9.4 asks for a hinge and ADR-0007 says what it now has to carry: the reader's own
-# question, and the answer to it, before any figure on this page has failed. A hinge that
-# announced the red instead would put the objection two scenes ahead of its answer, which is
-# the ordering that decision reverses.
-assert_prose "§9.4 / ADR-0007 the hinge asks the reader's question and points at the answer" \
-  "act3\.hinge[\s\S]{0,300}?change on every run[\s\S]{0,200}?attribute you have been looking at"
+# §9.4 asks for a hinge and ADR-0007 says what it has to carry: the reader's own question,
+# put to them before any figure on this page has failed. A hinge that announced the red
+# instead would state the objection two scenes ahead of its answer, which is the ordering
+# that decision reverses.
+assert_prose "§9.4 / ADR-0007 the hinge asks the reader's own question" \
+  "act3\.hinge[\s\S]{0,300}?change on every run[\s\S]{0,200}?made a test fail"
 assert_prose "§9.9 the tool marked the parameter rather than guess" \
   "act2\.link\.body[\s\S]{0,200}?rather than guess"
 assert_prose "§9.9 the file it wrote throws until the link is added" \
@@ -111,7 +111,7 @@ const snippets = JSON.parse(readFileSync(`${process.argv[1]}/snippets.json`, "ut
 // prose around them, because the word only ever appears here as the attribute.
 const carries = (id) => /\bReproducible\b/.test(String(snippets[id] ?? ""));
 const wrong = [];
-for (const id of ["concise-test", "intermittent-test", "replayed-test"]) {
+for (const id of ["wanted-test", "concise-test", "intermittent-test", "replayed-test"]) {
     if (!carries(id)) { wrong.push(`${id} draws its values and does not carry [Reproducible]`); }
 }
 for (const id of ["literal-test", "factory-test"]) {

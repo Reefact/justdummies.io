@@ -23,6 +23,12 @@ interface Props {
     summary: UiKey;
     exitTitle: UiKey;
     exitBody: UiKey;
+    /**
+     * One sentence between the exit's title and its commands, where the title is an
+     * invitation rather than a claim. Only the last exit has one: the ones before it are
+     * read on the way past, and this is the one a reader stops at.
+     */
+    exitLead?: UiKey;
     /** What this act has earned the right to offer. See InstallTabs' own note. */
     offer?: 'library' | 'library-and-adapter' | 'everything';
     /**
