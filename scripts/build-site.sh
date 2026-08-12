@@ -28,6 +28,14 @@ echo "▸ Checking the third act still holds"
 echo "▸ Recording what the tool prints"
 "${root}/scripts/generate-tool-output.sh"
 
+# Also before the build, and the odd one out of the five: it is not committed, because
+# it changes on every build. It moved here from after the build the day /version had to
+# display it — Astro clears its output directory, so a page cannot read a file written
+# once the build is over. Copied into the artefact below, from this same file, so the
+# page and the endpoint cannot name two different builds.
+echo "▸ Stamping this build with its version"
+"${root}/scripts/generate-version.sh"
+
 echo "▸ Building the site"
 pnpm --filter @justdummies/site build
 
@@ -52,8 +60,13 @@ node "${root}/scripts/generate-headers.mjs"
 
 # Before verify-output.sh, which asserts it: the stamp is part of the artefact's
 # shape, not an afterthought bolted on at upload time.
-echo "▸ Stamping the artefact with its version"
-"${root}/scripts/generate-version.sh"
+#
+# A copy of the file the page was built from, never a second stamping. Two runs of the
+# generator would put two `built` times on one build, and the version the site displays
+# would differ from the version it serves — by seconds, which is exactly long enough to
+# waste an afternoon on.
+echo "▸ Serving that stamp from the artefact"
+cp "${root}/apps/site/src/generated/version.json" "${root}/dist/version.json"
 
 "${root}/scripts/verify-output.sh"
 
