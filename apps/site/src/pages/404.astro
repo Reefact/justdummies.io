@@ -13,35 +13,26 @@ import { site } from '../site';
 const t = useTranslations('en');
 ---
 
-<Page title={`${t('notfound.title')} — ${site.name}`} description={t('notfound.body')} noindex>
-    <h2>{t('notfound.title')}</h2>
-    <p class="body">{t('notfound.body')}</p>
-
+<Page title={`${t('notfound.title')} — ${site.name}`} description={t('notfound.body')} noindex tightBottom>
     {/*
-      `alt=""`, on purpose. The picture says what the heading and the sentence above it
-      have already said, as a joke rather than in words — and the "404" it draws is a
-      status code the response already carries. A screen reader announcing it would be
-      reading the same page a third time.
+      `alt=""`, on purpose. The sentence below already says what the picture says as a
+      joke rather than in words — and the "404" it draws is a status code the response
+      already carries. A screen reader announcing it would be reading the same page a
+      third time.
 
       The width and height are the file's own, so the box is reserved before the image
-      lands and the link below does not jump out from under a pointer on its way in. Not
-      lazily loaded: here it is above the fold, and deferring it would only move the jump
-      later.
+      lands and the sentence below does not jump as it loads. Not lazily loaded: here it
+      is above the fold, and deferring it would only move the jump later.
     */}
     <img class="crash" src="/404.png" alt="" width="1253" height="637" decoding="async" />
 
-    <p><a href="/">{t('notfound.home')}</a></p>
+    <p class="body">{t('notfound.body')} <a href="/">{t('notfound.home')}</a></p>
 </Page>
 
 <style>
-    h2 {
-        font-size: var(--jd-text-xl);
-        line-height: var(--jd-line-tight);
-        margin: 0 0 var(--jd-space-4);
-    }
-
     .body {
         color: var(--jd-text-muted);
+        font-style: italic;
         max-width: 46rem;
     }
 
@@ -54,6 +45,6 @@ const t = useTranslations('en');
         display: block;
         width: 100%;
         height: auto;
-        margin: var(--jd-space-8) 0;
+        margin: var(--jd-space-4) 0;
     }
 </style>

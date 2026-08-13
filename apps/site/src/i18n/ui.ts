@@ -208,8 +208,8 @@ const en = {
     'state.newTab': 'opens in a new tab',
 
     'notfound.title': 'Page not found',
-    'notfound.body': 'There is nothing at this address. It may have moved, or never existed.',
-    'notfound.home': 'Go to the home page',
+    'notfound.body': 'Oops — this page is gone, or never existed.',
+    'notfound.home': 'Click here to return to the home page.',
 } as const;
 
 /**
@@ -351,8 +351,8 @@ const fr: Record<UiKey, string> = {
     'state.newTab': 'ouvre un nouvel onglet',
 
     'notfound.title': 'Page introuvable',
-    'notfound.body': "Il n'y a rien à cette adresse. Elle a pu changer, ou n'avoir jamais existé.",
-    'notfound.home': "Aller à la page d'accueil",
+    'notfound.body': "Oups — cette page a disparu, ou n'a jamais existé.",
+    'notfound.home': "Cliquez ici pour retourner à la page d'accueil.",
 };
 
 const translations: Record<Locale, Record<UiKey, string>> = { en, fr };
