@@ -134,7 +134,13 @@ const t = useTranslations(locale);
             */}
             <nav class="site-nav" aria-label={t('nav.primary')}>
                 <a href="/playground/">{t('nav.playground')}</a>
-                <a href={site.repository}>{t('nav.github')}</a>
+                {/*
+                  A new tab, because this one leaves the site. The playground beside it does
+                  not and keeps the same tab. `noopener` is the half that matters: without it
+                  the opened tab keeps a handle on this one through `window.opener`, and can
+                  navigate it.
+                */}
+                <a href={site.repository} target="_blank" rel="noopener noreferrer">{t('nav.github')}</a>
                 {/*
                   The language control is not a third destination and must not read as one.
                   The rule says so before the reader has parsed a word of it.
