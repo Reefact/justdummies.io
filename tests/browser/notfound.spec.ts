@@ -44,31 +44,33 @@ for (const { path, home, refusal, claim } of PAGES) {
         await expect(page.locator('.mark')).toBeVisible();
         await expect(page.locator('.tagline')).toHaveText(claim);
 
-        // The refusal is the h2 under it, not a second h1: the page is about JustDummies,
-        // and what it says about itself is that this address holds nothing.
-        await expect(page.getByRole('heading', { level: 2, name: refusal })).toBeVisible();
+        // The refusal no longer sits in a second, on-page heading — title, body and link
+        // are one aside under the illustration now — but it still opens the document title,
+        // which is what a screen reader announces on arrival and what a tab or bookmark shows.
+        await expect(page).toHaveTitle(new RegExp(refusal));
         await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
     });
 
-    test(`${path} shows the dummy between the sentence and the way out`, async ({ page }) => {
+    test(`${path} puts the illustration above the sentence, and the way out inside it`, async ({ page }) => {
         await page.goto(path);
 
         const image = page.locator('img.crash');
+        const sentence = page.locator('.body');
 
         await expect(image).toBeVisible();
         await expect(image).toHaveAttribute('src', '/404.png');
+        await expect(sentence).toBeVisible();
+        await expect(sentence.locator(`a[href="${home}"]`), 'the way out is not part of the sentence').toBeVisible();
 
-        // Where it sits is the requirement, not merely that it is on the page. Measured on
-        // the rendered page rather than read from the markup, because a stylesheet can move
-        // a picture the DOM order says is in the right place.
-        const sentence: number = await topOf(page, '.body');
+        // The way out is now the link inside the sentence, not a separate paragraph below
+        // it — so what is left to check of the order is that the illustration reads first
+        // and the sentence, link included, follows it. Measured on the rendered page rather
+        // than read from the markup, because a stylesheet can move a picture the DOM order
+        // says is in the right place.
         const drawing: number = await topOf(page, 'img.crash');
-        // Scoped to `main`: the site header's brand points home too, and it sits above
-        // everything here — comparing against that one would pass whatever the page did.
-        const wayOut: number = await topOf(page, `main a[href="${home}"]`);
+        const sentenceTop: number = await topOf(page, '.body');
 
-        expect(drawing, 'the drawing is above the sentence it follows').toBeGreaterThan(sentence);
-        expect(wayOut, 'the way out is above the drawing it follows').toBeGreaterThan(drawing);
+        expect(drawing, 'the illustration is below the sentence it precedes').toBeLessThan(sentenceTop);
     });
 
     test(`${path} draws it whole, at the file's own shape`, async ({ page }) => {
