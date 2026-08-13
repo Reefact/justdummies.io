@@ -1,6 +1,5 @@
 ---
-import BrandHeading from '../components/BrandHeading.astro';
-import Base from '../layouts/Base.astro';
+import Page from '../layouts/Page.astro';
 import { useTranslations } from '../i18n/ui';
 import { site } from '../site';
 
@@ -14,50 +13,27 @@ import { site } from '../site';
 const t = useTranslations('en');
 ---
 
-<Base title={`${t('notfound.title')} — ${site.name}`} description={t('notfound.body')} noindex>
-    <main class="shell">
-        {/*
-          The brand first, and the same one the other pages carry — a reader who lands here
-          arrived by a wrong address and may have no idea whose site refused them. It is the
-          page's `h1` for that reason, which makes "Page not found" the `h2` below it: the
-          page is about JustDummies, and what it has to say about itself is that this address
-          holds nothing.
-        */}
-        <header class="brand">
-            <BrandHeading />
-        </header>
+<Page title={`${t('notfound.title')} — ${site.name}`} description={t('notfound.body')} noindex>
+    <h2>{t('notfound.title')}</h2>
+    <p class="body">{t('notfound.body')}</p>
 
-        <h2>{t('notfound.title')}</h2>
-        <p class="body">{t('notfound.body')}</p>
+    {/*
+      `alt=""`, on purpose. The picture says what the heading and the sentence above it
+      have already said, as a joke rather than in words — and the "404" it draws is a
+      status code the response already carries. A screen reader announcing it would be
+      reading the same page a third time.
 
-        {/*
-          `alt=""`, on purpose. The picture says what the heading and the sentence above it
-          have already said, as a joke rather than in words — and the "404" it draws is a
-          status code the response already carries. A screen reader announcing it would be
-          reading the same page a third time.
+      The width and height are the file's own, so the box is reserved before the image
+      lands and the link below does not jump out from under a pointer on its way in. Not
+      lazily loaded: here it is above the fold, and deferring it would only move the jump
+      later.
+    */}
+    <img class="crash" src="/404.png" alt="" width="1253" height="637" decoding="async" />
 
-          The width and height are the file's own, so the box is reserved before the image
-          lands and the link below does not jump out from under a pointer on its way in. Not
-          lazily loaded: here it is above the fold, and deferring it would only move the jump
-          later.
-        */}
-        <img class="crash" src="/404.png" alt="" width="1253" height="637" decoding="async" />
-
-        <p><a href="/">{t('notfound.home')}</a></p>
-    </main>
-</Base>
+    <p><a href="/">{t('notfound.home')}</a></p>
+</Page>
 
 <style>
-    .shell {
-        max-width: 60rem;
-        margin: 0 auto;
-        padding: var(--jd-space-16) var(--jd-space-4);
-    }
-
-    .brand {
-        margin-bottom: var(--jd-space-8);
-    }
-
     h2 {
         font-size: var(--jd-text-xl);
         line-height: var(--jd-line-tight);

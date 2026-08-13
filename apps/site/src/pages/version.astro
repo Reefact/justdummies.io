@@ -7,13 +7,13 @@
  * something does link to it, nothing here has to change.
  */
 import VersionContent from '../components/VersionContent.astro';
-import Base from '../layouts/Base.astro';
+import Page from '../layouts/Page.astro';
 import { useTranslations } from '../i18n/ui';
 import { site } from '../site';
 
 const t = useTranslations('en');
 ---
 
-<Base title={`${t('version.heading')} — ${site.name}`} description={t('version.meta.description')}>
+<Page title={`${t('version.heading')} — ${site.name}`} description={t('version.meta.description')}>
     <VersionContent />
-</Base>
+</Page>

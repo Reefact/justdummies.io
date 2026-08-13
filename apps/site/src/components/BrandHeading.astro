@@ -125,10 +125,44 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
 </script>
 
 <style>
+    /*
+     * The block owns its own bottom margin, so what follows it starts at the same distance on
+     * every page. It used to be the hosting page's business — a 16-pixel flex gap on the
+     * landing page, a 32-pixel margin on /version and the 404s — which is the same class of
+     * divergence as the gap inside it, one level out.
+     */
+    .brand-heading {
+        margin-bottom: var(--jd-space-4);
+    }
+
     h1 {
         font-size: var(--jd-text-2xl);
         line-height: var(--jd-line-tight);
         margin: 0;
+    }
+
+    /*
+     * A short screen gets a smaller name, everywhere rather than on one page.
+     *
+     * This rule lived in the landing page, where it exists for a reason — that screen has to
+     * hold the brand, a live expression, an offer and an invitation to scroll without cutting
+     * any of them, and at 800 pixels of height it does not fit otherwise. But a rule about how
+     * the brand looks, written in one page, is exactly how the brand came to be 33.6px there
+     * and 51.2px on /version at the same window size.
+     *
+     * It costs the other pages nothing: a page with room to spare is not harmed by a heading
+     * that matches the one next door.
+     */
+    @media (max-height: 820px) {
+        h1 {
+            font-size: var(--jd-text-xl);
+        }
+
+        /* The room under the block goes too, for the same reason the name shrinks: on the
+           landing page every pixel here is a pixel the invitation to scroll does not have. */
+        .brand-heading {
+            margin-bottom: var(--jd-space-2);
+        }
     }
 
     /*
