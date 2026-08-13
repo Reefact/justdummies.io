@@ -188,7 +188,47 @@ const printed: string = ran === undefined ? '' : testRun(ran);
 
         fold(true);
         button.hidden = false;
-        button.addEventListener('click', () => fold(figure.dataset.folded === undefined));
+
+        button.addEventListener('click', () => {
+            const closing: boolean = figure.dataset.folded === undefined;
+
+            /*
+             * KEEP THE READER WHERE THEY WERE READING.
+             *
+             * Closing takes about sixteen hundred pixels out of the document, and the browser
+             * keeps `scrollY` exactly as it was — so everything below the block rises by that
+             * much and the reader, who was at the end of the file with their hand on this
+             * button, is thrown that far down the page. Measured before this existed: the
+             * button jumped from 337px down the viewport to -1304, a drift of 1641px, while
+             * scrollY did not move at all.
+             *
+             * So the button is pinned. Its position is read before and after, and the page is
+             * scrolled by the difference — which puts it back under the eye that just pressed
+             * it, with the folded block above it and the rest of the page where it belongs.
+             *
+             * The transition is suspended for that one relayout, because a `max-height` that
+             * animates has not moved yet when the second measurement is taken: the correction
+             * would be computed from the height the block is leaving rather than the one it is
+             * going to, which is a correction of zero. Closing is therefore instant and exact.
+             * Opening keeps its animation, and needs no correction — it grows downwards, below
+             * a reader who is looking at the top of the block.
+             */
+            const before: number = button.getBoundingClientRect().top;
+
+            if (closing) {
+                code.style.transition = 'none';
+            }
+
+            fold(closing);
+
+            if (closing) {
+                // Reading a geometric property is what forces the new height to be laid out
+                // now rather than at the next paint.
+                void code.offsetHeight;
+                window.scrollBy(0, button.getBoundingClientRect().top - before);
+                code.style.transition = '';
+            }
+        });
     }
 </script>
 
