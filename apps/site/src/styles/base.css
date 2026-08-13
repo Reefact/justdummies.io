@@ -81,6 +81,16 @@
     }
 }
 
+/*
+ * A page reserves its scrollbar's width whether or not that scrollbar is drawn — so
+ * navigating between a tall page (a scrollbar) and a short one (none) does not shift
+ * the content sideways. Native and global on purpose: no custom scrollbar, no forced
+ * `overflow-y: scroll`, just the browser accounting for space it already knows about.
+ */
+html {
+    scrollbar-gutter: stable;
+}
+
 body {
     margin: 0;
     background: var(--jd-background);
