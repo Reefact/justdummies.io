@@ -1,4 +1,5 @@
 ---
+import BrandHeading from '../../components/BrandHeading.astro';
 import Base from '../../layouts/Base.astro';
 import { useTranslations } from '../../i18n/ui';
 import { site } from '../../site';
@@ -9,7 +10,12 @@ const t = useTranslations('fr');
 
 <Base title={`${t('notfound.title')} — ${site.name}`} description={t('notfound.body')} noindex>
     <main class="shell">
-        <h1>{t('notfound.title')}</h1>
+        {/* The brand as the `h1`, and the refusal as the `h2` under it. See the English twin. */}
+        <header class="brand">
+            <BrandHeading />
+        </header>
+
+        <h2>{t('notfound.title')}</h2>
         <p class="body">{t('notfound.body')}</p>
 
         {/* Empty `alt` and intrinsic dimensions, for the reasons written out on the English
@@ -27,7 +33,11 @@ const t = useTranslations('fr');
         padding: var(--jd-space-16) var(--jd-space-4);
     }
 
-    h1 {
+    .brand {
+        margin-bottom: var(--jd-space-8);
+    }
+
+    h2 {
         font-size: var(--jd-text-xl);
         line-height: var(--jd-line-tight);
         margin: 0 0 var(--jd-space-4);

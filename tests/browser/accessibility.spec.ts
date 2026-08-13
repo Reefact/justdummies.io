@@ -41,7 +41,12 @@ async function scan(page: Page): Promise<AxeResults> {
     return new AxeBuilder({ page }).withTags([...STANDARD]).analyze();
 }
 
-for (const path of PAGES.concat('/playground/')) {
+/*
+ * The 404s are in the sweep because their headings were rearranged: the brand became the
+ * `h1` and the refusal the `h2` under it, which is exactly the kind of change that produces
+ * a skipped level or a second `h1` without anybody noticing.
+ */
+for (const path of PAGES.concat('/playground/', '/404.html', '/fr/404.html')) {
 
     test(`${path} breaks no automated WCAG A or AA rule`, async ({ page }) => {
         await page.goto(path);
