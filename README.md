@@ -63,7 +63,7 @@ alternatives: [ADR-0009](docs/for-maintainers/adr/0009-the-browser-checks-are-dr
 
 ```bash
 pnpm serve      # serve dist/ the way Workers will, parsing _headers and _redirects
-pnpm preview    # upload a version and get its URL, without promoting it
+pnpm preview    # upload a version without promoting it — no URL, see the guide's step 9
 pnpm run deploy # publish dist/ as built — it does not rebuild, so build first
 ```
 

@@ -1056,29 +1056,43 @@ live loader references rather than from your disk.
 
 ## Step 9 — Preview without publishing
 
-**Why** — To have a visual change reviewed before merging it.
+**Why** — To upload a candidate deployment without putting it in front of visitors.
+
+> ⚠️ **This step does not give you a link to share.** It used to say it did, and that was wrong —
+> corrected after running it: `pnpm preview` prints a version identifier and no URL. A preview URL
+> needs `preview_urls` enabled, this repository has never declared it, and its default is off, so
+> **no upload here has ever produced one.** ADR-0002 leaves enabling it as an open decision.
+>
+> To look at a change yourself before merging, `pnpm serve` is the answer and always was: it runs
+> the same Workers runtime locally, with the real headers and redirect rules. What is missing is
+> only the *shareable* URL for someone else to open.
 
 **Do**
 
 ```bash
 pnpm build
 pnpm preview                             # uploads a version, without promoting it
-pnpm preview --preview-alias my-branch   # with a readable name
+pnpm preview --preview-alias my-branch   # names it, for the deployments list
 ```
 
-The command returns the version's URL. This is the Workers preview mechanism, and it differs from
-Pages': here a version *exists and waits*, instead of a per-branch deployment being created
-automatically.
+`pnpm build` first, always: `preview` uploads `dist/` as it stands, so without it you are uploading
+whatever your last build left there. The command answers with a **Worker Version ID**, and tells you
+that promoting it takes `wrangler versions deploy`. This is the Workers preview mechanism, and it
+differs from Pages': here a version *exists and waits*, instead of a per-branch deployment being
+created automatically.
 
 ### ✅ Check
 
-Open the returned URL, then verify production has **not** moved:
+Verify production has **not** moved:
 
 ```bash
 pnpm wrangler deployments list
+curl -s https://justdummies.io/version.json
 ```
 
-The active deployment must be unchanged — that is the whole point of an unpromoted version.
+The active deployment must be unchanged, and `version.json` must still name the release that is
+live — that is the whole point of an unpromoted version. The second command is the stronger of the
+two: it asks the site rather than the account.
 
 ---
 
