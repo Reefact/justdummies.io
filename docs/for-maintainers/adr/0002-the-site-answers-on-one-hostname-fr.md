@@ -26,8 +26,10 @@ Le nom d'hôte `workers.dev` a été la seule adresse du site entre le premier d
 où le domaine a été rattaché. Les étapes 5 et 6 du guide de déploiement vérifient un déploiement
 contre elle, et la mesure de compression de l'étape 6 y a été prise.
 
-Savoir si une URL de prévisualisation résout encore une fois le nom d'hôte `workers.dev` de
-production désactivé n'a pas été vérifié. Les deux vivent sur le même sous-domaine.
+`preview_urls` n'a jamais été déclaré dans la configuration de ce dépôt, et son défaut est
+désactivé. Un téléversement de version rend donc un identifiant de version et aucune URL. C'est
+mesuré et non déduit : le premier téléversement après la désactivation du nom d'hôte de production
+n'a affiché aucune URL, et le nom d'hôte qu'une URL de prévisualisation occuperait répond 404.
 
 ## Décision
 
@@ -53,7 +55,9 @@ la demande par quiconque en aurait besoin à nouveau.
 
 Le désactiver ne désactive pas la prévisualisation, parce que les deux noms d'hôte sont gouvernés
 par deux réglages. C'est ce qui rend cette décision assez étroite pour être prise : elle retire une
-adresse, pas un mécanisme.
+adresse, pas un mécanisme. Un téléversement de version téléverse toujours une version — ce qu'il n'a
+jamais fait ici, c'est rendre une URL, et cela vient de `preview_urls` désactivé, non de cette
+décision.
 
 ## Alternatives considérées
 
@@ -103,24 +107,31 @@ s'appliquent à tous les noms d'hôte sur lesquels le Worker répond.
 
 ### Risques
 
-* **La prévisualisation pourrait être un dommage collatéral.** `preview_urls` est un réglage
-  distinct, et l'intention est que `pnpm preview` ne soit pas affecté — mais les URL de
-  prévisualisation vivent sur le même sous-domaine `workers.dev`, et cela n'a pas été vérifié. Le
-  contrôle : couper une release, lancer `pnpm preview`, et demander l'URL qu'il affiche. Si elle ne
-  résout pas, la prévisualisation dépendait du nom d'hôte de production et cette décision est plus
-  large qu'elle ne le prétend.
-* **Rien ne prend effet avant qu'une release soit coupée.** Le réglage est appliqué par un
+* **La prévisualisation a été contrôlée et n'est pas un dommage collatéral** — pour une raison qui
+  mérite d'être consignée, parce que ce n'est pas celle qu'on attendait. Un téléversement de version
+  après le changement n'a affiché aucune URL, et le nom d'hôte qu'elle occuperait répond 404. Mais
+  `preview_urls` n'avait jamais été déclaré : aucun téléversement de ce dépôt n'a donc jamais produit
+  d'URL. Rien n'a été perdu ici parce qu'il n'y avait rien à perdre. Ce que le contrôle a réellement
+  trouvé, c'est une affirmation fausse dans le guide de déploiement, qui promettait une URL que la
+  commande n'a jamais rendue. Le guide est corrigé ; décider de déclarer `preview_urls: true` est une
+  question ouverte ci-dessous, pas quelque chose que cette décision tranche.
+* **Rien n'a pris effet avant qu'une release soit coupée.** Le réglage est appliqué par un
   déploiement, et la publication est conditionnée à un tag `release/*` (ADR-0001). Entre la fusion
-  de ceci et le tag, le second nom d'hôte est toujours en ligne — et un lecteur qui vérifie
-  immédiatement conclura que le changement n'a pas fonctionné.
+  de ceci et le tag, le second nom d'hôte est resté en ligne — un lecteur qui aurait vérifié dans
+  cette fenêtre aurait conclu que le changement n'avait pas fonctionné. Tranché sur
+  `release/2026-08-11T23-48-02Z` : le nom d'hôte répond 404, et `/version.json` nomme ce tag.
 
 ## Actions de suivi
 
-* Exécuter le contrôle de prévisualisation nommé sous Risques à la première release après
-  l'atterrissage de cette fiche, et consigner la réponse ici — sous forme de supersession s'il
-  s'avère que la prévisualisation dépendait du nom d'hôte de production.
-* Confirmer que le nom d'hôte `workers.dev` cesse de répondre après cette release, plutôt que de
-  supposer que le réglage a été appliqué.
+* ~~Confirmer que le nom d'hôte `workers.dev` cesse de répondre, plutôt que de supposer que le
+  réglage a été appliqué.~~ Fait à la première release : `404` là où il répondait `200`.
+* **Décider s'il faut déclarer `preview_urls: true`.** Laissé ouvert ici volontairement. Faire
+  relire une modification visuelle sur une URL partageable avant de fusionner est un besoin réel, et
+  aujourd'hui rien ne le sert — `pnpm serve` fait tourner le même runtime en local, mais seulement
+  pour qui le lance. Activer les URL de prévisualisation remet un nom d'hôte `workers.dev`, mais pas
+  celui que cette fiche a retiré : une URL de prévisualisation est par version et non annoncée, donc
+  l'argument du doublon d'adresse ci-dessus ne s'y applique pas tel quel. C'est une décision à part
+  entière, et il lui faut sa propre fiche.
 
 ## Références
 

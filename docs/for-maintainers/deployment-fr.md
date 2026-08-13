@@ -1081,29 +1081,45 @@ redéploie, ou pointe le script sur l'URL que tu as réellement déployée. Pour
 
 ## Étape 9 — Prévisualiser sans publier
 
-**Pourquoi** — Faire relire une modification visuelle avant de la fusionner.
+**Pourquoi** — Téléverser un déploiement candidat sans le mettre devant les visiteurs.
+
+> ⚠️ **Cette étape ne te donne pas de lien à partager.** Elle prétendait le contraire, et c'était
+> faux — corrigé après l'avoir exécutée : `pnpm preview` affiche un identifiant de version et aucune
+> URL. Une URL de prévisualisation exige `preview_urls` activé, ce dépôt ne l'a jamais déclaré, et
+> son défaut est désactivé — donc **aucun téléversement ici n'en a jamais produit.** ADR-0002 laisse
+> son activation comme une décision ouverte.
+>
+> Pour regarder une modification toi-même avant de fusionner, `pnpm serve` est la réponse et l'a
+> toujours été : il fait tourner le même runtime Workers en local, avec les vrais en-têtes et les
+> vraies règles de redirection. Ce qui manque, c'est seulement l'URL *partageable* qu'un autre
+> pourrait ouvrir.
 
 **Faire**
 
 ```bash
 pnpm build
 pnpm preview                              # téléverse une version, sans la promouvoir
-pnpm preview --preview-alias ma-branche   # avec un nom lisible
+pnpm preview --preview-alias ma-branche   # la nomme, pour la liste des déploiements
 ```
 
-La commande renvoie l'URL de la version. C'est le mécanisme de preview de Workers, et il diffère
-de celui de Pages : ici une version *existe et attend*, au lieu qu'un déploiement par branche
+`pnpm build` d'abord, toujours : `preview` téléverse `dist/` tel quel, donc sans lui tu téléverses ce
+que ta dernière build y a laissé. La commande répond par un **Worker Version ID**, et t'indique que
+la promouvoir demande `wrangler versions deploy`. C'est le mécanisme de preview de Workers, et il
+diffère de celui de Pages : ici une version *existe et attend*, au lieu qu'un déploiement par branche
 soit créé automatiquement.
 
 ### ✅ Contrôle
 
-Ouvre l'URL renvoyée, puis vérifie que la production **n'a pas bougé** :
+Vérifie que la production **n'a pas bougé** :
 
 ```bash
 pnpm wrangler deployments list
+curl -s https://justdummies.io/version.json
 ```
 
-Le déploiement actif doit être inchangé — c'est tout l'intérêt d'une version non promue.
+Le déploiement actif doit être inchangé, et `version.json` doit toujours nommer la release en ligne —
+c'est tout l'intérêt d'une version non promue. La seconde commande est la plus forte des deux : elle
+interroge le site, pas le compte.
 
 ---
 

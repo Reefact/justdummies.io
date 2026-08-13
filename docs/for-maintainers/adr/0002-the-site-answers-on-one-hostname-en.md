@@ -26,8 +26,10 @@ The `workers.dev` hostname was the only address the site had between the first d
 day the domain was attached. The deployment guide's steps 5 and 6 verify a deployment against it,
 and step 6's compression measurement was taken there.
 
-Whether a preview URL still resolves once the production `workers.dev` hostname is disabled has
-not been verified. Both live on the same subdomain.
+`preview_urls` has never been declared in this repository's configuration, and its default is off.
+A version upload therefore returns a version identifier and no URL. That is measured rather than
+inferred: the first upload after the production hostname was disabled printed no URL, and the
+hostname a preview URL would occupy answers 404.
 
 ## Decision
 
@@ -50,7 +52,8 @@ demand by anyone who needs it again.
 
 Turning it off does not turn off previewing, because the two hostnames are governed by two
 settings. That is what makes this decision narrow enough to take: it removes an address, not a
-mechanism.
+mechanism. A version upload still uploads a version — what it has never done here is hand back a
+URL, and that is `preview_urls` being off rather than anything this decision does.
 
 ## Alternatives Considered
 
@@ -99,22 +102,29 @@ hostname the Worker answers on.
 
 ### Risks
 
-* **Previewing may be collateral damage.** `preview_urls` is a separate setting, and the intent is
-  that `pnpm preview` is unaffected — but preview URLs live on the same `workers.dev` subdomain,
-  and this has not been verified. The check: cut a release, run `pnpm preview`, and request the URL
-  it prints. If it does not resolve, previewing depends on the production hostname and this
-  decision is wider than it claims.
-* **Nothing takes effect until a release is cut.** The setting is applied by a deployment, and
+* **Previewing was checked and is not collateral damage** — for a reason worth recording, because
+  it was not the reason expected. A version upload after the change printed no URL, and the
+  hostname one would occupy answers 404. But `preview_urls` had never been declared, so no upload
+  in this repository has ever produced a URL: nothing was lost here because there was nothing to
+  lose. What the check actually found was a false claim in the deployment guide, which promised a
+  URL the command has never returned. The guide is corrected; whether to declare
+  `preview_urls: true` is an open question below, not something this decision settles.
+* **Nothing took effect until a release was cut.** The setting is applied by a deployment, and
   publication is gated on a `release/*` tag (ADR-0001). Between merging this and tagging, the
-  second hostname is still live — and a reader who checks immediately will conclude the change did
-  not work.
+  second hostname stayed live — a reader checking in that window would have concluded the change
+  did not work. Settled on `release/2026-08-11T23-48-02Z`: the hostname answers 404, and
+  `/version.json` names that tag.
 
 ## Follow-up Actions
 
-* Run the preview check named under Risks at the first release after this lands, and record the
-  answer here — as a supersession if it turns out previewing depended on the production hostname.
-* Confirm the `workers.dev` hostname stops answering after that release, rather than assuming the
-  setting was applied.
+* ~~Confirm the `workers.dev` hostname stops answering, rather than assuming the setting was
+  applied.~~ Done on the first release: `404` where it answered `200`.
+* **Decide whether to declare `preview_urls: true`.** Left open here on purpose. Reviewing a visual
+  change on a shareable URL before merging is a real want, and today nothing serves it — `pnpm serve`
+  runs the same runtime locally but only for whoever runs it. Enabling preview URLs puts a
+  `workers.dev` hostname back, though not the one this record removed: a preview URL is per-version
+  and unadvertised, so the duplicate-address argument above does not apply to it unchanged. That is
+  a decision of its own, and it needs its own record.
 
 ## References
 
