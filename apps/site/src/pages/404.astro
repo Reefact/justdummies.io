@@ -69,14 +69,14 @@ const t = useTranslations('en');
         max-width: 46rem;
     }
 
-    /* Narrower than the prose it sits under: it is the page's joke, not the page's subject,
-       and at its own 1253 pixels it would be the only thing on the screen. `height: auto`
-       with the intrinsic attributes above keeps the reserved box the right shape at every
-       width. */
+    /* The whole width the page has, which is the shell's 60rem — wider than the prose, on
+       purpose. It was capped at 36rem first, on the reasoning that a joke should not outsize
+       its page; seen on the page, that only made it look like a thumbnail somebody forgot to
+       finish. `height: auto` with the intrinsic attributes above keeps the reserved box the
+       right shape at every width. */
     .crash {
         display: block;
         width: 100%;
-        max-width: 36rem;
         height: auto;
         margin: var(--jd-space-8) 0;
     }
