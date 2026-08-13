@@ -16,7 +16,12 @@ import { PAGES } from './support/watch';
  */
 const WIDTHS: readonly number[] = [320, 360, 768, 1024, 1280, 1440];
 
-for (const path of PAGES.concat('/playground/')) {
+/*
+ * The 404s are in the sweep because their drawing takes the full width of the page. An image
+ * told to fill its container is the ordinary way a page starts scrolling sideways on a
+ * phone, and this is the page nobody visits on purpose to find out.
+ */
+for (const path of PAGES.concat('/playground/', '/404.html', '/fr/404.html')) {
 
     for (const width of WIDTHS) {
 
