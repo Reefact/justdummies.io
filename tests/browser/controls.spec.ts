@@ -46,6 +46,36 @@ test.describe('the fold', () => {
         expect(reclipped, 'the fold would not close again').toBeLessThan(whole);
     });
 
+    test('leaves the reader where they were reading', async ({ page }) => {
+        await page.goto('/');
+
+        const figure = page.locator('.sample[data-folds]').first();
+        const button = figure.locator('[data-fold]');
+
+        await button.scrollIntoViewIfNeeded();
+        await button.click();
+        await expect(figure).not.toHaveAttribute('data-folded', /.*/);
+
+        // At the end of the open file, hand on the button — the state the report described.
+        await button.scrollIntoViewIfNeeded();
+
+        const before: number = await button.evaluate((element: HTMLElement) => element.getBoundingClientRect().top);
+
+        await button.click();
+        await expect(figure).toHaveAttribute('data-folded', '');
+
+        const after: number = await button.evaluate((element: HTMLElement) => element.getBoundingClientRect().top);
+
+        /*
+         * Closing takes about sixteen hundred pixels out of the document. Left alone, the
+         * browser keeps scrollY and everything below rises by that much: measured before the
+         * fix, this button went from 337px down the viewport to -1304, and the reader landed
+         * far below what they were reading. Two pixels of tolerance for sub-pixel layout.
+         */
+        expect(Math.abs(after - before), `the button moved ${(after - before).toFixed(0)}px when the fold closed`)
+            .toBeLessThan(2);
+    });
+
     test('names what each press will do', async ({ page }) => {
         await page.goto('/');
 
