@@ -64,7 +64,7 @@ public sealed class ConciseOrderCancellation {
     // <snippet:concise-test>
     [Fact, Reproducible]
     public void A_pending_order_can_be_cancelled() {
-        Order order = new AnyOrder().WithStatus(OrderStatus.Pending).Generate();
+        Order order = Any.Order().WithStatus(OrderStatus.Pending).Generate();
 
         order.Cancel();
 
@@ -86,7 +86,7 @@ public static class ActTwo {
     /// </summary>
     public static Order PendingOrder() {
         // <snippet:scaffolded-arrangement>
-        Order order = new AnyOrder().WithStatus(OrderStatus.Pending).Generate();
+        Order order = Any.Order().WithStatus(OrderStatus.Pending).Generate();
         // </snippet:scaffolded-arrangement>
 
         return order;
