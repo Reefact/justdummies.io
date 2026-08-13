@@ -41,6 +41,32 @@ async function scan(page: Page): Promise<AxeResults> {
     return new AxeBuilder({ page }).withTags([...STANDARD]).analyze();
 }
 
+/**
+ * Wait until the page has stopped moving, and mean it.
+ *
+ * The contrast rule reads the colour a pixel actually has, and a group in the middle of its
+ * seven-hundred-millisecond fade has a colour between the background and its own. The
+ * dimmest thing on the page is a code comment at #848A94, which clears 4.5:1 by a margin
+ * small enough that a fade half-finished takes it under — so a scan that lands mid-fade
+ * reports a contrast violation on text that is perfectly legible once it arrives.
+ *
+ * That is not a hypothesis. The check went red on a release build and passed on the two
+ * runs either side of it, naming `.tok-comment` and nothing else.
+ *
+ * So: scroll to the bottom, which reveals every group, then wait for every one of them to be
+ * fully opaque. A condition, not a delay — and `every` on a page with nothing to reveal is
+ * true straight away, which is what the 404s and the playground need.
+ */
+async function settle(page: Page): Promise<void> {
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await page.waitForLoadState('networkidle');
+    await page.waitForFunction(() =>
+        Array.from(document.querySelectorAll('[data-reveal]')).every(
+            (element: Element) => getComputedStyle(element).opacity === '1',
+        ),
+    );
+}
+
 /*
  * The 404s are in the sweep because their headings were rearranged: the brand became the
  * `h1` and the refusal the `h2` under it, which is exactly the kind of change that produces
@@ -50,11 +76,7 @@ for (const path of PAGES.concat('/playground/', '/404.html', '/fr/404.html')) {
 
     test(`${path} breaks no automated WCAG A or AA rule`, async ({ page }) => {
         await page.goto(path);
-
-        // After the reveal: a group still at zero opacity is not what a reader meets, and
-        // the contrast rules would be measuring a colour nobody sees.
-        await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-        await page.waitForLoadState('networkidle');
+        await settle(page);
 
         const results: AxeResults = await scan(page);
 
@@ -66,6 +88,10 @@ for (const path of PAGES.concat('/playground/', '/404.html', '/fr/404.html')) {
 test('breaks no rule with every control open', async ({ page }) => {
     await page.goto('/');
 
+    // Settled before the controls are touched, and this is the test that taught the lesson:
+    // the fix went to the loop above first and this one kept flaking, three runs in nine.
+    await settle(page);
+
     // The state the static scan never sees. Each of these controls attaches its own ARIA at
     // run time — the roles, the selected tab, the expanded fold — so the markup on disk
     // carries none of it and the scan above is looking at a different page from the one a
@@ -75,6 +101,10 @@ test('breaks no rule with every control open', async ({ page }) => {
     await page.locator('.language-selector summary').click();
 
     await expect(page.locator('.language-selector details')).toHaveAttribute('open', '');
+
+    // And again after them: opening the fold pushes the page around, which can bring a group
+    // into view that had nothing to fade until now.
+    await settle(page);
 
     const results: AxeResults = await scan(page);
 
