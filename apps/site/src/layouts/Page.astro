@@ -30,13 +30,20 @@ interface Props {
      * block should take `flex: 1` to fill the rest of it.
      */
     firstScreen?: boolean;
+    /**
+     * The page's own last block already carries enough air below it — a 404's italic aside,
+     * for instance — so the usual bottom margin under `<main>` would only push a short page
+     * into a scrollbar it does not need. Opt-in, like `firstScreen`: a page with a long body
+     * still wants the full margin.
+     */
+    tightBottom?: boolean;
 }
 
-const { title, description, noindex = false, firstScreen = false } = Astro.props;
+const { title, description, noindex = false, firstScreen = false, tightBottom = false } = Astro.props;
 ---
 
 <Base title={title} description={description} noindex={noindex}>
-    <main>
+    <main data-tight-bottom={tightBottom ? '' : undefined}>
         <div class="shell" data-first-screen={firstScreen ? '' : undefined}>
             <BrandHeading />
             <slot />
@@ -55,6 +62,10 @@ const { title, description, noindex = false, firstScreen = false } = Astro.props
     /* The air above the first screen and below the last thing on the page, for every page. */
     main {
         padding-block: var(--jd-space-8) var(--jd-space-16);
+    }
+
+    main[data-tight-bottom] {
+        padding-block-end: var(--jd-space-8);
     }
 
     /*

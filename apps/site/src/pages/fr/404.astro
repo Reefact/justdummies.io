@@ -7,26 +7,18 @@ import { site } from '../../site';
 const t = useTranslations('fr');
 ---
 
-<Page title={`${t('notfound.title')} — ${site.name}`} description={t('notfound.body')} noindex>
-    <h2>{t('notfound.title')}</h2>
-    <p class="body">{t('notfound.body')}</p>
-
+<Page title={`${t('notfound.title')} — ${site.name}`} description={t('notfound.body')} noindex tightBottom>
     {/* Empty `alt` and intrinsic dimensions, for the reasons written out on the English
         twin. Same file: the mark belongs to the product, not to one language. */}
     <img class="crash" src="/404.png" alt="" width="1253" height="637" decoding="async" />
 
-    <p><a href="/fr/">{t('notfound.home')}</a></p>
+    <p class="body">{t('notfound.body')} <a href="/fr/">{t('notfound.home')}</a></p>
 </Page>
 
 <style>
-    h2 {
-        font-size: var(--jd-text-xl);
-        line-height: var(--jd-line-tight);
-        margin: 0 0 var(--jd-space-4);
-    }
-
     .body {
         color: var(--jd-text-muted);
+        font-style: italic;
         max-width: 46rem;
     }
 
@@ -35,6 +27,6 @@ const t = useTranslations('fr');
         display: block;
         width: 100%;
         height: auto;
-        margin: var(--jd-space-8) 0;
+        margin: var(--jd-space-4) 0;
     }
 </style>
