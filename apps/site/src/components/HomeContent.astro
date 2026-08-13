@@ -6,76 +6,50 @@
  * the install command — come from `site.ts` and are identical in every locale
  * (§28.2: only the narrative around the code is translated, never the code).
  */
-import BrandHeading from './BrandHeading.astro';
 import InstallTabs from './InstallTabs.astro';
 import LiveHero from './LiveHero.astro';
-import ActOne from './narrative/ActOne.astro';
-import ActTwo from './narrative/ActTwo.astro';
-import ActThree from './narrative/ActThree.astro';
 import { localeFromPath } from '../i18n/routing';
 import { useTranslations } from '../i18n/ui';
 
 const t = useTranslations(localeFromPath(Astro.url.pathname));
 ---
 
-<main>
-    <div class="shell">
-        <header class="hero">
-            <BrandHeading />
-            <p class="subtitle">{t('brand.subtitle')}</p>
+<header class="hero">
+    <p class="subtitle">{t('brand.subtitle')}</p>
 
-            <LiveHero />
+    <LiveHero />
 
-            {/*
-              §7.4's reduced form. This screen is not one of the narrative's reward moments —
-              the reader has been given no reason yet — but the offer does not belong to the
-              first act either, so it belongs here. Behind tabs rather than stacked, because
-              what fits here is one row and the stacked form is three.
+    {/*
+      §7.4's reduced form. This screen is not one of the narrative's reward moments —
+      the reader has been given no reason yet — but the offer does not belong to the
+      first act either, so it belongs here. Behind tabs rather than stacked, because
+      what fits here is one row and the stacked form is three.
 
-              The playground and the repository used to sit under it, and they are in the site
-              header now: a link that is true on every page belongs in the bar that is on every
-              page, and both of them were competing here with the one thing this screen asks
-              for.
-            */}
-            <div class="offer">
-                <InstallTabs placement="hero" />
-            </div>
-
-            {/*
-              The invitation to go on, and a link rather than an ornament: a reader who cannot
-              use a mouse wheel gets the same offer, and it goes exactly where it points.
-              `aria-hidden` on the chevron itself, because "Read the first act" is the whole
-              message and the drawing repeats it.
-            */}
-            <a class="cue" href="#act-one">
-                <span class="cue-label">{t('hero.scrollCue')}</span>
-                <svg class="chevrons" viewBox="0 0 24 26" width="24" height="26" aria-hidden="true" focusable="false">
-                    <path class="chevron chevron-first" d="M4 5l8 8 8-8" />
-                    <path class="chevron chevron-second" d="M4 13l8 8 8-8" />
-                </svg>
-            </a>
-        </header>
+      The playground and the repository used to sit under it, and they are in the site
+      header now: a link that is true on every page belongs in the bar that is on every
+      page, and both of them were competing here with the one thing this screen asks
+      for.
+    */}
+    <div class="offer">
+        <InstallTabs placement="hero" />
     </div>
 
-    {/* Outside the shell on purpose: each act paints its ground edge to edge, and is the
-        full-width band that does it. Its own `.shell` puts the content back on the measure.
-
-        NOT BUILT: §7.4's reduced install block in the site header, which is what the
-        visitor who already knows the product is supposed to reach for. Until it
-        exists, the hero's block is the only one above the first act's exit. */}
-    <ActOne />
-    <ActTwo />
-    <ActThree />
-</main>
+    {/*
+      The invitation to go on, and a link rather than an ornament: a reader who cannot
+      use a mouse wheel gets the same offer, and it goes exactly where it points.
+      `aria-hidden` on the chevron itself, because "Read the first act" is the whole
+      message and the drawing repeats it.
+    */}
+    <a class="cue" href="#act-one">
+        <span class="cue-label">{t('hero.scrollCue')}</span>
+        <svg class="chevrons" viewBox="0 0 24 26" width="24" height="26" aria-hidden="true" focusable="false">
+            <path class="chevron chevron-first" d="M4 5l8 8 8-8" />
+            <path class="chevron chevron-second" d="M4 13l8 8 8-8" />
+        </svg>
+    </a>
+</header>
 
 <style>
-    /* The measure itself is in base.css, shared with the acts. What belongs here is the air
-       above the first screen and below the last act — the acts paint their own ground and
-       cannot carry the page's bottom margin for it. */
-    main {
-        padding-block: var(--jd-space-8) var(--jd-space-16);
-    }
-
     /* Narrower than the measure: the hero is prose and one expression, and a scene's figure
        is what needs the whole 72rem. It stays left-aligned with the acts rather than being
        centred against them. */
@@ -88,13 +62,11 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
      * arriving has the brand, one real expression and one real value in front of them, and
      * nothing of the first act yet.
      *
-     * The subtraction is the room the site header and this shell's own top padding take
-     * above it. Without it the hero would be a viewport tall *starting below them*, and the
-     * chevron meant to sit at the bottom edge would sit just under it.
-     *
-     * `100svh` rather than `100vh`: on a phone `vh` is the viewport with the browser's
-     * chrome retracted, which is not the height anything is ever laid out at, so a hero
-     * measured in `vh` is always a little taller than the screen showing it.
+     * IT NO LONGER MEASURES A VIEWPORT. The layout's shell is the one screen tall block —
+     * brand included — and this fills whatever the brand leaves of it. That is what stops
+     * the brand moving from page to page: it used to be centred inside this box, so it sat
+     * at y=94 on a 900-pixel window and y=78 on an 800-pixel one, while every other page
+     * held it still.
      *
      * THE INSTALL BLOCK IS NOT HERE, and its absence is what makes the rest fit. It was
      * 254 pixels of the 837 this screen had, which put the chevron below the fold on any
@@ -110,8 +82,7 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
     .hero {
         display: flex;
         flex-direction: column;
-        justify-content: center;
-        min-height: calc(100svh - 7.5rem);
+        flex: 1;
         /* So the chevron does not sit on the first act's rule, four pixels below it. */
         padding-bottom: var(--jd-space-8);
         gap: var(--jd-space-4);
@@ -129,10 +100,6 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
      * strip the subtitle off an ordinary 900-pixel desktop that has room for it.
      */
     @media (max-width: 47.99rem) {
-        main {
-            padding-block-start: var(--jd-space-4);
-        }
-
         .hero {
             gap: var(--jd-space-2);
             padding-bottom: var(--jd-space-4);
@@ -149,20 +116,9 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
     }
 
     @media (max-height: 820px) {
-        main {
-            padding-block-start: var(--jd-space-4);
-        }
-
         .hero {
             gap: var(--jd-space-2);
             padding-bottom: var(--jd-space-4);
-        }
-
-        /* `:global`, because the heading is a component of its own now and Astro scopes
-           its elements to it. The `.hero` half stays scoped here, so this reaches the
-           heading on this page and no other. */
-        .hero :global(h1) {
-            font-size: var(--jd-text-xl);
         }
 
         /* The tagline carries the claim; the subtitle restates it in plainer words. On a

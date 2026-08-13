@@ -1,12 +1,14 @@
 ---
+import Acts from '../../components/Acts.astro';
 import HomeContent from '../../components/HomeContent.astro';
-import Base from '../../layouts/Base.astro';
+import Page from '../../layouts/Page.astro';
 import { useTranslations } from '../../i18n/ui';
 import { site } from '../../site';
 
 const t = useTranslations('fr');
 ---
 
-<Base title={`${site.name} — ${t('brand.subtitle')}`} description={t('home.meta.description')}>
+<Page title={`${site.name} — ${t('brand.subtitle')}`} description={t('home.meta.description')} firstScreen>
     <HomeContent />
-</Base>
+    <Acts slot="full-width" />
+</Page>

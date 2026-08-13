@@ -1,0 +1,20 @@
+---
+/**
+ * The three acts, in order, as one thing a page can ask for.
+ *
+ * They are bands rather than columns: each paints its ground edge to edge and puts its own
+ * content back on the measure inside, which is why they sit outside the shell. Grouped here
+ * so the two locale pages name them once each rather than three times each.
+ *
+ * NOT BUILT: §7.4's reduced install block in the site header, which is what the visitor who
+ * already knows the product is supposed to reach for. Until it exists, the first screen's
+ * block is the only one above the first act's exit.
+ */
+import ActOne from './narrative/ActOne.astro';
+import ActTwo from './narrative/ActTwo.astro';
+import ActThree from './narrative/ActThree.astro';
+---
+
+<ActOne />
+<ActTwo />
+<ActThree />

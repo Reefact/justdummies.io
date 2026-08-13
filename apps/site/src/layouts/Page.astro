@@ -1,0 +1,94 @@
+---
+/**
+ * A page of this site: the document, the site header, the measure, and the brand.
+ *
+ * Everything above this existed already — `Base` gives the `<html>`, the head, the site
+ * header and a slot, and stops there. What it stopped short of is where the trouble was:
+ * each page then wrote its own `<main>`, its own shell, its own top padding and its own call
+ * to `BrandHeading`. Three pages, three copies of one intention, two of which happened to
+ * agree. The third wrote 60rem and 64 pixels where the others wrote 72rem and 32, so the
+ * brand sat at x=176 on the 404 and x=80 on the other two — nobody lied, everybody rewrote.
+ *
+ * So the geometry lives here, once, and a page cannot restate it. What a page brings is what
+ * it has to say; where that sits on the screen is not its business.
+ *
+ * `firstScreen` is the one thing a page may ask for, and only the landing page asks. It turns
+ * the shell into a column exactly one viewport tall, so the page's own first block can fill
+ * whatever the brand leaves — which is how the first screen holds the brand, a live
+ * expression and an invitation to scroll without any of them being measured in advance.
+ */
+import BrandHeading from '../components/BrandHeading.astro';
+import Base from './Base.astro';
+
+interface Props {
+    title: string;
+    description: string;
+    /** For a page that answers under an address it does not own — the 404. */
+    noindex?: boolean;
+    /**
+     * The page opens on one viewport's worth of screen, brand included. The page's own first
+     * block should take `flex: 1` to fill the rest of it.
+     */
+    firstScreen?: boolean;
+}
+
+const { title, description, noindex = false, firstScreen = false } = Astro.props;
+---
+
+<Base title={title} description={description} noindex={noindex}>
+    <main>
+        <div class="shell" data-first-screen={firstScreen ? '' : undefined}>
+            <BrandHeading />
+            <slot />
+        </div>
+
+        {/*
+          Outside the measure, and named so a page has to ask for it. The acts paint their
+          ground edge to edge and put their own content back on the measure inside; anything
+          that is a band rather than a column goes here.
+        */}
+        <slot name="full-width" />
+    </main>
+</Base>
+
+<style>
+    /* The air above the first screen and below the last thing on the page, for every page. */
+    main {
+        padding-block: var(--jd-space-8) var(--jd-space-16);
+    }
+
+    /*
+     * A column exactly one viewport tall, minus the site header and this main's own top
+     * padding — the 7.5rem is those two, and nothing else.
+     *
+     * `100svh` rather than `100vh`: on a phone `vh` is the viewport with the browser's chrome
+     * retracted, which is not the height anything is ever laid out at, so a screen measured in
+     * `vh` is always a little taller than the screen showing it.
+     *
+     * No `justify-content` here on purpose. Centring is what used to move the brand: the
+     * landing page centred its whole first screen, so the brand sat at y=94 on a 900-pixel
+     * window and y=78 on an 800-pixel one, while every other page held it still. The brand
+     * pins to the top now, and the room left over is distributed by the page's own content —
+     * which is where a decision about *that page's* rhythm belongs.
+     */
+    .shell[data-first-screen] {
+        display: flex;
+        flex-direction: column;
+        min-height: calc(100svh - 7.5rem);
+    }
+
+    /*
+     * A short screen and a narrow one both give the top back. They are two queries rather
+     * than one because they answer different facts — a phone is not a short screen, it is a
+     * narrow one, and what makes its first screen tall is the code wrapping.
+     *
+     * Both used to live in the landing page, which is why the brand sat 16 pixels higher
+     * there than on /version at the same window size. Here they move every page together, and
+     * the one that needs the room is still the one that gets it.
+     */
+    @media (max-width: 47.99rem), (max-height: 820px) {
+        main {
+            padding-block-start: var(--jd-space-4);
+        }
+    }
+</style>
