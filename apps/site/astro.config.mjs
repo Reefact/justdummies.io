@@ -25,7 +25,21 @@ export default defineConfig({
     outDir: '../../dist',
 
     // Directory format writes /tooling/index.html rather than /tooling.html, so a
-    // static host serves /tooling and /tooling/ alike without a redirect rule.
+    // reader given either spelling of the address lands on the page.
+    //
+    // NOT "alike", which is what this comment claimed until somebody measured it. The
+    // host redirects one spelling to the other: on the deployment, /version answers
+    // 307 with `location: /version/`, and /version/ answers 200. No setting serves
+    // both directly — Cloudflare's `html_handling` picks which spelling is the real
+    // one, and its default sends the bare form to the slashed one. That is the right
+    // way round here, because the slashed form is what /, /fr/ and /playground/
+    // already use.
+    //
+    // Two consequences, worth knowing rather than rediscovering. The redirect is
+    // temporary and carries no cache header, so the extra hop happens on every visit
+    // to the bare form rather than only the first. And anything that does not follow
+    // redirects — a monitor, a link checker, `curl` without -L — sees an empty 307
+    // instead of the page.
     build: {
         format: 'directory',
 
