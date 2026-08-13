@@ -1,4 +1,5 @@
 ---
+import BrandHeading from '../components/BrandHeading.astro';
 import Base from '../layouts/Base.astro';
 import { useTranslations } from '../i18n/ui';
 import { site } from '../site';
@@ -15,7 +16,18 @@ const t = useTranslations('en');
 
 <Base title={`${t('notfound.title')} — ${site.name}`} description={t('notfound.body')} noindex>
     <main class="shell">
-        <h1>{t('notfound.title')}</h1>
+        {/*
+          The brand first, and the same one the other pages carry — a reader who lands here
+          arrived by a wrong address and may have no idea whose site refused them. It is the
+          page's `h1` for that reason, which makes "Page not found" the `h2` below it: the
+          page is about JustDummies, and what it has to say about itself is that this address
+          holds nothing.
+        */}
+        <header class="brand">
+            <BrandHeading />
+        </header>
+
+        <h2>{t('notfound.title')}</h2>
         <p class="body">{t('notfound.body')}</p>
 
         {/*
@@ -42,7 +54,11 @@ const t = useTranslations('en');
         padding: var(--jd-space-16) var(--jd-space-4);
     }
 
-    h1 {
+    .brand {
+        margin-bottom: var(--jd-space-8);
+    }
+
+    h2 {
         font-size: var(--jd-text-xl);
         line-height: var(--jd-line-tight);
         margin: 0 0 var(--jd-space-4);

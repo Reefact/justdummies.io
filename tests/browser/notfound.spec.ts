@@ -9,9 +9,19 @@ import { expect, test, type Page, type Response } from '@playwright/test';
  * addresses. A 404 that stopped being served, or stopped carrying its picture, would look
  * fine everywhere except where it is met.
  */
-const PAGES: ReadonlyArray<{ path: string; home: string }> = [
-    { path: '/404.html', home: '/' },
-    { path: '/fr/404.html', home: '/fr/' },
+const PAGES: ReadonlyArray<{ path: string; home: string; refusal: string; claim: RegExp }> = [
+    {
+        path: '/404.html',
+        home: '/',
+        refusal: 'Page not found',
+        claim: /Just dummies — but seriously powerful ones\./,
+    },
+    {
+        path: '/fr/404.html',
+        home: '/fr/',
+        refusal: 'Page introuvable',
+        claim: /Juste des dummies, mais redoutablement efficaces\./,
+    },
 ];
 
 async function topOf(page: Page, selector: string): Promise<number> {
@@ -22,7 +32,23 @@ async function topOf(page: Page, selector: string): Promise<number> {
     return box!.y;
 }
 
-for (const { path, home } of PAGES) {
+for (const { path, home, refusal, claim } of PAGES) {
+
+    test(`${path} says whose site refused, in the reader's language`, async ({ page }) => {
+        await page.goto(path);
+
+        // A visitor here arrived by an address that does not exist and may have no idea
+        // whose site turned them away. The brand is the same component the landing page and
+        // /version use, so this also says the three have not drifted apart.
+        await expect(page.locator('h1')).toHaveText(/JustDummies/);
+        await expect(page.locator('.mark')).toBeVisible();
+        await expect(page.locator('.tagline')).toHaveText(claim);
+
+        // The refusal is the h2 under it, not a second h1: the page is about JustDummies,
+        // and what it says about itself is that this address holds nothing.
+        await expect(page.getByRole('heading', { level: 2, name: refusal })).toBeVisible();
+        await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+    });
 
     test(`${path} shows the dummy between the sentence and the way out`, async ({ page }) => {
         await page.goto(path);
