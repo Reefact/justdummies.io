@@ -78,7 +78,7 @@ const en = {
 
     'act1.test.title': 'Your test probably looks like this',
     'act1.test.body':
-        'This test is hard to read, and the arrangement is why. Three of its lines build values the test has no interest in: the constructor demands them, and that is the only reason. The one useful piece of information comes last, and it is two words long: the order is pending.',
+        'What is this test about? A pending order can be cancelled — but you have to go looking to see it. Three of its four arrangement lines build a reference, a customer and a total that the test never mentions again: the constructor demands them, that is all. And they lie: ORD-54XEM4545 and 42.00 read as values somebody chose, when any valid ones would have done. The subject of the test is the last argument of the line that builds the order.',
 
     'act1.factories.title': 'A first tidy-up',
     'act1.factories.body':
@@ -247,7 +247,7 @@ const fr: Record<UiKey, string> = {
 
     'act1.test.title': 'En général, votre test ressemble à ça',
     'act1.test.body':
-        "Ce test est difficile à lire, et l'arrange en est la cause. Trois lignes y construisent des valeurs dont le test n'a rien à faire : le constructeur les exige, c'est tout. La seule information utile arrive en dernier, et elle tient en deux mots : la commande est en attente.",
+        "De quoi parle ce test ? Une commande en attente peut être annulée — mais il faut chercher pour le voir. Trois de ses quatre lignes d'arrange construisent une référence, un client et un total dont le test ne reparlera jamais : le constructeur les exige, c'est tout. Et elles mentent : ORD-54XEM4545 et 42.00 se lisent comme des valeurs choisies, alors que n'importe lesquelles auraient fait l'affaire, pourvu qu'elles soient valides. Le sujet du test, lui, est le dernier argument de la ligne qui construit la commande.",
 
     'act1.factories.title': 'Un premier nettoyage',
     'act1.factories.body':
