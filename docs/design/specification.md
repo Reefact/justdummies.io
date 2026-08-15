@@ -305,12 +305,14 @@ boutons, titres de page, et les messages que le playground compose lui-même (un
 saisie propre au bac à sable, par exemple) sont traduits comme n'importe quel contenu du
 site — mêmes règles ci-dessus, y compris l'échec de build sur une clé manquante.
 
-Seuls **les messages que la librairie JustDummies produit elle-même à l'exécution**
-(`DummyException` et ses sous-classes) restent en anglais dans toutes les locales : ils
-viennent d'un paquet publié hors de ce dépôt et reflètent des identifiants d'API anglais,
-pas du contenu écrit ici. Cette exception, plus étroite que par le passé, est assumée et
-documentée, pas subie — la retraduire serait le playground formulant son propre avis sur
-le diagnostic de la librairie plutôt que de le montrer tel quel.
+Seul **tout contenu dont la bibliothèque JustDummies est la source** reste en anglais dans
+toutes les locales — qu'il soit levé à l'exécution (`DummyException` et ses sous-classes) ou
+extrait de sa documentation XML au moment du build (noms de méthode, résumés, descriptions de
+paramètre affichés par le playground, §10.7). Dans les deux cas, ce texte vient d'un paquet
+publié hors de ce dépôt et reflète des identifiants et une documentation d'API anglais, pas du
+contenu écrit ici — le dépôt du site n'a pas la main dessus. Cette exception est assumée et
+documentée, pas subie — la retraduire serait le playground formulant son propre avis sur le
+contenu de la librairie plutôt que de le montrer tel quel.
 
 ### 6.5 Conséquences techniques
 
