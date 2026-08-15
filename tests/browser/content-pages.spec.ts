@@ -46,16 +46,18 @@ async function footerPosition(page: Page): Promise<string> {
     return page.evaluate(() => getComputedStyle(document.querySelector('.site-footer')!).position);
 }
 
-test('the footer links to About, Privacy and this site\'s repository, and scrolls with the page', async ({
+test('the footer links to About, Release notes, Privacy and this site\'s repository, and scrolls with the page', async ({
     page,
 }) => {
     await page.goto('/');
 
     const about = page.locator('.site-footer a[href="/about/"]');
+    const releaseNotes = page.locator('.site-footer a[href="/release-notes/"]');
     const privacy = page.locator('.site-footer a[href="/privacy/"]');
     const repository = page.locator('.site-footer a[href="https://github.com/Reefact/justdummies.io"]');
 
     await expect(about).toBeVisible();
+    await expect(releaseNotes).toBeVisible();
     await expect(privacy).toBeVisible();
     await expect(repository).toBeVisible();
     await expect(repository).toHaveAttribute('target', '_blank');
@@ -68,7 +70,18 @@ test('the footer links to About, Privacy and this site\'s repository, and scroll
 });
 
 test('the footer appears on every page that carries it, in the right locale', async ({ page }) => {
-    for (const path of ['/', '/fr/', '/about', '/fr/about', '/privacy', '/fr/privacy', '/version', '/404.html']) {
+    for (const path of [
+        '/',
+        '/fr/',
+        '/about',
+        '/fr/about',
+        '/release-notes',
+        '/fr/release-notes',
+        '/privacy',
+        '/fr/privacy',
+        '/version',
+        '/404.html',
+    ]) {
         await page.goto(path);
 
         await expect(page.locator('.site-footer'), `${path} carries no footer`).toBeVisible();

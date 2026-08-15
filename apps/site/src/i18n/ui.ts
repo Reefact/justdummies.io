@@ -254,10 +254,42 @@ const en = {
         "Since this site doesn't collect any data that identifies you individually, there's in practice nothing to correct or delete about you. For any question on this, write to privacy@reefact.net.",
     'privacy.updated': 'Last updated: August 15, 2026.',
 
+    /**
+     * /release-notes — a snapshot of the library's own CHANGELOG.md files, one train at
+     * a time. `releaseNotes.category.*` translates the `### Category` headings those
+     * files use, which are always written in English regardless of the reader's locale.
+     */
+    'releaseNotes.heading': 'Release notes',
+    'releaseNotes.lead': 'What shipped in the library, and why — read from its own changelog, one package at a time.',
+    'releaseNotes.meta.description': "What changed in JustDummies, release by release, across every package it publishes.",
+    'releaseNotes.snapshotLabel': 'Snapshot taken',
+    'releaseNotes.viewSource': 'Read the changelog this came from',
+
+    'releaseNotes.train.lib': 'Core library',
+    'releaseNotes.train.xunit': 'xUnit adapter',
+    'releaseNotes.train.catalog': 'Diagnostic catalog',
+    'releaseNotes.train.cli': 'CLI — dum',
+
+    'releaseNotes.unreleased': 'In progress',
+    'releaseNotes.viewOnGithub': 'View on GitHub',
+    'releaseNotes.more': 'more',
+
+    'releaseNotes.category.added': 'Added',
+    'releaseNotes.category.changed': 'Changed',
+    'releaseNotes.category.fixed': 'Fixed',
+    'releaseNotes.category.deprecated': 'Deprecated',
+    'releaseNotes.category.removed': 'Removed',
+    'releaseNotes.category.security': 'Security',
+    'releaseNotes.category.documentation': 'Documentation',
+    'releaseNotes.category.notes': 'Notes',
+    'releaseNotes.category.requires': 'Requires',
+    'releaseNotes.category.refusedOnPurpose': 'Refused, on purpose',
+
     /** The sitewide footer. */
     'footer.nav': 'Footer',
     'footer.about': 'About',
     'footer.privacy': 'Privacy',
+    'footer.releaseNotes': 'Release notes',
     'footer.repository': 'Source code',
 } as const;
 
@@ -437,9 +469,37 @@ const fr: Record<UiKey, string> = {
         "Comme ce site ne collecte aucune donnée qui vous identifie individuellement, il n'y a en pratique rien à corriger ou à effacer vous concernant. Pour toute question sur ce point, écrivez à privacy@reefact.net.",
     'privacy.updated': 'Dernière mise à jour : 15 août 2026.',
 
+    'releaseNotes.heading': 'Notes de version',
+    'releaseNotes.lead':
+        "Ce qui a changé dans la bibliothèque, et pourquoi — lu dans son propre changelog, un paquet à la fois.",
+    'releaseNotes.meta.description': 'Ce qui a changé dans JustDummies, release après release, pour chaque paquet publié.',
+    'releaseNotes.snapshotLabel': 'Instantané pris le',
+    'releaseNotes.viewSource': "Lire le changelog dont ceci provient",
+
+    'releaseNotes.train.lib': 'Bibliothèque principale',
+    'releaseNotes.train.xunit': 'Adaptateur xUnit',
+    'releaseNotes.train.catalog': 'Catalogue de diagnostics',
+    'releaseNotes.train.cli': 'CLI — dum',
+
+    'releaseNotes.unreleased': 'En cours',
+    'releaseNotes.viewOnGithub': 'Voir sur GitHub',
+    'releaseNotes.more': 'de plus',
+
+    'releaseNotes.category.added': 'Ajouté',
+    'releaseNotes.category.changed': 'Changé',
+    'releaseNotes.category.fixed': 'Corrigé',
+    'releaseNotes.category.deprecated': 'Déprécié',
+    'releaseNotes.category.removed': 'Retiré',
+    'releaseNotes.category.security': 'Sécurité',
+    'releaseNotes.category.documentation': 'Documentation',
+    'releaseNotes.category.notes': 'Notes',
+    'releaseNotes.category.requires': 'Requiert',
+    'releaseNotes.category.refusedOnPurpose': 'Refusé, volontairement',
+
     'footer.nav': 'Pied de page',
     'footer.about': 'À propos',
     'footer.privacy': 'Confidentialité',
+    'footer.releaseNotes': 'Notes de version',
     'footer.repository': 'Code source',
 };
 

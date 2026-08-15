@@ -1,0 +1,548 @@
+---
+/**
+ * A snapshot of what the library's own CHANGELOG.md files say, one train at a time.
+ *
+ * A TAB IS A TRAIN, NEVER A MIX. The four packages this repository publishes version
+ * independently (CONTRIBUTING.md's `tools/trains.sh`), and a list interleaving their
+ * releases reads as one product's history when it is four. So the panels never merge —
+ * switching a tab replaces the whole list rather than filtering one.
+ *
+ * WITHOUT SCRIPTING there are no tabs at all, for the same reason InstallTabs.astro has
+ * none: the tablist is `hidden` in the markup and the roles are attached by the script
+ * below, so what a reader without JavaScript gets is the stacked form — every train
+ * under its own heading, one after another — rather than a tab widget that announces
+ * itself and does nothing (ADR-0004).
+ *
+ * WHAT THIS PAGE READS IS A FILE, NOT A LIVE FEED. `release-notes.ts` says why —
+ * `scripts/generate-release-notes.mjs` snapshots the library's CHANGELOG.md files on a
+ * maintainer's own schedule, not on every visit. Fetching GitHub from the visitor's own
+ * browser was the first shape this took; it lost to two facts of this codebase: a
+ * control that needs scripting to show its content at all is exactly what ADR-0004
+ * exists to prevent, and every other page here already gets its facts at build time
+ * (VersionContent.astro's own words: "nothing is fetched because nothing needs to be").
+ * The snapshot date below is what keeps that honest instead of implying a live watch.
+ */
+import { localeFromPath } from '../i18n/routing';
+import { useTranslations, type UiKey } from '../i18n/ui';
+import { releaseNotes, type TrainKey } from '../release-notes';
+
+const locale = localeFromPath(Astro.url.pathname);
+const t = useTranslations(locale);
+
+const TRAIN_LABEL_KEY: Record<TrainKey, UiKey> = {
+    lib: 'releaseNotes.train.lib',
+    xunit: 'releaseNotes.train.xunit',
+    catalog: 'releaseNotes.train.catalog',
+    cli: 'releaseNotes.train.cli',
+};
+
+/** The changelogs' own `### Category` headings, always written in English — translated
+ *  here by matching the raw text rather than trusting a fixed position in the file. */
+const CATEGORY_KEY: Record<string, UiKey> = {
+    added: 'releaseNotes.category.added',
+    changed: 'releaseNotes.category.changed',
+    fixed: 'releaseNotes.category.fixed',
+    deprecated: 'releaseNotes.category.deprecated',
+    removed: 'releaseNotes.category.removed',
+    security: 'releaseNotes.category.security',
+    documentation: 'releaseNotes.category.documentation',
+    notes: 'releaseNotes.category.notes',
+    requires: 'releaseNotes.category.requires',
+    'refused, on purpose': 'releaseNotes.category.refusedOnPurpose',
+};
+
+function categoryLabel(rawLabel: string): string {
+    const key = CATEGORY_KEY[rawLabel.toLowerCase()];
+
+    return key === undefined ? rawLabel : t(key);
+}
+
+const dateFormat = new Intl.DateTimeFormat(locale === 'fr' ? 'fr-FR' : 'en-US', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+});
+
+function formatDate(iso: string): string {
+    return dateFormat.format(new Date(iso));
+}
+
+/** Bullets shown before a section folds the rest under a native, scriptless `<details>`. */
+const VISIBLE_ITEMS = 3;
+---
+
+<section class="release-notes" aria-labelledby="release-notes-heading" data-release-tabs>
+    <h2 id="release-notes-heading">{t('releaseNotes.heading')}</h2>
+    <p class="lead">{t('releaseNotes.lead')}</p>
+    <p class="snapshot">
+        {t('releaseNotes.snapshotLabel')} <time datetime={releaseNotes.generatedAt}>{formatDate(releaseNotes.generatedAt)}</time> ·
+        <a href={releaseNotes.source} target="_blank" rel="noopener noreferrer">
+            {t('releaseNotes.viewSource')}
+            <span class="visually-hidden"> {t('state.newTab')}</span>
+        </a>
+    </p>
+
+    <div class="tablist" role="tablist" aria-labelledby="release-notes-heading" hidden data-tablist>
+        {
+            releaseNotes.trains.map((train) => (
+                <button type="button" class="tab" id={`train-${train.key}-tab`} aria-controls={`train-${train.key}-panel`} data-tab={train.key}>
+                    {t(TRAIN_LABEL_KEY[train.key])}
+                </button>
+            ))
+        }
+    </div>
+
+    {
+        releaseNotes.trains.map((train) => (
+            <div class="panel" id={`train-${train.key}-panel`} data-panel={train.key}>
+                <h3 class="panel-label" data-panel-label>
+                    {t(TRAIN_LABEL_KEY[train.key])}
+                </h3>
+                <p class="package-name">
+                    <code>{train.package}</code>
+                </p>
+
+                <div class="releases">
+                    {train.releases.map((release) => (
+                        <article class="release" data-unreleased={release.unreleased ? '' : undefined}>
+                            <div class="release-head">
+                                <span class="version">{release.version}</span>
+                                {release.unreleased ? (
+                                    <span class="pill progress">{t('releaseNotes.unreleased')}</span>
+                                ) : (
+                                    <span class="pill">{release.maturity}</span>
+                                )}
+                                {release.date !== null && (
+                                    <span class="release-date">
+                                        <time datetime={release.date}>{formatDate(release.date)}</time>
+                                    </span>
+                                )}
+                            </div>
+
+                            {release.summaryHtml.length > 0 && (
+                                <div class="summary">
+                                    {release.summaryHtml.map((paragraph) => (
+                                        <p set:html={paragraph} />
+                                    ))}
+                                </div>
+                            )}
+
+                            {release.sections.map((section) => (
+                                <div class:list={['section', { 'tone-added': section.label.toLowerCase() === 'added' }]}>
+                                    <p class="section-label">
+                                        <span class="dot" aria-hidden="true" />
+                                        {categoryLabel(section.label)}
+                                    </p>
+                                    <ul class="bullets">
+                                        {section.items.slice(0, VISIBLE_ITEMS).map((item) => (
+                                            <li set:html={item} />
+                                        ))}
+                                    </ul>
+                                    {section.items.length > VISIBLE_ITEMS && (
+                                        <details class="more">
+                                            <summary>
+                                                +{section.items.length - VISIBLE_ITEMS} {t('releaseNotes.more')}
+                                            </summary>
+                                            <ul class="bullets">
+                                                {section.items.slice(VISIBLE_ITEMS).map((item) => (
+                                                    <li set:html={item} />
+                                                ))}
+                                            </ul>
+                                        </details>
+                                    )}
+                                </div>
+                            ))}
+
+                            {release.tagUrl !== null && (
+                                <div class="release-foot">
+                                    <a href={release.tagUrl} target="_blank" rel="noopener noreferrer">
+                                        {t('releaseNotes.viewOnGithub')}
+                                        <svg class="arrow" viewBox="0 0 12 12" width="10" height="10" aria-hidden="true" focusable="false">
+                                            <path d="M3 9L9 3M4.5 3H9v4.5" />
+                                        </svg>
+                                        <span class="visually-hidden"> {t('state.newTab')}</span>
+                                    </a>
+                                </div>
+                            )}
+                        </article>
+                    ))}
+                </div>
+            </div>
+        ))
+    }
+</section>
+
+<script>
+    /**
+     * Turns the stacked trains into a tab widget — the same automatic-activation pattern
+     * as InstallTabs.astro, because a reader who already learned it there should not have
+     * to learn a second one here.
+     */
+    for (const block of document.querySelectorAll<HTMLElement>('[data-release-tabs]')) {
+        const tablist: HTMLElement | null = block.querySelector('[data-tablist]');
+        const tabs: HTMLButtonElement[] = Array.from(block.querySelectorAll<HTMLButtonElement>('[data-tab]'));
+        const panels: HTMLElement[] = Array.from(block.querySelectorAll<HTMLElement>('[data-panel]'));
+
+        if (tablist === null || tabs.length === 0 || tabs.length !== panels.length) {
+            continue;
+        }
+
+        function select(index: number, moveFocus: boolean): void {
+            tabs.forEach((tab: HTMLButtonElement, position: number) => {
+                const selected: boolean = position === index;
+
+                tab.setAttribute('aria-selected', String(selected));
+                tab.tabIndex = selected ? 0 : -1;
+                panels[position].hidden = !selected;
+            });
+
+            if (moveFocus) {
+                tabs[index].focus();
+            }
+        }
+
+        tabs.forEach((tab: HTMLButtonElement, position: number) => {
+            tab.setAttribute('role', 'tab');
+
+            const panel: HTMLElement = panels[position];
+
+            panel.setAttribute('role', 'tabpanel');
+            panel.setAttribute('aria-labelledby', tab.id);
+
+            // The panel's own heading is redundant once the tab beside it says the same
+            // thing — see InstallTabs.astro's identical treatment of its panel label.
+            const panelLabel: HTMLElement | null = panel.querySelector('[data-panel-label]');
+
+            if (panelLabel !== null) {
+                panelLabel.hidden = true;
+            }
+
+            tab.addEventListener('click', () => select(position, false));
+
+            tab.addEventListener('keydown', (event: KeyboardEvent) => {
+                const last: number = tabs.length - 1;
+                let next: number | undefined;
+
+                if (event.key === 'ArrowRight') {
+                    next = position === last ? 0 : position + 1;
+                } else if (event.key === 'ArrowLeft') {
+                    next = position === 0 ? last : position - 1;
+                } else if (event.key === 'Home') {
+                    next = 0;
+                } else if (event.key === 'End') {
+                    next = last;
+                }
+
+                if (next === undefined) {
+                    return;
+                }
+
+                event.preventDefault();
+                select(next, true);
+            });
+        });
+
+        select(0, false);
+        tablist.hidden = false;
+    }
+</script>
+
+<style>
+    .release-notes {
+        max-width: 64rem;
+    }
+
+    h2 {
+        font-size: var(--jd-text-xl);
+        line-height: var(--jd-line-tight);
+        margin: 0;
+    }
+
+    .lead {
+        color: var(--jd-text-muted);
+        max-width: 46rem;
+        margin: var(--jd-space-2) 0 var(--jd-space-4);
+    }
+
+    .snapshot {
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+        margin: 0 0 var(--jd-space-6);
+    }
+
+    .snapshot time {
+        font-family: var(--jd-font-mono);
+        color: var(--jd-text-primary);
+    }
+
+    /* Same visual language as InstallTabs.astro's own tablist, deliberately: a reader
+       switching between an install offer and this page should recognise the control. */
+    .tablist {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--jd-space-2);
+        padding-bottom: var(--jd-space-6);
+        margin-bottom: var(--jd-space-6);
+        border-bottom: 1px solid var(--jd-border);
+    }
+
+    .tab {
+        font: inherit;
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+        background: transparent;
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-sm);
+        padding: var(--jd-space-2) var(--jd-space-3);
+        cursor: pointer;
+        transition:
+            color var(--jd-duration-fast) var(--jd-ease),
+            border-color var(--jd-duration-fast) var(--jd-ease),
+            background var(--jd-duration-fast) var(--jd-ease);
+    }
+
+    .tab:hover {
+        color: var(--jd-text-primary);
+        border-color: var(--jd-accent);
+    }
+
+    .tab[aria-selected='true'] {
+        color: var(--jd-accent);
+        background: var(--jd-surface-raised);
+        border-color: var(--jd-accent);
+    }
+
+    .tab:focus-visible {
+        outline: 2px solid var(--jd-accent);
+        outline-offset: 2px;
+    }
+
+    /* Without scripting every panel stays in flow, stacked; the script above is what
+       turns them into an exclusive tab view. */
+    .panel + .panel {
+        margin-top: var(--jd-space-12);
+    }
+
+    .panel-label {
+        font-size: var(--jd-text-lg);
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .package-name {
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+        margin: var(--jd-space-1) 0 var(--jd-space-6);
+    }
+
+    .package-name code {
+        font-family: var(--jd-font-mono);
+        background: none;
+        color: inherit;
+    }
+
+    .releases {
+        display: grid;
+        gap: var(--jd-space-6);
+    }
+
+    .release {
+        background: var(--jd-surface-raised);
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-lg);
+        padding: var(--jd-space-6);
+    }
+
+    .release[data-unreleased] {
+        background: var(--jd-surface-sunken);
+        border-style: dashed;
+    }
+
+    .release-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: var(--jd-space-1) var(--jd-space-3);
+        margin-bottom: var(--jd-space-3);
+    }
+
+    .version {
+        font-family: var(--jd-font-mono);
+        font-size: var(--jd-text-lg);
+        font-weight: 600;
+    }
+
+    .release[data-unreleased] .version {
+        color: var(--jd-text-muted);
+        font-weight: 500;
+    }
+
+    .pill {
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+        border: 1px solid var(--jd-border);
+        border-radius: 999px;
+        padding: 0.1em 0.65em;
+        white-space: nowrap;
+    }
+
+    .pill.progress {
+        color: var(--jd-accent);
+        border-color: var(--jd-accent);
+    }
+
+    .release-date {
+        margin-left: auto;
+        font-family: var(--jd-font-mono);
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+        white-space: nowrap;
+    }
+
+    .summary {
+        color: var(--jd-text-muted);
+        max-width: 52rem;
+        margin-bottom: var(--jd-space-5);
+    }
+
+    .summary p {
+        margin: 0 0 var(--jd-space-3);
+    }
+
+    .summary p:last-child {
+        margin-bottom: 0;
+    }
+
+    .summary :global(strong) {
+        color: var(--jd-text-primary);
+        font-weight: 600;
+    }
+
+    .section {
+        margin-bottom: var(--jd-space-5);
+    }
+
+    .section:last-child {
+        margin-bottom: 0;
+    }
+
+    .section-label {
+        display: flex;
+        align-items: center;
+        gap: var(--jd-space-2);
+        margin: 0 0 var(--jd-space-2);
+        font-size: var(--jd-text-sm);
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--jd-text-muted);
+    }
+
+    .section-label .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--jd-border);
+        flex: none;
+    }
+
+    /* The one category coloured, deliberately — what a reader scans this page for first.
+       Everything else stays neutral, for the reason base.css gives a different block of
+       marked-up output: "a transcript in six colours starts to look composed". */
+    .section.tone-added .section-label {
+        color: var(--jd-success);
+    }
+
+    .section.tone-added .section-label .dot {
+        background: var(--jd-success);
+    }
+
+    .bullets {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: var(--jd-space-3);
+    }
+
+    .bullets li {
+        padding-left: var(--jd-space-4);
+        position: relative;
+        max-width: 58rem;
+    }
+
+    .bullets li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.65em;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--jd-border);
+    }
+
+    .bullets :global(strong) {
+        color: var(--jd-text-primary);
+        font-weight: 600;
+    }
+
+    .bullets :global(code) {
+        font-family: var(--jd-font-mono);
+        font-size: 0.9em;
+        background: var(--jd-surface-sunken);
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-sm);
+        padding: 0.05em 0.35em;
+    }
+
+    /* A native <details>: opening it needs no script, which is what lets a long section
+       fold without asking ADR-0004's question a second time. */
+    details.more {
+        margin-top: var(--jd-space-3);
+    }
+
+    details.more summary {
+        cursor: pointer;
+        font-size: var(--jd-text-sm);
+        color: var(--jd-accent);
+    }
+
+    details.more summary:focus-visible {
+        outline: 2px solid var(--jd-accent);
+        outline-offset: 2px;
+    }
+
+    details.more .bullets {
+        margin-top: var(--jd-space-3);
+    }
+
+    .release-foot {
+        margin-top: var(--jd-space-5);
+        padding-top: var(--jd-space-4);
+        border-top: 1px solid var(--jd-border);
+        font-size: var(--jd-text-sm);
+    }
+
+    .release-foot a {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--jd-space-1);
+        color: var(--jd-text-muted);
+    }
+
+    .release-foot a:hover {
+        color: var(--jd-accent);
+    }
+
+    .arrow {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    /* .visually-hidden is declared once, globally, in base.css. */
+</style>
