@@ -536,8 +536,7 @@ Contraintes de chargement :
 - le premier affichage n'en dépend pas ;
 - le runtime n'est **jamais** chargé sans action explicite du visiteur ;
 - avant chargement, la valeur affichée est une vraie valeur produite au build par la
-  vraie bibliothèque (§14.3), accompagnée d'une mention discrète ; après chargement,
-  les valeurs sont produites en direct.
+  vraie bibliothèque (§14.3) ; après chargement, les valeurs sont produites en direct.
 
 **Il n'existe qu'un seul producteur de valeurs, la bibliothèque.** Aucun générateur
 n'est écrit en JavaScript, donc aucune divergence n'est possible.

@@ -216,12 +216,18 @@ h1:focus {
     font-size: var(--jd-text-sm);
 }
 
-/* Same background as the site's static sample (LiveHero.astro's .sample) and the frame
-   that holds this iframe (its .frame) — without it, this card reads as <body>'s own
-   background showing through (--jd-background), one shade darker than the card the
-   visitor was just looking at. */
+/* The same box as the site's static sample (LiveHero.astro's .sample): its own border,
+   radius and background, clipping the expression and the result bar to rounded corners.
+   This used to be background-only, with the border living on .frame in the parent
+   document instead — the div that holds this iframe — which meant that border wrapped
+   the "Generate"/version row below the card too, a row the static example never draws a
+   box around (its equivalent, .invite, sits free underneath .sample). Moved here so only
+   the card is boxed, same as the page it is matching. */
 .hero-widget .card {
     background: var(--jd-surface);
+    border: 1px solid var(--jd-border);
+    border-radius: var(--jd-radius-md);
+    overflow: hidden;
 }
 
 .hero-widget .expression {
@@ -232,31 +238,52 @@ h1:focus {
     word-break: break-word;
 }
 
-/* Every line but the first, indented to land its "." under the one that follows "Any" on
-   the first line — 3 characters, the width of "Any" itself in this monospace type. Not the
-   22 spaces of the site's own snippet: that indentation counts "string reference = " too,
-   which this widget never prints. */
+/* Every line but the first, indented to land its "." under the one right after "Any" on
+   the first line — the same 22 columns as the site's own snippet, now that this widget
+   prints "string reference = " too: 19 characters for that, plus 3 for "Any". */
 .hero-widget .expression > :not(:first-child) {
-    padding-left: 3ch;
+    padding-left: 22ch;
 }
 
-.hero-widget .fixed {
-    color: var(--jd-text-muted);
+/*
+ * The same vocabulary `base.css` colours from `highlight.ts`'s output on the site — see
+ * the comment there. Duplicated here because the two applications share no stylesheet
+ * (same reason `.visually-hidden` and the footer nav below are duplicated too). The
+ * widget's expression is typed in this markup rather than run through `highlight()` —
+ * three of its "tokens" are `<input>` elements, not text a tokeniser can read — so the
+ * classes are placed by hand instead, but they are the same classes over the same
+ * design-token colours, so the two cards read as one language.
+ */
+.tok-keyword {
+    color: var(--jd-code-keyword);
 }
 
-.hero-widget .link {
-    color: var(--jd-text-primary);
+.tok-type {
+    color: var(--jd-code-type);
+}
+
+.tok-member {
+    color: var(--jd-code-member);
+}
+
+.tok-string {
+    color: var(--jd-code-string);
+}
+
+.tok-number {
+    color: var(--jd-code-number);
 }
 
 /* Editable, and looking it. An argument styled like its surrounding code reads as code
    and never gets clicked; one styled like a form control in a code block reads as a
-   mistake. This sits between: the code's own type, with a floor under it. */
+   mistake. This sits between: the code's own token colour (.tok-string/.tok-number,
+   above), with a floor under it. The floor is `currentColor` rather than a colour of its
+   own, so it always matches whichever token class is set on the same input. */
 .hero-widget input {
     font: inherit;
-    color: var(--jd-generated);
     background: transparent;
     border: 0;
-    border-bottom: 1px dashed var(--jd-generated);
+    border-bottom: 1px dashed currentColor;
     padding: 0 var(--jd-space-1);
     min-width: 3ch;
 }
@@ -282,7 +309,8 @@ h1:focus {
     background: var(--jd-surface-raised);         /* = the raised ground of <figcaption> */
 }
 
-.hero-widget .result-bar .arrow {
+.hero-widget .result-bar .arrow,
+.hero-widget .result-bar .label {
     color: var(--jd-text-muted);
 }
 
