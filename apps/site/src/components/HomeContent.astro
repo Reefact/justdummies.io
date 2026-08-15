@@ -50,13 +50,6 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
 </header>
 
 <style>
-    /* Narrower than the measure: the hero is prose and one expression, and a scene's figure
-       is what needs the whole 72rem. It stays left-aligned with the acts rather than being
-       centred against them. */
-    .hero {
-        max-width: 56rem;
-    }
-
     /*
      * The first screen is a scene of its own, and it holds the whole of it — so a reader
      * arriving has the brand, one real expression and one real value in front of them, and
@@ -212,7 +205,12 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
         }
     }
 
+    /* Narrower than the measure, and alone in being so: the subtitle is prose, which reads
+       best short of line, while the expression and the offer below it are the first of the
+       code and install blocks the narrative repeats in every act, and take the whole 72rem
+       shell like the rest — same as a scene's figure. */
     .subtitle {
+        max-width: 56rem;
         color: var(--jd-text-muted);
         margin: var(--jd-space-2) 0 var(--jd-space-8);
     }
