@@ -178,12 +178,20 @@
     ///     never had anything to explain — the truncation worked, silently, which is exactly
     ///     the defect this method exists to fix. This is the sole enforcement now, the same
     ///     way <see cref="SetLengthText" /> already is the sole enforcement for the number field.
+    ///
+    ///     Counted and sliced by text element, not by raw <see cref="string" /> index. A
+    ///     supplementary-plane character — most emoji — is two UTF-16 code units in .NET, and a
+    ///     limit landing between them would keep only the lead surrogate: not "one character
+    ///     short of ten," but a string no longer valid UTF-16 at all, on a field a visitor can
+    ///     paste anything into.
     /// </summary>
     private string Cap(string value, int limit, string owner) {
-        if (value.Length > limit) {
+        StringInfo info = new(value);
+
+        if (info.LengthInTextElements > limit) {
             SetHint(owner, PlaygroundStrings.T(LocaleState.Current, "limit.text", limit));
 
-            return value[..limit];
+            return info.SubstringByTextElements(0, limit);
         }
 
         ClearHint(owner);
@@ -220,9 +228,11 @@
             return Task.CompletedTask;
         }
 
-        double truncated = Math.Truncate(parsed);
-
-        if (truncated > MaxLength) {
+        // Compared before any rounding, not after: truncating "64.5" to 64 first would put it
+        // on the *legal* side of the cap check, when the value actually typed was over it. The
+        // cap has to see what was typed, not what it would become after this method already
+        // decided to keep it.
+        if (parsed > MaxLength) {
             // The clamped value is what gets displayed back, not the raw text — otherwise a
             // paste or a third digit would still *show* past 64 even though _length itself
             // stayed capped, which is the visible half of "cannot type past the limit" this
@@ -230,11 +240,18 @@
             SetHint("length", PlaygroundStrings.T(LocaleState.Current, "limit.length", MaxLength));
             _length     = MaxLength;
             _lengthText = MaxLength.ToString(CultureInfo.InvariantCulture);
-        } else {
-            ClearHint("length");
-            _length     = (int)Math.Clamp(truncated, 0, MaxLength);
-            _lengthText = value;
+
+            return Task.CompletedTask;
         }
+
+        ClearHint("length");
+        _length = (int)Math.Clamp(Math.Truncate(parsed), 0, MaxLength);
+
+        // A value in bounds is not necessarily one WithLength(...) can take as typed — it wants
+        // an int, and "12.5" is not one. Normalized to what actually runs, the same reasoning
+        // as the branch above: a box reading "12.5" while Draw() quietly generates a
+        // twelve-character value would agree with nothing the visitor can see.
+        _lengthText = _length.ToString(CultureInfo.InvariantCulture);
 
         return Task.CompletedTask;
     }
