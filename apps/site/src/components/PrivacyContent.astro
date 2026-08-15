@@ -1,0 +1,78 @@
+---
+/**
+ * What this site measures about a visitor, and what it doesn't (§15).
+ *
+ * Six sections, each an `<h3>`/`<p>` pair rather than a bold lead phrase inside a
+ * paragraph — `ui.ts` never carries markup, and a real heading serves §13.4's
+ * hierarchy requirement better than a bolded run of text would.
+ */
+import { localeFromPath } from '../i18n/routing';
+import { useTranslations } from '../i18n/ui';
+
+const t = useTranslations(localeFromPath(Astro.url.pathname));
+---
+
+<section class="privacy" aria-labelledby="privacy-heading">
+    <h2 id="privacy-heading">{t('privacy.heading')}</h2>
+
+    <div class="entry">
+        <h3>{t('privacy.tracking.label')}</h3>
+        <p>{t('privacy.tracking.body')}</p>
+    </div>
+    <div class="entry">
+        <h3>{t('privacy.analytics.label')}</h3>
+        <p>{t('privacy.analytics.body')}</p>
+    </div>
+    <div class="entry">
+        <h3>{t('privacy.playground.label')}</h3>
+        <p>{t('privacy.playground.body')}</p>
+    </div>
+    <div class="entry">
+        <h3>{t('privacy.hosting.label')}</h3>
+        <p>{t('privacy.hosting.body')}</p>
+    </div>
+    <div class="entry">
+        <h3>{t('privacy.controller.label')}</h3>
+        <p>{t('privacy.controller.body')}</p>
+    </div>
+    <div class="entry">
+        <h3>{t('privacy.rights.label')}</h3>
+        <p>{t('privacy.rights.body')}</p>
+    </div>
+
+    <p class="updated">{t('privacy.updated')}</p>
+</section>
+
+<style>
+    .privacy {
+        max-width: 56rem;
+    }
+
+    h2 {
+        font-size: var(--jd-text-xl);
+        line-height: var(--jd-line-tight);
+        margin: 0 0 var(--jd-space-6);
+    }
+
+    .entry {
+        margin: 0 0 var(--jd-space-6);
+    }
+
+    h3 {
+        font-size: var(--jd-text-lg);
+        line-height: var(--jd-line-tight);
+        margin: 0 0 var(--jd-space-2);
+    }
+
+    .entry p {
+        margin: 0;
+    }
+
+    .updated {
+        margin: var(--jd-space-8) 0 0;
+        padding-top: var(--jd-space-4);
+        border-top: 1px solid var(--jd-border);
+        color: var(--jd-text-muted);
+        font-size: var(--jd-text-sm);
+    }
+</style>

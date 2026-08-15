@@ -210,6 +210,55 @@ const en = {
     'notfound.title': 'Page not found',
     'notfound.body': 'Oops — this page is gone, or never existed.',
     'notfound.home': 'Click here to return to the home page.',
+
+    /**
+     * /about — why the library exists, and who built it.
+     */
+    'about.heading': 'About',
+    'about.meta.description': 'Why JustDummies exists, and who built it.',
+    'about.origin':
+        "After twenty-five years of writing code, the way I write tests has changed a lot — and along the way, one need kept coming back: generating test values that respect the domain's rules, without wasting time on parameters that don't matter to the test at hand. No existing library matched that approach, so I kept rewriting the same helpers on every new project. After doing it one too many times, I got tired of it and decided to write a library that solved the problem for good — hoping it might be useful to other developers too.",
+    'about.philosophy':
+        "My name is Sylvain Aurat, I'm a .NET engineer, and Reefact is the name of my company. Domain-Driven Design and software craftsmanship have shaped the way I design code. To me, a domain object shouldn't be able to exist in an invalid state — it's not up to whoever uses it to be careful, it's up to the object to protect itself. JustDummies applies that same requirement to test data: a generated value has to be just as valid as a real one, never a shortcut you hope stays harmless.",
+    'about.linksIntro':
+        'The code is public, and the package is on NuGet. A question, a bug? The relevant repository is right below.',
+    'about.links.library': 'JustDummies library',
+    'about.links.site': 'This site',
+    'about.links.nuget': 'NuGet package',
+
+    /**
+     * /privacy — what this site measures about a visitor, and what it doesn't. Each
+     * section is a `.label`/`.body` pair rather than one key: no key here ever carries
+     * markup, so the bold lead phrase becomes a heading in the component instead of an
+     * inline `**...**` that would render literally.
+     */
+    'privacy.heading': 'Privacy',
+    'privacy.meta.description': "What this site measures about you, and what it doesn't.",
+    'privacy.tracking.label': "This site doesn't track you.",
+    'privacy.tracking.body':
+        "It doesn't need to know who you are to work. There's no account to create, no tracking cookie, and nothing we measure is ever sold or shared with anyone.",
+    'privacy.analytics.label': 'Audience measurement.',
+    'privacy.analytics.body':
+        "We use Cloudflare Web Analytics to know how many people visit the site and whether pages load quickly. This tool sets no cookie and doesn't identify anyone individually — it counts visits and load times, not people. No finer-grained measurement — knowing which button you clicked, for instance — is active today.",
+    'privacy.playground.label': 'The playground.',
+    'privacy.playground.body':
+        "The playground, which runs the library, works entirely inside your browser. Nothing you type there is ever sent to a server — there's no server to send it to.",
+    'privacy.hosting.label': 'What the host sees.',
+    'privacy.hosting.body':
+        "The site is hosted on Cloudflare, which necessarily receives every request in order to serve it — your IP address and the pages requested, for instance. That's an unavoidable part of any web hosting, not a measurement we add; Cloudflare is our only subprocessor, for hosting as well as audience measurement.",
+    'privacy.controller.label': "Who's responsible for this site.",
+    'privacy.controller.body':
+        "It's published by REEFACT, a single-member SARL registered under SIREN number 804 026 482, headquartered at 134 rue de Chevilly, 94240 L'Haÿ-les-Roses, France, represented by its manager Sylvain Aurat.",
+    'privacy.rights.label': 'Your rights.',
+    'privacy.rights.body':
+        "Since this site doesn't collect any data that identifies you individually, there's in practice nothing to correct or delete about you. For any question on this, write to privacy@reefact.net.",
+    'privacy.updated': 'Last updated: August 15, 2026.',
+
+    /** The sitewide footer. */
+    'footer.nav': 'Footer',
+    'footer.about': 'About',
+    'footer.privacy': 'Privacy',
+    'footer.repository': 'Source code',
 } as const;
 
 /**
@@ -353,6 +402,45 @@ const fr: Record<UiKey, string> = {
     'notfound.title': 'Page introuvable',
     'notfound.body': "Oups — cette page a disparu, ou n'a jamais existé.",
     'notfound.home': "Cliquez ici pour retourner à la page d'accueil.",
+
+    'about.heading': 'À propos',
+    'about.meta.description': "Pourquoi JustDummies existe, et qui l'a créé.",
+    'about.origin':
+        "Après vingt-cinq ans à écrire du code, ma façon de tester a beaucoup évolué — et avec elle, un besoin précis a fini par s'imposer : pouvoir générer des valeurs de test qui respectent les règles du domaine, sans perdre de temps sur des paramètres qui n'ont aucune importance pour le test. Les bibliothèques existantes ne correspondaient pas à cette façon de faire, alors je recodais les mêmes « helpers » à chaque nouvelle mission. À force de recommencer, je m'en suis lassé, et j'ai décidé d'écrire une bibliothèque qui règle le problème une bonne fois pour toutes — en espérant qu'elle serve aussi à d'autres développeurs.",
+    'about.philosophy':
+        "Je m'appelle Sylvain Aurat, ingénieur .NET, et Reefact est le nom de ma société. Le Domain-Driven Design et le software craftsmanship ont façonné ma façon de concevoir le code. Pour moi, un objet métier ne devrait pas pouvoir exister dans un état invalide — ce n'est pas à celui qui l'utilise de faire attention, c'est à l'objet de se protéger lui-même. JustDummies applique cette même exigence aux données de test : une valeur générée doit être aussi valide qu'une valeur réelle, jamais un raccourci qu'on espère inoffensif.",
+    'about.linksIntro':
+        'Le code est public, et le paquet est sur NuGet. Une question, un bug ? Le dépôt concerné est juste en dessous.',
+    'about.links.library': 'Bibliothèque JustDummies',
+    'about.links.site': 'Ce site',
+    'about.links.nuget': 'Paquet NuGet',
+
+    'privacy.heading': 'Confidentialité',
+    'privacy.meta.description': "Ce que ce site mesure à votre sujet, et ce qu'il ne mesure pas.",
+    'privacy.tracking.label': 'Ce site ne vous suit pas.',
+    'privacy.tracking.body':
+        "Il n'a pas besoin de savoir qui vous êtes pour fonctionner. Il n'y a pas de compte à créer, pas de cookie de suivi, et rien de ce que nous mesurons n'est revendu ni partagé avec qui que ce soit.",
+    'privacy.analytics.label': "Mesure d'audience.",
+    'privacy.analytics.body':
+        "Nous utilisons Cloudflare Web Analytics pour savoir combien de personnes visitent le site et si les pages se chargent rapidement. Cet outil ne dépose aucun cookie et n'identifie personne individuellement : il compte des visites et des temps de chargement, pas des personnes. Aucune mesure plus fine — savoir quel bouton précis vous avez cliqué, par exemple — n'est activée aujourd'hui.",
+    'privacy.playground.label': 'Le playground.',
+    'privacy.playground.body':
+        "Le playground, qui exécute la bibliothèque, tourne entièrement dans votre navigateur. Ce que vous y saisissez n'est jamais envoyé à un serveur — il n'y a d'ailleurs aucun serveur à qui l'envoyer.",
+    'privacy.hosting.label': "Ce que l'hébergeur voit.",
+    'privacy.hosting.body':
+        "Le site est hébergé chez Cloudflare, qui reçoit nécessairement chaque requête pour la servir — votre adresse IP et les pages demandées, par exemple. C'est un passage obligé de tout hébergement web, pas une mesure que nous ajoutons ; Cloudflare est notre unique sous-traitant, pour l'hébergement comme pour la mesure d'audience.",
+    'privacy.controller.label': 'Qui est responsable de ce site.',
+    'privacy.controller.body':
+        "Il est édité par REEFACT, SARL unipersonnelle immatriculée sous le numéro SIREN 804 026 482, dont le siège est situé 134 rue de Chevilly, 94240 L'Haÿ-les-Roses, représentée par son gérant Sylvain Aurat.",
+    'privacy.rights.label': 'Vos droits.',
+    'privacy.rights.body':
+        "Comme ce site ne collecte aucune donnée qui vous identifie individuellement, il n'y a en pratique rien à corriger ou à effacer vous concernant. Pour toute question sur ce point, écrivez à privacy@reefact.net.",
+    'privacy.updated': 'Dernière mise à jour : 15 août 2026.',
+
+    'footer.nav': 'Pied de page',
+    'footer.about': 'À propos',
+    'footer.privacy': 'Confidentialité',
+    'footer.repository': 'Code source',
 };
 
 const translations: Record<Locale, Record<UiKey, string>> = { en, fr };

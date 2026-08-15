@@ -1,0 +1,80 @@
+---
+/**
+ * Why the library exists, and who built it — not the pitch (that is the landing
+ * page's job, §5.5), the personal reasoning behind it.
+ */
+import { localeFromPath } from '../i18n/routing';
+import { useTranslations } from '../i18n/ui';
+import { site } from '../site';
+
+const t = useTranslations(localeFromPath(Astro.url.pathname));
+---
+
+<section class="about" aria-labelledby="about-heading">
+    <h2 id="about-heading">{t('about.heading')}</h2>
+
+    <p>{t('about.origin')}</p>
+    <p>{t('about.philosophy')}</p>
+
+    <p>{t('about.linksIntro')}</p>
+    <ul class="links">
+        <li>
+            <a href={site.repository} target="_blank" rel="noopener noreferrer">
+                {t('about.links.library')}
+                <span class="visually-hidden"> {t('state.newTab')}</span>
+            </a>
+        </li>
+        <li>
+            <a href={site.siteRepository} target="_blank" rel="noopener noreferrer">
+                {t('about.links.site')}
+                <span class="visually-hidden"> {t('state.newTab')}</span>
+            </a>
+        </li>
+        <li>
+            <a href={site.library.nuget} target="_blank" rel="noopener noreferrer">
+                {t('about.links.nuget')}
+                <span class="visually-hidden"> {t('state.newTab')}</span>
+            </a>
+        </li>
+    </ul>
+</section>
+
+<style>
+    .about {
+        max-width: 56rem;
+    }
+
+    h2 {
+        font-size: var(--jd-text-xl);
+        line-height: var(--jd-line-tight);
+        margin: 0 0 var(--jd-space-6);
+    }
+
+    p {
+        margin: 0 0 var(--jd-space-4);
+    }
+
+    .links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--jd-space-3);
+        list-style: none;
+        margin: var(--jd-space-2) 0 0;
+        padding: 0;
+    }
+
+    .links a {
+        display: inline-block;
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-sm);
+        background: var(--jd-surface);
+        padding: var(--jd-space-2) var(--jd-space-4);
+        color: var(--jd-text-primary);
+        text-decoration: none;
+        font-size: var(--jd-text-sm);
+    }
+
+    .links a:hover {
+        border-color: var(--jd-accent);
+    }
+</style>

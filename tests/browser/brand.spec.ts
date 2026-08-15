@@ -20,7 +20,18 @@ import { expect, test, type Page } from '@playwright/test';
  * the landing pages pass, put them at y=102 against y=94 for the other four. All four windows
  * went red and named both sides; the other 90 checks in this suite stayed green.
  */
-const PAGES: readonly string[] = ['/', '/fr/', '/version', '/fr/version', '/404.html', '/fr/404.html'];
+const PAGES: readonly string[] = [
+    '/',
+    '/fr/',
+    '/version',
+    '/fr/version',
+    '/about',
+    '/fr/about',
+    '/privacy',
+    '/fr/privacy',
+    '/404.html',
+    '/fr/404.html',
+];
 
 /**
  * Where the brand sits and how it is drawn, as one string to compare.

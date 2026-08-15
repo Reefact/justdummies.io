@@ -1,0 +1,12 @@
+---
+import AboutContent from '../components/AboutContent.astro';
+import Page from '../layouts/Page.astro';
+import { useTranslations } from '../i18n/ui';
+import { site } from '../site';
+
+const t = useTranslations('en');
+---
+
+<Page title={`${t('about.heading')} — ${site.name}`} description={t('about.meta.description')}>
+    <AboutContent />
+</Page>

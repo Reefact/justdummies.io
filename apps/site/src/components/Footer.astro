@@ -1,0 +1,75 @@
+---
+/**
+ * The sitewide footer: About, Privacy, the site's own repository, and a copyright
+ * line. Rendered once, from `Base.astro`, after `<slot />` — every page that goes
+ * through the Astro layout carries it, in the normal flow of the document. It is
+ * never pinned to the viewport: a footer fixed in place for the whole of the landing
+ * page's three-act scroll would compete with the install bar already pinned to the
+ * header past the hero (§7.1) and with each scene's own single focal point (§5.4).
+ *
+ * The playground (Blazor, a separate application) carries an equivalent footer of its
+ * own — `apps/playground/Layout/MainLayout.razor` — built independently because Astro
+ * and Blazor share no rendering system to render one component from.
+ */
+import { localeFromPath, pathForLocale } from '../i18n/routing';
+import { useTranslations } from '../i18n/ui';
+import { site } from '../site';
+import { version } from '../version';
+
+const pathname: string = Astro.url.pathname;
+const locale = localeFromPath(pathname);
+const t = useTranslations(locale);
+
+/**
+ * Read from the build's own timestamp rather than `Date.now()`, so a rebuild made on
+ * the same source doesn't put a different year on the page than the one before it —
+ * the same "one generation" discipline `/version` already applies to its own fields.
+ */
+const year: number = new Date(version.built).getFullYear();
+---
+
+<footer class="site-footer">
+    <nav class="footer-nav" aria-label={t('footer.nav')}>
+        <a href={pathForLocale('/about', locale)}>{t('footer.about')}</a>
+        <a href={pathForLocale('/privacy', locale)}>{t('footer.privacy')}</a>
+        <a href={site.siteRepository} target="_blank" rel="noopener noreferrer">
+            {t('footer.repository')}
+            <span class="visually-hidden"> {t('state.newTab')}</span>
+        </a>
+    </nav>
+    <p class="copyright">© {year} {site.legal.entity}</p>
+</footer>
+
+<style>
+    .site-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: var(--jd-space-4);
+        max-width: 72rem;
+        margin: 0 auto;
+        padding: var(--jd-space-6) var(--jd-space-4);
+        border-top: 1px solid var(--jd-border);
+        color: var(--jd-text-muted);
+        font-size: var(--jd-text-sm);
+    }
+
+    .footer-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--jd-space-4);
+    }
+
+    .footer-nav a {
+        color: var(--jd-text-muted);
+    }
+
+    .footer-nav a:hover {
+        color: var(--jd-text-primary);
+    }
+
+    .copyright {
+        margin: 0;
+    }
+</style>

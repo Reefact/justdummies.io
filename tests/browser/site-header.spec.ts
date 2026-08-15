@@ -15,7 +15,18 @@ import { expect, test } from '@playwright/test';
  * the reason this suite exists at all is that "it comes from one layout" was true of the
  * brand too, and the brand was in three different places.
  */
-const PAGES: readonly string[] = ['/', '/fr/', '/version', '/fr/version', '/404.html', '/fr/404.html'];
+const PAGES: readonly string[] = [
+    '/',
+    '/fr/',
+    '/version',
+    '/fr/version',
+    '/about',
+    '/fr/about',
+    '/privacy',
+    '/fr/privacy',
+    '/404.html',
+    '/fr/404.html',
+];
 
 for (const path of PAGES) {
 

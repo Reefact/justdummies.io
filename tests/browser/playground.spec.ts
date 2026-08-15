@@ -96,4 +96,42 @@ test.describe('the playground', () => {
         await expect(page.locator('#blazor-error-ui')).toBeHidden();
     });
 
+    /**
+     * The playground counts as part of the site, so it carries the same footer — rebuilt
+     * in Blazor (Layout/MainLayout.razor) rather than shared, since Astro and Blazor have
+     * no rendering system in common. What both halves must still agree on is that a link
+     * back to the site survives `<base href="/playground/" />`: a bare "about" would
+     * resolve to /playground/about, a page that does not exist, so the links are asserted
+     * root-relative rather than merely present.
+     */
+    test('carries the site\'s footer, with links that survive its own <base href>', async ({ page }) => {
+        await page.goto('/playground/');
+
+        const footer = page.locator('.site-footer');
+
+        await expect(footer).toBeVisible();
+        await expect(footer.locator('a[href="/about/"]')).toBeVisible();
+        await expect(footer.locator('a[href="/privacy/"]')).toBeVisible();
+
+        const repository = footer.locator('a[href="https://github.com/Reefact/justdummies.io"]');
+
+        await expect(repository).toBeVisible();
+        await expect(repository).toHaveAttribute('target', '_blank');
+        await expect(repository).toHaveAttribute('rel', /noopener/);
+    });
+
+    test('carries the same footer on its own not-found page', async ({ page }) => {
+        await page.goto('/playground/not-found');
+
+        await expect(page.locator('.site-footer')).toBeVisible();
+    });
+
+    test('carries no footer inside the hero widget embedded in the landing page', async ({ page }) => {
+        await page.goto('/playground/hero');
+
+        // BareLayout, deliberately: the widget already sits inside a page that carries the
+        // real footer around it, so a second one here would be a duplicate, not a match.
+        await expect(page.locator('.site-footer')).toHaveCount(0);
+    });
+
 });
