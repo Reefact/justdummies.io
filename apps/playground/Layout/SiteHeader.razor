@@ -1,4 +1,5 @@
 @inherits LocalizedComponent
+@inject IJSRuntime JS
 
 @*
     The strip every playground page carries above .page, mirroring the site's own Base.astro:
@@ -21,7 +22,7 @@
         <nav class="language-selector" aria-label='@PlaygroundStrings.T(LocaleState.Current, "language.label")'>
             <details open="@_open">
                 <summary @onclick="ToggleMenu" @onclick:preventDefault="true">
-                    <span>@PlaygroundStrings.Name(LocaleState.Current)</span>
+                    <span lang="@PlaygroundStrings.Tag(LocaleState.Current)">@PlaygroundStrings.Name(LocaleState.Current)</span>
                     <svg class="caret" viewBox="0 0 10 6" width="10" height="6" aria-hidden="true" focusable="false">
                         <path d="M1 1l4 4 4-4" />
                     </svg>
@@ -30,9 +31,9 @@
                     @foreach (Locale locale in AvailableLocales) {
                         <li>
                             @if (locale == LocaleState.Current) {
-                                <span aria-current="true">@PlaygroundStrings.Name(locale)</span>
+                                <span aria-current="true" lang="@PlaygroundStrings.Tag(locale)">@PlaygroundStrings.Name(locale)</span>
                             } else {
-                                <button type="button" @onclick="() => Select(locale)">@PlaygroundStrings.Name(locale)</button>
+                                <button type="button" lang="@PlaygroundStrings.Tag(locale)" @onclick="() => Select(locale)">@PlaygroundStrings.Name(locale)</button>
                             }
                         </li>
                     }
@@ -51,7 +52,21 @@
 
     private bool _open;
 
+    private DotNetObjectReference<SiteHeader>? _selfReference;
+
     private string SiteHomeHref => LocaleState.Current == Locale.Fr ? "/fr/" : "/";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        if (!firstRender) {
+            return;
+        }
+
+        // One listener for the document's whole lifetime, not one per open — the header
+        // itself never unmounts (it lives above @Body in MainLayout), so there is exactly one
+        // of these to make.
+        _selfReference = DotNetObjectReference.Create(this);
+        await JS.InvokeVoidAsync("jdSiteHeaderInit", _selfReference);
+    }
 
     private void ToggleMenu() {
         _open = !_open;
@@ -60,6 +75,26 @@
     private void Select(Locale locale) {
         _open = false;
         LocaleState.Set(locale);
+    }
+
+    /// <summary>
+    ///     Called from site-header.js when the reader clicks away from the open menu or
+    ///     presses Escape. The DOM's own `open` attribute is never touched directly by that
+    ///     script — only this method is, so `_open` stays the one source of truth and a later
+    ///     render can never disagree with what the reader just saw happen.
+    /// </summary>
+    [JSInvokable]
+    public void CloseLanguageMenu() {
+        if (!_open) {
+            return;
+        }
+
+        _open = false;
+        StateHasChanged();
+    }
+
+    protected override void OnDispose() {
+        _selfReference?.Dispose();
     }
 
 }

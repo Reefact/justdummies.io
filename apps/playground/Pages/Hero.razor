@@ -25,17 +25,20 @@
     to keep the home page tidy would remove the best argument on the page.
 
     THE TWO KINDS OF STOP. A length too short for the prefix and fragment is the library's own
-    refusal (below) and stays in its own words, untranslated (§6.4) — it names a JustDummies
-    API contract, not this page's content. Typing past what this playground itself allows —
-    64 characters, 10 in a fragment — is this page's own rule, so that message is composed
-    here and translated like the rest of the interface.
+    refusal, in Draw() below, and stays in its own words, untranslated (§6.4) — it names a
+    JustDummies API contract, not this page's content, and it only ever appears at Generate,
+    the moment the chain is declared. Typing past what this playground itself allows — 64
+    characters, 10 in a fragment — is this page's own rule instead: it is enforced and
+    explained the instant it is hit, in each field's setter below, because by the time Generate
+    is next pressed the value has already been silently clamped and there would be nothing left
+    to refuse.
 *@
 
 <div class="hero-widget">
     <div class="expression">
         <span class="fixed">Any.String()</span>
-        <span class="link">.StartingWith(<input type="text" @bind="_prefix" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.prefix")' size="6" maxlength="@TextLimit" />)</span>
-        <span class="link">.Containing(<input type="text" @bind="_fragment" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.contains")' size="6" maxlength="@TextLimit" />)</span>
+        <span class="link">.StartingWith(<input type="text" @bind:get="_prefix" @bind:set="SetPrefix" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.prefix")' size="6" />)</span>
+        <span class="link">.Containing(<input type="text" @bind:get="_fragment" @bind:set="SetFragment" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.contains")' size="6" />)</span>
         <span class="link">.WithLength(<input type="number" @bind:get="_length" @bind:set="SetLength" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.length")' min="1" max="@MaxLength" />)</span>
         <span class="fixed">.Generate()</span>
     </div>
@@ -44,6 +47,10 @@
         <button class="generate" @onclick="Draw">@PlaygroundStrings.T(LocaleState.Current, "hero.generate")</button>
         <span class="live">@PlaygroundStrings.T(LocaleState.Current, "hero.running", LibraryVersion)</span>
     </div>
+
+    @if (_capHint is not null) {
+        <p class="hint">@_capHint</p>
+    }
 
     @if (_refusal is null) {
         <output class="value">@_value</output>
@@ -67,6 +74,15 @@
     private string  _value   = string.Empty;
     private string? _refusal;
 
+    /// <summary>
+    ///     Set the instant a field's setter clamps or truncates a value, cleared on the next
+    ///     edit that does not — a transient "you just hit a wall" cue, not tied to which field
+    ///     hit it. Independent of <see cref="_refusal" />: this is the playground's own rule,
+    ///     never the library's, and it is live rather than waiting for Generate (see the
+    ///     comment at the top of this file for why it cannot wait).
+    /// </summary>
+    private string? _capHint;
+
     private static string LibraryVersion { get; } = ReadLibraryVersion();
 
     protected override void OnInitialized() {
@@ -87,14 +103,13 @@
     ///     The two are one call here, deliberately: the library refuses a contradictory
     ///     declaration when it is declared, not when it is drawn, and the whole point of the
     ///     scene is that the refusal arrives at that moment.
+    ///
+    ///     Nothing here checks this playground's own caps: by construction, <see cref="_prefix" />
+    ///     and <see cref="_fragment" /> can never be longer than <see cref="TextLimit" />, and
+    ///     <see cref="_length" /> can never exceed <see cref="MaxLength" /> — see the setters
+    ///     below, which is where that limit is actually enforced and explained.
     /// </summary>
     private void Draw() {
-        if (_prefix.Length > TextLimit || _fragment.Length > TextLimit) {
-            _refusal = PlaygroundStrings.T(LocaleState.Current, "limit.text", TextLimit);
-            _value   = string.Empty;
-            return;
-        }
-
         try {
             _value = Any.String()
                         .StartingWith(_prefix)
@@ -125,18 +140,61 @@
         }
     }
 
+    private Task SetPrefix(string value) {
+        _prefix = Cap(value, TextLimit, "limit.text", TextLimit);
+
+        return Task.CompletedTask;
+    }
+
+    private Task SetFragment(string value) {
+        _fragment = Cap(value, TextLimit, "limit.text", TextLimit);
+
+        return Task.CompletedTask;
+    }
+
     /// <summary>
-    ///     The number input's setter: every keystroke is clamped to what this playground
-    ///     allows, immediately. Typing a third digit past 64 changes nothing the visitor can
-    ///     see — the value was already 64, and re-assigning 64 does not move the caret past
-    ///     it — which is the whole of what "cannot type past the limit" means for a plain
-    ///     <c>&lt;input type="number"&gt;</c>: its own `max` attribute only affects the
-    ///     spinner arrows, never the keyboard.
+    ///     The number input's setter: every keystroke past 64 is clamped immediately, and the
+    ///     first one that goes too far sets <see cref="_capHint" /> instead of silently
+    ///     substituting a value the visitor never asked for. Typing a third digit past "64"
+    ///     changes nothing visible after that — the value is already 64, and re-assigning 64
+    ///     does not move the caret past it — which is the whole of what "cannot type past the
+    ///     limit" means for a plain <c>&lt;input type="number"&gt;</c>: its own `max` attribute
+    ///     only affects the spinner arrows, never the keyboard.
     /// </summary>
     private Task SetLength(int value) {
+        if (value > MaxLength) {
+            _capHint = PlaygroundStrings.T(LocaleState.Current, "limit.length", MaxLength);
+        } else {
+            _capHint = null;
+        }
+
         _length = Math.Clamp(value, 0, MaxLength);
 
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    ///     Shared by <see cref="SetPrefix" /> and <see cref="SetFragment" />: truncates to
+    ///     <paramref name="limit" /> characters and sets <see cref="_capHint" /> the moment a
+    ///     keystroke or a paste would have gone past it.
+    ///
+    ///     Deliberately not paired with <c>maxlength</c> on the input, unlike a first version
+    ///     of this method was. The browser enforces <c>maxlength</c> before the value ever
+    ///     reaches Blazor's <c>oninput</c>, so this method never saw more than the limit and
+    ///     never had anything to explain — the truncation worked, silently, which is exactly
+    ///     the defect this method exists to fix. This is the sole enforcement now, the same
+    ///     way <see cref="SetLength" /> already was the sole enforcement for the number field.
+    /// </summary>
+    private string Cap(string value, int limit, string hintKey, int hintArg) {
+        if (value.Length > limit) {
+            _capHint = PlaygroundStrings.T(LocaleState.Current, hintKey, hintArg);
+
+            return value[..limit];
+        }
+
+        _capHint = null;
+
+        return value;
     }
 
     private static string ReadLibraryVersion() {

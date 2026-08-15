@@ -34,7 +34,10 @@ for (const path of PAGES) {
         await page.goto(path);
 
         const outward = page.locator('.site-nav a[href^="https://github.com/"]');
-        const inward  = page.locator('.site-nav a[href="/playground/"]');
+        // The playground link now carries the reader's locale (?lang=en|fr — the playground has
+        // no locale-prefixed route of its own to send them to instead), so this matches the
+        // path rather than the full href.
+        const inward = page.locator('.site-nav a[href^="/playground/?lang="]');
 
         await expect(outward).toHaveAttribute('target', '_blank');
         await expect(outward).toHaveAttribute('rel', /noopener/);

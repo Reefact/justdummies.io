@@ -122,6 +122,29 @@ public static class PlaygroundStrings {
         };
 
     /// <summary>
+    ///     TypeScript gives the site's own dictionary this guarantee for free — <c>fr</c>
+    ///     declared as <c>Record&lt;UiKey, string&gt;</c> makes a missing or extra key a compile
+    ///     error (<c>i18n/ui.ts</c>). C# has no equivalent structural check, so this is the
+    ///     closest a plain static class gets: an explicit static constructor runs before
+    ///     <em>any</em> member of this type is first touched, so a key added to one locale and
+    ///     not the other surfaces the moment the playground starts — in every environment, not
+    ///     only the one where a French reader happens to hit the missing key first.
+    /// </summary>
+    static PlaygroundStrings() {
+        string[] onlyInEn = En.Keys.Except(Fr.Keys).OrderBy(key => key, StringComparer.Ordinal).ToArray();
+        string[] onlyInFr = Fr.Keys.Except(En.Keys).OrderBy(key => key, StringComparer.Ordinal).ToArray();
+
+        if (onlyInEn.Length == 0 && onlyInFr.Length == 0) {
+            return;
+        }
+
+        throw new InvalidOperationException(
+            "PlaygroundStrings: En and Fr must declare exactly the same keys (§6.4)."
+            + (onlyInEn.Length > 0 ? $" Missing from Fr: {string.Join(", ", onlyInEn)}." : string.Empty)
+            + (onlyInFr.Length > 0 ? $" Missing from En: {string.Join(", ", onlyInFr)}." : string.Empty));
+    }
+
+    /// <summary>
     ///     The string named by <paramref name="key" />, in <paramref name="locale" />, with
     ///     <paramref name="args" /> substituted into it.
     ///
