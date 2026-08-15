@@ -21,7 +21,7 @@
 
         <nav class="language-selector" aria-label='@PlaygroundStrings.T(LocaleState.Current, "language.label")'>
             <details open="@_open">
-                <summary @onclick="ToggleMenu" @onclick:preventDefault="true">
+                <summary @ref="_summaryRef" @onclick="ToggleMenu" @onclick:preventDefault="true">
                     <span lang="@PlaygroundStrings.Tag(LocaleState.Current)">@PlaygroundStrings.Name(LocaleState.Current)</span>
                     <svg class="caret" viewBox="0 0 10 6" width="10" height="6" aria-hidden="true" focusable="false">
                         <path d="M1 1l4 4 4-4" />
@@ -54,18 +54,34 @@
 
     private DotNetObjectReference<SiteHeader>? _selfReference;
 
+    private ElementReference _summaryRef;
+
+    /// <summary>
+    ///     Set by <see cref="Select" />, consumed by the next <see cref="OnAfterRenderAsync" />.
+    ///     Selecting a locale closes the menu and swaps the clicked <c>&lt;button&gt;</c> for a
+    ///     non-focusable <c>&lt;span&gt;</c> in the same render — the element that had focus is
+    ///     simply gone — so without this, focus falls back to the document body at the exact
+    ///     moment the whole page's language changes. The Escape path already restores it (in
+    ///     site-header.js, which still has a real element to hand focus back to); this is the
+    ///     other way the menu closes, and needs its own way back.
+    /// </summary>
+    private bool _restoreFocusToSummary;
+
     private string SiteHomeHref => LocaleState.Current == Locale.Fr ? "/fr/" : "/";
 
     protected override async Task OnAfterRenderAsync(bool firstRender) {
-        if (!firstRender) {
-            return;
+        if (firstRender) {
+            // One listener for the document's whole lifetime, not one per open — the header
+            // itself never unmounts (it lives above @Body in MainLayout), so there is exactly
+            // one of these to make.
+            _selfReference = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("jdSiteHeaderInit", _selfReference);
         }
 
-        // One listener for the document's whole lifetime, not one per open — the header
-        // itself never unmounts (it lives above @Body in MainLayout), so there is exactly one
-        // of these to make.
-        _selfReference = DotNetObjectReference.Create(this);
-        await JS.InvokeVoidAsync("jdSiteHeaderInit", _selfReference);
+        if (_restoreFocusToSummary) {
+            _restoreFocusToSummary = false;
+            await _summaryRef.FocusAsync();
+        }
     }
 
     private void ToggleMenu() {
@@ -73,7 +89,8 @@
     }
 
     private void Select(Locale locale) {
-        _open = false;
+        _open                  = false;
+        _restoreFocusToSummary = true;
         LocaleState.Set(locale);
     }
 
