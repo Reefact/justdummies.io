@@ -1,10 +1,20 @@
 @page "/not-found"
 @layout MainLayout
+@inherits LocalizedComponent
 
-<PageTitle>Not found — JustDummies playground</PageTitle>
+<PageTitle>@PageTitleText</PageTitle>
 
-<h1>Not found</h1>
+<h2 class="page-title">@PlaygroundStrings.T(LocaleState.Current, "notFound.title")</h2>
 <p class="lede">
-    There is no such page in the playground. <a href="/playground/">Start over</a>,
-    or <a href="/">go back to the site</a>.
+    @((MarkupString)PlaygroundStrings.T(LocaleState.Current, "notFound.lede", RestartHref, SiteHomeHref))
 </p>
+
+@code {
+
+    private string PageTitleText => $"{PlaygroundStrings.T(LocaleState.Current, "notFound.title")} — JustDummies";
+
+    private string RestartHref => $"/playground/?lang={PlaygroundStrings.Tag(LocaleState.Current)}";
+
+    private string SiteHomeHref => LocaleState.Current == Locale.Fr ? "/fr/" : "/";
+
+}

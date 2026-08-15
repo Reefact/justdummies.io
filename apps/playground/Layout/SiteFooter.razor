@@ -1,0 +1,49 @@
+@inherits LocalizedComponent
+
+@*
+    The playground's counterpart to the site's sitewide footer (apps/site/src/components/
+    Footer.astro) — same links, same copy, kept in sync by hand because Astro and Blazor
+    share no rendering system to render one component from (see the KNOWN DUPLICATION note
+    on `site.legal.entity` in `site.ts`).
+
+    A component of its own, not markup inlined into MainLayout, for the same reason
+    SiteHeader and BrandHeading already are: it has to redraw when LocaleState.Changed
+    fires, and MainLayout is a LayoutComponentBase — it cannot also inherit
+    LocalizedComponent to pick up that subscription itself.
+
+    Root-relative links only (`/about/`, `/fr/about/`, …), never relative:
+    `wwwroot/index.html` sets `<base href="/playground/" />`, so a relative "about" would
+    resolve to `/playground/about` — a page that does not exist — while a leading-slash
+    path ignores that base and correctly reaches the Astro site, served from the same
+    artefact, at the same root (§12.2). `Pages/NotFound.razor`'s own "go back to the
+    site" link already relies on the same rule.
+
+    Rendered from MainLayout only, not BareLayout: BareLayout renders `/hero`, the widget
+    embedded in the landing page's own hero, which is chromeless by design — it already
+    sits inside a page that carries the real footer around it, so a second one here would
+    be a duplicate, not a consistency.
+*@
+
+<footer class="site-footer">
+    <nav class="footer-nav" aria-label='@PlaygroundStrings.T(LocaleState.Current, "footer.nav")'>
+        <a href="@AboutHref">@PlaygroundStrings.T(LocaleState.Current, "footer.about")</a>
+        <a href="@PrivacyHref">@PlaygroundStrings.T(LocaleState.Current, "footer.privacy")</a>
+        <a href="@RepositoryUrl" target="_blank" rel="noopener noreferrer">
+            @PlaygroundStrings.T(LocaleState.Current, "footer.repository")
+            <span class="visually-hidden"> @PlaygroundStrings.T(LocaleState.Current, "state.newTab")</span>
+        </a>
+    </nav>
+    <p class="copyright">© @DateTime.Now.Year REEFACT</p>
+</footer>
+
+@code {
+
+    // The site's own repository, mirrored from `site.siteRepository` in `site.ts` — not
+    // `SiteHeader.razor`'s `RepositoryUrl`, which deliberately points at the library's
+    // repository instead.
+    private const string RepositoryUrl = "https://github.com/Reefact/justdummies.io";
+
+    private string AboutHref => LocaleState.Current == Locale.Fr ? "/fr/about/" : "/about/";
+    private string PrivacyHref => LocaleState.Current == Locale.Fr ? "/fr/privacy/" : "/privacy/";
+
+}

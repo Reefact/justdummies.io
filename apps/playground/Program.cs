@@ -1,4 +1,5 @@
 using JustDummies.Playground;
+using JustDummies.Playground.Localization;
 
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -10,5 +11,9 @@ WebAssemblyHostBuilder builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
+
+// One instance for the whole app — there is only ever one "scope" in a WASM client — read from
+// the page's own `?lang=` the moment anything first injects it (see LocaleState's constructor).
+builder.Services.AddScoped<LocaleState>();
 
 await builder.Build().RunAsync();

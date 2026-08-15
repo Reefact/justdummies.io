@@ -129,12 +129,14 @@ const t = useTranslations(locale);
               where they competed with the one thing that screen asks for; a link that is
               true on every page belongs in the bar that is on every page.
 
-              The playground link deliberately leaves the current locale: the application is
-              served in English only, and sending a French reader to a route that does not
-              exist would be worse than sending them to one that does.
+              The playground carries the current locale in `?lang=` (§6.4: its own interface
+              now follows the site's i18n rules, not the exception that used to keep it
+              English-only). There is still only one playground route in every locale — no
+              `/fr/playground/` to send a reader to — so what travels is a query parameter
+              the application reads at startup, not a different page.
             */}
             <nav class="site-nav" aria-label={t('nav.primary')}>
-                <a href="/playground/">{t('nav.playground')}</a>
+                <a href={`/playground/?lang=${locale}`}>{t('nav.playground')}</a>
                 {/*
                   A new tab, because this one leaves the site. The playground beside it does
                   not and keeps the same tab. `noopener` is the half that matters: without it

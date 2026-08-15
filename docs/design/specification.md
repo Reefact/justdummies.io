@@ -300,9 +300,17 @@ Une page n'existe dans une locale que si elle y est réellement traduite.
 - une modification du contenu anglais marque sa traduction obsolète, et
   l'intégration continue le signale.
 
-L'interface du playground et les messages de son parser peuvent rester en anglais dans
-toutes les locales : ils reflètent des identifiants d'API anglais. Cette exception est
-assumée et documentée, pas subie.
+**L'interface du playground suit les mêmes règles i18n que le reste du site.** Labels,
+boutons, titres de page, et les messages que le playground compose lui-même (une limite de
+saisie propre au bac à sable, par exemple) sont traduits comme n'importe quel contenu du
+site — mêmes règles ci-dessus, y compris l'échec de build sur une clé manquante.
+
+Seuls **les messages que la librairie JustDummies produit elle-même à l'exécution**
+(`DummyException` et ses sous-classes) restent en anglais dans toutes les locales : ils
+viennent d'un paquet publié hors de ce dépôt et reflètent des identifiants d'API anglais,
+pas du contenu écrit ici. Cette exception, plus étroite que par le passé, est assumée et
+documentée, pas subie — la retraduire serait le playground formulant son propre avis sur
+le diagnostic de la librairie plutôt que de le montrer tel quel.
 
 ### 6.5 Conséquences techniques
 
