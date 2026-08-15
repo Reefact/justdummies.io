@@ -92,6 +92,7 @@ n'apparaissent **pas** en développement où l'élagage est désactivé, mais su
 publié.
 *Origine :* toi, 0.2. · *Vit dans :* la spécification §10.4, qui est le bon endroit
 pour le raisonnement mais pas pour la décision.
+**Résolu :** [ADR-0010](../for-maintainers/adr/0010-le-catalogue-du-playground-est-du-code-c-genere-pas-du-json-fr.md).
 
 **A6 — Aucun script serveur**
 *Remise en cause :* « un tout petit Worker pour une seule route, ça ne coûte rien ».
@@ -131,6 +132,9 @@ tentant.
 impossible plutôt qu'interdit.
 *Origine :* toi, 0.3, et renforcé en construisant. · *Vit dans :*
 `Directory.Packages.props`, en commentaire.
+**Résolu :** [ADR-0011](../for-maintainers/adr/0011-le-playground-reference-le-catalogue-comme-un-project-reference-fr.md)
+(clarifie que la `ProjectReference` d'`apps/playground` vers `packages/playground-catalogue`
+ne rouvre pas cette décision).
 
 **B3 — Une clé de traduction manquante fait échouer le build**
 *Remise en cause :* la première fois qu'elle bloquera quelqu'un de pressé.
