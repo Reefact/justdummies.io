@@ -667,3 +667,198 @@ h1:focus {
     line-height: var(--jd-line-tight);
     margin: 0 0 var(--jd-space-4);
 }
+
+
+/*
+ * The builder (specification §10) — one <ChainLink> per step, plus the persistent
+ * generate/copy controls below. Every colour and space value is a token, same rule as
+ * the rest of this file.
+ */
+.chain {
+    display: flex;
+    flex-direction: column;
+    gap: var(--jd-space-2);
+    font-family: var(--jd-font-mono);
+    font-size: var(--jd-text-sm);
+}
+
+.any-prefix {
+    color: var(--jd-text-muted);
+}
+
+.chain-link {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--jd-space-2);
+    padding: var(--jd-space-2) 0;
+    border-bottom: 1px solid var(--jd-border);
+}
+
+.chain-link .prefix {
+    color: var(--jd-text-muted);
+}
+
+.chain-link select {
+    font: inherit;
+    font-size: var(--jd-text-sm);
+    color: var(--jd-text-primary);
+    background: var(--jd-surface);
+    border: 1px solid var(--jd-border);
+    border-radius: var(--jd-radius-sm);
+    padding: var(--jd-space-1) var(--jd-space-2);
+}
+
+.chain-link select:focus-visible {
+    outline: 2px solid var(--jd-accent);
+    outline-offset: 2px;
+}
+
+.chain-link .call {
+    color: var(--jd-text-primary);
+}
+
+.chain-link .method-name {
+    color: var(--jd-text-primary);
+}
+
+.chain-link .paren,
+.chain-link .comma {
+    color: var(--jd-text-muted);
+}
+
+.chain-link input {
+    font: inherit;
+    color: var(--jd-generated);
+    background: var(--jd-surface-raised);
+    border: 1px solid var(--jd-border);
+    border-radius: var(--jd-radius-sm);
+    padding: 0 var(--jd-space-1);
+    min-width: 6ch;
+}
+
+.chain-link input[type='number'] {
+    width: 8ch;
+}
+
+.chain-link input:focus-visible {
+    outline: 2px solid var(--jd-accent);
+    outline-offset: 2px;
+}
+
+.chain-link .delete {
+    font: inherit;
+    line-height: 1;
+    color: var(--jd-text-muted);
+    background: var(--jd-surface-raised);
+    border: 1px solid var(--jd-border);
+    border-radius: var(--jd-radius-sm);
+    width: 1.75rem;
+    height: 1.75rem;
+    cursor: pointer;
+}
+
+.chain-link .delete:hover {
+    color: var(--jd-error);
+    border-color: var(--jd-error);
+}
+
+.chain-link .delete:focus-visible {
+    outline: 2px solid var(--jd-accent);
+    outline-offset: 2px;
+}
+
+/* Always visible — never hover-only (§5.7: no hover on mobile). */
+.chain-link .doc {
+    flex-basis: 100%;
+    margin: var(--jd-space-1) 0 0;
+    color: var(--jd-text-muted);
+    font-family: var(--jd-font-sans);
+    font-size: var(--jd-text-sm);
+    line-height: var(--jd-line-body);
+}
+
+.chain-link .doc .help {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2em;
+    margin-left: var(--jd-space-2);
+    color: var(--jd-accent);
+    text-decoration: underline;
+    white-space: nowrap;
+}
+
+.chain-link .doc .arrow {
+    stroke: currentColor;
+    stroke-width: 1.4;
+    fill: none;
+}
+
+.chain-link .error {
+    flex-basis: 100%;
+    margin: var(--jd-space-1) 0 0;
+    color: var(--jd-error);
+    font-family: var(--jd-font-sans);
+    font-size: var(--jd-text-sm);
+}
+
+.generate-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--jd-space-3);
+    margin-top: var(--jd-space-6);
+}
+
+.generate-controls .generate,
+.generate-controls .copy {
+    font: inherit;
+    border-radius: var(--jd-radius-sm);
+    padding: var(--jd-space-2) var(--jd-space-4);
+    cursor: pointer;
+}
+
+.generate-controls .generate {
+    color: var(--jd-background);
+    background: var(--jd-accent);
+    border: 0;
+    transition: filter var(--jd-duration-fast) var(--jd-ease);
+}
+
+.generate-controls .generate:hover:not(:disabled) {
+    filter: brightness(1.08);
+}
+
+.generate-controls .copy {
+    color: var(--jd-text-primary);
+    background: var(--jd-surface-raised);
+    border: 1px solid var(--jd-border);
+}
+
+.generate-controls .copy:hover:not(:disabled) {
+    border-color: var(--jd-accent);
+}
+
+.generate-controls button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.generate-controls button:focus-visible {
+    outline: 2px solid var(--jd-accent);
+    outline-offset: 2px;
+}
+
+.generate-controls .value {
+    flex-basis: 100%;
+    font-family: var(--jd-font-mono);
+    font-size: var(--jd-text-lg);
+    color: var(--jd-generated);
+}
+
+.generate-controls .refusal {
+    flex-basis: 100%;
+    color: var(--jd-error);
+    font-family: var(--jd-font-sans);
+    line-height: var(--jd-line-body);
+}

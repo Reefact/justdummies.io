@@ -1,0 +1,109 @@
+@inherits LocalizedComponent
+@using JustDummies.Playground.Catalogue
+@using JustDummies.Playground.Localization
+
+@*
+    One line of the chain the visitor is building (specification §10.2/§10.4): a native
+    `<select>` offering every method valid at this point (§11.5 — never a custom widget),
+    the chosen method rendered with its arguments as real inputs, a doc string that stays
+    visible without hover or focus (§5.7 — no hover on mobile), a help link, and a delete
+    control that truncates the chain from here on (confirmed behaviour, not a cascade
+    recompute).
+
+    The method name, its summary and its help link come from the catalogue — the library is
+    their source, so they are never translated (§6.4 as corrected: content the library
+    produces, at build time or at runtime, stays in the language it was written in). Every
+    other piece of text here — the placeholder option, the delete/select labels, "docs" —
+    is this component's own, and is translated like the rest of the playground's chrome.
+*@
+
+<div class="chain-link">
+    <span class="prefix">@Prefix</span>
+
+    <select @onchange="HandleMethodChosen" value="@(State.Chosen?.Key ?? "")" aria-label="@SelectLabel">
+        <option value="" disabled selected="@(State.Chosen is null)">@PlaygroundStrings.T(LocaleState.Current, "playground.chooseMethod")</option>
+        @foreach (var option in Options) {
+            <option value="@option.Key" selected="@(State.Chosen?.Key == option.Key)">@DisplayName(option)</option>
+        }
+    </select>
+
+    @if (State.Chosen is { } chosen) {
+        <span class="call">
+            <span class="method-name">@chosen.MethodName</span><span class="paren">(</span>
+            @for (var i = 0; i < chosen.Parameters.Count; i++) {
+                var index = i;
+                var parameter = chosen.Parameters[i];
+                @if (i > 0) {
+                    <span class="comma">, </span>
+                }
+                <input
+                    type="@InputTypeFor(parameter.TypeKey)"
+                    placeholder="@parameter.Placeholder"
+                    aria-label="@parameter.Name"
+                    aria-describedby="@(HasError ? ErrorId : null)"
+                    value="@State.Argument(index)"
+                    @oninput="e => HandleArgumentChanged(index, e)" />
+            }
+            <span class="paren">)</span>
+        </span>
+
+        <button type="button" class="delete" aria-label="@PlaygroundStrings.T(LocaleState.Current, "playground.deleteStep")" @onclick="HandleDelete">−</button>
+
+        <p class="doc">
+            @chosen.Summary
+            <a class="help" href="@chosen.HelpUrl" target="_blank" rel="noopener noreferrer">
+                @PlaygroundStrings.T(LocaleState.Current, "playground.docs")
+                <svg class="arrow" viewBox="0 0 12 12" width="10" height="10" aria-hidden="true" focusable="false">
+                    <path d="M3 9L9 3M4.5 3H9v4.5" />
+                </svg>
+                <span class="visually-hidden">@PlaygroundStrings.T(LocaleState.Current, "state.newTab")</span>
+            </a>
+        </p>
+
+        @if (HasError) {
+            <p class="error" id="@ErrorId" role="status">@Error</p>
+        }
+    }
+</div>
+
+@code {
+
+    [Parameter, EditorRequired] public int LinkIndex { get; set; }
+    [Parameter, EditorRequired] public string Prefix { get; set; } = "Any.";
+    [Parameter, EditorRequired] public IReadOnlyList<MemberDescriptor> Options { get; set; } = Array.Empty<MemberDescriptor>();
+    [Parameter, EditorRequired] public ChainLinkState State { get; set; } = null!;
+    [Parameter, EditorRequired] public string? Error { get; set; }
+
+    [Parameter, EditorRequired] public EventCallback<(int LinkIndex, MemberDescriptor Chosen)> OnMethodChosen { get; set; }
+    [Parameter, EditorRequired] public EventCallback<(int LinkIndex, int ArgumentIndex, string Value)> OnArgumentChanged { get; set; }
+    [Parameter, EditorRequired] public EventCallback<int> OnDelete { get; set; }
+
+    private bool HasError => !string.IsNullOrEmpty(Error);
+    private string ErrorId => $"chain-link-{LinkIndex}-error";
+    private string SelectLabel => PlaygroundStrings.T(LocaleState.Current, "playground.selectAria", LinkIndex + 1);
+
+    private static string DisplayName(MemberDescriptor member) =>
+        member.Parameters.Count == 0
+            ? $"{member.MethodName}()"
+            : $"{member.MethodName}({string.Join(", ", member.Parameters.Select(p => p.Name))})";
+
+    private static string InputTypeFor(string typeKey) => typeKey switch {
+        "System.Int16" or "System.UInt16" or "System.Int32" or "System.UInt32" or
+        "System.Int64" or "System.UInt64" or "System.Int128" or "System.UInt128" or
+        "System.Byte" or "System.SByte" or
+        "System.Single" or "System.Double" or "System.Half" or "System.Decimal" => "number",
+        _ => "text",
+    };
+
+    private Task HandleMethodChosen(ChangeEventArgs e) {
+        var key = e.Value as string;
+        var chosen = Options.FirstOrDefault(o => o.Key == key);
+        return chosen is null ? Task.CompletedTask : OnMethodChosen.InvokeAsync((LinkIndex, chosen));
+    }
+
+    private Task HandleArgumentChanged(int argumentIndex, ChangeEventArgs e) =>
+        OnArgumentChanged.InvokeAsync((LinkIndex, argumentIndex, e.Value as string ?? ""));
+
+    private Task HandleDelete() => OnDelete.InvokeAsync(LinkIndex);
+
+}

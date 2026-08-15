@@ -61,6 +61,12 @@ fi
 echo "▸ Checking the playground's locale keys agree"
 dotnet run --project "${root}/tools/playground-i18n-guard/JustDummies.PlaygroundI18nGuard.csproj"
 
+# The playground's own bridge to the library (§10.4) — regenerated here, right before
+# it is published, since it feeds no Astro import and only needs to exist and compile
+# before `dotnet publish` runs inside copy-playground.sh.
+echo "▸ Generating the playground's method catalogue"
+"${root}/scripts/generate-playground-catalogue.sh"
+
 "${root}/scripts/copy-playground.sh"
 
 # After the playground, never before: the policy names a hash of the shell that

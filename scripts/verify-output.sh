@@ -25,6 +25,15 @@ echo "▸ Verifying ${dist}"
 [ -f "${dist}/playground/index.html" ] && pass "the playground has an entry point" || fail "dist/playground/index.html is missing"
 [ -d "${dist}/playground/_framework" ] && pass "the .NET runtime is present" || fail "dist/playground/_framework is missing"
 
+# The catalogue bridge (§10.4) has to actually ship, not just compile locally: catches
+# "the ProjectReference was added but the assembly never made it into the published
+# payload" before a visitor does.
+if compgen -G "${dist}/playground/_framework/JustDummies.Playground.Catalogue*.wasm*" > /dev/null; then
+  pass "the playground's method catalogue is in the published payload"
+else
+  fail "no JustDummies.Playground.Catalogue assembly under _framework — the playground's catalogue bridge did not ship"
+fi
+
 # The one mismatch that produces a blank page rather than an error: the document
 # loads, and every relative asset URL resolves one directory too high.
 if [ -f "${dist}/playground/index.html" ]; then

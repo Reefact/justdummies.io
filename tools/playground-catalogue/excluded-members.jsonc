@@ -1,0 +1,23 @@
+// Manual, editorial exclusions from the playground's catalogue (specification §10.6 —
+// this list lives in the site repository, never in the library, which carries no
+// showcase-site concern). Each entry needs a non-empty reason.
+//
+// This file is for exclusions a human chose for a reason the generator cannot see on its
+// own. It is NOT how most exclusions happen: the generator (tools/playground-catalogue)
+// auto-detects and excludes, with a structural reason, anything it cannot express as a
+// flat chain step in v1 — an open generic method, a delegate/IAny<T>/array/IEnumerable
+// parameter, a parameter type with no known parser, or a return type that isn't itself a
+// chain-eligible IAny<T> builder. Composite generators (Enum<T>, OneOf, ListOf/SetOf/
+// DictionaryOf, Combine, PairOf/TripleOf, .As, .OrNull) and every array/collection-typed
+// constraint (Except(T[]), OneOf(T[]), StringMatching(Regex), ...) fall out of that
+// automatic classification and never need an entry here.
+//
+// Every auto-detected exclusion is still recorded — see
+// packages/playground-catalogue/Generated/PlaygroundCatalogue.Excluded.g.md, written by
+// the same generator run, for the full, current, audited list with its reasons.
+//
+// Matched by the generator's own key format: "{DeclaringTypeName}.{MethodName}", or
+// "{DeclaringTypeName}.{MethodName}({ParamType1},{ParamType2},...)" (parameter type
+// simple CLR names) when one overload must be excluded but a sibling overload of the same
+// name is kept.
+[]
