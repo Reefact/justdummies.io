@@ -93,30 +93,6 @@ jobs:
       - name: Check what the runtime actually serves
         run: ./scripts/check-served-headers.sh
 
-      # The runner carries no browser, so the suite's own is fetched here. --with-deps
-      # because a headless Chromium on a bare ubuntu image is missing shared libraries
-      # it will not name clearly when it fails to start. Only chromium: the suite checks
-      # one engine and ADR-0009 says so rather than leaving it to be discovered.
-      - name: Install the browser
-        run: npx playwright install --with-deps chromium
-
-      # And this one renders the artefact. Everything above reads it — on disk, or as the
-      # host describes it — and a page has facts that exist only once it is rendered: the
-      # playground actually starting, the browser agreeing to the policy, a control that
-      # is absent until its script arrives, a document no wider than its viewport. Each
-      # of those has been wrong here at least once while every check above was green.
-      - name: Check the artefact in a browser
-        run: ./scripts/check-in-browser.sh
-
-      - name: Keep the traces of anything that failed
-        if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: browser-traces
-          path: test-results/
-          retention-days: 7
-          if-no-files-found: ignore
-
       - name: Upload the artefact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
@@ -133,6 +109,67 @@ jobs:
           # downloads, which is what turns this line from a hope into a guarantee.
           include-hidden-files: true
 
+  # Renders the artefact in a real browser. Split out from the build job because it is
+  # by far the slowest part of the pipeline — fetching and installing a browser, then
+  # running a full Playwright suite against it — and most pull requests do not touch
+  # anything it would catch. It runs on demand (workflow_dispatch, for a PR someone
+  # wants checked before merge) and automatically before every release, where it blocks
+  # the deploy: see the `needs` on that job below.
+  browser-tests:
+    name: Check the artefact in a browser
+    needs: build
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/release/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@f520eceda224fe1a4aed5a2a27a194379a409996 # v6
+
+      - name: Install Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      # Only the Playwright suite itself needs installing here — the artefact it renders
+      # is downloaded below, already built and verified by the build job.
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Download the verified artefact
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: site
+          path: dist
+
+      # The runner carries no browser, so the suite's own is fetched here. --with-deps
+      # because a headless Chromium on a bare ubuntu image is missing shared libraries
+      # it will not name clearly when it fails to start. Only chromium: the suite checks
+      # one engine and ADR-0009 says so rather than leaving it to be discovered.
+      - name: Install the browser
+        run: npx playwright install --with-deps chromium
+
+      # And this one renders the artefact. Everything in the build job reads it — on
+      # disk, or as the host describes it — and a page has facts that exist only once it
+      # is rendered: the playground actually starting, the browser agreeing to the
+      # policy, a control that is absent until its script arrives, a document no wider
+      # than its viewport. Each of those has been wrong here at least once while every
+      # check in the build job was green.
+      - name: Check the artefact in a browser
+        run: ./scripts/check-in-browser.sh
+
+      - name: Keep the traces of anything that failed
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: browser-traces
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+
   # Publish the artefact the build job verified — by downloading it, not by building
   # again. A deploy job that rebuilds publishes bytes no check has ever seen.
   #
@@ -148,7 +185,7 @@ jobs:
   # first.
   deploy:
     name: Deploy
-    needs: build
+    needs: [build, browser-tests]
     # A TAG PUBLISHES. A branch does not, including main.
     #
     # The unit of publication is a release someone decided to make, not a commit
