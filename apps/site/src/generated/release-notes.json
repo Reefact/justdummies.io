@@ -1,0 +1,254 @@
+{
+  "source": "https://github.com/Reefact/just-dummies",
+  "generatedAt": "2026-08-15T22:23:31.011Z",
+  "trains": [
+    {
+      "key": "lib",
+      "package": "JustDummies",
+      "releases": [
+        {
+          "version": "Unreleased",
+          "unreleased": true,
+          "date": null,
+          "maturity": null,
+          "tagUrl": "https://github.com/Reefact/just-dummies/compare/lib-v1.0.0-preview.1...HEAD",
+          "summaryHtml": [],
+          "sections": [
+            {
+              "label": "Added",
+              "items": [
+                "<strong>See what your constraints left of a pool you supplied.</strong> When a value set is declared beside constraints, a value the constraints refuse leaves the domain silently — only an emptied domain is reported. That is fine until the value set is a <em>catalogue</em> you maintain, at which point you cannot tell whether to widen the invariant or fix the catalogue. <code>IPoolInspection&lt;T&gt;</code> answers it: <code>GetSurvivors()</code> for the values still drawable, <code>GetRejections()</code> for the ones refused, each naming every <code>DeclaredConstraint</code> that refuses it — a name and its rendered arguments kept apart, so you can group and filter instead of parsing text. It is carried by <strong>every</strong> generator that admits a value set you supply — <code>Any.OneOf(...)</code>/<code>Any.ElementOf(...)</code>, <code>Any.String().OneOf(...)</code>, and all twenty-two families with a <code>OneOf</code>: the integers, <code>Any.Decimal()</code>, the floating-point builders, the dates and times, <code>Any.Char()</code>, <code>Any.Guid()</code> and <code>Any.Enum&lt;T&gt;()</code> — so a catalogue loaded from a file is answered whatever its element type. It is implemented <strong>explicitly</strong>, so it never appears among the constraints while you write them; reach it with a cast, and test the cast, since a generator with no pool of yours carries it not at all. <code>IsPooled</code> is not \"this domain is countable\": <code>Any.Int32().Between(1, 1_000_000)</code> answers <code>false</code>, those values being the engine's rather than yours. Nothing here draws or consumes randomness, so an inspection between two draws leaves a seeded run replaying identically. The library reports and does not judge: it never warns that a pool was narrowed, because narrowing a shared catalogue at one call site is what the composition is for. New guide: <em>Inspecting a pool</em> (<a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0067-report-a-filtered-pool-through-an-explicit-interface.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0067</a>, <a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0068-carry-the-pool-inspection-wherever-a-caller-supplies-the-values.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0068</a>).",
+                "<strong>JD029 tells you at build time when a value you wrote into a pool can never be drawn.</strong> A value set composes with the constraints declared beside it, and a value they refuse leaves the domain in silence — so a pool can read as five values and draw from three. The new rule reports each such value where it is written, naming the constraint that refuses it. It is the dual of JD024: that one reports a constraint narrowing nothing, this one a value nothing lets through. <strong>Info, not a warning</strong>: narrowing a shared pool at one call site is what the composition is <em>for</em>, so this states a fact to weigh rather than a verdict. It covers the string value sets and the numeric ones whose constants fold exactly — every integer type and <code>decimal</code>; the binary floating-point families stay out, a <code>double</code> constant having no exact decimal to judge it by. It reads only what is written at the call site — a pool held in a variable, which is what a catalogue always is, is answered instead at run time by <code>IPoolInspection&lt;T&gt;</code>. The claim is deliberately one-sided: a constraint whose argument does not fold is skipped rather than guessed at, so the rule can under-report but never accuse a value it has not tested."
+              ]
+            },
+            {
+              "label": "Documentation",
+              "items": [
+                "<strong>How to get a NaN when you actually need one.</strong> <code>Any.Double()</code>, <code>Any.Single()</code> and <code>Any.Half()</code> refuse a non-finite value as an <em>argument</em> as well as a draw, so <code>Any.Double().Except(double.NaN)</code> throws — which read as a missing feature, because nothing said what to do instead. The packaged readme now carries the rule, its reason, and the exit (<code>Any.OneOf(double.NaN, ...)</code>, whose pool the library does not judge), plus when to use a literal rather than a pool, the <code>Equals</code>/<code>==</code> asymmetry that makes a pooled <code>NaN</code> deduplicate, and why <code>decimal</code> is not part of the subject at all. The refusal message names the exit too, and the three builders' XML docs carry it, so the answer is reachable from IntelliSense at the moment the caller is blocked. The recipe is locked in by tests: a documented exit that quietly stopped working would be worse than no documentation."
+              ]
+            },
+            {
+              "label": "Fixed",
+              "items": [
+                "<strong>A decimal exclusion declared twice no longer empties a satisfiable grid.</strong> On <code>Any.Decimal()</code> with <code>WithScale</code>, the engine counts excluded grid points to decide satisfiability and cardinality, and it counted a duplicated value as many times as it was declared — so <code>Except(0.01m).DifferentFrom(0.01m)</code> (restating an exclusion already in force) or <code>Except(0.01m, 0.01m)</code> could refuse a declaration as exhausted while values were still drawable, with a message claiming every grid value was forbidden. Excluded values are now deduplicated at construction, as the integer engines always did. A genuinely exhausted grid still conflicts eagerly; generation, draw counts and the public surface are unchanged.",
+                "<strong>A conflict caused by an exclusion now names that exclusion.</strong> On <code>Any.Enum&lt;T&gt;()</code> and <code>Any.Guid()</code>, a constraint that emptied the domain reported the constraint it had emptied instead — so <code>Any.Enum&lt;T&gt;().OneOf(a, b).Except(a, b)</code> said <em>\"no value OneOf(a, b) allows remains available\"</em>, naming the victim and leaving the cause to be guessed, and an excluded pin said only <em>\"which the exclusions forbid\"</em>, naming none of them. Both now read like the interval generators, which were fixed first: <em>\"it forbids every value OneOf(a, b) allows\"</em>, and <em>\"Empty() already pins the value to 00000000-… and NonEmpty() forbids it\"</em>. Only exclusions that actually removed something are named, since one whose values were never drawable caused nothing. Generation, conflict detection and the public surface are unchanged — only the wording of the message a failing declaration carries.",
+                "<strong>A <code>DateTimeOffset</code> pool holding two clocks for one instant now reaches one verdict, however it is written.</strong> London opens 08:00 GMT and Frankfurt 09:00 CET — the same instant on two venue clocks. A pool holding both was collapsed to whichever spelling came first in the array, and the declared offset then judged that arbitrary survivor. So <code>OneOf(venues).WithOffset(+01:00)</code> threw <em>\"no pooled value carries an offset it admits\"</em> with Frankfurt's own value in the list, while re-sorting the array made the same code work; declaring the offset before the pool gave a third answer, and the rejection count differed between the two. The supplied values are now held whole until both dimensions are known, and the offset is carried into the interval engine as an exclusion — so the two declaration orders agree, the rejection names the offset alongside every other constraint refusing the same instant, and re-ordering a catalogue can no longer turn a satisfiable pool into a conflict. This restores what <a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0030-filter-the-datetimeoffset-pool-by-the-declared-offset.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0030</a> recorded as a consequence. <strong>A seeded run drawing from such a pool may now yield a different spelling of the same instant</strong> — the draw sequence is not a versioned contract below 1.0, and the value's instant is unchanged.",
+                "<strong>A distinct collection no longer refuses a count its own comparer makes reachable.</strong> <code>DateTimeOffset</code> equality compares the instant and ignores the offset, so one instant drawn across a declared offset range is a single value under the default comparer and hundreds under one built on <code>EqualsExact</code> — but the cardinality gate, measured in instants, refused the wider count outright: <code>ListOf(Any.DateTimeOffset().Between(t, t).WithOffsetBetween(-2h, +2h)).Distinct(bySpelling).WithCount(3)</code> was rejected at declaration as exceeding <em>\"the 1 distinct value(s) the element generator can produce\"</em>, while 208 distinct spellings were drawable. A generator whose bound a finer comparer can exceed now answers for the comparer actually in force, and the collection re-asks when one is declared instead of trusting a bound taken before it existed. <strong>No behaviour changes under the default comparer</strong> — the same specification is still refused there, and correctly, because the three spellings really are one value by that equality.",
+                "<strong>JD023 and JD024 no longer depend on how you spell an unsigned literal.</strong> Both rules declare <code>UInt16</code>, <code>UInt32</code> and <code>UInt64</code> in scope, and their constant reader handled none of them — so <code>Any.UInt32().GreaterThan(5).LessThan(3)</code> was reported while <code>GreaterThan(5u).LessThan(3u)</code>, the same unsatisfiable chain, was not: without a suffix the literal reaches the rule as an <code>int</code> and is judged, with one it fails to read and the whole chain is abandoned. The verdict turned on a keystroke rather than on any documented boundary. The three types are now read. One real limit remains, and both pages state it: the rules reason in <code>long</code>, so a <code>UInt64</code> bound above <code>long.MaxValue</code> is left unjudged rather than truncated into a bound meaning something else. <strong>Expect new diagnostics on unsigned chains you already have</strong> — both rules were always meant to report them, and neither is an error.",
+                "<strong>Four analyzer rules work again on a seeded chain written in one expression.</strong> JD015, JD023 and JD024 — and JD029, which is new — read a chain by walking back to the factory that started it, and the walk descended into a call's receiver before asking whether the call was itself the factory. On <code>Any.WithSeed(1).Int32()...</code>, <code>Int32()</code>'s receiver is an invocation, so <code>WithSeed</code> was named as the factory and every rule gated on that name fell silent — on precisely the form this library recommends for reproducibility. The same chain routed through a local variable was analysed correctly, which is what kept it hidden. <strong>Expect new diagnostics on seeded chains you already have</strong>: they are ones these rules always meant to report, and none of them is an error. Generation and the public surface are unchanged."
+              ]
+            }
+          ]
+        },
+        {
+          "version": "1.0.0-preview.1",
+          "unreleased": false,
+          "date": "2026-08-07",
+          "maturity": "preview",
+          "tagUrl": "https://github.com/Reefact/just-dummies/compare/lib-v0.1.0-preview.1...lib-v1.0.0-preview.1",
+          "summaryHtml": [
+            "<strong>Why the jump from <code>0.1.0-preview.1</code>.</strong> Not because the surface grew — it did not change at all between the two, and <code>PublicAPI.Unshipped.txt</code> is still where it is declared. Because the number was understating the intent. <code>0.1.0</code> reads as an early sketch inviting nobody; this library has been in use inside another repository for its whole life, and what the preview is waiting for is an outside consumer, not more design. A <code>1.0.0-preview</code> says what is actually true: this is the surface offered for 1.0, and the preview exists so it can be contradicted before it freezes.",
+            "A preview still promises nothing about the surface. What it does now promise is the seed."
+          ],
+          "sections": [
+            {
+              "label": "Added",
+              "items": [
+                "<strong>A seed replays across patch and minor versions.</strong> Within a major version, a given seed draws the same values; the mapping may change on a major (<a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0049-replay-a-seed-across-patch-and-minor-versions.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0049</a>). This matters because a pinned seed is usually committed: without the promise an upgrade would not break such a test, it would leave it green while it quietly stopped covering the case it was pinned for. The promise is enforced rather than stated — a golden master pins, for each factory at a fixed seed, both the values produced and the number of draws consumed, the latter because a single sequential stream is shared by the whole scope, so a generator that changes how much it consumes shifts every value drawn after it."
+              ]
+            },
+            {
+              "label": "Changed",
+              "items": [
+                "The package carries an icon, shared by every package this repository publishes.",
+                "The packaged readme's links point at this repository rather than the one JustDummies was extracted from."
+              ]
+            }
+          ]
+        },
+        {
+          "version": "0.1.0-preview.1",
+          "unreleased": false,
+          "date": "2026-07-31",
+          "maturity": "preview",
+          "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/lib-v0.1.0-preview.1",
+          "summaryHtml": [
+            "First published version. The library itself is not new — it was developed inside <a href=\"https://github.com/Reefact/first-class-errors\" target=\"_blank\" rel=\"noopener noreferrer\"><code>Reefact/first-class-errors</code></a> and <a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0044-extract-justdummies-into-its-own-repository.md\" target=\"_blank\" rel=\"noopener noreferrer\">extracted into this repository</a> with its full history on 2026-07-31. This is the first time it reaches nuget.org.",
+            "<strong>A preview on purpose.</strong> The public surface is large and has never been exercised by an outside consumer. It is declared in <code>PublicAPI/&lt;tfm&gt;/PublicAPI.Unshipped.txt</code> rather than <code>PublicAPI.Shipped.txt</code>, which is the honest state: nothing here is promised yet, and a stable release is what will freeze it."
+          ],
+          "sections": [
+            {
+              "label": "Added",
+              "items": [
+                "<strong>The <code>Any</code> generator surface</strong> — a fluent DSL producing arbitrary yet valid test values. Constraints express the invariants a value must satisfy, never what the test asserts. Scalars, strings, collections, dictionaries, sets, enums, GUIDs, temporal types and URIs, plus composition through <code>As</code>, <code>Combine</code> and <code>OrNull</code>.",
+                "<strong>Fail-fast conflict detection.</strong> Contradictory constraints are refused at declaration with a message naming both sides, rather than looping or silently drawing a value that satisfies neither.",
+                "<strong>Reproducibility.</strong> <code>Any.Reproducibly</code> pins a seed for the run and reports it when the body throws, so a red test says how to replay itself; <code>Any.ReproduciblyAsync</code> covers <code>async</code> bodies, and <code>Any.UseSeed</code> opens an explicit scope.",
+                "<strong>28 first-party analyzers</strong> (<code>JD001</code>–<code>JD028</code>), bundled in this package under <code>analyzers/dotnet/cs</code>. They guard the recipe-versus-value boundary where the type system cannot reach — a generator rendered as text, a discarded result, a draw outside the pinned scope, constraints that admit no value.",
+                "<strong>Two target frameworks.</strong> <code>netstandard2.0</code> for the widest reach, and <code>net8.0</code> which additionally carries the generators for types that do not exist downlevel: <code>DateOnly</code>, <code>TimeOnly</code>, <code>Int128</code>, <code>UInt128</code> and <code>Half</code>. The supported .NET Framework floor is 4.7.2, and CI runs the suites on it.",
+                "<strong>Package hardening</strong>: embedded SPDX SBOM, SourceLink, symbol package, deterministic build, and a build-provenance attestation on the release artifact."
+              ]
+            },
+            {
+              "label": "Notes",
+              "items": [
+                "Commit messages older than 2026-07-31 cite issue and pull-request numbers of <code>Reefact/first-class-errors</code>, and ADR numbers this repository has since renumbered. The mapping is in <a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0045-renumber-the-decision-base.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0045</a>; the full migration record is under <a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/migration/\" target=\"_blank\" rel=\"noopener noreferrer\"><code>doc/handwritten/for-maintainers/migration/</code></a>."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "xunit",
+      "package": "JustDummies.Xunit",
+      "releases": [
+        {
+          "version": "1.0.0-preview.1",
+          "unreleased": false,
+          "date": "2026-08-07",
+          "maturity": "preview",
+          "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/xunit-v1.0.0-preview.1",
+          "summaryHtml": [
+            "First published version: <strong><code>JustDummies.Xunit</code> had never reached nuget.org before this one.</strong> It starts at the library's number rather than at <code>0.1.0</code> because it is the adapter offered for the library's 1.0, not an earlier sketch of one.",
+            "<strong>A preview</strong>, for the same reason as <code>JustDummies</code>: the surface is declared in <code>PublicAPI/netstandard2.0/PublicAPI.Unshipped.txt</code>, not <code>PublicAPI.Shipped.txt</code>, so nothing here is promised before 1.0."
+          ],
+          "sections": [
+            {
+              "label": "Added",
+              "items": [
+                "<strong><code>[Reproducible]</code></strong> — mark a test, a class or an assembly, and the arbitrary values its body draws come from a pinned seed, reported <strong>only when the test fails</strong>. It removes the per-test <code>Any.Reproducibly</code> wrapping without changing how values are generated (<a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0018-adapt-dummies-to-xunit-v3-through-a-companion-package.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0018</a>).",
+                "<strong>A separate package, deliberately.</strong> <code>JustDummies</code> must not depend on a test framework (<a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0003-host-dummies-as-a-standalone-package.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0003</a>), so the xUnit binding lives here and carries the one dependency the library cannot.",
+                "<strong>Package hardening</strong>: embedded SPDX SBOM, SourceLink, symbol package, deterministic build, and a build-provenance attestation on the release artifact."
+              ]
+            },
+            {
+              "label": "Requires",
+              "items": [
+                "xUnit v3, and a <code>JustDummies</code> version published from this repository.",
+                "The two trains version independently (<a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0047-declare-the-adapters-library-dependency-independently.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0047</a>): this package declares a dependency on the newest <code>JustDummies</code> version published from this repository, chosen at pack time rather than inherited from the version the adapter itself is packed at. An adapter-only fix therefore ships on its own. <code>tools/packaging/pack.sh</code> still refuses to pack against a version no <code>lib-v*</code> tag matches — an adapter demanding a library that was never released would be unresolvable for the consumer, on an immutable artifact.",
+                "Also developed inside <a href=\"https://github.com/Reefact/first-class-errors\" target=\"_blank\" rel=\"noopener noreferrer\"><code>Reefact/first-class-errors</code></a> and <a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0044-extract-justdummies-into-its-own-repository.md\" target=\"_blank\" rel=\"noopener noreferrer\">extracted into this repository</a> with its history on 2026-07-31."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "catalog",
+      "package": "JustDummies.DiagnosticCatalog",
+      "releases": [
+        {
+          "version": "1.0.0-preview.2",
+          "unreleased": false,
+          "date": "2026-08-07",
+          "maturity": "preview",
+          "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/catalog-v1.0.0-preview.2",
+          "summaryHtml": [
+            "First published version: <strong><code>JustDummies.DiagnosticCatalog</code> had never reached nuget.org before this one.</strong> It starts at the library's number because it describes the rule set the library's 1.0 ships, not because the two move together afterwards — they do not, for the reason stated above.",
+            "<strong>There is no <code>1.0.0-preview.1</code>, and there never was one on nuget.org.</strong> A <code>catalog-v1.0.0-preview.1</code> tag was pushed and its release run failed at version resolution, before packing or pushing anything: <code>release.yml</code> carried an allowlist of trains that had never learned this one. The number is skipped rather than reused because the tag it belongs to still exists and points at a commit without the fix, and no protection was going to be relaxed to reclaim a preview number."
+          ],
+          "sections": [
+            {
+              "label": "Added",
+              "items": [
+                "<strong><code>JustDummiesRule</code></strong> — the 28 JustDummies analyzer rules, <code>JD001</code> to <code>JD028</code>, each a marked static class carrying <code>Id</code>, <code>Category</code>, <code>Title</code> and <code>HelpLinkUri</code> as <code>const string</code>, so a <code>[SuppressMessage]</code> can name a rule the compiler resolves.",
+                "<strong><code>JustDummiesCategory</code></strong> — the four categories those rules are grouped under, declared once each and reached only through the rule that carries them.",
+                "The <code>DCAT</code> opt-in, packed as <code>build/JustDummies.DiagnosticCatalog.props</code>, which is what switches the checks on for a project that references this catalogue — and stops them at that project, so an application referencing a library that took this catalogue is not analysed by a catalogue it never chose."
+              ]
+            },
+            {
+              "label": "Notes",
+              "items": [
+                "<strong>This is a first-party catalogue, not a mirror.</strong> <code>JustDummies.Analyzers</code> reads its <code>DiagnosticDescriptor</code> arguments from these constants rather than the other way round, so the rule the analyzer reports and the rule a consumer silences are the same value by construction. That is why there is no <code>CatalogSource</code> attribute here: nothing upstream is being snapshotted.",
+                "<strong>A rule is never removed and a member is never renamed.</strong> These are <code>const</code>, so they are inlined into a consumer's assembly at their compile time; removing one breaks their build with a message that names nothing they wrote. A rule retired from the product is carried forward as <code>[Obsolete]</code> instead."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "cli",
+      "package": "JustDummies.Cli",
+      "releases": [
+        {
+          "version": "1.1.0-beta.1",
+          "unreleased": false,
+          "date": "2026-08-13",
+          "maturity": "beta",
+          "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/cli-v1.1.0-beta.1",
+          "summaryHtml": [
+            "A minor release, and additive throughout: three new options, and not one existing behaviour changed. <code>dum generate Order</code> writes exactly what it wrote in 1.0.0-beta.1, byte for byte, and the exit codes of §7 keep the meanings they were published with.",
+            "Still a <strong>beta</strong>, for the reason 1.0.0-beta.1 gave: what a version commits to here is the command line rather than a set of types, and that surface has still not been exercised by a project outside this repository."
+          ],
+          "sections": [
+            {
+              "label": "Added",
+              "items": [
+                "<strong><code>--entry-point</code></strong> — a scaffold can now also write an entry point, so a generator is reached the way the library's own are. <code>--entry-point any</code> emits a C# 14 extension member and gives you <code>Any.Order()</code> beside <code>Any.Int32()</code>; <code>--entry-point static:&lt;Name&gt;</code> emits a <code>partial</code> root you own and gives you <code>Dummies.Order()</code>, with no language requirement at all. The default is <code>none</code>, and <code>new AnyOrder()</code> is unaffected (<a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0070-emit-an-entry-point-on-request-as-a-file-of-its-own.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0070</a>).",
+                "<strong><code>--entry-point-namespace</code></strong> — declares the entry-point file somewhere other than beside the generator, so one root can gather types from several namespaces. It moves that file and nothing else: the generator stays in the namespace <code>--namespace</code> (or the target type) gives it, so no call site pays an import for it.",
+                "<strong><code>--format json</code></strong> — a run reports itself as one JSON document on stdout instead of the recap, for the caller that is a script rather than a reader. It carries what the exit code cannot: <code>summary.openParameters</code>, and a row per parameter with its expression and provenance. §7 makes a file written with open parameters a success — right for a developer, and indistinguishable from a clean run for a script scaffolding forty types at once. <strong>The exit codes do not move</strong>: this adds a channel rather than redefining one (<a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0071-report-a-run-as-data-without-moving-the-exit-codes.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0071</a>). Under <code>json</code>, stdout carries the document alone and everything written for a person stays on stderr, so <code>2&gt;/dev/null</code> leaves a clean pipe; <code>--dry-run</code> puts each file's text inside the document; and a run that stopped before its first scaffold still produces one, naming the refusal.",
+                "<strong><code>dum.json</code></strong> — an optional file beside the project supplies defaults for the options that describe the project rather than the invocation: <code>output</code>, <code>namespace</code>, <code>entryPoint</code>, <code>entryPointNamespace</code>, <code>format</code>. <strong>The command line always wins</strong> over any of them, and it wins by simply already being there — the file fills blanks and overwrites nothing. A relative <code>output</code> is rooted at the project's directory, so it means the same thing wherever the tool is run from (<a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0072-read-project-defaults-from-a-file-the-command-line-overrides.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0072</a>)."
+              ]
+            },
+            {
+              "label": "Changed",
+              "items": [
+                "The emitted generator file is <strong>unchanged</strong>, byte for byte, whichever entry point is asked for. The C# 7.3 floor of the scaffolded code is a property of that file; only the <code>--entry-point any</code> file needs anything newer.",
+                "Where a scaffold writes two files, it writes both or neither: an existing <code>Any{Type}.Entry.cs</code> refuses the whole scaffold rather than leaving the generator behind it, and <code>--force</code> covers both.",
+                "The console recap closes with a second line naming the call the entry point opened — <code>✓ AnyOrder.Entry.cs — entry point Dummies.Order()</code>."
+              ]
+            },
+            {
+              "label": "Fixed",
+              "items": [
+                "<strong><code>--namespace \"\"</code> and its four siblings no longer advise \"omit it to take its default\"</strong>, which stopped being true the day a <code>dum.json</code> could set the same option: omitting it takes that file's value where there is one. The refusal now points at the file.",
+                "<strong>A parameter type outside any namespace no longer emits <code>using &lt;global namespace&gt;;</code></strong>, which does not parse. Two cases reached it: a domain type declared outside any namespace, and — the likelier one — an <em>error</em> type, since a parameter that failed to bind is reported as living in the global namespace. A project that opened with an unresolved reference therefore scaffolded a file broken on its fifth line, for every parameter it could not resolve."
+              ]
+            },
+            {
+              "label": "Refused, on purpose",
+              "items": [
+                "<code>--entry-point static:Any</code> — a static class named <code>Any</code> in your own project hides <code>JustDummies.Any</code> for its whole namespace rather than extending it, and <code>Any.Int32()</code> stops compiling. The refusal points at <code>--entry-point any</code>, which is the mechanism that actually reaches that spelling.",
+                "<code>--entry-point any</code> on a project below C# 14 — refused, naming the language version the project resolved, rather than silently downgraded to a static root a developer would only discover at the call site.",
+                "<code>--format</code> given a value that is neither <code>human</code> nor <code>json</code> — refused at the command line, exit <code>2</code>, naming both.",
+                "A <code>dum.json</code> key that is not read — refused, exit <code>2</code>, naming the key and listing the ones that are. A default someone believes is in force and is not is worse than no file at all, so §16's reserved <code>naming</code> key is refused too, until <code>--name</code> and <code>--pattern</code> exist to give it a meaning."
+              ]
+            }
+          ]
+        },
+        {
+          "version": "1.0.0-beta.1",
+          "unreleased": false,
+          "date": "2026-08-10",
+          "maturity": "beta",
+          "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/cli-v1.0.0-beta.1",
+          "summaryHtml": [
+            "First published version: <strong><code>dum</code> had never reached nuget.org before this one.</strong> It starts at the number of the specification it implements rather than at <code>0.1.0</code>, because it implements that specification entire — not an earlier sketch of it.",
+            "<strong>A beta, not a preview</strong>, and the difference is deliberate. <code>JustDummies</code> and <code>JustDummies.Xunit</code> say <code>preview</code> to mean one precise thing: their surface is declared in <code>PublicAPI.Unshipped.txt</code>, so no API is promised before 1.0. A tool takes no public-API baseline at all — it carries no compatibility promise, and its public surface is the command line rather than a set of types (<a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/specifications/justdummies-tool.md\" target=\"_blank\" rel=\"noopener noreferrer\">specification §13.4</a>). <code>beta</code> states what is true of <em>that</em> surface: complete against the specification, and not yet run against anyone else's project."
+          ],
+          "sections": [
+            {
+              "label": "Added",
+              "items": [
+                "<strong><code>dum generate &lt;Type&gt;</code></strong> — writes the dummy generator for a type, once, as ordinary code the developer then owns. Not a source generator and not a build-time step: it reads the compilation, emits a file, and gets out of the way.",
+                "<strong>Resolution.</strong> A constructor parameter becomes a generator through the base table, then the constructor's own guard clauses (<code>quantity &lt;= 0</code> → <code>.Positive()</code>), then composition through a static factory or an already-scaffolded <code>Any{Type}</code>. Every candidate member is looked up in the developer's compilation before it is kept.",
+                "<strong>An open parameter is left open, loudly.</strong> What could not be inferred is emitted as an identifier that does not exist, so the developer's own build reports it at the line, with the type in hand (<a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0060-seed-generators-from-constructor-guards.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0060</a>).",
+                "<strong>A console recap</strong> that says where each expression came from — base table, guard, factory, a reused generator, or nothing — so \"inferred, and here is why\" is distinguishable from \"gave up\".",
+                "<strong><code>--project</code>, <code>--output</code>, <code>--namespace</code>, <code>--force</code>, <code>--dry-run</code></strong>, and nothing else. Several types are processed independently; the exit code is the worst of them.",
+                "<strong>Package hardening</strong>: embedded SPDX SBOM, SourceLink, symbol package, deterministic build, and a build-provenance attestation on the release artifact."
+              ]
+            },
+            {
+              "label": "Requires",
+              "items": [
+                "The <code>JustDummies</code> package in the project being analyzed — without it nothing can be resolved, and the tool says so rather than emitting anything.",
+                "<strong>No dependency on <code>JustDummies</code> is declared, in either direction of the version graph.</strong> The tool resolves every library symbol by metadata name against the developer's compilation, exactly as the analyzers do (<a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0063-resolve-the-library-by-name-never-by-reference.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0063</a>), which is what makes version skew between tool and library impossible. <code>tools/packaging/pack.sh</code> asserts it on the produced package — both that the nuspec declares no such dependency and that no <code>JustDummies.dll</code> is bundled beside the tool, since a .NET tool ships its closure as files and the first check alone would pass on an empty dependency list."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

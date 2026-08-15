@@ -72,11 +72,24 @@ async function settle(page: Page): Promise<void> {
  * `h1` and the refusal the `h2` under it, which is exactly the kind of change that produces
  * a skipped level or a second `h1` without anybody noticing.
  *
- * `/about` and `/privacy` are here too, unlike `/version` — `/version` is a deliberate
- * orphan nothing links to, while these two are reachable from the sitewide footer, so
- * they get the same automated sweep as everything else a reader can actually reach.
+ * `/about`, `/release-notes` and `/privacy` are here too, unlike `/version` — `/version` is
+ * a deliberate orphan nothing links to, while these three are reachable from the sitewide
+ * footer, so they get the same automated sweep as everything else a reader can actually
+ * reach. `/release-notes` carries its own tab widget besides — the same run-time ARIA the
+ * loop below exercises for the install tabs on `/`, checked here in its static, unopened
+ * state rather than duplicated into a second interactive pass.
  */
-for (const path of PAGES.concat('/playground/', '/about', '/fr/about', '/privacy', '/fr/privacy', '/404.html', '/fr/404.html')) {
+for (const path of PAGES.concat(
+    '/playground/',
+    '/about',
+    '/fr/about',
+    '/release-notes',
+    '/fr/release-notes',
+    '/privacy',
+    '/fr/privacy',
+    '/404.html',
+    '/fr/404.html',
+)) {
 
     test(`${path} breaks no automated WCAG A or AA rule`, async ({ page }) => {
         await page.goto(path);
