@@ -92,11 +92,17 @@
     </div>
 
     <!--
-      The two strings above that do change with the locale, rewritten by the same
+      The three strings above that do change with the locale, rewritten by the same
       synchronous read as `<html lang>` above — this runs before the runtime download even
       starts, so a slow connection sees the French wording throughout, not a flash of English
       before it. Kept as plain literals rather than a shared source: `PlaygroundStrings.cs` is
       C#, and nothing here can await it existing.
+
+      KNOWN DUPLICATION: `#blazor-error-ui`'s two strings are declared a second time, as
+      `errorBanner.message`/`errorBanner.reload` in `PlaygroundStrings.cs` — needed there
+      because `LocaleState.Set(...)` (`js/locale.js`) re-words this same banner if the reader
+      switches language after boot, which this pre-boot script cannot reach. Change one, change
+      the other.
     -->
     <script>
         if (document.documentElement.lang === 'fr') {

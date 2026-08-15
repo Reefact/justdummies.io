@@ -50,8 +50,22 @@ public sealed class LocaleState {
         _navigation.NavigateTo(uri, replace: true);
     }
 
+    /// <summary>
+    ///     Beyond <c>&lt;html lang&gt;</c>, this also re-words <c>#blazor-error-ui</c> — the
+    ///     banner Blazor reveals on an unhandled error. It lives in <c>wwwroot/index.html</c>,
+    ///     outside this app's render tree, and <c>index.html</c>'s own pre-boot script only ever
+    ///     translates it once, from the query string the page opened with. Without repeating
+    ///     that here, a reader who opened in English and then switched to French through this
+    ///     app's own selector would see the banner in the language they left, the exact
+    ///     mixed-language interface this class exists to prevent — and see it only if the
+    ///     runtime later fails, which is the one moment reading it matters most.
+    /// </summary>
     private async Task ApplyDocumentLanguage(Locale locale) {
-        await _js.InvokeVoidAsync("jdSetDocumentLanguage", PlaygroundStrings.Tag(locale));
+        await _js.InvokeVoidAsync(
+            "jdSetDocumentLanguage",
+            PlaygroundStrings.Tag(locale),
+            PlaygroundStrings.T(locale, "errorBanner.message"),
+            PlaygroundStrings.T(locale, "errorBanner.reload"));
     }
 
     /// <summary>
