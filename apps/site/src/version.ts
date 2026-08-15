@@ -13,6 +13,7 @@
  * build from an exported tarball. `built` is always a time.
  */
 import versionDocument from './generated/version.json';
+import { site } from './site';
 
 export interface Version {
     /** The `release/*` tag this build belongs to, or null when it belongs to none. */
@@ -27,7 +28,7 @@ export const version: Version = versionDocument as Version;
 
 /** Where a commit of this repository is read on GitHub. */
 export function commitUrl(commit: string): string {
-    return `https://github.com/Reefact/justdummies.io/commit/${commit}`;
+    return `${site.siteRepository}/commit/${commit}`;
 }
 
 /**

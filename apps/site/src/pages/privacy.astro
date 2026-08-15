@@ -1,0 +1,12 @@
+---
+import PrivacyContent from '../components/PrivacyContent.astro';
+import Page from '../layouts/Page.astro';
+import { useTranslations } from '../i18n/ui';
+import { site } from '../site';
+
+const t = useTranslations('en');
+---
+
+<Page title={`${t('privacy.heading')} — ${site.name}`} description={t('privacy.meta.description')}>
+    <PrivacyContent />
+</Page>

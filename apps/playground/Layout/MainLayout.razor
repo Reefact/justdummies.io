@@ -1,5 +1,36 @@
 @inherits LayoutComponentBase
 
+@*
+    The site's sitewide footer (apps/site/src/components/Footer.astro), rebuilt here
+    because Astro and Blazor share no rendering system to render one component from —
+    the two are kept in sync by hand, the same way `site.ts`'s `legal.entity` and this
+    file's "REEFACT" already have to be (see the KNOWN DUPLICATION note on `site.legal`).
+
+    Root-relative links only (`/about/`, `/privacy/`), never relative: `wwwroot/index.html`
+    sets `<base href="/playground/" />`, so a relative "about" would resolve to
+    `/playground/about` — a page that does not exist — while a leading-slash path ignores
+    that base and correctly reaches the Astro site, which is served from the same
+    artefact, at the same root (§12.2). `Pages/NotFound.razor`'s own "go back to the
+    site" link already relies on the same rule.
+
+    MainLayout only, not BareLayout: BareLayout renders `/hero`, the widget embedded in
+    the landing page's own hero, which is chromeless by design — it already sits inside
+    a page that carries the real footer around it, so a second one here would be a
+    duplicate, not a consistency.
+*@
+
 <main class="page">
     @Body
 </main>
+
+<footer class="site-footer">
+    <nav class="footer-nav" aria-label="Footer">
+        <a href="/about/">About</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="https://github.com/Reefact/justdummies.io" target="_blank" rel="noopener noreferrer">
+            Source code
+            <span class="visually-hidden"> opens in a new tab</span>
+        </a>
+    </nav>
+    <p class="copyright">© @DateTime.Now.Year REEFACT</p>
+</footer>

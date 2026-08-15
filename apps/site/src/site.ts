@@ -20,7 +20,15 @@ export const site = {
      */
     name: 'JustDummies',
 
+    /** The library's own repository — not this site's. See `siteRepository` below. */
     repository: 'https://github.com/Reefact/just-dummies',
+
+    /**
+     * This site's own repository, as opposed to the library's above. The About page's
+     * "this site" link, the sitewide footer, and `version.ts`'s `commitUrl` all read
+     * this rather than each spelling out the URL on its own.
+     */
+    siteRepository: 'https://github.com/Reefact/justdummies.io',
 
     library: {
         /**
@@ -76,5 +84,28 @@ export const site = {
         nuget: 'https://www.nuget.org/packages/JustDummies.Cli',
         installCommand: 'dotnet tool install --global JustDummies.Cli --prerelease',
         example: 'dum generate Order',
+    },
+
+    /**
+     * The legal identity behind this site, for the Privacy page's "who's responsible"
+     * section and the sitewide footer's copyright line.
+     *
+     * KNOWN DUPLICATION: `i18n/ui.ts`'s `privacy.controller.body` and
+     * `privacy.rights.body` restate `siren`, `address`, `manager` and `contactEmail` as
+     * fluent, locale-specific prose rather than interpolating them — the two locales
+     * build the sentence around those facts differently, and splicing a value into the
+     * middle of a sentence is the same "clipped fragment" this site's copy avoids
+     * elsewhere. Raise this object and that prose together, the same way `library.version`
+     * above is raised together with `Directory.Packages.props`. The playground's own
+     * footer (`apps/playground/Layout/MainLayout.razor`) restates `entity` a third time,
+     * in hard-coded English — TypeScript and C# cannot read each other's constants.
+     */
+    legal: {
+        entity: 'REEFACT',
+        legalForm: 'SARL unipersonnelle',
+        siren: '804 026 482',
+        address: "134 rue de Chevilly, 94240 L'Haÿ-les-Roses, France",
+        manager: 'Sylvain Aurat',
+        contactEmail: 'privacy@reefact.net',
     },
 } as const;

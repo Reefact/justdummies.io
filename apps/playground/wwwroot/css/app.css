@@ -25,6 +25,58 @@ body {
     padding: var(--jd-space-12) var(--jd-space-4) var(--jd-space-16);
 }
 
+/*
+ * The playground's own copy of the site's footer (Layout/MainLayout.razor), styled
+ * from the same tokens as apps/site/src/components/Footer.astro so the two read as
+ * one footer rather than two designs. Static in the document flow, never fixed to the
+ * viewport — same rule as the Astro site's.
+ */
+.site-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--jd-space-4);
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: var(--jd-space-6) var(--jd-space-4);
+    border-top: 1px solid var(--jd-border);
+    color: var(--jd-text-muted);
+    font-size: var(--jd-text-sm);
+}
+
+.footer-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--jd-space-4);
+}
+
+.footer-nav a {
+    color: var(--jd-text-muted);
+}
+
+.footer-nav a:hover {
+    color: var(--jd-text-primary);
+}
+
+.copyright {
+    margin: 0;
+}
+
+/* Visible to a screen reader, absent from the visual design — same rule as the site's
+   own base.css, duplicated here because the two applications share no stylesheet. */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
 h1 {
     font-size: var(--jd-text-xl);
     line-height: var(--jd-line-tight);
