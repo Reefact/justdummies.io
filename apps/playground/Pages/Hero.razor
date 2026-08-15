@@ -37,9 +37,9 @@
 <div class="hero-widget">
     <div class="expression">
         <span class="fixed">Any.String()</span>
-        <span class="link">.StartingWith(<input type="text" @bind:get="_prefix" @bind:set="SetPrefix" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.prefix")' size="6" />)</span>
-        <span class="link">.Containing(<input type="text" @bind:get="_fragment" @bind:set="SetFragment" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.contains")' size="6" />)</span>
-        <span class="link">.WithLength(<input type="number" @bind:get="_length" @bind:set="SetLength" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.length")' min="1" max="@MaxLength" />)</span>
+        <span class="link">.StartingWith(<input type="text" @bind:get="_prefix" @bind:set="SetPrefix" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.prefix")' aria-describedby="cap-hint" size="6" />)</span>
+        <span class="link">.Containing(<input type="text" @bind:get="_fragment" @bind:set="SetFragment" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.contains")' aria-describedby="cap-hint" size="6" />)</span>
+        <span class="link">.WithLength(<input type="number" @bind:get="_length" @bind:set="SetLength" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.length")' aria-describedby="cap-hint" min="1" max="@MaxLength" />)</span>
         <span class="fixed">.Generate()</span>
     </div>
 
@@ -48,9 +48,13 @@
         <span class="live">@PlaygroundStrings.T(LocaleState.Current, "hero.running", LibraryVersion)</span>
     </div>
 
-    @if (_capHint is not null) {
-        <p class="hint">@_capHint</p>
-    }
+    @*
+        Always in the document, never inserted only once there is something to say: a live
+        region a screen reader has not seen yet is a live region it has no reason to announce
+        the first change to. Empty, it takes no visible space and every input already names it
+        through aria-describedby, so it says nothing extra until a cap is actually hit.
+    *@
+    <p id="cap-hint" class="hint" role="status">@_capHint</p>
 
     @if (_refusal is null) {
         <output class="value">@_value</output>

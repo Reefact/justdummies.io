@@ -51,6 +51,13 @@ if [ -f "${root}/dist/fr/404/index.html" ]; then
   rmdir "${root}/dist/fr/404"
 fi
 
+# Before copy-playground.sh, not after: no reason to publish a playground whose own
+# check already knows it disagrees with itself. This is PlaygroundStrings.cs's parity
+# check (§6.4) actually executed rather than merely compiled — a static constructor
+# proves nothing on its own, since `dotnet build` never runs one.
+echo "▸ Checking the playground's locale keys agree"
+dotnet run --project "${root}/tools/playground-i18n-guard/JustDummies.PlaygroundI18nGuard.csproj"
+
 "${root}/scripts/copy-playground.sh"
 
 # After the playground, never before: the policy names a hash of the shell that
