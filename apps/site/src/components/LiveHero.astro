@@ -26,13 +26,14 @@ import { localeFromPath } from '../i18n/routing';
 import { useTranslations } from '../i18n/ui';
 import { sampleValue, sampleSeed, snippet } from '../samples';
 
-const t = useTranslations(localeFromPath(Astro.url.pathname));
+const locale = localeFromPath(Astro.url.pathname);
+const t = useTranslations(locale);
 
 const code: string = snippet('hero-expression');
 const value: string = sampleValue('hero-expression');
 ---
 
-<section class="hero-expression" data-hero data-hero-title={t('hero.frameTitle')}>
+<section class="hero-expression" data-hero data-hero-title={t('hero.frameTitle')} data-hero-locale={locale}>
     <figure class="sample" data-hero-static>
         <pre><code>{code}</code></pre>
 
@@ -56,6 +57,7 @@ const value: string = sampleValue('hero-expression');
 
 <script>
     const FRAME_TITLE_ATTRIBUTE = 'data-hero-title';
+    const FRAME_LOCALE_ATTRIBUTE = 'data-hero-locale';
     const MIN_HEIGHT = 190;
 
     const hero: HTMLElement | null = document.querySelector('[data-hero]');
@@ -73,8 +75,14 @@ const value: string = sampleValue('hero-expression');
             button.disabled = true;
             button.textContent = button.dataset.loading ?? '';
 
+            // The hero widget follows the page it is embedded in — a French reader on the
+            // French landing page presses "Run" and gets a French hero, not an English one
+            // they then have to switch (§6.4: the playground's own interface is translated
+            // like the rest of the site now).
+            const locale = hero.getAttribute(FRAME_LOCALE_ATTRIBUTE) ?? 'en';
+
             const frame: HTMLIFrameElement = document.createElement('iframe');
-            frame.src = '/playground/hero';
+            frame.src = `/playground/hero?lang=${locale}`;
             frame.title = hero.getAttribute(FRAME_TITLE_ATTRIBUTE) ?? 'JustDummies';
             frame.loading = 'eager';
             frame.style.height = `${MIN_HEIGHT}px`;

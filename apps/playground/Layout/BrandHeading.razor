@@ -1,0 +1,16 @@
+@inherits LocalizedComponent
+
+@*
+    The playground's counterpart to the site's BrandHeading.astro: the mark, the product name
+    as this app's one <h1>, and the tagline — same copy, same tokens, so the two halves of the
+    product read as one. Simplified from the site's version in one place: no script measures
+    the mark against the heading's own cap height here, it is sized to look right at the sizes
+    this app actually renders — a fixed-image alignment where the original does a measured one.
+*@
+
+<div class="brand-heading">
+    <h1>
+        <img class="mark" src="/favicon-64.png" srcset="/favicon-64.png 2x, /favicon-128.png 4x" alt="" width="64" height="64" decoding="async" />JustDummies
+    </h1>
+    <p class="tagline">@PlaygroundStrings.T(LocaleState.Current, "brand.tagline")</p>
+</div>

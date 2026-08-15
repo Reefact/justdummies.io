@@ -1,0 +1,65 @@
+@inherits LocalizedComponent
+
+@*
+    The strip every playground page carries above .page, mirroring the site's own Base.astro:
+    a way back to the site, on the left, and the language switch, on the right (§6.4 — the
+    playground's own interface follows the site's i18n rules now, only the library's runtime
+    messages stay in English).
+
+    The brand link leaves this app rather than routing inside it — there is nowhere inside the
+    playground that "JustDummies" would point to other than where the reader already is — so it
+    goes back to the site's home page, in whichever locale this playground is currently showing
+    itself in.
+*@
+
+<header class="site-header">
+    <a class="brand" href="@SiteHomeHref">JustDummies</a>
+
+    <nav>
+        <a href="@RepositoryUrl" target="_blank" rel="noopener noreferrer">@PlaygroundStrings.T(LocaleState.Current, "nav.github")</a>
+
+        <nav class="language-selector" aria-label='@PlaygroundStrings.T(LocaleState.Current, "language.label")'>
+            <details open="@_open">
+                <summary @onclick="ToggleMenu" @onclick:preventDefault="true">
+                    <span>@PlaygroundStrings.Name(LocaleState.Current)</span>
+                    <svg class="caret" viewBox="0 0 10 6" width="10" height="6" aria-hidden="true" focusable="false">
+                        <path d="M1 1l4 4 4-4" />
+                    </svg>
+                </summary>
+                <ul>
+                    @foreach (Locale locale in AvailableLocales) {
+                        <li>
+                            @if (locale == LocaleState.Current) {
+                                <span aria-current="true">@PlaygroundStrings.Name(locale)</span>
+                            } else {
+                                <button type="button" @onclick="() => Select(locale)">@PlaygroundStrings.Name(locale)</button>
+                            }
+                        </li>
+                    }
+                </ul>
+            </details>
+        </nav>
+    </nav>
+</header>
+
+@code {
+
+    /// <summary>Mirrors <c>site.repository</c> in <c>apps/site/src/site.ts</c> — the same fact, kept in the one other place a .NET project can read it from.</summary>
+    private const string RepositoryUrl = "https://github.com/Reefact/just-dummies";
+
+    private static readonly Locale[] AvailableLocales = Enum.GetValues<Locale>();
+
+    private bool _open;
+
+    private string SiteHomeHref => LocaleState.Current == Locale.Fr ? "/fr/" : "/";
+
+    private void ToggleMenu() {
+        _open = !_open;
+    }
+
+    private void Select(Locale locale) {
+        _open = false;
+        LocaleState.Set(locale);
+    }
+
+}

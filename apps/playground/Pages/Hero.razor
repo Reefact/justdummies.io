@@ -1,6 +1,7 @@
 @page "/hero"
 @layout BareLayout
 @inject IJSRuntime JS
+@inject LocaleState LocaleState
 @using System.Reflection
 @using JustDummies
 
@@ -22,20 +23,26 @@
     fragment already require and the library refuses the declaration. That refusal is the
     demonstration defending itself, and it is displayed as the library worded it. Catching it
     to keep the home page tidy would remove the best argument on the page.
+
+    THE TWO KINDS OF STOP. A length too short for the prefix and fragment is the library's own
+    refusal (below) and stays in its own words, untranslated (§6.4) — it names a JustDummies
+    API contract, not this page's content. Typing past what this playground itself allows —
+    64 characters, 10 in a fragment — is this page's own rule, so that message is composed
+    here and translated like the rest of the interface.
 *@
 
 <div class="hero-widget">
     <div class="expression">
         <span class="fixed">Any.String()</span>
-        <span class="link">.StartingWith(<input type="text" @bind="_prefix" @bind:event="oninput" aria-label="prefix" size="6" />)</span>
-        <span class="link">.Containing(<input type="text" @bind="_fragment" @bind:event="oninput" aria-label="contained text" size="6" />)</span>
-        <span class="link">.WithLength(<input type="number" @bind="_length" @bind:event="oninput" aria-label="length" min="1" max="64" />)</span>
+        <span class="link">.StartingWith(<input type="text" @bind="_prefix" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.prefix")' size="6" maxlength="@TextLimit" />)</span>
+        <span class="link">.Containing(<input type="text" @bind="_fragment" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.contains")' size="6" maxlength="@TextLimit" />)</span>
+        <span class="link">.WithLength(<input type="number" @bind:get="_length" @bind:set="SetLength" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.length")' min="1" max="@MaxLength" />)</span>
         <span class="fixed">.Generate()</span>
     </div>
 
     <div class="controls">
-        <button class="generate" @onclick="Draw">@GenerateLabel</button>
-        <span class="live">running here, JustDummies @LibraryVersion</span>
+        <button class="generate" @onclick="Draw">@PlaygroundStrings.T(LocaleState.Current, "hero.generate")</button>
+        <span class="live">@PlaygroundStrings.T(LocaleState.Current, "hero.running", LibraryVersion)</span>
     </div>
 
     @if (_refusal is null) {
@@ -47,7 +54,11 @@
 
 @code {
 
-    private const string GenerateLabel = "Generate";
+    /// <summary>What this playground itself allows in <c>.WithLength(...)</c> — the library has no such limit.</summary>
+    private const int MaxLength = 64;
+
+    /// <summary>What this playground itself allows in <c>.StartingWith(...)</c>/<c>.Containing(...)</c>.</summary>
+    private const int TextLimit = 10;
 
     private string _prefix   = "ORD-";
     private string _fragment = "2026";
@@ -78,6 +89,12 @@
     ///     scene is that the refusal arrives at that moment.
     /// </summary>
     private void Draw() {
+        if (_prefix.Length > TextLimit || _fragment.Length > TextLimit) {
+            _refusal = PlaygroundStrings.T(LocaleState.Current, "limit.text", TextLimit);
+            _value   = string.Empty;
+            return;
+        }
+
         try {
             _value = Any.String()
                         .StartingWith(_prefix)
@@ -106,6 +123,20 @@
             _refusal = refused.Message;
             _value   = string.Empty;
         }
+    }
+
+    /// <summary>
+    ///     The number input's setter: every keystroke is clamped to what this playground
+    ///     allows, immediately. Typing a third digit past 64 changes nothing the visitor can
+    ///     see — the value was already 64, and re-assigning 64 does not move the caret past
+    ///     it — which is the whole of what "cannot type past the limit" means for a plain
+    ///     <c>&lt;input type="number"&gt;</c>: its own `max` attribute only affects the
+    ///     spinner arrows, never the keyboard.
+    /// </summary>
+    private Task SetLength(int value) {
+        _length = Math.Clamp(value, 0, MaxLength);
+
+        return Task.CompletedTask;
     }
 
     private static string ReadLibraryVersion() {

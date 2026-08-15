@@ -26,7 +26,7 @@ body {
 }
 
 /*
- * The playground's own copy of the site's footer (Layout/MainLayout.razor), styled
+ * The playground's own copy of the site's footer (Layout/SiteFooter.razor), styled
  * from the same tokens as apps/site/src/components/Footer.astro so the two read as
  * one footer rather than two designs. Static in the document flow, never fixed to the
  * viewport — same rule as the Astro site's.
@@ -90,7 +90,9 @@ h1 {
    keyboard-only focus with `:not(:focus-visible)`. The browser's default ring —
    a thick box drawn tight against the text — reads as a layout bug rather than
    a navigation cue, so it's replaced with a thinner, offset one instead of
-   removed outright. */
+   removed outright. The <h1> itself is now BrandHeading's, on every routed page
+   (see further down) — this rule moved with it rather than staying behind on
+   what used to be styled here as a bare h1 and is now .page-title. */
 h1:focus {
     outline: 1px solid var(--jd-text-muted);
     outline-offset: 4px;
@@ -242,7 +244,7 @@ h1:focus {
 }
 
 .hero-widget input[type='number'] {
-    width: 4.5ch;
+    width: 5.5ch;
 }
 
 .hero-widget input:focus-visible {
@@ -292,4 +294,176 @@ h1:focus {
     color: var(--jd-error);
     font-family: var(--jd-font-sans);
     line-height: var(--jd-line-body);
+}
+
+/*
+ * SiteHeader.razor and BrandHeading.razor — the standalone playground's own chrome, carried
+ * by MainLayout above every routed page (never above /hero, which stays under BareLayout: it
+ * is framed inside a page that already has this header). Same tokens, same shapes as the
+ * site's Base.astro and BrandHeading.astro, so the two halves of the product read as one —
+ * without sharing markup, because an Astro island and a Blazor component cannot share a file.
+ */
+.site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--jd-space-4);
+    padding: var(--jd-space-4);
+    border-bottom: 1px solid var(--jd-border);
+    font-family: var(--jd-font-sans);
+    font-size: var(--jd-text-sm);
+}
+
+.site-header .brand {
+    font-weight: 700;
+    color: var(--jd-text-primary);
+    text-decoration: none;
+}
+
+.site-header .brand:hover {
+    color: var(--jd-accent);
+}
+
+.site-header nav {
+    display: flex;
+    align-items: center;
+    gap: var(--jd-space-4);
+}
+
+.site-header nav > a {
+    color: var(--jd-text-muted);
+    text-decoration: none;
+}
+
+.site-header nav > a:hover {
+    color: var(--jd-text-primary);
+}
+
+/* The language menu — a <details>/<summary> disclosure with no script driving it beyond
+   Blazor itself, matching the shape (not the file) of the site's LanguageSelector.astro. */
+.language-selector {
+    position: relative;
+}
+
+.language-selector summary {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--jd-space-2);
+    padding: var(--jd-space-1) var(--jd-space-2);
+    border-radius: var(--jd-radius-sm);
+    color: var(--jd-text-muted);
+    cursor: pointer;
+    list-style: none;
+}
+
+.language-selector summary::-webkit-details-marker {
+    display: none;
+}
+
+.language-selector summary:hover {
+    color: var(--jd-text-primary);
+}
+
+.language-selector summary:focus-visible {
+    outline: 2px solid var(--jd-accent);
+    outline-offset: 2px;
+}
+
+.language-selector .caret {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform var(--jd-duration-fast) var(--jd-ease);
+}
+
+.language-selector details[open] summary {
+    color: var(--jd-text-primary);
+}
+
+.language-selector details[open] .caret {
+    transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .language-selector .caret {
+        transition: none;
+    }
+}
+
+.language-selector ul {
+    position: absolute;
+    right: 0;
+    z-index: 10;
+    min-width: 100%;
+    margin: var(--jd-space-1) 0 0;
+    padding: var(--jd-space-2);
+    list-style: none;
+    background: var(--jd-surface-raised);
+    border: 1px solid var(--jd-border);
+    border-radius: var(--jd-radius-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--jd-space-1);
+    white-space: nowrap;
+}
+
+.language-selector li button,
+.language-selector li [aria-current] {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: var(--jd-space-1) var(--jd-space-2);
+    border-radius: var(--jd-radius-sm);
+    font: inherit;
+    border: 0;
+    background: none;
+}
+
+.language-selector li button {
+    color: var(--jd-text-primary);
+    cursor: pointer;
+}
+
+.language-selector li button:hover {
+    background: var(--jd-surface);
+}
+
+.language-selector li [aria-current] {
+    color: var(--jd-text-muted);
+}
+
+/* The brand block: mark, product name as this app's one <h1>, and tagline — see
+   BrandHeading.razor for why the mark is sized rather than measured, unlike the site's. */
+.brand-heading {
+    margin-bottom: var(--jd-space-4);
+}
+
+.brand-heading h1 {
+    display: flex;
+    align-items: center;
+    gap: 0.18em;
+    font-size: var(--jd-text-2xl);
+    line-height: var(--jd-line-tight);
+    margin: 0;
+}
+
+.brand-heading .mark {
+    width: 1cap;
+    height: 1cap;
+}
+
+.brand-heading .tagline {
+    font-size: var(--jd-text-lg);
+    color: var(--jd-accent);
+    margin: var(--jd-space-3) 0 0;
+}
+
+/* The page's own title, one level below the brand's <h1> — Home.razor's "Playground",
+   NotFound.razor's "Not found" — where the old bare <h1> rule used to apply. */
+.page-title {
+    font-size: var(--jd-text-xl);
+    line-height: var(--jd-line-tight);
+    margin: 0 0 var(--jd-space-4);
 }
