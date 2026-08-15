@@ -297,6 +297,12 @@ h1:focus {
     line-height: var(--jd-line-body);
 }
 
+/* Always in the DOM now (Hero.razor), for the live region to work — so empty is a real,
+   frequent state, not a corner case, and it must take no space in it. */
+.hero-widget .hint:empty {
+    margin-top: 0;
+}
+
 /* The refusal is the library defending the demonstration (§9.9), so it is legible and
    plain — the error colour on the text, and nothing around it that reads as an alarm. */
 .hero-widget .refusal {

@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Runs PlaygroundStrings' own parity check, on purpose, from somewhere the build already
+    runs (scripts/build-site.sh) — a static constructor proves nothing on its own, because
+    `dotnet build` compiles it but never executes it. Executing it is this project's entire
+    job: touch the type, let its static constructor run, report what it throws.
+
+    The site's own i18n dictionary (apps/site/src/i18n/ui.ts) gets this guarantee from
+    TypeScript's structural typing — a locale declared as Record<UiKey, string> makes a
+    missing or extra key a compile error, for free. C# has no equivalent, so this project is
+    the closest a plain static class gets: a build step that fails the moment English and
+    French disagree, in every environment, rather than a KeyNotFoundException the first
+    reader to hit the missing key finds in a browser.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>JustDummies.PlaygroundI18nGuard</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\apps\playground\JustDummies.Playground.csproj" />
+  </ItemGroup>
+
+</Project>
