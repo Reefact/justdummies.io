@@ -21,7 +21,11 @@ public abstract class LocalizedComponent : ComponentBase, IDisposable {
 
     public void Dispose() {
         LocaleState.Changed -= OnLocaleChanged;
+        OnDispose();
     }
+
+    /// <summary>Extra cleanup for a component that needs it — nothing, by default.</summary>
+    protected virtual void OnDispose() { }
 
     private void OnLocaleChanged() {
         InvokeAsync(StateHasChanged);

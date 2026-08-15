@@ -286,6 +286,17 @@ h1:focus {
     font-size: var(--jd-text-lg);
 }
 
+/* This playground's own cap, not the library's — see the file header comment on why it
+   surfaces the instant a keystroke hits it rather than waiting for Generate. Muted rather
+   than the refusal's error colour: it is a rail, not a rejection. */
+.hero-widget .hint {
+    display: block;
+    margin-top: var(--jd-space-4);
+    color: var(--jd-text-muted);
+    font-family: var(--jd-font-sans);
+    line-height: var(--jd-line-body);
+}
+
 /* The refusal is the library defending the demonstration (§9.9), so it is legible and
    plain — the error colour on the text, and nothing around it that reads as an alarm. */
 .hero-widget .refusal {
@@ -337,6 +348,22 @@ h1:focus {
 
 .site-header nav > a:hover {
     color: var(--jd-text-primary);
+}
+
+/* Below the width the site's own header stacks at (Base.astro): the brand, "GitHub" and the
+   language switch no longer fit on one line, so this follows the same break rather than
+   overflowing sideways. */
+@media (max-width: 28rem) {
+    .site-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--jd-space-2);
+    }
+
+    .site-header nav {
+        flex-wrap: wrap;
+        gap: var(--jd-space-3);
+    }
 }
 
 /* The language menu — a <details>/<summary> disclosure with no script driving it beyond

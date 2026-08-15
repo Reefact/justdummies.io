@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 namespace JustDummies.Playground.Localization;
 
@@ -15,10 +16,18 @@ namespace JustDummies.Playground.Localization;
 public sealed class LocaleState {
 
     private readonly NavigationManager _navigation;
+    private readonly IJSRuntime        _js;
 
-    public LocaleState(NavigationManager navigation) {
+    public LocaleState(NavigationManager navigation, IJSRuntime js) {
         _navigation = navigation;
+        _js         = js;
         Current     = PlaygroundStrings.Parse(QueryLang(navigation.Uri));
+
+        // Fire-and-forget: wwwroot/index.html ships with <html lang="en">, read before a byte
+        // of .NET runs, and this is the first chance to correct it for a page that opened in
+        // French. Nothing downstream waits on it — a screen reader that queries the attribute a
+        // frame later is the only reader of this call.
+        _ = ApplyDocumentLanguage(Current);
     }
 
     public Locale Current { get; private set; }
@@ -33,11 +42,16 @@ public sealed class LocaleState {
 
         Current = locale;
         Changed?.Invoke();
+        _ = ApplyDocumentLanguage(locale);
 
         // Kept in the URL, not only in memory: a reader who copies the link, reloads, or opens
         // the hero again gets back the language they chose, not whatever the page started in.
         string uri = _navigation.GetUriWithQueryParameter("lang", PlaygroundStrings.Tag(locale));
         _navigation.NavigateTo(uri, replace: true);
+    }
+
+    private async Task ApplyDocumentLanguage(Locale locale) {
+        await _js.InvokeVoidAsync("jdSetDocumentLanguage", PlaygroundStrings.Tag(locale));
     }
 
     /// <summary>

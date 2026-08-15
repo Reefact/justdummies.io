@@ -1,6 +1,13 @@
 ﻿<Router AppAssembly="@typeof(App).Assembly" NotFoundPage="typeof(Pages.NotFound)">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        <!--
+            The brand's <h1> (BrandHeading) is on every routed page and never changes, so
+            focusing it on navigation would announce "JustDummies" on every transition instead
+            of what actually changed — "Not found", "Playground". .page-title is that page's
+            own heading, and BareLayout pages (the hero) carry neither selector's target,
+            which is fine: they are framed inside a document that is already focused.
+        -->
+        <FocusOnNavigate RouteData="@routeData" Selector=".page-title" />
     </Found>
 </Router>
