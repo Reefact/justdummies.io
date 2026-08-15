@@ -82,10 +82,11 @@ public static class PlaygroundStrings {
             "There is no such page in the playground. <a href=\"{0}\">Start over</a>, " +
             "or <a href=\"{1}\">go back to the site</a>.",
 
-        ["footer.nav"]        = "Footer",
-        ["footer.about"]      = "About",
-        ["footer.privacy"]    = "Privacy",
-        ["footer.repository"] = "Source code",
+        ["footer.nav"]          = "Footer",
+        ["footer.about"]        = "About",
+        ["footer.releaseNotes"] = "Release notes",
+        ["footer.privacy"]      = "Privacy",
+        ["footer.repository"]   = "Source code",
         ["state.newTab"]      = "opens in a new tab",
 
         // The one piece of the pre-boot shell (wwwroot/index.html) that still has to be
@@ -138,10 +139,11 @@ public static class PlaygroundStrings {
             "There is no such page in the playground. <a href=\"{0}\">Start over</a>, " +
             "or <a href=\"{1}\">go back to the site</a>."),
 
-        ["footer.nav"]        = new("Pied de page", "Footer"),
-        ["footer.about"]      = new("À propos", "About"),
-        ["footer.privacy"]    = new("Confidentialité", "Privacy"),
-        ["footer.repository"] = new("Code source", "Source code"),
+        ["footer.nav"]          = new("Pied de page", "Footer"),
+        ["footer.about"]        = new("À propos", "About"),
+        ["footer.releaseNotes"] = new("Notes de version", "Release notes"),
+        ["footer.privacy"]      = new("Confidentialité", "Privacy"),
+        ["footer.repository"]   = new("Code source", "Source code"),
         ["state.newTab"]      = new("ouvre un nouvel onglet", "opens in a new tab"),
 
         ["errorBanner.message"] = new("Une erreur est survenue.", "Something went wrong."),

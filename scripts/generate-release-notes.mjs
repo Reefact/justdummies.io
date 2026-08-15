@@ -65,11 +65,18 @@ function inlineHtml(markdown, relativeTo) {
     const italicised = bolded.replace(/\*([^*]+)\*/g, (_match, text) => `<em>${text}</em>`);
 
     return italicised.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, text, href) => {
-        const resolved = /^https?:\/\//.test(href)
-            ? href
-            : `https://github.com/${REPOSITORY}/blob/${BRANCH}/${posix.normalize(posix.join(relativeTo, href))}`;
+        if (/^https?:\/\//.test(href)) {
+            return `<a href="${href}">${text}</a>`;
+        }
 
-        return `<a href="${resolved}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+        // A source link written with a trailing slash names a directory, and GitHub
+        // serves those under /tree/, never /blob/ — the form this always emitted, which
+        // produced an invalid path the one time this snapshot linked to one (the
+        // migration record under doc/handwritten/for-maintainers/migration/).
+        const kind = href.endsWith('/') ? 'tree' : 'blob';
+        const resolved = posix.normalize(posix.join(relativeTo, href));
+
+        return `<a href="https://github.com/${REPOSITORY}/${kind}/${BRANCH}/${resolved}">${text}</a>`;
     });
 }
 
@@ -132,20 +139,6 @@ function blockItemsOf(lines) {
     return lines.some((line) => /^- /.test(line)) ? bulletsOf(lines) : paragraphsOf(lines);
 }
 
-/** Known `### …` labels, normalised so a differently-cased heading still matches. */
-const KNOWN_CATEGORIES = new Set([
-    'added',
-    'changed',
-    'fixed',
-    'deprecated',
-    'removed',
-    'security',
-    'documentation',
-    'notes',
-    'requires',
-    'refused, on purpose',
-]);
-
 function sectionsOf(bodyLines, relativeTo) {
     const sections = [];
     let current = null;
@@ -161,12 +154,15 @@ function sectionsOf(bodyLines, relativeTo) {
         }
     }
 
-    return sections
-        .filter((section) => KNOWN_CATEGORIES.has(section.label.toLowerCase()))
-        .map((section) => ({
-            label: section.label,
-            items: blockItemsOf(section.lines).map((item) => inlineHtml(item, relativeTo)),
-        }));
+    // Every `### ` heading is kept, whether or not this generator has seen its label
+    // before: the renderer's own category lookup already falls back to the raw English
+    // text for one it does not recognise (ReleaseNotesContent.astro's `categoryLabel`),
+    // so dropping an unrecognised section here would publish incomplete release notes
+    // rather than an untranslated — but complete — one.
+    return sections.map((section) => ({
+        label: section.label,
+        items: blockItemsOf(section.lines).map((item) => inlineHtml(item, relativeTo)),
+    }));
 }
 
 /** The prose before the first `### `, which is the release's own "why", when it wrote one. */

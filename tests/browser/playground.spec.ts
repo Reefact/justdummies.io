@@ -111,6 +111,7 @@ test.describe('the playground', () => {
 
         await expect(footer).toBeVisible();
         await expect(footer.locator('a[href="/about/"]')).toBeVisible();
+        await expect(footer.locator('a[href="/release-notes/"]')).toBeVisible();
         await expect(footer.locator('a[href="/privacy/"]')).toBeVisible();
 
         const repository = footer.locator('a[href="https://github.com/Reefact/justdummies.io"]');
