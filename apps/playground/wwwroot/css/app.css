@@ -32,12 +32,14 @@ h1 {
 }
 
 /* Blazor's router focuses the <h1> on navigation so a screen reader lands on the
-   new page's title, and the browser paints a focus ring there. That ring is left
-   alone deliberately: `:focus-visible` matches this programmatic focus in
-   Chromium, so the usual `:not(:focus-visible)` escape does nothing, and the only
-   rule that would remove it is a blanket `h1:focus { outline: none }` — which
-   also removes it for someone who genuinely needs to see where focus went. It is
-   a question for the real playground's design, not for its skeleton. */
+   new page's title. `:focus-visible` matches that programmatic focus in Chromium,
+   so the ring can't be scoped to keyboard-only focus with `:not(:focus-visible)`.
+   The title isn't interactive, so a visible focus ring around it reads as a
+   layout bug rather than a navigation cue — it is removed outright rather than
+   left for keyboard users, who have nothing to operate there anyway. */
+h1:focus {
+    outline: none;
+}
 
 .lede {
     color: var(--jd-text-muted);
