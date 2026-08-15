@@ -47,6 +47,18 @@ function escapeHtml(text) {
 }
 
 /**
+ * The one escape `escapeHtml` does not do, because nothing needed it until an attribute
+ * did: a literal quote in a link destination closes a `href="…"` early and lets whatever
+ * follows be read as markup or a second attribute. Applied to an `href` built here, never
+ * to element text — the text this generator emits has already been through `escapeHtml`
+ * by the time a `href` is built from it, and running that again would double-escape the
+ * `&`, `<` and `>` it already turned into entities.
+ */
+function escapeQuotes(text) {
+    return text.replace(/"/g, '&quot;');
+}
+
+/**
  * The four inline markdown forms these files actually use — code spans, bold, italics
  * and links — turned into safe, ready-to-display HTML. Not a markdown parser: it knows
  * nothing about block structure, lists or headings, because splitting on those happens
@@ -66,7 +78,7 @@ function inlineHtml(markdown, relativeTo) {
 
     return italicised.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, text, href) => {
         if (/^https?:\/\//.test(href)) {
-            return `<a href="${href}">${text}</a>`;
+            return `<a href="${escapeQuotes(href)}">${text}</a>`;
         }
 
         // A source link written with a trailing slash names a directory, and GitHub
@@ -76,7 +88,7 @@ function inlineHtml(markdown, relativeTo) {
         const kind = href.endsWith('/') ? 'tree' : 'blob';
         const resolved = posix.normalize(posix.join(relativeTo, href));
 
-        return `<a href="https://github.com/${REPOSITORY}/${kind}/${BRANCH}/${resolved}">${text}</a>`;
+        return `<a href="${escapeQuotes(`https://github.com/${REPOSITORY}/${kind}/${BRANCH}/${resolved}`)}">${text}</a>`;
     });
 }
 
@@ -111,32 +123,42 @@ function paragraphsOf(lines) {
     return paragraphs;
 }
 
-/** A `- ` list's items, each joined with its own wrapped continuation lines — indented,
- *  not themselves starting a new `- ` — into the one logical item they are. */
-function bulletsOf(lines) {
+/**
+ * The items of one `### Category` block, in the order they were written — a `- ` line
+ * starts a bullet, a blank line ends whatever is open, and any other line extends it.
+ * That one rule covers every shape this changelog actually uses without asking which
+ * shape a block is first: a pure `- ` list, plain paragraphs (Notes, Requires), or an
+ * introductory sentence ahead of a list — the third one lost its own sentence when
+ * bullets and prose were treated as mutually exclusive.
+ */
+function blockItemsOf(lines) {
     const items = [];
+    let current = null;
 
     for (const line of lines) {
-        if (/^- /.test(line)) {
-            items.push(line.slice(2));
-        } else if (items.length > 0 && /^\s+\S/.test(line)) {
-            items[items.length - 1] += ` ${line.trim()}`;
+        const bullet = /^- (.*)/.exec(line);
+
+        if (bullet !== null) {
+            if (current !== null) {
+                items.push(current);
+            }
+            current = bullet[1];
+        } else if (line.trim() === '') {
+            if (current !== null) {
+                items.push(current);
+                current = null;
+            }
+        } else if (current !== null) {
+            current += ` ${line.trim()}`;
+        } else {
+            current = line.trim();
         }
+    }
+    if (current !== null) {
+        items.push(current);
     }
 
     return items;
-}
-
-/**
- * The items of one `### Category` block, whichever of the two shapes this changelog
- * used for it: most are a `- ` list, but a prose category — Notes, Requires — is
- * written as ordinary paragraphs instead (checked here rather than assumed from the
- * label, since Documentation is a single bullet in one file and would be prose in
- * another). Read as whichever the block actually contains, so each becomes one item:
- * a paragraph reads as one card entry exactly as a bullet does.
- */
-function blockItemsOf(lines) {
-    return lines.some((line) => /^- /.test(line)) ? bulletsOf(lines) : paragraphsOf(lines);
 }
 
 function sectionsOf(bodyLines, relativeTo) {
