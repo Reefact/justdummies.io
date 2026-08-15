@@ -212,14 +212,32 @@ h1:focus {
  * and the parts they cannot, because that difference is the whole invitation.
  */
 .hero-widget {
-    padding: var(--jd-space-4);
     font-family: var(--jd-font-mono);
     font-size: var(--jd-text-sm);
 }
 
+/* Same background as the site's static sample (LiveHero.astro's .sample) and the frame
+   that holds this iframe (its .frame) — without it, this card reads as <body>'s own
+   background showing through (--jd-background), one shade darker than the card the
+   visitor was just looking at. */
+.hero-widget .card {
+    background: var(--jd-surface);
+}
+
 .hero-widget .expression {
+    display: flex;
+    flex-direction: column;
+    padding: var(--jd-space-4); /* = the padding of the site's <pre> */
     line-height: 2.1;
     word-break: break-word;
+}
+
+/* Every line but the first, indented to land its "." under the one that follows "Any" on
+   the first line — 3 characters, the width of "Any" itself in this monospace type. Not the
+   22 spaces of the site's own snippet: that indentation counts "string reference = " too,
+   which this widget never prints. */
+.hero-widget .expression > :not(:first-child) {
+    padding-left: 3ch;
 }
 
 .hero-widget .fixed {
@@ -252,6 +270,38 @@ h1:focus {
     outline-offset: 2px;
 }
 
+/* The result — a value or a refusal — in the same shape as the site's own <figcaption>:
+   a filed second zone under a divider, not a block of its own further down the page. */
+.hero-widget .result-bar {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: var(--jd-space-2);
+    padding: var(--jd-space-3) var(--jd-space-4); /* = the padding of <figcaption> */
+    border-top: 1px solid var(--jd-border);       /* = the rule under <figcaption> */
+    background: var(--jd-surface-raised);         /* = the raised ground of <figcaption> */
+}
+
+.hero-widget .result-bar .arrow {
+    color: var(--jd-text-muted);
+}
+
+.hero-widget .result-bar .value {
+    color: var(--jd-generated);
+}
+
+/* The refusal is the library defending the demonstration (§9.9), so it is legible and
+   plain — the error colour on the text, and nothing around it that reads as an alarm. No
+   arrow beside it: "→" promises a value, and a refusal is not one. */
+.hero-widget .result-bar .refusal {
+    color: var(--jd-error);
+    font-family: var(--jd-font-sans);
+    line-height: var(--jd-line-body);
+}
+
+/* Outside the card, at the same place and the same size as the site's own "Run" button and
+   its cost mention (LiveHero.astro's .invite) — the visitor's eye should not have to find
+   them again after the click. */
 .hero-widget .controls {
     display: flex;
     align-items: baseline;
@@ -266,7 +316,7 @@ h1:focus {
     background: var(--jd-surface-raised);
     border: 1px solid var(--jd-border);
     border-radius: var(--jd-radius-sm);
-    padding: var(--jd-space-1) var(--jd-space-3);
+    padding: var(--jd-space-2) var(--jd-space-4); /* = the padding of .run, for "same size" */
     cursor: pointer;
 }
 
@@ -277,13 +327,6 @@ h1:focus {
 .hero-widget .live {
     color: var(--jd-text-muted);
     font-family: var(--jd-font-sans);
-}
-
-.hero-widget .value {
-    display: block;
-    margin-top: var(--jd-space-4);
-    color: var(--jd-generated);
-    font-size: var(--jd-text-lg);
 }
 
 /* This playground's own cap, not the library's — see the file header comment on why it
@@ -301,16 +344,6 @@ h1:focus {
    frequent state, not a corner case, and it must take no space in it. */
 .hero-widget .hint:empty {
     margin-top: 0;
-}
-
-/* The refusal is the library defending the demonstration (§9.9), so it is legible and
-   plain — the error colour on the text, and nothing around it that reads as an alarm. */
-.hero-widget .refusal {
-    display: block;
-    margin-top: var(--jd-space-4);
-    color: var(--jd-error);
-    font-family: var(--jd-font-sans);
-    line-height: var(--jd-line-body);
 }
 
 /*

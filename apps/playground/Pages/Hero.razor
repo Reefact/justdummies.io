@@ -36,12 +36,30 @@
 *@
 
 <div class="hero-widget">
-    <div class="expression">
-        <span class="fixed">Any.String()</span>
-        <span class="link">.StartingWith(<input type="text" @bind:get="_prefix" @bind:set="SetPrefix" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.prefix")' aria-describedby="@(_capHintOwner == "prefix" ? "cap-hint" : null)" size="6" />)</span>
-        <span class="link">.Containing(<input type="text" @bind:get="_fragment" @bind:set="SetFragment" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.contains")' aria-describedby="@(_capHintOwner == "fragment" ? "cap-hint" : null)" size="6" />)</span>
-        <span class="link">.WithLength(<input type="number" @bind:get="_lengthText" @bind:set="SetLengthText" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.length")' aria-describedby="@(_capHintOwner == "length" ? "cap-hint" : null)" min="1" max="@MaxLength" />)</span>
-        <span class="fixed">.Generate()</span>
+    @*
+        Same two-zone shape as the site's own static sample (LiveHero.astro's .sample: a
+        <pre> then a <figcaption>, on the same tokens) — this is the card the visitor was
+        already looking at, still there, now editable. Matching it isn't decoration: a
+        visitor who clicked "Run" and got a different-looking box just watched the page
+        replace itself rather than come alive.
+    *@
+    <div class="card">
+        <div class="expression">
+            <span class="fixed">Any.String()</span>
+            <span class="link">.StartingWith(<input type="text" @bind:get="_prefix" @bind:set="SetPrefix" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.prefix")' aria-describedby="@(_capHintOwner == "prefix" ? "cap-hint" : null)" size="6" />)</span>
+            <span class="link">.Containing(<input type="text" @bind:get="_fragment" @bind:set="SetFragment" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.contains")' aria-describedby="@(_capHintOwner == "fragment" ? "cap-hint" : null)" size="6" />)</span>
+            <span class="link">.WithLength(<input type="number" @bind:get="_lengthText" @bind:set="SetLengthText" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.length")' aria-describedby="@(_capHintOwner == "length" ? "cap-hint" : null)" min="1" max="@MaxLength" />)</span>
+            <span class="fixed">.Generate()</span>
+        </div>
+
+        <div class="result-bar">
+            @if (_refusal is null) {
+                <span class="arrow" aria-hidden="true">→</span>
+                <output class="value">@_value</output>
+            } else {
+                <output class="refusal">@_refusal</output>
+            }
+        </div>
     </div>
 
     <div class="controls">
@@ -56,12 +74,6 @@
         through aria-describedby, so it says nothing extra until a cap is actually hit.
     *@
     <p id="cap-hint" class="hint" role="status">@_capHint</p>
-
-    @if (_refusal is null) {
-        <output class="value">@_value</output>
-    } else {
-        <output class="refusal">@_refusal</output>
-    }
 </div>
 
 @code {
