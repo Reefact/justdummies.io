@@ -164,13 +164,6 @@ const en = {
     'act3.exit.body':
         'The adapter turns a red test into a draw you can replay. It is the smallest of the three packages. All three are here.',
 
-    /**
-     * The hero's loading contract (§9.8). The mention is required, not optional: a value
-     * with no provenance reads as live, and the first press would then look like a refresh
-     * rather than the moment the library started running in the visitor's browser.
-     */
-    'hero.builtValue': 'produced at build time',
-    'hero.seed': 'seed',
     'hero.run': 'Run it here',
     'hero.loading': 'Loading the .NET runtime…',
     'hero.cost': 'about 1.2 MB, downloaded only if you ask',
@@ -401,8 +394,6 @@ const fr: Record<UiKey, string> = {
     'act3.exit.body':
         "L'adaptateur transforme un test rouge en un tirage que vous rejouez. C'est le plus petit des trois packages. Les trois sont ici.",
 
-    'hero.builtValue': 'produite au build',
-    'hero.seed': 'graine',
     'hero.run': 'Exécuter ici',
     'hero.loading': 'Chargement du runtime .NET…',
     'hero.cost': "environ 1,2 Mo, téléchargés seulement si vous le demandez",

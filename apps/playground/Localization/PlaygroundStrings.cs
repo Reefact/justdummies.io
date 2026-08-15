@@ -64,6 +64,9 @@ public static class PlaygroundStrings {
         ["hero.generate"]       = "Generate",
         ["hero.running"]        = "running here, JustDummies {0}",
         ["hero.lengthRequired"] = "Enter a length to generate.",
+        // Same word as the site's own "sample.produced" (ui.ts) — the label on the result
+        // this widget replaces, so the two read as the same caption.
+        ["hero.produced"]       = "produced",
 
         ["playground.title"] = "Playground",
         ["playground.lede"] =
@@ -111,6 +114,7 @@ public static class PlaygroundStrings {
         ["hero.generate"]       = new("Générer", "Generate"),
         ["hero.running"]        = new("s'exécute ici, JustDummies {0}", "running here, JustDummies {0}"),
         ["hero.lengthRequired"] = new("Indiquez une longueur pour générer.", "Enter a length to generate."),
+        ["hero.produced"]       = new("produit", "produced"),
 
         ["playground.title"] = new("Playground", "Playground"),
         ["playground.lede"] = new(
