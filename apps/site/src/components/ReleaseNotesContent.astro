@@ -70,6 +70,16 @@ function formatDate(iso: string): string {
 
 /** Bullets shown before a section folds the rest under a native, scriptless `<details>`. */
 const VISIBLE_ITEMS = 3;
+
+/**
+ * The changelog prose (`summaryHtml`, every section's `items`) is read from the library's
+ * English CHANGELOG.md files regardless of which locale this page renders — only the
+ * chrome around it (headings, category labels, pills) is translated. Marked `lang="en"`
+ * on the French page so a screen reader switches pronunciation for it rather than reading
+ * English text as French, the same reason LanguageSelector.astro marks each locale name
+ * with its own `lang`. Left off the English page, where it would say nothing new.
+ */
+const sourceLang = locale === 'en' ? undefined : 'en';
 ---
 
 <section class="release-notes" aria-labelledby="release-notes-heading" data-release-tabs>
@@ -121,7 +131,7 @@ const VISIBLE_ITEMS = 3;
                             </div>
 
                             {release.summaryHtml.length > 0 && (
-                                <div class="summary">
+                                <div class="summary" lang={sourceLang}>
                                     {release.summaryHtml.map((paragraph) => (
                                         <p set:html={paragraph} />
                                     ))}
@@ -134,7 +144,7 @@ const VISIBLE_ITEMS = 3;
                                         <span class="dot" aria-hidden="true" />
                                         {categoryLabel(section.label)}
                                     </p>
-                                    <ul class="bullets">
+                                    <ul class="bullets" lang={sourceLang}>
                                         {section.items.slice(0, VISIBLE_ITEMS).map((item) => (
                                             <li set:html={item} />
                                         ))}
@@ -144,7 +154,7 @@ const VISIBLE_ITEMS = 3;
                                             <summary>
                                                 +{section.items.length - VISIBLE_ITEMS} {t('releaseNotes.more')}
                                             </summary>
-                                            <ul class="bullets">
+                                            <ul class="bullets" lang={sourceLang}>
                                                 {section.items.slice(VISIBLE_ITEMS).map((item) => (
                                                     <li set:html={item} />
                                                 ))}

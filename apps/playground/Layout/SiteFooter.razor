@@ -27,6 +27,7 @@
 <footer class="site-footer">
     <nav class="footer-nav" aria-label='@PlaygroundStrings.T(LocaleState.Current, "footer.nav")'>
         <a href="@AboutHref">@PlaygroundStrings.T(LocaleState.Current, "footer.about")</a>
+        <a href="@ReleaseNotesHref">@PlaygroundStrings.T(LocaleState.Current, "footer.releaseNotes")</a>
         <a href="@PrivacyHref">@PlaygroundStrings.T(LocaleState.Current, "footer.privacy")</a>
         <a href="@RepositoryUrl" target="_blank" rel="noopener noreferrer">
             @PlaygroundStrings.T(LocaleState.Current, "footer.repository")
@@ -44,6 +45,7 @@
     private const string RepositoryUrl = "https://github.com/Reefact/justdummies.io";
 
     private string AboutHref => LocaleState.Current == Locale.Fr ? "/fr/about/" : "/about/";
+    private string ReleaseNotesHref => LocaleState.Current == Locale.Fr ? "/fr/release-notes/" : "/release-notes/";
     private string PrivacyHref => LocaleState.Current == Locale.Fr ? "/fr/privacy/" : "/privacy/";
 
 }
