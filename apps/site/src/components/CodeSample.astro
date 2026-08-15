@@ -295,9 +295,18 @@ const printed: string = ran === undefined ? '' : testRun(ran);
     }
 
     /* Clipped by the script, never here — see its note. The transition is on the property the
-       script sets, so opening and closing both read as the block growing rather than jumping. */
+       script sets, so opening and closing both read as the block growing rather than jumping.
+
+       `overflow-anchor: none` turns off the browser's own scroll anchoring for this block —
+       the heuristic that already tries to keep a reader's position stable when content above
+       them resizes, which is exactly what the click handler's `scrollBy` does on purpose and
+       by an exact amount. Left on, the two correct the same shrink independently, and which
+       one's layout pass lands first is a race: the button read this repository's own browser
+       suite anywhere from 0 to several hundred pixels off, on no schedule a retry could rely
+       on. One correction, the deliberate one, is what a reader should get. */
     [data-code] {
         overflow-y: hidden;
+        overflow-anchor: none;
         transition: max-height var(--jd-duration-base) var(--jd-ease);
     }
 
