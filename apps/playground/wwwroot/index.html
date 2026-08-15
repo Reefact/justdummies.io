@@ -14,7 +14,16 @@
       `PlaygroundStrings.cs` also knows, and only for as long as C# is not running yet.
     -->
     <script>
-        document.documentElement.lang = /(?:^|[?&])lang=fr(?:&|$)/.test(location.search) ? 'fr' : 'en';
+        document.documentElement.lang = (function () {
+            // Mirrors PlaygroundStrings.Parse exactly (trim, lowercase, "fr" or nothing else) —
+            // ?lang=FR or a value carrying stray whitespace must resolve to French here the same
+            // way it does once C# reads it, or this script fixes the mismatch it exists to
+            // remove in one direction and reintroduces it in another.
+            var match = /(?:^|[?&])lang=([^&]*)/.exec(location.search);
+            var value = match ? decodeURIComponent(match[1]).trim().toLowerCase() : '';
+
+            return value === 'fr' ? 'fr' : 'en';
+        })();
     </script>
     <title>Playground — JustDummies</title>
     <!--
@@ -22,6 +31,15 @@
       This must stay in step with StaticWebAssetBasePath in the project file.
     -->
     <base href="/playground/" />
+    <!--
+      One page, not two: `?lang=` picks which language this same document speaks in, the way a
+      user preference would, not a second translated page living at its own address the way
+      /fr/ does on the site (§6.5). So this names the query-less address as the one to index,
+      rather than publishing hreflang alternates there are no distinct URLs to point them at —
+      an <a> pointing here already carries the reader's locale in the query string; a search
+      engine does not need a second copy of that fact.
+    -->
+    <link rel="canonical" href="https://justdummies.io/playground/" />
     <link rel="preload" id="webassembly" />
     <link rel="stylesheet" href="css/tokens.css" />
     <link rel="stylesheet" href="css/app.css" />

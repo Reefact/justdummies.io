@@ -2,6 +2,7 @@
 @layout BareLayout
 @inject IJSRuntime JS
 @inject LocaleState LocaleState
+@using System.Globalization
 @using System.Reflection
 @using JustDummies
 
@@ -37,9 +38,9 @@
 <div class="hero-widget">
     <div class="expression">
         <span class="fixed">Any.String()</span>
-        <span class="link">.StartingWith(<input type="text" @bind:get="_prefix" @bind:set="SetPrefix" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.prefix")' aria-describedby="cap-hint" size="6" />)</span>
-        <span class="link">.Containing(<input type="text" @bind:get="_fragment" @bind:set="SetFragment" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.contains")' aria-describedby="cap-hint" size="6" />)</span>
-        <span class="link">.WithLength(<input type="number" @bind:get="_length" @bind:set="SetLength" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.length")' aria-describedby="cap-hint" min="1" max="@MaxLength" />)</span>
+        <span class="link">.StartingWith(<input type="text" @bind:get="_prefix" @bind:set="SetPrefix" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.prefix")' aria-describedby="@(_capHintOwner == "prefix" ? "cap-hint" : null)" size="6" />)</span>
+        <span class="link">.Containing(<input type="text" @bind:get="_fragment" @bind:set="SetFragment" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.contains")' aria-describedby="@(_capHintOwner == "fragment" ? "cap-hint" : null)" size="6" />)</span>
+        <span class="link">.WithLength(<input type="number" @bind:get="_lengthText" @bind:set="SetLengthText" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.length")' aria-describedby="@(_capHintOwner == "length" ? "cap-hint" : null)" min="1" max="@MaxLength" />)</span>
         <span class="fixed">.Generate()</span>
     </div>
 
@@ -71,21 +72,31 @@
     /// <summary>What this playground itself allows in <c>.StartingWith(...)</c>/<c>.Containing(...)</c>.</summary>
     private const int TextLimit = 10;
 
-    private string _prefix   = "ORD-";
-    private string _fragment = "2026";
-    private int    _length   = 12;
+    private string _prefix     = "ORD-";
+    private string _fragment   = "2026";
+    private string _lengthText = "12";
+    private int    _length     = 12;
 
     private string  _value   = string.Empty;
     private string? _refusal;
 
     /// <summary>
-    ///     Set the instant a field's setter clamps or truncates a value, cleared on the next
-    ///     edit that does not — a transient "you just hit a wall" cue, not tied to which field
-    ///     hit it. Independent of <see cref="_refusal" />: this is the playground's own rule,
-    ///     never the library's, and it is live rather than waiting for Generate (see the
-    ///     comment at the top of this file for why it cannot wait).
+    ///     Set the instant a field's setter clamps or truncates a value, cleared once the field
+    ///     that set it — <see cref="_capHintOwner" /> — is edited back within bounds. A
+    ///     transient "you just hit a wall" cue, independent of <see cref="_refusal" />: this is
+    ///     the playground's own rule, never the library's, and it is live rather than waiting
+    ///     for Generate (see the comment at the top of this file for why it cannot wait).
     /// </summary>
     private string? _capHint;
+
+    /// <summary>
+    ///     Which field <see cref="_capHint" /> is currently about — <c>"prefix"</c>,
+    ///     <c>"fragment"</c> or <c>"length"</c> — so only that field's <c>aria-describedby</c>
+    ///     points at it. All three inputs pointing at one shared hint meant tabbing from an
+    ///     over-length number straight to an untouched text field announced a 64-character
+    ///     cap on a field that actually caps at 10.
+    /// </summary>
+    private string? _capHintOwner;
 
     private static string LibraryVersion { get; } = ReadLibraryVersion();
 
@@ -145,34 +156,13 @@
     }
 
     private Task SetPrefix(string value) {
-        _prefix = Cap(value, TextLimit, "limit.text", TextLimit);
+        _prefix = Cap(value, TextLimit, "prefix");
 
         return Task.CompletedTask;
     }
 
     private Task SetFragment(string value) {
-        _fragment = Cap(value, TextLimit, "limit.text", TextLimit);
-
-        return Task.CompletedTask;
-    }
-
-    /// <summary>
-    ///     The number input's setter: every keystroke past 64 is clamped immediately, and the
-    ///     first one that goes too far sets <see cref="_capHint" /> instead of silently
-    ///     substituting a value the visitor never asked for. Typing a third digit past "64"
-    ///     changes nothing visible after that — the value is already 64, and re-assigning 64
-    ///     does not move the caret past it — which is the whole of what "cannot type past the
-    ///     limit" means for a plain <c>&lt;input type="number"&gt;</c>: its own `max` attribute
-    ///     only affects the spinner arrows, never the keyboard.
-    /// </summary>
-    private Task SetLength(int value) {
-        if (value > MaxLength) {
-            _capHint = PlaygroundStrings.T(LocaleState.Current, "limit.length", MaxLength);
-        } else {
-            _capHint = null;
-        }
-
-        _length = Math.Clamp(value, 0, MaxLength);
+        _fragment = Cap(value, TextLimit, "fragment");
 
         return Task.CompletedTask;
     }
@@ -187,18 +177,85 @@
     ///     reaches Blazor's <c>oninput</c>, so this method never saw more than the limit and
     ///     never had anything to explain — the truncation worked, silently, which is exactly
     ///     the defect this method exists to fix. This is the sole enforcement now, the same
-    ///     way <see cref="SetLength" /> already was the sole enforcement for the number field.
+    ///     way <see cref="SetLengthText" /> already is the sole enforcement for the number field.
     /// </summary>
-    private string Cap(string value, int limit, string hintKey, int hintArg) {
+    private string Cap(string value, int limit, string owner) {
         if (value.Length > limit) {
-            _capHint = PlaygroundStrings.T(LocaleState.Current, hintKey, hintArg);
+            SetHint(owner, PlaygroundStrings.T(LocaleState.Current, "limit.text", limit));
 
             return value[..limit];
         }
 
-        _capHint = null;
+        ClearHint(owner);
 
         return value;
+    }
+
+    /// <summary>
+    ///     The number input's setter, bound to the raw text rather than to <c>int</c> directly.
+    ///
+    ///     A first version bound <c>int</c>, and Blazor's numeric binding only calls the setter
+    ///     when the raw text parses as one: a pasted value outside <see cref="int" />'s range, or
+    ///     valid <c>&lt;input type="number"&gt;</c> syntax an <c>int</c> cannot represent —
+    ///     <c>1e3</c>, a decimal — never reached this method at all, so neither the cap nor its
+    ///     explanation ever fired for exactly the values a plain keystroke cap could not catch
+    ///     either. <see cref="double" /> parses everything the input's own syntax allows, so
+    ///     there is somewhere left to enforce the limit against.
+    ///
+    ///     Every keystroke past 64 is clamped immediately, and the first one that goes too far
+    ///     sets <see cref="_capHint" /> instead of silently substituting a value the visitor
+    ///     never asked for. Typing a third digit past "64" changes nothing visible after that —
+    ///     the value is already 64, and re-assigning 64 does not move the caret past it — which
+    ///     is the whole of what "cannot type past the limit" means for a plain
+    ///     <c>&lt;input type="number"&gt;</c>: its own `max` attribute only affects the spinner
+    ///     arrows, never the keyboard.
+    /// </summary>
+    private Task SetLengthText(string value) {
+        if (!double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out double parsed)) {
+            // Not parseable at all — an empty field mid-edit, most often — so nothing this
+            // playground enforces has anything to say about it, and the raw text is left
+            // exactly as typed rather than fought.
+            _lengthText = value;
+
+            return Task.CompletedTask;
+        }
+
+        double truncated = Math.Truncate(parsed);
+
+        if (truncated > MaxLength) {
+            // The clamped value is what gets displayed back, not the raw text — otherwise a
+            // paste or a third digit would still *show* past 64 even though _length itself
+            // stayed capped, which is the visible half of "cannot type past the limit" this
+            // setter exists to hold onto.
+            SetHint("length", PlaygroundStrings.T(LocaleState.Current, "limit.length", MaxLength));
+            _length     = MaxLength;
+            _lengthText = MaxLength.ToString(CultureInfo.InvariantCulture);
+        } else {
+            ClearHint("length");
+            _length     = (int)Math.Clamp(truncated, 0, MaxLength);
+            _lengthText = value;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private void SetHint(string owner, string message) {
+        _capHint      = message;
+        _capHintOwner = owner;
+    }
+
+    /// <summary>
+    ///     Only clears <see cref="_capHint" /> when <paramref name="owner" /> is the field that
+    ///     set it — an edit to one field must not erase a still-true explanation of why
+    ///     another one changed.
+    /// </summary>
+    private void ClearHint(string owner) {
+        if (_capHintOwner != owner) {
+            return;
+        }
+
+        _capHint      = null;
+        _capHintOwner = null;
     }
 
     private static string ReadLibraryVersion() {
