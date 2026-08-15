@@ -1,0 +1,49 @@
+@inherits LocalizedComponent
+@inject IJSRuntime JS
+@using JustDummies.Playground.Localization
+
+@*
+    Generate/regenerate, copy the full code, and show the result — the value or the
+    library's own refusal, displayed verbatim and never neutralised (specification §9.9).
+    The refusal text itself (Refusal) is the library's own wording and is never translated;
+    every other string here is this component's own and follows the site's i18n rules.
+*@
+
+<div class="generate-controls">
+    <button type="button" class="generate" disabled="@(!CanGenerate)" @onclick="HandleGenerate">
+        @(HasResult ? PlaygroundStrings.T(LocaleState.Current, "playground.generateAgain") : PlaygroundStrings.T(LocaleState.Current, "playground.generate"))
+    </button>
+
+    <button type="button" class="copy" disabled="@(!CanGenerate)" @onclick="HandleCopy">
+        @PlaygroundStrings.T(LocaleState.Current, "playground.copyCode")
+    </button>
+
+    <span class="visually-hidden" role="status" aria-live="polite">@_copyStatus</span>
+
+    @if (Refusal is not null) {
+        <output class="refusal">@Refusal</output>
+    } else if (HasResult) {
+        <output class="value">@Value</output>
+    }
+</div>
+
+@code {
+
+    [Parameter, EditorRequired] public bool CanGenerate { get; set; }
+    [Parameter] public object? Value { get; set; }
+    [Parameter] public string? Refusal { get; set; }
+    [Parameter, EditorRequired] public string CodeText { get; set; } = "";
+    [Parameter, EditorRequired] public EventCallback OnGenerate { get; set; }
+
+    private string _copyStatus = "";
+
+    private bool HasResult => Value is not null || Refusal is not null;
+
+    private Task HandleGenerate() => OnGenerate.InvokeAsync();
+
+    private async Task HandleCopy() {
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", CodeText);
+        _copyStatus = PlaygroundStrings.T(LocaleState.Current, "playground.copied");
+    }
+
+}

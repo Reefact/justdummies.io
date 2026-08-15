@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The build-time bridge between the playground and the library it demonstrates
+    (specification §10.4). `Generated/` holds two files produced by
+    tools/playground-catalogue from the referenced JustDummies assembly's metadata:
+    plain descriptors that drive the UI, and a dispatch table of ordinary, statically
+    typed call sites that execute a chosen chain. Nothing here reflects at runtime —
+    the trimmer sees real call sites and keeps them (§10.8).
+
+    This project is never published on its own; it exists to be referenced by
+    apps/playground. Its own dependency is JustDummies itself, pinned centrally like
+    everywhere else, because the dispatch table's generated lambdas call the real
+    library types by name.
+  -->
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>JustDummies.Playground.Catalogue</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="JustDummies" />
+  </ItemGroup>
+
+</Project>

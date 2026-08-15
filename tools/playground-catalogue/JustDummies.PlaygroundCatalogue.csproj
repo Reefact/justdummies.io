@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Reflects over the referenced JustDummies assembly and its shipped XML documentation,
+    and emits the two files packages/playground-catalogue/Generated depends on
+    (specification §10.4). This project is the only place in the repository that reflects
+    over the library — it runs at build time, on the .NET SDK, never in the browser, so
+    §10.8's "no reflection in the playground's own code" never applies to it.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>JustDummies.PlaygroundCatalogueGenerator</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- System.Text.Json ships in the net10.0 shared framework; no separate package needed.
+         GeneratePathProperty exposes $(PkgJustDummies), the package's NuGet cache folder, so the
+         XML doc file next to the assembly can be copied to output below — NuGet does not copy a
+         package's .xml doc file to a consuming project's output by default, only its .dll. -->
+    <PackageReference Include="JustDummies" GeneratePathProperty="true" />
+  </ItemGroup>
+
+  <!-- Makes JustDummies.xml resolvable next to JustDummies.dll at runtime (typeof(Any).Assembly.Location's
+       directory), the same way Program.cs expects to find it. Picks the doc file from the same TFM
+       folder NuGet actually resolved the assembly from (net8.0, for a net10.0 project) — the library
+       ships a second, narrower netstandard2.0 build whose doc file lists fewer members (it predates
+       System.Int128/Half/DateOnly), and copying that one instead would silently mismatch the
+       assembly actually loaded at runtime. -->
+  <Target Name="CopyJustDummiesXmlDoc" AfterTargets="Build">
+    <PropertyGroup>
+      <_JustDummiesXmlDocSource Condition="Exists('$(PkgJustDummies)\lib\net8.0\JustDummies.xml')">$(PkgJustDummies)\lib\net8.0\JustDummies.xml</_JustDummiesXmlDocSource>
+      <_JustDummiesXmlDocSource Condition="'$(_JustDummiesXmlDocSource)' == ''">$(PkgJustDummies)\lib\netstandard2.0\JustDummies.xml</_JustDummiesXmlDocSource>
+    </PropertyGroup>
+    <Copy SourceFiles="$(_JustDummiesXmlDocSource)" DestinationFolder="$(OutDir)" Condition="Exists('$(_JustDummiesXmlDocSource)')" />
+  </Target>
+
+  <ItemGroup>
+    <!-- Reused so the generator's notion of "a parameter type it can emit" never drifts from the
+         playground's own parser (ArgumentParsing.KnownTypeKeys), and so it can emit MemberDescriptor/
+         ChainStep/ChainResult literals directly rather than duplicating their shape. -->
+    <ProjectReference Include="..\..\packages\playground-catalogue\JustDummies.Playground.Catalogue.csproj" />
+  </ItemGroup>
+
+</Project>

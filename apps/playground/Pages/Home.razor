@@ -1,7 +1,8 @@
 @page "/"
 @inherits LocalizedComponent
 @using System.Reflection
-@using JustDummies
+@using JustDummies.Playground.Catalogue
+@using JustDummies.Playground.Localization
 
 <PageTitle>@PageTitleText</PageTitle>
 
@@ -11,54 +12,202 @@
     @((MarkupString)PlaygroundStrings.T(LocaleState.Current, "playground.lede"))
 </p>
 
-<div class="expression">
-    <span class="fixed">Any.</span><span class="editable">String().NonEmpty().StartingWith("ORD-").WithMaxLength(20)</span><span class="fixed">.Generate();</span>
+<div class="chain">
+    <span class="any-prefix">Any.</span>
+    @for (var i = 0; i < _links.Count; i++) {
+        var index = i;
+        <ChainLink LinkIndex="index"
+                   Prefix="@(index == 0 ? "" : ".")"
+                   Options="@OptionsFor(index)"
+                   State="_links[index]"
+                   Error="@_links[index].Error"
+                   OnMethodChosen="HandleMethodChosen"
+                   OnArgumentChanged="HandleArgumentChanged"
+                   OnDelete="HandleDelete" />
+    }
 </div>
 
-<button class="generate" @onclick="Generate">@PlaygroundStrings.T(LocaleState.Current, "playground.generateAgain")</button>
-
-<output class="value" id="generated-value">@_value</output>
+<GenerateControls
+    CanGenerate="_canGenerate"
+    Value="@_generatedValue"
+    Refusal="@_refusal"
+    CodeText="@CodeText"
+    OnGenerate="HandleGenerate" />
 
 <p class="version">@PlaygroundStrings.T(LocaleState.Current, "playground.generatedBy", LibraryVersion)</p>
 
 @code {
 
-    private string _value = string.Empty;
+    private readonly List<ChainLinkState> _links = new() { new ChainLinkState() };
+
+    private object? _currentValue;
+    private string _currentTypeKey = PlaygroundCatalogue.EntryPointReceiver;
+    private object? _generatedValue;
+    private string? _refusal;
+    private bool _canGenerate;
 
     private string PageTitleText => $"{PlaygroundStrings.T(LocaleState.Current, "playground.title")} — JustDummies";
 
     /// <summary>
     ///     The version of the library actually loaded, read from the assembly rather than written
-    ///     beside it. The specification requires the playground to show which version it runs
-    ///     (§11.9); reading it from the assembly is what stops that claim from going stale on the
-    ///     day the package reference moves and a hard-coded string does not.
+    ///     beside it. The specification requires the playground to show which version it runs;
+    ///     reading it from the assembly is what stops that claim from going stale on the day the
+    ///     package reference moves and a hard-coded string does not.
     /// </summary>
     private static string LibraryVersion { get; } = ReadLibraryVersion();
 
     protected override void OnInitialized() {
         base.OnInitialized();
-        Generate();
+
+        // Errors already on screen were resolved in whatever locale was current when the chain
+        // was last replayed — a language switch redraws every PlaygroundStrings.T(...) call in
+        // this component's own markup for free, but link.Error and _refusal are plain strings
+        // captured at that moment, not live lookups. Recompute() re-resolves them.
+        LocaleState.Changed += HandleLocaleChanged;
     }
 
-    private void Generate() {
-        _value = Any.String()
-                    .NonEmpty()
-                    .StartingWith("ORD-")
-                    .WithMaxLength(20)
-                    .Generate();
+    protected override void OnDispose() {
+        LocaleState.Changed -= HandleLocaleChanged;
     }
+
+    private void HandleLocaleChanged() {
+        Recompute();
+    }
+
+    private IReadOnlyList<MemberDescriptor> OptionsFor(int index) {
+        if (index == 0) {
+            return PlaygroundCatalogue.EntryPoints;
+        }
+
+        var previous = _links[index - 1].Chosen;
+        if (previous is null) {
+            return Array.Empty<MemberDescriptor>();
+        }
+
+        // Generate() is offered separately, by the persistent control below the chain
+        // (specification §10.2's "regenerate immediately"), not as a chain link the visitor
+        // picks from the same select as a constraint.
+        return PlaygroundCatalogue.StepsFor(previous.ReturnTypeKey).Where(m => m.MethodName != "Generate").ToList();
+    }
+
+    private void HandleMethodChosen((int LinkIndex, MemberDescriptor Chosen) e) {
+        _links[e.LinkIndex].ChooseMethod(e.Chosen);
+
+        if (_links.Count > e.LinkIndex + 1) {
+            _links.RemoveRange(e.LinkIndex + 1, _links.Count - e.LinkIndex - 1);
+        }
+
+        _links.Add(new ChainLinkState());
+        Recompute();
+    }
+
+    private void HandleArgumentChanged((int LinkIndex, int ArgumentIndex, string Value) e) {
+        _links[e.LinkIndex].SetArgument(e.ArgumentIndex, e.Value);
+        Recompute();
+    }
+
+    private void HandleDelete(int linkIndex) {
+        _links.RemoveRange(linkIndex, _links.Count - linkIndex);
+        _links.Add(new ChainLinkState());
+        Recompute();
+    }
+
+    private void HandleGenerate() {
+        if (!_canGenerate) {
+            return;
+        }
+
+        var result = PlaygroundDispatch.Invoke($"{_currentTypeKey}::Generate#0", _currentValue, Array.Empty<string>());
+        if (result.HasError) {
+            _refusal        = ResolveError(result);
+            _generatedValue = null;
+        } else {
+            _generatedValue = result.Value;
+            _refusal        = null;
+        }
+    }
+
+    /// <summary>
+    ///     Replays the chosen chain from the top on every change — the same pattern
+    ///     Pages/Hero.razor uses for its fixed-shape chain, generalised to a variable-length
+    ///     one. Each step's own error (an unparsable argument, or the library's own refusal at
+    ///     that step) is attached to that step so it can be shown next to the field that caused
+    ///     it, per specification §13.4.
+    /// </summary>
+    private void Recompute() {
+        object? current  = null;
+        var     typeKey   = PlaygroundCatalogue.EntryPointReceiver;
+        var     stopped   = false;
+
+        foreach (var link in _links) {
+            link.Error = null;
+
+            if (link.Chosen is null || stopped) {
+                continue;
+            }
+
+            var result = PlaygroundDispatch.Invoke(link.Chosen.Key, current, link.Arguments);
+            current  = result.Value;
+            typeKey  = result.TypeKey;
+
+            if (result.HasError) {
+                link.Error = ResolveError(result);
+                stopped    = true;
+            }
+        }
+
+        _currentValue  = current;
+        _currentTypeKey = typeKey;
+        _canGenerate    = !stopped && _links.Any(l => l.Chosen is not null);
+        _generatedValue = null;
+        _refusal        = null;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    ///     A step's failure is one of two distinct kinds (see <see cref="ChainResult" />): an
+    ///     argument the visitor typed that this playground could not parse — the site's own
+    ///     text, resolved through <c>PlaygroundStrings</c> in the current locale — or the
+    ///     library's own refusal, shown exactly as it worded it, in every locale (specification
+    ///     §6.4/§9.9).
+    /// </summary>
+    private string ResolveError(ChainResult result) =>
+        result.ArgumentErrorKey is { } key
+            ? PlaygroundStrings.T(LocaleState.Current, "argument.template", PlaygroundStrings.T(LocaleState.Current, key))
+            : result.LibraryRefusalText!;
+
+    private string CodeText {
+        get {
+            var chosen = _links.Where(l => l.Chosen is not null).ToList();
+            if (chosen.Count == 0) {
+                return "Any.Generate();";
+            }
+
+            var steps = chosen.Select(l => {
+                var args = l.Chosen!.Parameters.Select((p, i) => FormatArgumentLiteral(p.TypeKey, l.Argument(i)));
+                return $"{l.Chosen!.MethodName}({string.Join(", ", args)})";
+            });
+
+            return "Any." + string.Join(".", steps) + ".Generate();";
+        }
+    }
+
+    /// <summary>Formats one argument the way it would need to read in real C#, so "Copy code"
+    /// produces code that actually compiles rather than the raw text an input held.</summary>
+    private static string FormatArgumentLiteral(string typeKey, string raw) => typeKey switch {
+        ArgumentParsing.TypeKeyString => $"\"{raw.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"",
+        ArgumentParsing.TypeKeyChar   => $"'{raw.Replace("'", "\\'")}'",
+        _                             => raw,
+    };
 
     private static string ReadLibraryVersion() {
-        Assembly                             assembly     = typeof(Any).Assembly;
+        Assembly                              assembly      = typeof(JustDummies.Any).Assembly;
         AssemblyInformationalVersionAttribute? informational = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
-        string                               version      = informational?.InformationalVersion
-                                                            ?? assembly.GetName().Version?.ToString()
-                                                            ?? "unknown";
+        string                                version       = informational?.InformationalVersion
+                                                              ?? assembly.GetName().Version?.ToString()
+                                                              ?? "unknown";
 
-        // An informational version often carries a "+<commit sha>" suffix. The reader wants the
-        // version, not the build it came from.
         int metadata = version.IndexOf('+');
-
         return metadata < 0 ? version : version.Substring(0, metadata);
     }
 

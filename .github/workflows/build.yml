@@ -78,8 +78,8 @@ jobs:
       # stays honest.
       - name: Check the generated content is committed and current
         run: |
-          if ! git diff --exit-code -- apps/site/src/generated/; then
-            echo "::error title=Generated content is stale::Run 'pnpm build' and commit apps/site/src/generated/."
+          if ! git diff --exit-code -- apps/site/src/generated/ packages/playground-catalogue/Generated/; then
+            echo "::error title=Generated content is stale::Run 'pnpm build' and commit apps/site/src/generated/ and packages/playground-catalogue/Generated/."
             exit 1
           fi
 
