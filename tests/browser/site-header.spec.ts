@@ -24,6 +24,8 @@ const PAGES: readonly string[] = [
     '/fr/about',
     '/privacy',
     '/fr/privacy',
+    '/why-justdummies',
+    '/fr/why-justdummies',
     '/404.html',
     '/fr/404.html',
 ];

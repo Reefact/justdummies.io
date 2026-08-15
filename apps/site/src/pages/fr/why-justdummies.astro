@@ -1,0 +1,12 @@
+---
+import WhyJustDummiesContent from '../../components/WhyJustDummiesContent.astro';
+import Page from '../../layouts/Page.astro';
+import { useTranslations } from '../../i18n/ui';
+import { site } from '../../site';
+
+const t = useTranslations('fr');
+---
+
+<Page title={`${t('why.heading')} — ${site.name}`} description={t('why.meta.description')}>
+    <WhyJustDummiesContent />
+</Page>

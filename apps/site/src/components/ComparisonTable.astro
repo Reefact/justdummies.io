@@ -1,0 +1,360 @@
+---
+/**
+ * The comparative positioning table (§11): two renders of one data source
+ * (`../comparison.ts`), plus a `<details>` card set for mobile — "the duel, the matrix,
+ * and the mobile cards are three renders of the same source" (§11.8's closing line).
+ *
+ * NO JAVASCRIPT, NO DEAD CONTROL (ADR-0004, same rule `InstallTabs` and
+ * `LanguageSelector` follow). What is on disk is the **matrix**: every column, every
+ * card, all visible — a complete, honest answer with nothing that needs a script to
+ * work. The `<select>` and the mode toggle are marked `hidden` in the markup and are
+ * only revealed by the script below, once it has proved it can act. A reader without
+ * scripting never sees a control that would have done nothing.
+ *
+ * DUEL BECOMES THE DEFAULT ONCE SCRIPT RUNS (§11.5: "mode principal, le duel"). The
+ * script narrows the same table and the same cards down to JustDummies plus one
+ * competitor, and offers a way back to the full matrix — it never builds a second copy
+ * of the content to do it. Every element the matrix already tags with `data-competitor`
+ * is hidden or shown by its own `hidden` property; the script's whole job is deciding
+ * which one that is.
+ */
+import { localeFromPath } from '../i18n/routing';
+import { useTranslations } from '../i18n/ui';
+import { site } from '../site';
+import { axes, competitors, justDummies, type Cell, type Competitor } from '../comparison';
+
+const t = useTranslations(localeFromPath(Astro.url.pathname));
+
+function nameOf(entry: Competitor): string {
+    return entry.nameKey ? t(entry.nameKey) : (entry.name as string);
+}
+
+function ratingLabel(rating: Cell['rating']): string {
+    if (rating === 'core') {
+        return t('why.rating.core');
+    }
+
+    return rating === 'possible' ? t('why.rating.possible') : t('why.rating.outOfScope');
+}
+---
+
+<div class="comparison" data-comparison>
+    <div class="controls" data-duel-controls hidden>
+        <label for="compare-with">{t('why.duel.label')}</label>
+        <select id="compare-with" data-compare-select>
+            {competitors.map((entry: Competitor) => <option value={entry.id}>{nameOf(entry)}</option>)}
+        </select>
+        <button type="button" data-mode-toggle data-label-duel={t('why.duel.showDuel')} data-label-matrix={t('why.duel.showMatrix')}>
+            {t('why.duel.showMatrix')}
+        </button>
+    </div>
+
+    <table>
+        <caption>{t('why.table.caption')}</caption>
+        <thead>
+            <tr>
+                <th scope="col">{t('why.table.axisHeader')}</th>
+                <th scope="col">{site.name}</th>
+                {competitors.map((entry: Competitor) => (
+                    <th scope="col" data-competitor={entry.id}>
+                        {nameOf(entry)}
+                    </th>
+                ))}
+            </tr>
+        </thead>
+        <tbody>
+            {axes.map((axis) => {
+                const jd: Cell = justDummies[axis.id];
+
+                return (
+                    <tr>
+                        <th scope="row">{t(axis.labelKey)}</th>
+                        <td data-rating={jd.rating}>
+                            <span class="rating">{ratingLabel(jd.rating)}</span>
+                            {jd.noteKey && <p class="note">{t(jd.noteKey)}</p>}
+                        </td>
+                        {competitors.map((entry: Competitor) => {
+                            const cell: Cell = entry.ratings[axis.id];
+
+                            return (
+                                <td data-competitor={entry.id} data-rating={cell.rating}>
+                                    <span class="rating">{ratingLabel(cell.rating)}</span>
+                                    {cell.noteKey && <p class="note">{t(cell.noteKey)}</p>}
+                                </td>
+                            );
+                        })}
+                    </tr>
+                );
+            })}
+        </tbody>
+    </table>
+
+    {/*
+      The matrix's mobile form: one expandable card per competitor rather than the table
+      shrunk to fit — §11.5 asks for a replacement, not a smaller version of the same
+      layout, so this is a second view of the same arrays rather than a CSS reflow of
+      the table above.
+    */}
+    <div class="cards">
+        {competitors.map((entry: Competitor) => (
+            <details data-competitor={entry.id}>
+                <summary>{nameOf(entry)}</summary>
+                <dl>
+                    {axes.map((axis) => {
+                        const jd: Cell = justDummies[axis.id];
+                        const theirs: Cell = entry.ratings[axis.id];
+
+                        return (
+                            <div class="axis-row">
+                                <dt>{t(axis.labelKey)}</dt>
+                                <dd data-rating={jd.rating}>
+                                    <span class="who">{site.name}</span>
+                                    <span class="rating">{ratingLabel(jd.rating)}</span>
+                                    {jd.noteKey && <p class="note">{t(jd.noteKey)}</p>}
+                                </dd>
+                                <dd data-rating={theirs.rating}>
+                                    <span class="who">{nameOf(entry)}</span>
+                                    <span class="rating">{ratingLabel(theirs.rating)}</span>
+                                    {theirs.noteKey && <p class="note">{t(theirs.noteKey)}</p>}
+                                </dd>
+                            </div>
+                        );
+                    })}
+                </dl>
+            </details>
+        ))}
+    </div>
+</div>
+
+<script>
+    /**
+     * Enhances the static matrix into a duel, and only once this runs (ADR-0004).
+     *
+     * Every element the matrix tags with `data-competitor` — a header cell, a body
+     * cell, a mobile card — is hidden or shown by setting its own `hidden` property,
+     * the same mechanism `InstallTabs` and `CopyableCommand` already use. That is what
+     * keeps a `<td>` a table cell and a `<details>` a block once it reappears: `hidden`
+     * removed is the element's own default display, never a value this script has to
+     * know or restate (base.css's `[hidden] { display: none !important }` is the only
+     * other half this relies on).
+     */
+    for (const root of document.querySelectorAll<HTMLElement>('[data-comparison]')) {
+        const controls: HTMLElement | null = root.querySelector('[data-duel-controls]');
+        const select: HTMLSelectElement | null = root.querySelector('[data-compare-select]');
+        const toggle: HTMLButtonElement | null = root.querySelector('[data-mode-toggle]');
+        const entries: HTMLElement[] = Array.from(root.querySelectorAll<HTMLElement>('[data-competitor]'));
+
+        if (controls === null || select === null || toggle === null || entries.length === 0) {
+            continue;
+        }
+
+        let duel = true;
+
+        function apply(): void {
+            for (const entry of entries) {
+                entry.hidden = duel && entry.dataset.competitor !== select!.value;
+            }
+
+            // The label names the action the next click takes, so it is the whole of
+            // what tells a reader which mode they are in — no separate `aria-pressed`,
+            // which describes a control whose own label stays put.
+            toggle!.textContent = duel ? (toggle!.dataset.labelMatrix ?? '') : (toggle!.dataset.labelDuel ?? '');
+        }
+
+        select.addEventListener('change', apply);
+        toggle.addEventListener('click', () => {
+            duel = !duel;
+            apply();
+        });
+
+        apply();
+        controls.hidden = false;
+    }
+</script>
+
+<style>
+    .comparison {
+        max-width: 60rem;
+    }
+
+    .controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--jd-space-3);
+        margin: 0 0 var(--jd-space-4);
+        font-size: var(--jd-text-sm);
+    }
+
+    .controls label {
+        color: var(--jd-text-muted);
+    }
+
+    .controls select {
+        font: inherit;
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-primary);
+        background: var(--jd-surface);
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-sm);
+        padding: var(--jd-space-1) var(--jd-space-2);
+    }
+
+    .controls select:focus-visible {
+        outline: 2px solid var(--jd-accent);
+        outline-offset: 2px;
+    }
+
+    .controls button {
+        font: inherit;
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+        background: transparent;
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-sm);
+        padding: var(--jd-space-1) var(--jd-space-3);
+        cursor: pointer;
+        margin-inline-start: auto;
+    }
+
+    .controls button:hover {
+        color: var(--jd-text-primary);
+        border-color: var(--jd-accent);
+    }
+
+    .controls button:focus-visible {
+        outline: 2px solid var(--jd-accent);
+        outline-offset: 2px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    caption {
+        text-align: left;
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+        margin: 0 0 var(--jd-space-3);
+    }
+
+    th,
+    td {
+        text-align: left;
+        vertical-align: top;
+        padding: var(--jd-space-2) var(--jd-space-3);
+        border-bottom: 1px solid var(--jd-border);
+    }
+
+    thead th {
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+        font-weight: 600;
+    }
+
+    /* JustDummies' own column, the one that never hides in duel mode. */
+    thead th:nth-child(2) {
+        color: var(--jd-text-primary);
+    }
+
+    tbody th {
+        font-weight: 400;
+        color: var(--jd-text-primary);
+        white-space: nowrap;
+    }
+
+    .rating {
+        display: block;
+        font-size: var(--jd-text-sm);
+    }
+
+    td[data-rating='core'] .rating {
+        color: var(--jd-text-primary);
+        font-weight: 600;
+    }
+
+    td[data-rating='out-of-scope'] .rating {
+        color: var(--jd-text-muted);
+    }
+
+    .note {
+        margin: var(--jd-space-1) 0 0;
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+    }
+
+    /* The matrix's mobile form is built but not shown until the table gives way to it. */
+    .cards {
+        display: none;
+    }
+
+    details {
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-md);
+        padding: var(--jd-space-3) var(--jd-space-4);
+        margin: 0 0 var(--jd-space-3);
+    }
+
+    summary {
+        cursor: pointer;
+        font-weight: 600;
+        color: var(--jd-text-primary);
+    }
+
+    summary:focus-visible {
+        outline: 2px solid var(--jd-accent);
+        outline-offset: 2px;
+    }
+
+    dl {
+        margin: var(--jd-space-3) 0 0;
+    }
+
+    .axis-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--jd-space-2) var(--jd-space-4);
+        padding: var(--jd-space-3) 0;
+        border-top: 1px solid var(--jd-border);
+    }
+
+    .axis-row dt {
+        grid-column: 1 / -1;
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+    }
+
+    .axis-row dd {
+        margin: 0;
+    }
+
+    .who {
+        display: block;
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+    }
+
+    .axis-row dd[data-rating='core'] .rating {
+        color: var(--jd-text-primary);
+        font-weight: 600;
+    }
+
+    .axis-row dd[data-rating='out-of-scope'] .rating {
+        color: var(--jd-text-muted);
+    }
+
+    /* The five-column table (axis, JustDummies, three competitors) is replaced by the
+       cards below the same width the rest of the site switches to its narrow layout
+       at (Base.astro, InstallTabs) — the matrix is *replaced*, not shrunk further,
+       and never scrolls sideways (§11.5). */
+    @media (max-width: 47.99rem) {
+        table {
+            display: none;
+        }
+
+        .cards {
+            display: block;
+        }
+    }
+</style>

@@ -17,6 +17,7 @@
     <a class="brand" href="@SiteHomeHref">JustDummies</a>
 
     <nav>
+        <a href="@WhyJustDummiesHref">@PlaygroundStrings.T(LocaleState.Current, "nav.why")</a>
         <a href="@RepositoryUrl" target="_blank" rel="noopener noreferrer">@PlaygroundStrings.T(LocaleState.Current, "nav.github")</a>
 
         <nav class="language-selector" aria-label='@PlaygroundStrings.T(LocaleState.Current, "language.label")'>
@@ -68,6 +69,8 @@
     private bool _restoreFocusToSummary;
 
     private string SiteHomeHref => LocaleState.Current == Locale.Fr ? "/fr/" : "/";
+
+    private string WhyJustDummiesHref => LocaleState.Current == Locale.Fr ? "/fr/why-justdummies/" : "/why-justdummies/";
 
     protected override async Task OnAfterRenderAsync(bool firstRender) {
         if (firstRender) {

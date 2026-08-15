@@ -43,6 +43,7 @@ const en = {
     'brand.tagline': 'Just dummies — but seriously powerful ones.',
     'brand.subtitle': 'Focused, fluent test values for .NET.',
 
+    'nav.why': 'Why JustDummies',
     'nav.playground': 'Playground',
     'nav.github': 'GitHub',
     'nav.nuget': 'NuGet',
@@ -255,6 +256,94 @@ const en = {
     'privacy.updated': 'Last updated: August 15, 2026.',
 
     /**
+     * /why-justdummies — the comparative positioning page (§11). Axis labels and rating
+     * words are deliberately short: they are table headers and cells, read many times
+     * down a column, not sentences.
+     */
+    'why.heading': 'Why JustDummies',
+    'why.meta.description':
+        'How JustDummies compares with Bogus, AutoFixture, and writing values by hand — including where it loses.',
+    'why.intro.p1':
+        'JustDummies asks for no migration. It works on a single test, coexists with whatever you already use in the same codebase, and asks you to remove nothing to try it.',
+    'why.intro.p2':
+        'For most of what a dummy-data library replaces, the real alternative is not another library — it is a value typed by hand. The comparison below treats that as a genuine option, not an oversight.',
+
+    'why.axis.invariants': 'Business invariants',
+    'why.axis.callSite': 'Constraints at the call site',
+    'why.axis.testIntent': 'What the test is about',
+    'why.axis.reuse': 'Reuse across tests',
+    'why.axis.realism': 'Realistic data',
+    'why.axis.graph': 'A complete object graph',
+    'why.axis.reproducibility': 'Reproducibility',
+    'why.axis.compileTime': 'Compile-time detection',
+    'why.axis.codeGen': 'Code generation',
+    'why.axis.exploration': 'Exploring the input space',
+
+    'why.rating.core': 'Core',
+    'why.rating.possible': 'Possible',
+    'why.rating.outOfScope': 'Out of scope',
+
+    'why.table.caption': 'JustDummies compared across ten axes.',
+    'why.table.axisHeader': 'Axis',
+
+    'why.duel.label': 'Compare JustDummies with',
+    'why.duel.showMatrix': 'Show the full comparison',
+    'why.duel.showDuel': 'Back to one-on-one',
+
+    'why.library.repoLink': 'View the repository',
+    'why.library.chooseHeading': 'Choose it instead when',
+
+    'why.bogus.description':
+        'A simple fake data generator for C#, F#, and VB.NET — ported from the well-known faker.js.',
+    'why.bogus.chooseInstead':
+        "Reach for Bogus when a test, a demo, or a seeded database needs data that looks real — names, addresses, emails — rather than data that merely satisfies a domain rule. That is Bogus's actual subject, and JustDummies does not compete with it there.",
+
+    'why.autofixture.description':
+        "A library that removes the need to hand-code anonymous variables when setting up a test's fixture — any object of the right shape, with no configuration.",
+    'why.autofixture.chooseInstead':
+        "Reach for AutoFixture when a test truly does not care what is inside an object — any value, anywhere in the graph, will do — and you want the whole graph populated automatically, including types you don't own. JustDummies asks you to say what must be true first; a test with nothing to say there has nothing to gain from it.",
+
+    'why.manual.name': 'Writing values by hand',
+    'why.manual.description': "No library: the value a test needs, typed directly into its arrangement.",
+    'why.manual.chooseInstead':
+        "Write a plain literal for the one value a test is actually about — the thing its assertion checks. A reader sees the exact number; a generated one would only ask them to trust that it is valid. JustDummies is for every parameter around it, the ones the test does not care about.",
+
+    'why.note.justdummies.reuse':
+        'A generator becomes reusable once it is written — by hand, or scaffolded once by the dum tool — not automatically from a single call.',
+    'why.note.justdummies.realism':
+        'Values are arbitrary, not realistic-looking — a name generator is not what this library is for.',
+    'why.note.justdummies.graph':
+        'A full graph is built by composing one generator per type; nothing walks the graph for you.',
+    'why.note.justdummies.compileTime':
+        'A missing constraint throws at run time, the first time the generator is asked for a value — nothing about it is caught by the compiler.',
+    'why.note.justdummies.exploration':
+        'One arbitrary, reproducible value is drawn per run, not a systematic search of the input space.',
+
+    'why.note.bogus.invariants':
+        "Only if every RuleFor() is written by hand to match the domain's rules — nothing checks that it does.",
+    'why.note.bogus.reuse': 'A Faker<T> can be defined once and reused across tests, the same way a JustDummies generator can.',
+    'why.note.bogus.graph': 'Nested objects are composed by hand inside the rules, not built automatically.',
+    'why.note.bogus.compileTime':
+        "Bogus Premium's analyzer flags a missing RuleFor() at build time — a paid add-on, not part of the free package.",
+    'why.note.bogus.codeGen': 'The same Premium analyzer can insert a missing RuleFor() as a code fix.',
+
+    'why.note.autofixture.invariants':
+        "Generation throws until a Customization or an ISpecimenBuilder is written to satisfy the constructor's guard clauses.",
+    'why.note.autofixture.reuse': 'An ICustomization packages a set of rules once, for reuse across tests.',
+
+    'why.note.manual.invariants':
+        'Valid only because a person chose a value they knew to be valid — nothing checks that it stayed that way.',
+    'why.note.manual.realism': 'As realistic as whoever is typing bothers to make it, by hand, every time.',
+    'why.note.manual.graph': "Every nested object is constructed by hand — the arrangement Act I opens on.",
+
+    'why.notFor.heading': 'When not to use JustDummies',
+    'why.notFor.body':
+        "Not when a test needs data that looks real rather than data that is merely valid — reach for a fake-data generator instead. Not when a type carries no domain invariant worth declaring — a plain anonymous-object library does that with less ceremony. And every package is still a preview: an API that is still moving is a cost worth knowing about before it sits under a large test suite.",
+
+    'why.verified': 'Comparisons last verified: August 15, 2026.',
+    'why.report.label': 'Spotted something inaccurate about a library listed here? Open an issue.',
+
+    /**
      * /release-notes — a snapshot of the library's own CHANGELOG.md files, one train at
      * a time. `releaseNotes.category.*` translates the `### Category` headings those
      * files use, which are always written in English regardless of the reader's locale.
@@ -303,6 +392,7 @@ const fr: Record<UiKey, string> = {
     'brand.tagline': 'Juste des dummies, mais redoutablement efficaces.',
     'brand.subtitle': 'Des valeurs de test fluides et ciblées, pour .NET.',
 
+    'nav.why': 'Pourquoi JustDummies',
     'nav.playground': 'Playground',
     'nav.github': 'GitHub',
     'nav.nuget': 'NuGet',
@@ -468,6 +558,89 @@ const fr: Record<UiKey, string> = {
     'privacy.rights.body':
         "Comme ce site ne collecte aucune donnée qui vous identifie individuellement, il n'y a en pratique rien à corriger ou à effacer vous concernant. Pour toute question sur ce point, écrivez à privacy@reefact.net.",
     'privacy.updated': 'Dernière mise à jour : 15 août 2026.',
+
+    'why.heading': 'Pourquoi JustDummies',
+    'why.meta.description':
+        "Comment JustDummies se compare à Bogus, AutoFixture et l'écriture à la main — y compris là où il perd.",
+    'why.intro.p1':
+        "JustDummies ne demande aucune migration. Il s'installe sur un seul test, coexiste avec ce que vous utilisez déjà dans la même base de code, et ne vous demande de retirer rien pour l'essayer.",
+    'why.intro.p2':
+        "Pour la plupart de ce qu'une bibliothèque de données de test remplace, le vrai concurrent n'est pas une autre bibliothèque — c'est une valeur tapée à la main. Le comparatif ci-dessous la traite comme une option à part entière, pas comme un oubli.",
+
+    'why.axis.invariants': 'Invariants métier',
+    'why.axis.callSite': "Contraintes au point d'appel",
+    'why.axis.testIntent': 'Ce que le test décrit',
+    'why.axis.reuse': 'Réutilisation entre tests',
+    'why.axis.realism': 'Données réalistes',
+    'why.axis.graph': "Un graphe d'objets complet",
+    'why.axis.reproducibility': 'Reproductibilité',
+    'why.axis.compileTime': 'Détection à la compilation',
+    'why.axis.codeGen': 'Génération de code',
+    'why.axis.exploration': "Exploration de l'espace d'entrée",
+
+    'why.rating.core': 'Cœur de métier',
+    'why.rating.possible': 'Possible',
+    'why.rating.outOfScope': 'Hors périmètre',
+
+    'why.table.caption': 'JustDummies comparé sur dix axes.',
+    'why.table.axisHeader': 'Axe',
+
+    'why.duel.label': 'Comparer JustDummies à',
+    'why.duel.showMatrix': 'Afficher le comparatif complet',
+    'why.duel.showDuel': 'Revenir au duel',
+
+    'why.library.repoLink': 'Voir le dépôt',
+    'why.library.chooseHeading': 'À choisir à la place quand',
+
+    'why.bogus.description':
+        "Un générateur de fausses données simple, pour C#, F# et VB.NET — porté du célèbre faker.js.",
+    'why.bogus.chooseInstead':
+        "Choisissez Bogus quand un test, une démo ou une base de données de démonstration a besoin de données qui ressemblent à du réel — noms, adresses, e-mails — plutôt que de données qui respectent seulement une règle métier. C'est le vrai sujet de Bogus, et JustDummies ne s'y mesure pas.",
+
+    'why.autofixture.description':
+        "Une bibliothèque qui évite d'écrire à la main des variables anonymes pour préparer un test — n'importe quel objet de la bonne forme, sans configuration.",
+    'why.autofixture.chooseInstead':
+        "Choisissez AutoFixture quand un test ne se soucie vraiment pas de ce que contient un objet — n'importe quelle valeur, n'importe où dans le graphe, convient — et que vous voulez que tout le graphe soit rempli automatiquement, y compris des types que vous ne possédez pas. JustDummies vous demande d'abord de dire ce qui doit être vrai ; un test qui n'a rien à en dire n'a rien à y gagner.",
+
+    'why.manual.name': 'Écrire les valeurs à la main',
+    'why.manual.description': "Aucune bibliothèque : la valeur dont un test a besoin, tapée directement dans son arrange.",
+    'why.manual.chooseInstead':
+        "Écrivez une simple valeur à la main pour celle dont le test parle vraiment — celle que son assertion vérifie. Le lecteur voit le nombre exact ; une valeur générée ne ferait que lui demander de croire qu'elle est valide. JustDummies s'occupe de tous les autres paramètres, ceux dont le test se moque.",
+
+    'why.note.justdummies.reuse':
+        "Un générateur devient réutilisable une fois écrit — à la main, ou généré une fois par l'outil dum — pas automatiquement depuis un seul appel.",
+    'why.note.justdummies.realism':
+        "Les valeurs sont quelconques, pas réalistes — un générateur de noms n'est pas ce à quoi sert cette bibliothèque.",
+    'why.note.justdummies.graph':
+        "Un graphe complet se construit en composant un générateur par type ; rien ne parcourt le graphe à votre place.",
+    'why.note.justdummies.compileTime':
+        "Une contrainte manquante échoue à l'exécution, au premier tirage — rien n'est détecté par le compilateur.",
+    'why.note.justdummies.exploration':
+        "Une valeur arbitraire et reproductible est tirée par exécution, pas une exploration systématique de l'espace d'entrée.",
+
+    'why.note.bogus.invariants':
+        "Seulement si chaque RuleFor() est écrit à la main pour respecter les règles du domaine — rien ne le vérifie.",
+    'why.note.bogus.reuse': "Un Faker<T> peut être défini une fois et réutilisé entre les tests, comme un générateur JustDummies.",
+    'why.note.bogus.graph': "Les objets imbriqués sont composés à la main dans les règles, pas construits automatiquement.",
+    'why.note.bogus.compileTime':
+        "L'analyseur de Bogus Premium détecte un RuleFor() manquant à la compilation — un module payant, absent du paquet gratuit.",
+    'why.note.bogus.codeGen': "Le même analyseur Premium peut insérer le RuleFor() manquant sous forme de correctif de code.",
+
+    'why.note.autofixture.invariants':
+        "La génération échoue tant qu'une Customization ou un ISpecimenBuilder n'est pas écrit pour satisfaire les clauses de garde du constructeur.",
+    'why.note.autofixture.reuse': "Une ICustomization regroupe un ensemble de règles une fois, pour les réutiliser entre les tests.",
+
+    'why.note.manual.invariants':
+        "Valide seulement parce qu'une personne a choisi une valeur qu'elle savait valide — rien ne vérifie qu'elle l'est restée.",
+    'why.note.manual.realism': "Aussi réaliste que ce que la personne qui tape prend la peine d'écrire, à la main, à chaque fois.",
+    'why.note.manual.graph': "Chaque objet imbriqué est construit à la main — l'arrange sur lequel s'ouvre l'acte I.",
+
+    'why.notFor.heading': 'Quand ne pas utiliser JustDummies',
+    'why.notFor.body':
+        "Pas quand un test a besoin de données qui ressemblent à du réel plutôt que de données simplement valides — un générateur de fausses données fera mieux l'affaire. Pas non plus quand un type ne porte aucun invariant métier qui vaille la peine d'être déclaré — une bibliothèque de valeurs anonymes fait le travail avec moins de cérémonie. Et chaque paquet est encore en préversion : une API qui bouge encore est un coût qu'il vaut mieux connaître avant de la mettre sous une grande suite de tests.",
+
+    'why.verified': 'Comparatif vérifié pour la dernière fois le 15 août 2026.',
+    'why.report.label': 'Une inexactitude sur une bibliothèque citée ici ? Ouvrez une issue.',
 
     'releaseNotes.heading': 'Notes de version',
     'releaseNotes.lead':
