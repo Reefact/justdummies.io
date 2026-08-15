@@ -230,10 +230,19 @@ h1:focus {
     overflow: hidden;
 }
 
+/* Reset against the sitewide .expression above (Home.razor's own card): that rule's
+   background, border, radius and margin are for a card of its own, and unset here they
+   leaked straight through — a second border sat inset inside .card's, a few pixels short
+   of matching it, which is what read as the code block having two borders instead of one.
+   .card already draws the box; this is just the text inside it. */
 .hero-widget .expression {
     display: flex;
     flex-direction: column;
+    margin: 0;
     padding: var(--jd-space-4); /* = the padding of the site's <pre> */
+    background: none;
+    border: 0;
+    border-radius: 0;
     line-height: 2.1;
     word-break: break-word;
 }
@@ -278,7 +287,13 @@ h1:focus {
    and never gets clicked; one styled like a form control in a code block reads as a
    mistake. This sits between: the code's own token colour (.tok-string/.tok-number,
    above), with a floor under it. The floor is `currentColor` rather than a colour of its
-   own, so it always matches whichever token class is set on the same input. */
+   own, so it always matches whichever token class is set on the same input.
+
+   The width is set by the `[data-width]` rules below, sized to what the field actually
+   holds rather than to the widest value it could ever legally hold — which is what put
+   "ORD-" in a box built for ten characters and stranded the quotes drawn around it several
+   characters past the text. `min-width` stays here as a floor under the smallest of them,
+   so an empty field is still a click target rather than a sliver. */
 .hero-widget input {
     font: inherit;
     background: transparent;
@@ -288,8 +303,75 @@ h1:focus {
     min-width: 3ch;
 }
 
+/* The static example prints "12" as plain text, with nothing either side of it — the
+   number field's own spin buttons are this browser's addition, not part of the
+   expression. Left in, they also don't fit: FieldWidth sizes the box to the digits
+   alone, and a box that narrow shows the buttons instead of the digits they would
+   otherwise sit beside. */
 .hero-widget input[type='number'] {
-    width: 5.5ch;
+    -moz-appearance: textfield;
+}
+
+.hero-widget input[type='number']::-webkit-outer-spin-button,
+.hero-widget input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/*
+ * Hero.razor's FieldWidth(...) writes the column count here rather than into a `style`
+ * attribute: the site's CSP is `style-src 'self'` with no `unsafe-inline`, so a computed
+ * inline width would be parsed, dropped, and never applied — see FieldWidth's own comment.
+ * One rule per column is what a CSP without `unsafe-inline` costs a value that would
+ * otherwise be one `calc()` away; 12 is FieldWidth's own clamp, the widest a field is ever
+ * asked to be (its 10-character cap, plus one for the caret, plus one for rounding).
+ */
+.hero-widget input[data-width='1'] {
+    width: 1ch;
+}
+
+.hero-widget input[data-width='2'] {
+    width: 2ch;
+}
+
+.hero-widget input[data-width='3'] {
+    width: 3ch;
+}
+
+.hero-widget input[data-width='4'] {
+    width: 4ch;
+}
+
+.hero-widget input[data-width='5'] {
+    width: 5ch;
+}
+
+.hero-widget input[data-width='6'] {
+    width: 6ch;
+}
+
+.hero-widget input[data-width='7'] {
+    width: 7ch;
+}
+
+.hero-widget input[data-width='8'] {
+    width: 8ch;
+}
+
+.hero-widget input[data-width='9'] {
+    width: 9ch;
+}
+
+.hero-widget input[data-width='10'] {
+    width: 10ch;
+}
+
+.hero-widget input[data-width='11'] {
+    width: 11ch;
+}
+
+.hero-widget input[data-width='12'] {
+    width: 12ch;
 }
 
 .hero-widget input:focus-visible {
@@ -314,7 +396,13 @@ h1:focus {
     color: var(--jd-text-muted);
 }
 
+/* Reset against the sitewide .value above (Home.razor's own result line): its larger
+   size and top margin are for a value sitting under a button, on its own line — not one
+   sharing this row with an arrow and a label, which is what made the bar read as too
+   tall. Same font size as the rest of the bar, no margin of its own. */
 .hero-widget .result-bar .value {
+    margin-top: 0;
+    font-size: inherit;
     color: var(--jd-generated);
 }
 
