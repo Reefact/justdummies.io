@@ -220,9 +220,21 @@
     private static int FieldWidth(string value) => Math.Clamp(new StringInfo(value).LengthInTextElements + 1, 1, 12);
 
     /// <summary>
-    ///     Shared by <see cref="SetPrefix" /> and <see cref="SetFragment" />: truncates to
-    ///     <paramref name="limit" /> characters and sets <see cref="_capHint" /> the moment a
-    ///     keystroke or a paste would have gone past it.
+    ///     Shared by <see cref="SetPrefix" /> and <see cref="SetFragment" />: strips <c>"</c>
+    ///     and <c>\</c>, then truncates what is left to <paramref name="limit" /> characters,
+    ///     setting <see cref="_capHint" /> the moment a keystroke or a paste hits either rule.
+    ///
+    ///     THE STRIPPING IS WHAT KEEPS THE EXPRESSION SHOWN REAL. Both characters are drawn
+    ///     literally, either side of the input, as the C# string-literal quotes (Hero.razor's
+    ///     markup) — a quote or a backslash typed into the field would need escaping to stay
+    ///     valid there, and this widget draws the value as typed, not re-serialised. A field
+    ///     holding <c>a"b</c> would otherwise be shown as <c>StartingWith("a"b")</c>: no longer
+    ///     one string literal, and no longer the expression <see cref="Draw" /> actually runs
+    ///     — it still passes the library the raw value and still draws correctly, so the
+    ///     display would be the only thing lying. Stripped rather than escaped, matching how
+    ///     the length limit already works: a widget that showed <c>\"</c> for a typed <c>"</c>
+    ///     would be showing a different value than the one <see cref="Draw" /> uses, which is
+    ///     the same defect from the other side.
     ///
     ///     Deliberately not paired with <c>maxlength</c> on the input, unlike a first version
     ///     of this method was. The browser enforces <c>maxlength</c> before the value ever
@@ -238,7 +250,8 @@
     ///     paste anything into.
     /// </summary>
     private string Cap(string value, int limit, string owner) {
-        StringInfo info = new(value);
+        string sanitized = value.Replace("\"", string.Empty).Replace("\\", string.Empty);
+        StringInfo info = new(sanitized);
 
         if (info.LengthInTextElements > limit) {
             SetHint(owner, PlaygroundStrings.T(LocaleState.Current, "limit.text", limit));
@@ -246,9 +259,15 @@
             return info.SubstringByTextElements(0, limit);
         }
 
+        if (sanitized != value) {
+            SetHint(owner, PlaygroundStrings.T(LocaleState.Current, "limit.quotes"));
+
+            return sanitized;
+        }
+
         ClearHint(owner);
 
-        return value;
+        return sanitized;
     }
 
     /// <summary>
