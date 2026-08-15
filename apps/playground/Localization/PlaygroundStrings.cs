@@ -55,6 +55,7 @@ public static class PlaygroundStrings {
     private static readonly Dictionary<string, string> En = new() {
         ["brand.tagline"] = "Just dummies — but seriously powerful ones.",
 
+        ["nav.why"]        = "Why JustDummies",
         ["nav.github"]     = "GitHub",
         ["language.label"] = "Language",
 
@@ -106,6 +107,7 @@ public static class PlaygroundStrings {
     private static readonly Dictionary<string, Translation> Fr = new() {
         ["brand.tagline"] = new("Juste des dummies, mais redoutablement efficaces.", "Just dummies — but seriously powerful ones."),
 
+        ["nav.why"]        = new("Pourquoi JustDummies", "Why JustDummies"),
         ["nav.github"]     = new("GitHub", "GitHub"),
         ["language.label"] = new("Langue", "Language"),
 

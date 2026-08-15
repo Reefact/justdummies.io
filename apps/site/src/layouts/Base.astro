@@ -136,6 +136,7 @@ const t = useTranslations(locale);
               the application reads at startup, not a different page.
             */}
             <nav class="site-nav" aria-label={t('nav.primary')}>
+                <a href={pathForLocale('/why-justdummies', locale)}>{t('nav.why')}</a>
                 <a href={`/playground/?lang=${locale}`}>{t('nav.playground')}</a>
                 {/*
                   A new tab, because this one leaves the site. The playground beside it does
@@ -350,16 +351,20 @@ const t = useTranslations(locale);
     }
 
     /*
-     * Below this width the bar cannot hold the brand and the three items on one line, and
-     * what it does instead is wrap the nav to two — leaving the brand floating against the
-     * middle of them. Stacking is both tidier and *shorter*: 82 pixels rather than 98, which
-     * the first screen below gets back.
+     * Below this width the bar cannot hold the brand and the four items — Why JustDummies,
+     * Playground, GitHub, the language selector — on one line, and what it does instead is
+     * wrap mid-row, dropping GitHub to a second line while the brand floats against the
+     * middle of the rest. Stacking on purpose reads better than wrapping by accident.
      *
-     * The number is measured, not chosen: brand and nav together need 440 pixels of viewport,
-     * so the query trips just above that. It is deliberately not the 48rem the rest of the
-     * page uses — between 448 and 768 the bar fits on one line and has no reason to stack.
+     * The number is measured, not chosen, and measured in French: §6.5 requires templates to
+     * be validated against French, "the unfavourable case", and this bar is exactly that case
+     * — "Pourquoi JustDummies" is wider than "Why JustDummies". Brand and nav together fit
+     * down to 503 pixels of French and wrap below it (503 vs. 475 for English), so the query
+     * trips a little above the wider of the two. It is deliberately not the 48rem the rest of
+     * the page uses — between 512 and 768 the bar fits on one line and has no reason to stack.
+     * Re-measure this — in French — the day a fifth item joins the bar.
      */
-    @media (max-width: 28rem) {
+    @media (max-width: 32rem) {
         .site-header {
             flex-direction: column;
             align-items: flex-start;

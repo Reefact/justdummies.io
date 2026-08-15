@@ -1,14 +1,16 @@
 import { expect, test, type Page, type Response } from '@playwright/test';
 
 /**
- * /about and /privacy answer, say what they are about, and carry the sitewide footer
- * that this repository previously had nowhere at all.
+ * /about, /privacy and /why-justdummies answer, say what they are about, and carry the
+ * sitewide footer that this repository previously had nowhere at all.
  */
 const PAGES: ReadonlyArray<{ path: string; heading: string; body: RegExp }> = [
     { path: '/about', heading: 'About', body: /Sylvain Aurat/ },
     { path: '/fr/about', heading: 'À propos', body: /Sylvain Aurat/ },
     { path: '/privacy', heading: 'Privacy', body: /Cloudflare/ },
     { path: '/fr/privacy', heading: 'Confidentialité', body: /Cloudflare/ },
+    { path: '/why-justdummies', heading: 'Why JustDummies', body: /Bogus/ },
+    { path: '/fr/why-justdummies', heading: 'Pourquoi JustDummies', body: /Bogus/ },
 ];
 
 for (const { path, heading, body } of PAGES) {
@@ -77,6 +79,8 @@ test('the footer appears on every page that carries it, in the right locale', as
         '/fr/about',
         '/release-notes',
         '/fr/release-notes',
+        '/why-justdummies',
+        '/fr/why-justdummies',
         '/privacy',
         '/fr/privacy',
         '/version',
@@ -88,7 +92,7 @@ test('the footer appears on every page that carries it, in the right locale', as
     }
 });
 
-for (const path of ['/about', '/privacy']) {
+for (const path of ['/about', '/privacy', '/why-justdummies']) {
 
     test(`${path} needs no script to say anything`, async ({ browser }) => {
         const context = await browser.newContext({ javaScriptEnabled: false });
@@ -103,3 +107,46 @@ for (const path of ['/about', '/privacy']) {
     });
 
 }
+
+/**
+ * The comparison table follows the same ADR-0004 contract `InstallTabs` does: without
+ * scripting, the `<select>` and the mode toggle stay hidden — a control that would
+ * filter nothing is worse than no control — and what a reader gets instead is the full
+ * matrix, every competitor's column already there.
+ */
+test('/why-justdummies shows the full matrix, and no dead control, without scripting', async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    const page = await context.newPage();
+
+    await page.goto('/why-justdummies');
+
+    await expect(page.locator('[data-duel-controls]:visible')).toHaveCount(0);
+    await expect(page.locator('table')).toBeVisible();
+    await expect(page.locator('thead th[data-competitor]')).toHaveCount(3);
+    await expect(page.locator('thead th[data-competitor]:visible')).toHaveCount(3);
+
+    await context.close();
+});
+
+test('/why-justdummies narrows to one competitor, and back to the full matrix', async ({ page }) => {
+    await page.goto('/why-justdummies');
+
+    const select = page.locator('[data-compare-select]');
+    const toggle = page.locator('[data-mode-toggle]');
+    const autofixtureColumn = page.locator('thead th[data-competitor="autofixture"]');
+    const bogusColumn = page.locator('thead th[data-competitor="bogus"]');
+
+    // Duel is the default once scripting runs (§11.5), narrowed to the select's own
+    // first option.
+    await expect(select).toBeVisible();
+    await expect(bogusColumn).toBeVisible();
+    await expect(autofixtureColumn).toBeHidden();
+
+    await select.selectOption('autofixture');
+    await expect(autofixtureColumn).toBeVisible();
+    await expect(bogusColumn).toBeHidden();
+
+    await toggle.click();
+    await expect(bogusColumn).toBeVisible();
+    await expect(autofixtureColumn).toBeVisible();
+});

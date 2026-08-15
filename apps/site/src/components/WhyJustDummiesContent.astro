@@ -1,0 +1,107 @@
+---
+/**
+ * The comparative positioning page (§11): coexistence up front (§11.7), the table
+ * (§11.4–§11.5), a card per competitor (§11.6) including the one that is not a library
+ * (§11.2), and — in its own section, not folded into a card — when JustDummies is not
+ * the right choice at all (§11.6's closing line).
+ */
+import ComparisonTable from './ComparisonTable.astro';
+import LibraryCard from './LibraryCard.astro';
+import { localeFromPath } from '../i18n/routing';
+import { useTranslations } from '../i18n/ui';
+import { site } from '../site';
+import { competitors, comparisonStaleAfterDays, comparisonVerifiedOn, type Competitor } from '../comparison';
+
+const t = useTranslations(localeFromPath(Astro.url.pathname));
+
+/**
+ * §11.8 — "a last-verified date is content, and past a declared delay the build warns."
+ * Runs at build time, in Astro's own Node process, so a stale comparison shows up in
+ * the build log rather than only in a reader noticing an old citation.
+ */
+const daysSinceVerified: number = Math.floor((Date.now() - new Date(comparisonVerifiedOn).getTime()) / 86_400_000);
+
+if (daysSinceVerified > comparisonStaleAfterDays) {
+    console.warn(
+        `[why-justdummies] the comparison was last verified ${daysSinceVerified} days ago (past the ${comparisonStaleAfterDays}-day window). Re-check every claim against each library's own docs or repository, then update comparison.ts's comparisonVerifiedOn and ui.ts's why.verified together.`,
+    );
+}
+
+/** §11.8 — the correction issue the page invites every cited author to use. */
+const reportUrl = `${site.siteRepository}/issues/new?title=${encodeURIComponent('why-justdummies: ')}`;
+---
+
+<section class="why" aria-labelledby="why-heading">
+    <h2 id="why-heading">{t('why.heading')}</h2>
+
+    <p>{t('why.intro.p1')}</p>
+    <p>{t('why.intro.p2')}</p>
+
+    <ComparisonTable />
+
+    <p class="meta">
+        {t('why.verified')}
+        <a href={reportUrl} target="_blank" rel="noopener noreferrer">
+            {t('why.report.label')}
+            <span class="visually-hidden"> {t('state.newTab')}</span>
+        </a>
+    </p>
+
+    <div class="cards">
+        {competitors.map((entry: Competitor) => <LibraryCard entry={entry} />)}
+    </div>
+
+    <div class="not-for" aria-labelledby="why-notfor-heading">
+        <h3 id="why-notfor-heading">{t('why.notFor.heading')}</h3>
+        <p>{t('why.notFor.body')}</p>
+    </div>
+</section>
+
+<style>
+    .why {
+        max-width: 60rem;
+    }
+
+    h2 {
+        font-size: var(--jd-text-xl);
+        line-height: var(--jd-line-tight);
+        margin: 0 0 var(--jd-space-6);
+    }
+
+    p {
+        margin: 0 0 var(--jd-space-4);
+    }
+
+    .meta {
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+        margin: var(--jd-space-2) 0 var(--jd-space-8);
+    }
+
+    .meta a {
+        display: block;
+        margin-top: var(--jd-space-1);
+    }
+
+    .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+        gap: var(--jd-space-4);
+        margin: 0 0 var(--jd-space-8);
+    }
+
+    .not-for {
+        border-top: 1px solid var(--jd-border);
+        padding-top: var(--jd-space-6);
+    }
+
+    .not-for h3 {
+        font-size: var(--jd-text-lg);
+        line-height: var(--jd-line-tight);
+        margin: 0 0 var(--jd-space-2);
+    }
+
+    .not-for p {
+        margin: 0;
+    }
+</style>
