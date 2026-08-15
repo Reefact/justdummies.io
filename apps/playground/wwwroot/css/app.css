@@ -254,6 +254,21 @@ h1:focus {
     padding-left: 22ch;
 }
 
+/* Below the width the site's own header stacks at (Base.astro) — same breakpoint as
+   .site-header's own narrow query, further down this file.
+   22ch alone is over half of a 375px phone's usable width before a single method name or
+   input has been laid out, and this element cannot shrug that off the way the static
+   example does: .sample's <pre> is `overflow-x: auto` and never rewraps, while this one is
+   `word-break: break-word` because its lines hold real <input> elements a visitor has to
+   reach, not read-only text a scrollbar can hide part of. Left at 22ch here, every
+   continuation line broke across several more of its own, and the card that is supposed to
+   match the static example on desktop grew taller than it on the phone that opens it. */
+@media (max-width: 28rem) {
+    .hero-widget .expression > :not(:first-child) {
+        padding-left: 3ch;
+    }
+}
+
 /*
  * The same vocabulary `base.css` colours from `highlight.ts`'s output on the site — see
  * the comment there. Duplicated here because the two applications share no stylesheet
