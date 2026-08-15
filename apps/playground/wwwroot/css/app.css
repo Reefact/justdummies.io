@@ -32,13 +32,16 @@ h1 {
 }
 
 /* Blazor's router focuses the <h1> on navigation so a screen reader lands on the
-   new page's title. `:focus-visible` matches that programmatic focus in Chromium,
-   so the ring can't be scoped to keyboard-only focus with `:not(:focus-visible)`.
-   The title isn't interactive, so a visible focus ring around it reads as a
-   layout bug rather than a navigation cue — it is removed outright rather than
-   left for keyboard users, who have nothing to operate there anyway. */
+   new page's title, and a sighted keyboard user needs the same cue: it marks
+   where navigation landed and where the next Tab stop starts. `:focus-visible`
+   matches that programmatic focus in Chromium, so it can't be scoped to
+   keyboard-only focus with `:not(:focus-visible)`. The browser's default ring —
+   a thick box drawn tight against the text — reads as a layout bug rather than
+   a navigation cue, so it's replaced with a thinner, offset one instead of
+   removed outright. */
 h1:focus {
-    outline: none;
+    outline: 1px solid var(--jd-text-muted);
+    outline-offset: 4px;
 }
 
 .lede {
