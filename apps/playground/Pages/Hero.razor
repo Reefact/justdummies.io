@@ -46,9 +46,9 @@
     <div class="card">
         <div class="expression">
             <span><span class="tok-keyword">string</span> reference = <span class="tok-type">Any</span>.<span class="tok-member">String</span>()</span>
-            <span>.<span class="tok-member">StartingWith</span>(<span class="tok-string">"</span><input type="text" class="tok-string" @bind:get="_prefix" @bind:set="SetPrefix" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.prefix")' aria-describedby="@(_capHintOwner == "prefix" ? "cap-hint" : null)" size="6" /><span class="tok-string">"</span>)</span>
-            <span>.<span class="tok-member">Containing</span>(<span class="tok-string">"</span><input type="text" class="tok-string" @bind:get="_fragment" @bind:set="SetFragment" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.contains")' aria-describedby="@(_capHintOwner == "fragment" ? "cap-hint" : null)" size="6" /><span class="tok-string">"</span>)</span>
-            <span>.<span class="tok-member">WithLength</span>(<input type="number" class="tok-number" @bind:get="_lengthText" @bind:set="SetLengthText" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.length")' aria-describedby="@(_capHintOwner == "length" ? "cap-hint" : null)" min="1" max="@MaxLength" />)</span>
+            <span>.<span class="tok-member">StartingWith</span>(<span class="tok-string">"</span><input type="text" class="tok-string" data-width="@FieldWidth(_prefix)" @bind:get="_prefix" @bind:set="SetPrefix" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.prefix")' aria-describedby="@(_capHintOwner == "prefix" ? "cap-hint" : null)" /><span class="tok-string">"</span>)</span>
+            <span>.<span class="tok-member">Containing</span>(<span class="tok-string">"</span><input type="text" class="tok-string" data-width="@FieldWidth(_fragment)" @bind:get="_fragment" @bind:set="SetFragment" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.contains")' aria-describedby="@(_capHintOwner == "fragment" ? "cap-hint" : null)" /><span class="tok-string">"</span>)</span>
+            <span>.<span class="tok-member">WithLength</span>(<input type="number" class="tok-number" data-width="@FieldWidth(_lengthText)" @bind:get="_lengthText" @bind:set="SetLengthText" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.length")' aria-describedby="@(_capHintOwner == "length" ? "cap-hint" : null)" min="1" max="@MaxLength" />)</span>
             <span>.<span class="tok-member">Generate</span>();</span>
         </div>
 
@@ -196,6 +196,28 @@
 
         return Task.CompletedTask;
     }
+
+    /// <summary>
+    ///     How wide an editable field renders, in <c>ch</c> — read by app.css off the
+    ///     <c>data-width</c> attribute this sets, never inline: the site's CSP is
+    ///     <c>style-src 'self'</c> with no <c>unsafe-inline</c>, so a computed
+    ///     <c>style="width: …"</c> is silently dropped by the browser rather than applied.
+    ///
+    ///     The width itself is the field's own content plus one character of room for the
+    ///     caret, so typing at the end never sits flush against the dashed underline.
+    ///     Without this, every field held the width its widest legal value could ever need,
+    ///     so "ORD-" sat in a box built for ten characters, and the quotes drawn either side
+    ///     of it (the string fields' own markup) landed nowhere near the text they were
+    ///     supposed to wrap.
+    ///
+    ///     Counted by text element, the same way <see cref="Cap" /> counts what it
+    ///     truncates: a raw <see cref="string" /> length would size the box in UTF-16 code
+    ///     units, one short of the truth for anything outside the basic plane. Clamped to
+    ///     app.css's own <c>[data-width]</c> rules — one per column from 1 to 12, the widest
+    ///     a field is ever styled for — so a value <see cref="Cap" /> has not yet caught (a
+    ///     paste mid-keystroke) never asks for a rule that does not exist.
+    /// </summary>
+    private static int FieldWidth(string value) => Math.Clamp(new StringInfo(value).LengthInTextElements + 1, 1, 12);
 
     /// <summary>
     ///     Shared by <see cref="SetPrefix" /> and <see cref="SetFragment" />: truncates to
