@@ -45,11 +45,11 @@ const value: string = sampleValue('hero-expression');
         </figcaption>
     </figure>
 
-    <p class="invite">
+    <p class="invite" data-hero-invite>
         <button type="button" class="run" hidden data-hero-run data-loading={t('hero.loading')}>
             {t('hero.run')}
         </button>
-        <span class="cost" data-hero-cost>{t('hero.cost')}</span>
+        <span class="cost">{t('hero.cost')}</span>
     </p>
 
     <div class="frame" data-hero-frame hidden></div>
@@ -64,9 +64,9 @@ const value: string = sampleValue('hero-expression');
     const button: HTMLButtonElement | null | undefined = hero?.querySelector('[data-hero-run]');
     const holder: HTMLElement | null | undefined = hero?.querySelector('[data-hero-frame]');
     const statics: HTMLElement | null | undefined = hero?.querySelector('[data-hero-static]');
-    const cost: HTMLElement | null | undefined = hero?.querySelector('[data-hero-cost]');
+    const invite: HTMLElement | null | undefined = hero?.querySelector('[data-hero-invite]');
 
-    if (hero && button && holder && statics) {
+    if (hero && button && holder && statics && invite) {
         // Unhidden here rather than in the markup: reaching this line is the proof that
         // the button can do what it offers.
         button.hidden = false;
@@ -108,10 +108,13 @@ const value: string = sampleValue('hero-expression');
                 // The static figure is replaced rather than hidden alongside: two values on
                 // screen, one live and one from the build, is a question nobody asked.
                 statics.hidden = true;
-                button.hidden = true;
-                if (cost) {
-                    cost.hidden = true;
-                }
+
+                // The element itself, not only the button and the cost mention inside it —
+                // .invite keeps its own top margin even once both children are hidden, and
+                // an empty box with a margin is still a gap. Left in, the frame that replaces
+                // it would sit that much lower than where the button the visitor just
+                // pressed actually was.
+                invite.hidden = true;
             });
         });
     }
