@@ -63,7 +63,7 @@
     </div>
 
     <div class="controls">
-        <button class="generate" @onclick="Draw">@PlaygroundStrings.T(LocaleState.Current, "hero.generate")</button>
+        <button class="generate" @onclick="Draw" disabled="@(_length is null)">@PlaygroundStrings.T(LocaleState.Current, "hero.generate")</button>
         <span class="live">@PlaygroundStrings.T(LocaleState.Current, "hero.running", LibraryVersion)</span>
     </div>
 
@@ -87,7 +87,16 @@
     private string _prefix     = "ORD-";
     private string _fragment   = "2026";
     private string _lengthText = "12";
-    private int    _length     = 12;
+
+    /// <summary>
+    ///     The length Generate actually runs with, or <c>null</c> while the field showing it
+    ///     does not currently hold one — an empty field mid-edit, or an incomplete token such as
+    ///     <c>"1e"</c>. Kept separate from <see cref="_lengthText" /> so a value that cannot be
+    ///     used is never silently replaced by the last one that could: without this, clearing
+    ///     the field and pressing Generate would draw the *previous* length while the expression
+    ///     on screen visibly reads <c>.WithLength()</c>.
+    /// </summary>
+    private int? _length = 12;
 
     private string  _value   = string.Empty;
     private string? _refusal;
@@ -137,11 +146,19 @@
     ///     below, which is where that limit is actually enforced and explained.
     /// </summary>
     private void Draw() {
+        if (_length is null) {
+            // The Generate button is disabled for exactly this state (see the markup above),
+            // so a pointer or keyboard press cannot reach here — this guard is for whatever
+            // reaches Draw() some other way, now or later, rather than assume the button is the
+            // only caller and call .WithLength(...) on a value that was never confirmed.
+            return;
+        }
+
         try {
             _value = Any.String()
                         .StartingWith(_prefix)
                         .Containing(_fragment)
-                        .WithLength(_length)
+                        .WithLength(_length.Value)
                         .Generate();
 
             _refusal = null;
@@ -232,10 +249,13 @@
     /// </summary>
     private Task SetLengthText(string value) {
         if (!double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out double parsed)) {
-            // Not parseable at all — an empty field mid-edit, most often — so nothing this
-            // playground enforces has anything to say about it, and the raw text is left
-            // exactly as typed rather than fought.
+            // Not parseable at all — an empty field mid-edit, most often. The raw text is left
+            // exactly as typed rather than fought, but _length — the value Generate actually
+            // runs with — is invalidated rather than left at its last-valid number, and the
+            // button is disabled for the same reason (see _length's own comment).
+            _length     = null;
             _lengthText = value;
+            SetHint("length", PlaygroundStrings.T(LocaleState.Current, "hero.lengthRequired"));
 
             return Task.CompletedTask;
         }
@@ -263,7 +283,7 @@
         // an int, and "12.5" is not one. Normalized to what actually runs, the same reasoning
         // as the branch above: a box reading "12.5" while Draw() quietly generates a
         // twelve-character value would agree with nothing the visitor can see.
-        _lengthText = _length.ToString(CultureInfo.InvariantCulture);
+        _lengthText = _length.Value.ToString(CultureInfo.InvariantCulture);
 
         return Task.CompletedTask;
     }

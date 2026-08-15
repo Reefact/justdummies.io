@@ -43,17 +43,27 @@ public static class PlaygroundStrings {
         };
     }
 
+    /// <summary>
+    ///     A French string, paired with the exact English text it was translated from —
+    ///     <see cref="TranslatedFrom" /> is a snapshot, not a live reference to <see cref="En" />.
+    ///     The static constructor below compares that snapshot against the current English
+    ///     value for the same key: if someone edits <see cref="En" /> without revisiting the
+    ///     translation, the two stop matching, and this is what notices.
+    /// </summary>
+    private readonly record struct Translation(string Text, string TranslatedFrom);
+
     private static readonly Dictionary<string, string> En = new() {
         ["brand.tagline"] = "Just dummies — but seriously powerful ones.",
 
         ["nav.github"]     = "GitHub",
         ["language.label"] = "Language",
 
-        ["hero.aria.prefix"]   = "prefix",
-        ["hero.aria.contains"] = "contained text",
-        ["hero.aria.length"]   = "length",
-        ["hero.generate"]      = "Generate",
-        ["hero.running"]       = "running here, JustDummies {0}",
+        ["hero.aria.prefix"]    = "prefix",
+        ["hero.aria.contains"]  = "contained text",
+        ["hero.aria.length"]    = "length",
+        ["hero.generate"]       = "Generate",
+        ["hero.running"]        = "running here, JustDummies {0}",
+        ["hero.lengthRequired"] = "Enter a length to generate.",
 
         ["playground.title"] = "Playground",
         ["playground.lede"] =
@@ -77,71 +87,105 @@ public static class PlaygroundStrings {
         ["footer.privacy"]    = "Privacy",
         ["footer.repository"] = "Source code",
         ["state.newTab"]      = "opens in a new tab",
+
+        // The one piece of the pre-boot shell (wwwroot/index.html) that still has to be
+        // relocalized after boot: #blazor-error-ui sits outside Blazor's render tree and is
+        // translated once, synchronously, before the runtime even starts. These two keys are
+        // what LocaleState.Set(...) hands back to that same banner when the reader switches
+        // language afterwards — see the KNOWN DUPLICATION note in index.html for why the
+        // pre-boot script still carries its own literal copy rather than awaiting this class.
+        ["errorBanner.message"] = "Something went wrong.",
+        ["errorBanner.reload"]  = "Reload",
     };
 
-    private static readonly Dictionary<string, string> Fr = new() {
-        ["brand.tagline"] = "Juste des dummies, mais redoutablement efficaces.",
+    private static readonly Dictionary<string, Translation> Fr = new() {
+        ["brand.tagline"] = new("Juste des dummies, mais redoutablement efficaces.", "Just dummies — but seriously powerful ones."),
 
-        ["nav.github"]     = "GitHub",
-        ["language.label"] = "Langue",
+        ["nav.github"]     = new("GitHub", "GitHub"),
+        ["language.label"] = new("Langue", "Language"),
 
-        ["hero.aria.prefix"]   = "préfixe",
-        ["hero.aria.contains"] = "texte contenu",
-        ["hero.aria.length"]   = "longueur",
-        ["hero.generate"]      = "Générer",
-        ["hero.running"]       = "s'exécute ici, JustDummies {0}",
+        ["hero.aria.prefix"]    = new("préfixe", "prefix"),
+        ["hero.aria.contains"]  = new("texte contenu", "contained text"),
+        ["hero.aria.length"]    = new("longueur", "length"),
+        ["hero.generate"]       = new("Générer", "Generate"),
+        ["hero.running"]        = new("s'exécute ici, JustDummies {0}", "running here, JustDummies {0}"),
+        ["hero.lengthRequired"] = new("Indiquez une longueur pour générer.", "Enter a length to generate."),
 
-        ["playground.title"] = "Playground",
-        ["playground.lede"] =
+        ["playground.title"] = new("Playground", "Playground"),
+        ["playground.lede"] = new(
             "Le visiteur ne modifie que ce qui se trouve entre <code>Any.</code> et <code>.Generate()</code>. " +
             "L'analyseur qui lira ce fragment n'est pas encore construit, donc cette ébauche exécute une " +
             "expression fixe à la place — suffisant pour prouver la chaîne dont dépend le vrai playground : " +
             "la librairie publiée, exécutée dans le navigateur, sans aucun backend derrière elle.",
-        ["playground.generateAgain"] = "Générer à nouveau",
-        ["playground.generatedBy"]   = "Générée par JustDummies {0}, exécutée dans ce navigateur.",
+            "The visitor edits only what sits between <code>Any.</code> and <code>.Generate()</code>. " +
+            "The parser that will read that fragment is not built yet, so this shell runs one fixed " +
+            "expression instead — enough to prove the chain the real playground depends on: the " +
+            "published library, executing in the browser, with no backend behind it."),
+        ["playground.generateAgain"] = new("Générer à nouveau", "Generate again"),
+        ["playground.generatedBy"]   = new("Générée par JustDummies {0}, exécutée dans ce navigateur.", "Generated by JustDummies {0}, running in this browser."),
 
-        ["limit.length"] = "Ce playground limite la longueur à {0} caractères ; la librairie elle-même n'impose aucune limite.",
-        ["limit.text"]   = "Ce playground limite ce champ à {0} caractères ; la librairie elle-même n'impose aucune limite.",
+        ["limit.length"] = new(
+            "Ce playground limite la longueur à {0} caractères ; la librairie elle-même n'impose aucune limite.",
+            "This playground caps the length at {0} characters; the library itself has no such limit."),
+        ["limit.text"] = new(
+            "Ce playground limite ce champ à {0} caractères ; la librairie elle-même n'impose aucune limite.",
+            "This playground caps this field at {0} characters; the library itself has no such limit."),
 
-        ["notFound.title"] = "Introuvable",
-        ["notFound.lede"] =
+        ["notFound.title"] = new("Introuvable", "Not found"),
+        ["notFound.lede"] = new(
             "Cette page n'existe pas dans le playground. <a href=\"{0}\">Recommencer</a>, " +
             "ou <a href=\"{1}\">revenir sur le site</a>.",
+            "There is no such page in the playground. <a href=\"{0}\">Start over</a>, " +
+            "or <a href=\"{1}\">go back to the site</a>."),
 
-        ["footer.nav"]        = "Pied de page",
-        ["footer.about"]      = "À propos",
-        ["footer.privacy"]    = "Confidentialité",
-        ["footer.repository"] = "Code source",
-        ["state.newTab"]      = "ouvre un nouvel onglet",
+        ["footer.nav"]        = new("Pied de page", "Footer"),
+        ["footer.about"]      = new("À propos", "About"),
+        ["footer.privacy"]    = new("Confidentialité", "Privacy"),
+        ["footer.repository"] = new("Code source", "Source code"),
+        ["state.newTab"]      = new("ouvre un nouvel onglet", "opens in a new tab"),
+
+        ["errorBanner.message"] = new("Une erreur est survenue.", "Something went wrong."),
+        ["errorBanner.reload"]  = new("Recharger", "Reload"),
     };
 
-    private static readonly IReadOnlyDictionary<Locale, IReadOnlyDictionary<string, string>> All =
-        new Dictionary<Locale, IReadOnlyDictionary<string, string>> {
-            [Locale.En] = En,
-            [Locale.Fr] = Fr,
-        };
-
     /// <summary>
-    ///     TypeScript gives the site's own dictionary this guarantee for free — <c>fr</c>
-    ///     declared as <c>Record&lt;UiKey, string&gt;</c> makes a missing or extra key a compile
-    ///     error (<c>i18n/ui.ts</c>). C# has no equivalent structural check, so this is the
-    ///     closest a plain static class gets: an explicit static constructor runs before
-    ///     <em>any</em> member of this type is first touched, so a key added to one locale and
-    ///     not the other surfaces the moment the playground starts — in every environment, not
-    ///     only the one where a French reader happens to hit the missing key first.
+    ///     TypeScript gives the site's own dictionary the key-parity half of this guarantee for
+    ///     free — <c>fr</c> declared as <c>Record&lt;UiKey, string&gt;</c> makes a missing or
+    ///     extra key a compile error (<c>i18n/ui.ts</c>). C# has no equivalent structural check,
+    ///     so this is the closest a plain static class gets: an explicit static constructor runs
+    ///     before <em>any</em> member of this type is first touched, so a key added to one locale
+    ///     and not the other, or an English string revised without its translation, surfaces the
+    ///     moment the playground starts — in every environment, not only the one where a French
+    ///     reader happens to hit it first. <c>tools/playground-i18n-guard</c> forces this
+    ///     constructor to run during the build itself, so a stale translation fails CI rather
+    ///     than only ever failing at someone's runtime (§6.4).
     /// </summary>
     static PlaygroundStrings() {
         string[] onlyInEn = En.Keys.Except(Fr.Keys).OrderBy(key => key, StringComparer.Ordinal).ToArray();
         string[] onlyInFr = Fr.Keys.Except(En.Keys).OrderBy(key => key, StringComparer.Ordinal).ToArray();
 
-        if (onlyInEn.Length == 0 && onlyInFr.Length == 0) {
-            return;
+        if (onlyInEn.Length > 0 || onlyInFr.Length > 0) {
+            throw new InvalidOperationException(
+                "PlaygroundStrings: En and Fr must declare exactly the same keys (§6.4)."
+                + (onlyInEn.Length > 0 ? $" Missing from Fr: {string.Join(", ", onlyInEn)}." : string.Empty)
+                + (onlyInFr.Length > 0 ? $" Missing from En: {string.Join(", ", onlyInFr)}." : string.Empty));
         }
 
-        throw new InvalidOperationException(
-            "PlaygroundStrings: En and Fr must declare exactly the same keys (§6.4)."
-            + (onlyInEn.Length > 0 ? $" Missing from Fr: {string.Join(", ", onlyInEn)}." : string.Empty)
-            + (onlyInFr.Length > 0 ? $" Missing from En: {string.Join(", ", onlyInFr)}." : string.Empty));
+        // §6.4: "a modification of the English content marks its translation stale, and CI
+        // reports it." A key present on both sides can still ship a French string answering a
+        // question the English no longer asks — this is what catches that, by comparing what
+        // French says it was translated from against what English actually says today.
+        string[] stale = Fr
+            .Where(entry => En[entry.Key] != entry.Value.TranslatedFrom)
+            .Select(entry => entry.Key)
+            .OrderBy(key => key, StringComparer.Ordinal)
+            .ToArray();
+
+        if (stale.Length > 0) {
+            throw new InvalidOperationException(
+                "PlaygroundStrings: the French translation is stale for keys whose English text changed "
+                + $"since it was translated (§6.4): {string.Join(", ", stale)}.");
+        }
     }
 
     /// <summary>
@@ -153,7 +197,7 @@ public static class PlaygroundStrings {
     ///     rules (§6.4) refuse to ship.
     /// </summary>
     public static string T(Locale locale, string key, params object[] args) {
-        string template = All[locale][key];
+        string template = locale == Locale.Fr ? Fr[key].Text : En[key];
 
         return args.Length == 0 ? template : string.Format(template, args);
     }
