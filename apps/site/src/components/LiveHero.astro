@@ -213,10 +213,23 @@ const value: string = sampleValue('hero-expression');
      * them in that instant.
      */
     .frame {
-        margin-top: var(--jd-space-4);
         border-radius: var(--jd-radius-md);
         background: var(--jd-surface);
         overflow: hidden;
+    }
+
+    /*
+     * The gap above .frame belongs to the moment it is a *second* thing on screen, under
+     * a still-visible .invite — the brief window between the press and the height report,
+     * where the loading box sits under the button that started it. That is also the only
+     * moment this rule matches: .invite carries `hidden` by the time .frame has anything
+     * settled to show (see the script's message handler), and once it does, .frame is the
+     * first visible thing in .hero-expression, the same way .sample — margin: 0 — used to
+     * be. A margin-top that did not turn off with it left .frame's card sitting 16px
+     * (one --jd-space-4) below where .sample's own top border was, measured.
+     */
+    .invite:not([hidden]) + .frame {
+        margin-top: var(--jd-space-4);
     }
 
     .frame :global(iframe) {
