@@ -161,6 +161,20 @@ jobs:
   # touches something only a rendered page can check now runs it too; the build job
   # decides which those are, and scripts/changes-need-a-browser.sh says why.
   #
+  # MAIN RENDERS UNCONDITIONALLY, AND IT IS NOT THE SAME QUESTION THE FILTER ANSWERS.
+  #
+  # A filter asks what a change touches. What breaks on main is not a change — it is a
+  # combination, and no filter can see one coming. It happened while the filter above was
+  # being written: #85 was green, four site commits landed on main behind it, and the
+  # result of putting the two together was a playground that no longer matched the page it
+  # is measured against. Both sides were rendered. Their sum was not, and the first thing
+  # that noticed was a release tag, at deploy time, with the deploy already blocked.
+  #
+  # So the tip of main is rendered every time it moves. There is nothing to compute and
+  # nothing to get wrong: the base is not a diff, it is "whatever main is now". Two and a
+  # half minutes per merge, against the one failure mode this pipeline had no earlier place
+  # to catch.
+  #
   # The other two paths are unchanged: workflow_dispatch, for a pull request somebody
   # wants rendered whatever the filter thinks, and every release, where it blocks the
   # deploy — see the `needs` on that job below.
@@ -170,6 +184,7 @@ jobs:
     if: >-
       github.event_name == 'workflow_dispatch'
       || startsWith(github.ref, 'refs/tags/release/')
+      || (github.event_name == 'push' && github.ref == 'refs/heads/main')
       || needs.build.outputs.needs-a-browser == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
