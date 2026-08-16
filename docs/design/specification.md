@@ -1193,6 +1193,7 @@ cassé.
 | Un emplacement de mesure indexé sur une position | 15.3 | Vérification de l'artefact, et refus du collecteur |
 | Une paire emplacement/variante qui désigne deux choses | 15.2 | Vérification de l'artefact |
 | Le beacon d'audience et la politique qui doit l'admettre | 15.1, 13.2 | Vérification de l'artefact, dans les deux sens |
+| Une version de paquet déclarée en retard sur le registre, ou en désaccord avec elle-même | 7.5 | `scripts/check-package-freshness.mjs`, sur planification et à chaque release ; avertissement et issue, jamais un échec de publication |
 
 Quand une règle de ce document n'a pas de ligne ici, c'est qu'elle repose sur
 l'attention. Le dire est plus utile que de faire semblant.
