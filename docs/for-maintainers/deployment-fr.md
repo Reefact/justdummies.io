@@ -663,6 +663,33 @@ Ce contrôle ne prouve **pas** que tu es authentifié : `--dry-run` ne contacte 
 le contrôle de l'étape 4 qui le fait. Il ne vérifie pas non plus le *contenu* de `dist/` — il compte
 des fichiers. C'est `pnpm build` et ses assertions qui le vérifient, à l'étape 1.
 
+**Avant de publier, active Analytics Engine sur le compte.** C'est un réglage de compte, à faire une
+fois, et rien de ce qui précède ne peut te dire qu'il manque : `--dry-run` ne contacte pas
+Cloudflare, et la table des bindings qu'il imprime est lue dans `wrangler.jsonc` plutôt que
+confrontée au compte. Tableau de bord → *Workers & Pages* → *Analytics Engine*. Le palier dans
+lequel ce site est conçu pour tenir est celui
+d'[ADR-0012](adr/0012-le-site-execute-un-script-worker-pour-la-mesure-fr.md).
+
+L'oublier coûte un déploiement, et l'échec arrive tard et trompeur :
+
+```
+✨ Success! Uploaded 59 files (167 already uploaded)
+Total Upload: 1.79 KiB / gzip: 0.79 KiB
+Your Worker has access to the following bindings:
+env.MEASUREMENT (justdummies_measurement)  Analytics Engine Dataset
+
+✘ [ERROR] A request to the Cloudflare API
+          (/accounts/<id>/workers/scripts/justdummies-site/versions) failed.
+
+  You need to enable Analytics Engine. Head to the Cloudflare Dashboard to enable:
+  https://dash.cloudflare.com/<id>/workers/analytics-engine        [code: 10089]
+```
+
+Tout ce qui précède l'erreur a réussi — les assets sont envoyés, `Total Upload` et la table des
+bindings s'affichent exactement comme cette étape le promet. Seul le dernier appel, celui qui crée
+la version, a été refusé. Le réflexe qu'invite la forme de cette sortie — chercher ce qui cloche
+dans l'artefact ou dans le binding — est donc le mauvais : rien dans le dépôt ne peut y remédier.
+
 Puis publie :
 
 ```bash
@@ -1167,9 +1194,12 @@ chaque moitié, et pourquoi il y en a deux, c'est
    deux il a produite, de sorte qu'un build qui a silencieusement cessé de mesurer se voit dans le
    journal plutôt que trois semaines plus tard sur un tableau de bord vide.
 
-3. **Le jeu de données ne demande aucune étape de création.** Analytics Engine crée
-   `justdummies_measurement` à la première écriture. Le binding est déjà déclaré dans
-   `wrangler.jsonc`.
+3. **Le jeu de données ne demande aucune étape de création — le produit, si.** Analytics Engine crée
+   `justdummies_measurement` à la première écriture, et le binding est déjà déclaré dans
+   `wrangler.jsonc`. Ce qui n'a jamais été automatique, c'est Analytics Engine lui-même : il
+   s'active une fois par compte, à l'étape 5, et tant qu'il ne l'est pas, *tout* déploiement est
+   refusé avec `[code: 10089]`. Arriver à cette étape signifie que l'étape 5 a publié, donc qu'il
+   est déjà actif — il n'y a rien à faire ici.
 
 4. Déployer, puis passer les contrôles ci-dessous.
 
@@ -1339,6 +1369,7 @@ de onze à quatorze scènes, et deux périodes mesurées par position ne seraien
 | Le domaine sert encore l'ancien site | Même cause, ou cache DNS local. |
 | Aucun beacon dans la page, aucun chiffre de fréquentation | `PUBLIC_CF_BEACON_TOKEN` n'était pas défini quand l'artefact a été construit. Le journal de build dit laquelle des deux variantes il a produite. Il faut reconstruire : la balise est rendue au build, pas à la requête. |
 | La console signale une violation de politique nommant `cloudflareinsights` | `_headers` a été modifié à la main, ou une balise beacon a été ajoutée à un build fait sans le jeton. La politique est dérivée de l'artefact ; reconstruire plutôt que rustiner. |
+| `wrangler deploy` : `You need to enable Analytics Engine` `[code: 10089]` | Un réglage de compte, pas une faute du dépôt — les assets sont envoyés et les bindings affichés avant l'échec. Voir l'étape 5. |
 | `/_event` répond **404** | `run_worker_first` ne le nomme plus, ou le Worker n'a pas été déployé. `wrangler deploy` annonce le binding quand il l'est. |
 | Les événements répondent `204` mais le jeu de données est vide | Le nom interrogé n'est pas celui qui est lié. Le binding et le nom du jeu de données sont tous deux dans `wrangler.jsonc`. |
 

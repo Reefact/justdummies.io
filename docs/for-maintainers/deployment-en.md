@@ -654,6 +654,32 @@ This check does **not** prove you are authenticated: `--dry-run` never contacts 
 check is what does. Nor does it verify the *contents* of `dist/` — it counts files. `pnpm build` and
 its assertions do that, back in step 1.
 
+**Before publishing, enable Analytics Engine on the account.** It is a one-off account setting, and
+nothing you have run so far can tell you it is missing: `--dry-run` never contacts Cloudflare, and
+the bindings table it prints is read out of `wrangler.jsonc` rather than checked against the account.
+Dashboard → *Workers & Pages* → *Analytics Engine*. The allowance this site is designed to live
+inside is [ADR-0012](adr/0012-the-site-runs-one-worker-script-for-measurement-en.md)'s.
+
+Skipping it costs a deployment, and the failure is late and misleading:
+
+```
+✨ Success! Uploaded 59 files (167 already uploaded)
+Total Upload: 1.79 KiB / gzip: 0.79 KiB
+Your Worker has access to the following bindings:
+env.MEASUREMENT (justdummies_measurement)  Analytics Engine Dataset
+
+✘ [ERROR] A request to the Cloudflare API
+          (/accounts/<id>/workers/scripts/justdummies-site/versions) failed.
+
+  You need to enable Analytics Engine. Head to the Cloudflare Dashboard to enable:
+  https://dash.cloudflare.com/<id>/workers/analytics-engine        [code: 10089]
+```
+
+Everything above the error succeeded — the assets are uploaded, `Total Upload` and the bindings
+table read exactly as this step promises. Only the last call, the one that creates the version, was
+refused. So the reflex the shape of that output invites — that something is wrong with the artefact
+or the binding — is the wrong one: nothing in the repository can fix it.
+
 Then publish:
 
 ```bash
@@ -1136,8 +1162,12 @@ why there are two of them, is [ADR-0012](adr/0012-the-site-runs-one-worker-scrip
    build that silently stopped measuring is visible in the log rather than three weeks later on an
    empty dashboard.
 
-3. **The dataset needs no creation step.** Analytics Engine creates `justdummies_measurement` on its
-   first write. The binding is already declared in `wrangler.jsonc`.
+3. **The dataset needs no creation step — the product did.** Analytics Engine creates
+   `justdummies_measurement` on its first write, and the binding is already declared in
+   `wrangler.jsonc`. What was never automatic is Analytics Engine itself: it is enabled once per
+   account, back in step 5, and until it is, *every* deployment is refused with `[code: 10089]`.
+   Reaching this step means step 5 published, which means it is already on — there is nothing to do
+   here.
 
 4. Deploy, then run the checks below.
 
@@ -1302,6 +1332,7 @@ once, and two periods measured by position would not be comparable.
 | The domain still serves the old site | Same cause, or a local DNS cache. |
 | No beacon in the page, and no audience figures | `PUBLIC_CF_BEACON_TOKEN` was not set when the artefact was built. The build log says which of the two it produced. Rebuilding is required — the tag is rendered at build time, not at request time. |
 | Console reports a policy violation naming `cloudflareinsights` | `_headers` was edited by hand, or a beacon tag was added to a build made without the token. The policy is derived from the artefact; rebuild rather than patch. |
+| `wrangler deploy`: `You need to enable Analytics Engine` `[code: 10089]` | An account setting, not a repository fault — the assets uploaded and the bindings printed before it failed. See step 5. |
 | `/_event` answers **404** | `run_worker_first` no longer names it, or the Worker did not deploy. `wrangler deploy` reports the binding when it does. |
 | Events return `204` but the dataset is empty | The name queried is not the one bound. The binding and the dataset name are both in `wrangler.jsonc`. |
 
