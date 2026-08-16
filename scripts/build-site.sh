@@ -54,18 +54,27 @@ if [ -f "${root}/dist/fr/404/index.html" ]; then
   rmdir "${root}/dist/fr/404"
 fi
 
+# The playground's own bridge to the library (§10.4). It feeds no Astro import, so it
+# only has to precede `dotnet publish` inside copy-playground.sh — but it must also come
+# before *every* step that builds a project referencing apps/playground, which is why it
+# runs ahead of the i18n guard below rather than beside it.
+#
+# That ordering is the point of the generator being a separate project that depends only
+# on playground-catalogue-core (ADR-0010/ADR-0011): when a new pinned JustDummies version
+# drops or renames a method the committed Generated/*.g.cs still calls, this step is what
+# rewrites that file. Anything that compiles apps/playground first would fail on the stale
+# generated code and, under `set -e`, take the build down before the one step able to
+# repair it ever ran — the bootstrap deadlock the split exists to prevent.
+echo "▸ Generating the playground's method catalogue"
+"${root}/scripts/generate-playground-catalogue.sh"
+
 # Before copy-playground.sh, not after: no reason to publish a playground whose own
 # check already knows it disagrees with itself. This is PlaygroundStrings.cs's parity
 # check (§6.4) actually executed rather than merely compiled — a static constructor
-# proves nothing on its own, since `dotnet build` never runs one.
+# proves nothing on its own, since `dotnet build` never runs one. It reaches that class
+# through a ProjectReference on apps/playground, hence its place after the catalogue.
 echo "▸ Checking the playground's locale keys agree"
 dotnet run --project "${root}/tools/playground-i18n-guard/JustDummies.PlaygroundI18nGuard.csproj"
-
-# The playground's own bridge to the library (§10.4) — regenerated here, right before
-# it is published, since it feeds no Astro import and only needs to exist and compile
-# before `dotnet publish` runs inside copy-playground.sh.
-echo "▸ Generating the playground's method catalogue"
-"${root}/scripts/generate-playground-catalogue.sh"
 
 "${root}/scripts/copy-playground.sh"
 
