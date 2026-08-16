@@ -399,9 +399,17 @@ else
   # rather than the panel, so that the names already recorded keep their meaning
   # (InstallTabs.astro). Two elements reporting one pair are correct precisely when they
   # do the same thing. What is checked is therefore the payload, not the count.
-  ambiguous="$(printf '%s\n' "${measurement}" | sort -u \
-    | awk -F'\t' '{ print $1 "\t" $2 "\t" $3 }' | uniq -d \
-    | awk -F'\t' '{ print $2 "/" $3 }' | sort -u | paste -sd' ' - || true)"
+  #
+  # ACROSS THE WHOLE ARTEFACT, not per page, and the page field is dropped before the
+  # comparison for that reason. The dataset has no page dimension: the collector writes
+  # a placement and a variant, and the reporting query groups by those two alone. So a
+  # pair meaning one thing on / and another on /fr/ is ambiguous in exactly the way this
+  # check exists to refuse, while a per-page key would call each of them unique and
+  # report nothing.
+  ambiguous="$(printf '%s\n' "${measurement}" \
+    | awk -F'\t' '{ print $2 "\t" $3 "\t" $4 }' | sort -u \
+    | awk -F'\t' '{ print $1 "\t" $2 }' | uniq -d \
+    | awk -F'\t' '{ print $1 "/" $2 }' | sort -u | paste -sd' ' - || true)"
   if [ -z "${ambiguous}" ]; then
     pass "no placement and variant pair reports two different things"
   else
