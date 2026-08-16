@@ -1096,6 +1096,87 @@ two: it asks the site rather than the account.
 
 ---
 
+## Step 10 — Turn the measurement on
+
+**Why** — Until this step, the site measures nothing. The beacon is not rendered because it has no
+token, and the events have nowhere to land. Both halves live in the dashboard rather than in the
+repository, which is why building and deploying does not switch them on. What each half is for, and
+why there are two of them, is [ADR-0010](adr/0010-the-site-runs-one-worker-script-for-measurement-en.md).
+
+**Do**
+
+1. **Web Analytics** — in the dashboard, *Web Analytics* → *Add a site* → `justdummies.io`. Open
+   *Manage site* and copy the **token** out of the snippet it shows you. Do not paste the snippet
+   anywhere: the site renders its own tag, and only the token is wanted.
+
+2. **Give CI the token, as a variable and not a secret.** In the repository's settings, add
+   `PUBLIC_CF_BEACON_TOKEN` under *Variables*. It belongs there because it genuinely is public — it
+   is rendered into every page of the site and is meant to be read. Filed as a secret it would be
+   masked in build logs for no reason, and the next person would treat it as something to protect.
+
+   A build without it is a normal build: no beacon, no audience figures, and a policy that grants
+   the analytics hosts nothing. `generate-headers.mjs` prints which of the two it produced, so a
+   build that silently stopped measuring is visible in the log rather than three weeks later on an
+   empty dashboard.
+
+3. **The dataset needs no creation step.** Analytics Engine creates `justdummies_measurement` on its
+   first write. The binding is already declared in `wrangler.jsonc`.
+
+4. Deploy, then run the checks below.
+
+### ✅ Check
+
+The first two are cheap. The third is the one that matters.
+
+```bash
+# 1 — the beacon is in the page
+curl -s https://justdummies.io/ | grep -c 'static.cloudflareinsights.com'      # expect 1
+
+# 2 — the collector accepts a well-formed event, and only that
+curl -s -o /dev/null -w '%{http_code}\n' -X POST https://justdummies.io/_event \
+  -H 'content-type: application/json' \
+  -d '{"event":"install-command-copied","placement":"hero","variant":"dotnet-cli","locale":"en","ordinal":0}'
+                                                                               # expect 204
+curl -s -o /dev/null -w '%{http_code}\n' https://justdummies.io/_event         # expect 405
+
+# 3 — the Worker is not on the path of anything else
+curl -s -o /dev/null -w '%{http_code}\n' https://justdummies.io/does-not-exist # expect 404
+```
+
+Then open the site in a browser, copy an install command, and **watch the console**. §13.2 requires
+every change to the content policy to be validated by a real load rather than by review, and this is
+that load: a blocked beacon reports itself there and nowhere else. Nothing should be reported.
+
+Check 3 is the one that proves the decision rather than the wiring. A 404 there means the request
+was answered by the asset layer without the Worker running — which is what keeps the script's quota
+off the site. If it ever answers something else, `run_worker_first` has been widened and ADR-0010's
+central claim no longer holds.
+
+### Reading what was recorded
+
+Analytics Engine ships no dashboard. The data is queried over its SQL API, and the fields are in the
+order the collector writes them — `blob1` the event name, then placement, variant and locale, with
+the ordinal as `double1`:
+
+```bash
+curl -s "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/analytics_engine/sql" \
+  -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+  -d "SELECT blob2 AS placement, blob3 AS variant, count() AS copies
+      FROM justdummies_measurement
+      WHERE timestamp > now() - INTERVAL '7' DAY
+      GROUP BY placement, variant
+      ORDER BY copies DESC"
+```
+
+That query is the whole point of §15.2: it says which moment of the page sent someone to install,
+and by which door. Group by `placement` alone for the moment, by `variant` alone for the door.
+
+Do not group by `double1`. It is the ordinal, it is there so a dashboard can print scenes in page
+order, and §15.3 forbids it as a key — the page has already gone from eleven scenes to fourteen
+once, and two periods measured by position would not be comparable.
+
+---
+
 ## Every check, in one table
 
 | # | Step | What it proves |
@@ -1113,6 +1194,7 @@ two: it asks the site rather than the account.
 | 7 | the **Deploy** job + `deployments list` | CI really publishes, with the right secrets. |
 | 8 | `HTTP/2 200` on the domain | DNS, TLS and the Worker attachment are in place. |
 | 9 | `deployments list` unchanged | A preview does not touch production. |
+| 10 | the beacon in the page, then `204`, `405`, `404` | The measurement is on, and the Worker is off the path of everything else. |
 
 ---
 
@@ -1138,6 +1220,10 @@ two: it asks the site rather than the account.
 | CI: `Authentication error` | Token absent, expired, or created on another account. |
 | `curl: (6) Could not resolve host` | Zone not **Active** yet, or nameservers unchanged at the registrar. |
 | The domain still serves the old site | Same cause, or a local DNS cache. |
+| No beacon in the page, and no audience figures | `PUBLIC_CF_BEACON_TOKEN` was not set when the artefact was built. The build log says which of the two it produced. Rebuilding is required — the tag is rendered at build time, not at request time. |
+| Console reports a policy violation naming `cloudflareinsights` | `_headers` was edited by hand, or a beacon tag was added to a build made without the token. The policy is derived from the artefact; rebuild rather than patch. |
+| `/_event` answers **404** | `run_worker_first` no longer names it, or the Worker did not deploy. `wrangler deploy` reports the binding when it does. |
+| Events return `204` but the dataset is empty | The name queried is not the one bound. The binding and the dataset name are both in `wrangler.jsonc`. |
 
 ---
 
@@ -1150,3 +1236,8 @@ two: it asks the site rather than the account.
 - **Previews in CI.** They are made by hand today (step 9). Automating them on pull requests would
   mean giving a pull request access to the token — not a configuration decision, a security
   decision.
+- **That a page request never invokes the Worker.** Asserted from Cloudflare's documentation and
+  from `run_worker_first`, not yet from this deployment. It belongs on §12.5's list until check 3
+  of step 10 has been run against the real site, because ADR-0010's central claim rests on it.
+- **The beacon's two hosts.** That the script host and the reporting host are the two the policy
+  names is documented rather than observed. The browser console on a real load settles it.
