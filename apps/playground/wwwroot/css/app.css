@@ -151,14 +151,22 @@ main {
    box without having navigated anywhere. The site's own subtitle carries
    nothing of the kind, and the two are meant to be the same page.
 
-   IT COSTS NO KEYBOARD USER ANYTHING, which is what makes it safe rather than
-   merely tidier. Blazor focuses this heading through `tabindex="-1"`: it is
-   not in the tab order, nobody reaches it by tabbing, and WCAG 2.4.7 is about
-   the indicator on components that keyboard focus can land on. The screen
-   reader announcement is unaffected — it comes from the focus moving, not from
-   what is painted around it. Every control on this page that a keyboard *can*
-   reach still shows its own ring (the `a:focus-visible` / `button:focus-visible`
-   rule above, and the per-control rules further down). */
+   WHAT IT COSTS, STATED PLAINLY, because it is not nothing. Blazor focuses
+   this heading through `tabindex="-1"`, so it is out of the tab order and
+   nobody reaches it by tabbing — but two links do route in-app and land focus
+   here afterwards: "Start over" on the Not Found page, and the bar's own
+   "Playground" entry. A keyboard reader following either one is no longer
+   shown where focus went, and where their next Tab begins. That is the trade,
+   made knowingly: the ring was wrong on the path every visitor takes and right
+   on two almost nobody does, so it goes. WCAG 2.4.7 is not in question either
+   way — it governs the indicator on components keyboard focus can be moved to
+   by the reader, and this heading is not one.
+
+   What is unaffected: the screen reader announcement, which comes from the
+   focus moving rather than from anything painted around it, and every control
+   a keyboard can actually reach — those still show their own ring, from the
+   `a:focus-visible` / `button:focus-visible` rule above and the per-control
+   rules further down. */
 .page-title:focus {
     outline: none;
 }
