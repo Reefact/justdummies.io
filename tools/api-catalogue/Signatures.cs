@@ -22,6 +22,10 @@ internal static class Signatures {
         ["Single"] = "float",
         ["Byte"] = "byte",
         ["SByte"] = "sbyte",
+        ["Char"] = "char",
+        ["UInt16"] = "ushort",
+        ["UInt32"] = "uint",
+        ["UInt64"] = "ulong",
         ["Void"] = "void",
         ["Object"] = "object",
     };
@@ -104,7 +108,7 @@ internal static class Signatures {
                 // calling convention for every variadic member in the catalogue.
                 string paramsPrefix = parameter.IsDefined(typeof(ParamArrayAttribute), inherit: false) ? "params " : "";
 
-                return $"{thisPrefix}{paramsPrefix}{Friendly(parameter.ParameterType, NullabilityContext.Create(parameter))} {parameter.Name}";
+                return $"{thisPrefix}{paramsPrefix}{Friendly(parameter.ParameterType, NullabilityContext.Create(parameter))} {parameter.Name}{DefaultValueSuffix(parameter)}";
             }));
         string call = $"{method.Name}{genericParameters}({parameters})";
         string constraints = method.IsGenericMethodDefinition ? ConstraintClauses(method.GetGenericArguments()) : "";
@@ -160,9 +164,33 @@ internal static class Signatures {
     public static string ConstructorSignature(ConstructorInfo constructor) {
         string parameters = string.Join(
             ", ",
-            constructor.GetParameters().Select(parameter => $"{Friendly(parameter.ParameterType, NullabilityContext.Create(parameter))} {parameter.Name}"));
+            constructor.GetParameters()
+                .Select(parameter => $"{Friendly(parameter.ParameterType, NullabilityContext.Create(parameter))} {parameter.Name}{DefaultValueSuffix(parameter)}"));
 
         return $"{constructor.DeclaringType!.Name}({parameters})";
+    }
+
+    /// <summary>
+    ///     ` = null`, ` = true` — the default a reader would type themselves to call with fewer
+    ///     arguments than the parameter list shows, not just the fact that fewer are accepted.
+    ///     <c>Reproducibly</c>'s <c>report</c> parameter is exactly this: reflection finds one
+    ///     overload, not the two-argument-only call the catalogue's own examples demonstrate,
+    ///     unless the default that makes the shorter call possible is shown.
+    /// </summary>
+    private static string DefaultValueSuffix(ParameterInfo parameter) {
+        if (!parameter.HasDefaultValue) {
+            return "";
+        }
+
+        string literal = parameter.DefaultValue switch {
+            null => "null",
+            bool flag => flag ? "true" : "false",
+            string text => $"\"{text}\"",
+            char character => $"'{character}'",
+            var value => Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) ?? "null",
+        };
+
+        return $" = {literal}";
     }
 
     public static string PropertySignature(PropertyInfo property) {
@@ -188,10 +216,6 @@ internal static class Signatures {
     ///     distinction handled below on its own, so a value type is never suffixed here.
     /// </summary>
     private static string Friendly(Type type, System.Reflection.NullabilityInfo? nullability) {
-        if (type.IsGenericParameter) {
-            return type.Name;
-        }
-
         Type? nullableUnderlying = Nullable.GetUnderlyingType(type);
 
         if (nullableUnderlying is not null) {
@@ -202,7 +226,17 @@ internal static class Signatures {
             return $"{Friendly(type.GetElementType()!, nullability?.ElementType)}[]";
         }
 
+        // Computed before the generic-parameter check below, not just before the generic-type
+        // one after it: OrNull<T>'s reference-type overload returns IAny<T> where T itself is
+        // the nullable one, and T is a generic parameter — an early return on IsGenericParameter
+        // above this line shipped once already and silently dropped the suffix for exactly that
+        // case (a value type's own Nullable<T> is a different, CLR-level distinction, already
+        // handled above, so it is excluded here).
         string suffix = !type.IsValueType && nullability?.ReadState == System.Reflection.NullabilityState.Nullable ? "?" : "";
+
+        if (type.IsGenericParameter) {
+            return type.Name + suffix;
+        }
 
         if (type.IsGenericType) {
             string bareName = type.Name[..type.Name.IndexOf('`')];

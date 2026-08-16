@@ -151,15 +151,15 @@
               "summary": "Starts an arbitrary Half generator drawing from this context (deterministic under this context's seed) — finite values only. Net8.0 target only, like the type itself."
             },
             {
-              "signature": "AnyOneOf<T> OneOf<T>(params T[] values)",
+              "signature": "AnyOneOf<T?> OneOf<T>(params T?[] values)",
               "summary": "Draws an arbitrary value from an explicit pool of caller-supplied values drawing from this context — same surface as OneOf, deterministic under this context's seed."
             },
             {
-              "signature": "AnyOneOf<T> ElementOf<T>(IReadOnlyList<T> values)",
+              "signature": "AnyOneOf<T?> ElementOf<T>(IReadOnlyList<T?> values)",
               "summary": "Draws an arbitrary value from an explicit pool held as a list drawing from this context — same surface as ElementOf, deterministic under this context's seed."
             },
             {
-              "signature": "AnyOneOf<T> ElementOf<T>(IEnumerable<T> values)",
+              "signature": "AnyOneOf<T?> ElementOf<T>(IEnumerable<T?> values)",
               "summary": "Draws an arbitrary value from an explicit pool held as a sequence drawing from this context — same surface as ElementOf, deterministic under this context's seed. The sequence is materialized once."
             }
           ]
@@ -177,7 +177,7 @@
           "constructors": [],
           "methods": [
             {
-              "signature": "T Generate()",
+              "signature": "T? Generate()",
               "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
@@ -220,7 +220,7 @@
             },
             {
               "signature": "bool Generate()",
-              "summary": null
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -289,7 +289,7 @@
             },
             {
               "signature": "byte Generate()",
-              "summary": null
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -301,7 +301,7 @@
           "summary": "A fluent generator of arbitrary Char values. Unconstrained, it draws from ASCII letters and digits — the same readable default as AnyString's filler — and the constraints mirror the string character families: Alpha, Numeric, AlphaNumeric, LowerCase, UpperCase, plus OneOf / Except / DifferentFrom. A combination that empties the pool fails eagerly with a ConflictingAnyConstraintException.",
           "extends": null,
           "implements": [
-            "IAny<Char>"
+            "IAny<char>"
           ],
           "entryPoints": [
             {
@@ -333,20 +333,20 @@
               "summary": "Requires an alphabetic character to be uppercase. Declared once per generator."
             },
             {
-              "signature": "AnyChar OneOf(params Char[] values)",
+              "signature": "AnyChar OneOf(params char[] values)",
               "summary": "Requires the character to be one of the supplied values. Declared once per generator."
             },
             {
-              "signature": "AnyChar Except(params Char[] values)",
+              "signature": "AnyChar Except(params char[] values)",
               "summary": "Requires the character to be none of the supplied values."
             },
             {
-              "signature": "AnyChar DifferentFrom(Char value)",
+              "signature": "AnyChar DifferentFrom(char value)",
               "summary": "Requires the character to differ from value — typically an existing value the test already holds. Semantically equivalent to Except; the name carries the intent at the call site."
             },
             {
-              "signature": "Char Generate()",
-              "summary": null
+              "signature": "char Generate()",
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -403,7 +403,7 @@
             },
             {
               "signature": "DateOnly Generate()",
-              "summary": null
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -464,7 +464,7 @@
             },
             {
               "signature": "DateTime Generate()",
-              "summary": null
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -533,7 +533,7 @@
             },
             {
               "signature": "DateTimeOffset Generate()",
-              "summary": null
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -610,7 +610,7 @@
             },
             {
               "signature": "decimal Generate()",
-              "summary": null
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -683,7 +683,7 @@
             },
             {
               "signature": "double Generate()",
-              "summary": null
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -724,7 +724,7 @@
             },
             {
               "signature": "TEnum Generate()",
-              "summary": null
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -769,7 +769,7 @@
             },
             {
               "signature": "Guid Generate()",
-              "summary": null
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -842,7 +842,7 @@
             },
             {
               "signature": "Half Generate()",
-              "summary": null
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -919,7 +919,7 @@
             },
             {
               "signature": "Int128 Generate()",
-              "summary": null
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -996,7 +996,7 @@
             },
             {
               "signature": "short Generate()",
-              "summary": null
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -1073,7 +1073,7 @@
             },
             {
               "signature": "int Generate()",
-              "summary": null
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -1150,7 +1150,7 @@
             },
             {
               "signature": "long Generate()",
-              "summary": null
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -1187,7 +1187,7 @@
             },
             {
               "signature": "string Generate()",
-              "summary": null
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -1264,7 +1264,7 @@
             },
             {
               "signature": "sbyte Generate()",
-              "summary": null
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -1337,7 +1337,7 @@
             },
             {
               "signature": "float Generate()",
-              "summary": null
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -1434,7 +1434,7 @@
             },
             {
               "signature": "string Generate()",
-              "summary": null
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -1495,7 +1495,7 @@
             },
             {
               "signature": "TimeOnly Generate()",
-              "summary": null
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -1572,7 +1572,7 @@
             },
             {
               "signature": "TimeSpan Generate()",
-              "summary": null
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -1641,7 +1641,7 @@
             },
             {
               "signature": "UInt128 Generate()",
-              "summary": null
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -1653,7 +1653,7 @@
           "summary": "A fluent generator of arbitrary UInt16 values — the same contract as AnyInt32: constraints express what the surrounding code requires of the value, never what the test asserts; contradictory constraints fail eagerly with a ConflictingAnyConstraintException naming both sides; instances are immutable recipes, and each value is built to satisfy the constraints in one draw.",
           "extends": null,
           "implements": [
-            "IAny<UInt16>"
+            "IAny<ushort>"
           ],
           "entryPoints": [
             {
@@ -1673,44 +1673,44 @@
               "summary": "Requires a value different from zero."
             },
             {
-              "signature": "AnyUInt16 GreaterThan(UInt16 value)",
+              "signature": "AnyUInt16 GreaterThan(ushort value)",
               "summary": "Requires a value strictly greater than value."
             },
             {
-              "signature": "AnyUInt16 GreaterThanOrEqualTo(UInt16 value)",
+              "signature": "AnyUInt16 GreaterThanOrEqualTo(ushort value)",
               "summary": "Requires a value greater than or equal to value."
             },
             {
-              "signature": "AnyUInt16 LessThan(UInt16 value)",
+              "signature": "AnyUInt16 LessThan(ushort value)",
               "summary": "Requires a value strictly less than value."
             },
             {
-              "signature": "AnyUInt16 LessThanOrEqualTo(UInt16 value)",
+              "signature": "AnyUInt16 LessThanOrEqualTo(ushort value)",
               "summary": "Requires a value less than or equal to value."
             },
             {
-              "signature": "AnyUInt16 Between(UInt16 minimum, UInt16 maximum)",
+              "signature": "AnyUInt16 Between(ushort minimum, ushort maximum)",
               "summary": "Requires a value within the inclusive range [minimum, maximum]."
             },
             {
-              "signature": "AnyUInt16 MultipleOf(UInt16 value)",
+              "signature": "AnyUInt16 MultipleOf(ushort value)",
               "summary": "Requires the value to be a multiple of value — drawn directly on that lattice, so the declared range keeps its meaning (unlike a post-hoc As(x => x * k) projection). Declared once per generator."
             },
             {
-              "signature": "AnyUInt16 OneOf(params UInt16[] values)",
+              "signature": "AnyUInt16 OneOf(params ushort[] values)",
               "summary": "Requires the value to be one of the supplied values. Declared once per generator."
             },
             {
-              "signature": "AnyUInt16 Except(params UInt16[] values)",
+              "signature": "AnyUInt16 Except(params ushort[] values)",
               "summary": "Requires the value to be none of the supplied values."
             },
             {
-              "signature": "AnyUInt16 DifferentFrom(UInt16 value)",
+              "signature": "AnyUInt16 DifferentFrom(ushort value)",
               "summary": "Requires the value to differ from value — typically an existing value the test already holds. Semantically equivalent to Except; the name carries the intent at the call site."
             },
             {
-              "signature": "UInt16 Generate()",
-              "summary": null
+              "signature": "ushort Generate()",
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -1722,7 +1722,7 @@
           "summary": "A fluent generator of arbitrary UInt32 values — the same contract as AnyInt32: constraints express what the surrounding code requires of the value, never what the test asserts; contradictory constraints fail eagerly with a ConflictingAnyConstraintException naming both sides; instances are immutable recipes, and each value is built to satisfy the constraints in one draw.",
           "extends": null,
           "implements": [
-            "IAny<UInt32>"
+            "IAny<uint>"
           ],
           "entryPoints": [
             {
@@ -1742,44 +1742,44 @@
               "summary": "Requires a value different from zero."
             },
             {
-              "signature": "AnyUInt32 GreaterThan(UInt32 value)",
+              "signature": "AnyUInt32 GreaterThan(uint value)",
               "summary": "Requires a value strictly greater than value."
             },
             {
-              "signature": "AnyUInt32 GreaterThanOrEqualTo(UInt32 value)",
+              "signature": "AnyUInt32 GreaterThanOrEqualTo(uint value)",
               "summary": "Requires a value greater than or equal to value."
             },
             {
-              "signature": "AnyUInt32 LessThan(UInt32 value)",
+              "signature": "AnyUInt32 LessThan(uint value)",
               "summary": "Requires a value strictly less than value."
             },
             {
-              "signature": "AnyUInt32 LessThanOrEqualTo(UInt32 value)",
+              "signature": "AnyUInt32 LessThanOrEqualTo(uint value)",
               "summary": "Requires a value less than or equal to value."
             },
             {
-              "signature": "AnyUInt32 Between(UInt32 minimum, UInt32 maximum)",
+              "signature": "AnyUInt32 Between(uint minimum, uint maximum)",
               "summary": "Requires a value within the inclusive range [minimum, maximum]."
             },
             {
-              "signature": "AnyUInt32 MultipleOf(UInt32 value)",
+              "signature": "AnyUInt32 MultipleOf(uint value)",
               "summary": "Requires the value to be a multiple of value — drawn directly on that lattice, so the declared range keeps its meaning (unlike a post-hoc As(x => x * k) projection). Declared once per generator."
             },
             {
-              "signature": "AnyUInt32 OneOf(params UInt32[] values)",
+              "signature": "AnyUInt32 OneOf(params uint[] values)",
               "summary": "Requires the value to be one of the supplied values. Declared once per generator."
             },
             {
-              "signature": "AnyUInt32 Except(params UInt32[] values)",
+              "signature": "AnyUInt32 Except(params uint[] values)",
               "summary": "Requires the value to be none of the supplied values."
             },
             {
-              "signature": "AnyUInt32 DifferentFrom(UInt32 value)",
+              "signature": "AnyUInt32 DifferentFrom(uint value)",
               "summary": "Requires the value to differ from value — typically an existing value the test already holds. Semantically equivalent to Except; the name carries the intent at the call site."
             },
             {
-              "signature": "UInt32 Generate()",
-              "summary": null
+              "signature": "uint Generate()",
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -1791,7 +1791,7 @@
           "summary": "A fluent generator of arbitrary UInt64 values — the same contract as AnyInt32: constraints express what the surrounding code requires of the value, never what the test asserts; contradictory constraints fail eagerly with a ConflictingAnyConstraintException naming both sides; instances are immutable recipes, and each value is built to satisfy the constraints in one draw.",
           "extends": null,
           "implements": [
-            "IAny<UInt64>"
+            "IAny<ulong>"
           ],
           "entryPoints": [
             {
@@ -1811,44 +1811,44 @@
               "summary": "Requires a value different from zero."
             },
             {
-              "signature": "AnyUInt64 GreaterThan(UInt64 value)",
+              "signature": "AnyUInt64 GreaterThan(ulong value)",
               "summary": "Requires a value strictly greater than value."
             },
             {
-              "signature": "AnyUInt64 GreaterThanOrEqualTo(UInt64 value)",
+              "signature": "AnyUInt64 GreaterThanOrEqualTo(ulong value)",
               "summary": "Requires a value greater than or equal to value."
             },
             {
-              "signature": "AnyUInt64 LessThan(UInt64 value)",
+              "signature": "AnyUInt64 LessThan(ulong value)",
               "summary": "Requires a value strictly less than value."
             },
             {
-              "signature": "AnyUInt64 LessThanOrEqualTo(UInt64 value)",
+              "signature": "AnyUInt64 LessThanOrEqualTo(ulong value)",
               "summary": "Requires a value less than or equal to value."
             },
             {
-              "signature": "AnyUInt64 Between(UInt64 minimum, UInt64 maximum)",
+              "signature": "AnyUInt64 Between(ulong minimum, ulong maximum)",
               "summary": "Requires a value within the inclusive range [minimum, maximum]."
             },
             {
-              "signature": "AnyUInt64 MultipleOf(UInt64 value)",
+              "signature": "AnyUInt64 MultipleOf(ulong value)",
               "summary": "Requires the value to be a multiple of value — drawn directly on that lattice, so the declared range keeps its meaning (unlike a post-hoc As(x => x * k) projection). Declared once per generator."
             },
             {
-              "signature": "AnyUInt64 OneOf(params UInt64[] values)",
+              "signature": "AnyUInt64 OneOf(params ulong[] values)",
               "summary": "Requires the value to be one of the supplied values. Declared once per generator."
             },
             {
-              "signature": "AnyUInt64 Except(params UInt64[] values)",
+              "signature": "AnyUInt64 Except(params ulong[] values)",
               "summary": "Requires the value to be none of the supplied values."
             },
             {
-              "signature": "AnyUInt64 DifferentFrom(UInt64 value)",
+              "signature": "AnyUInt64 DifferentFrom(ulong value)",
               "summary": "Requires the value to differ from value — typically an existing value the test already holds. Semantically equivalent to Except; the name carries the intent at the call site."
             },
             {
-              "signature": "UInt64 Generate()",
-              "summary": null
+              "signature": "ulong Generate()",
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         }
@@ -1905,7 +1905,7 @@
             },
             {
               "signature": "Uri Generate()",
-              "summary": null
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -1937,7 +1937,7 @@
             },
             {
               "signature": "Uri Generate()",
-              "summary": null
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -1973,7 +1973,7 @@
             },
             {
               "signature": "Uri Generate()",
-              "summary": null
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -2018,7 +2018,7 @@
             },
             {
               "signature": "Uri Generate()",
-              "summary": null
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -2070,7 +2070,7 @@
             },
             {
               "signature": "Uri Generate()",
-              "summary": null
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -2138,7 +2138,7 @@
             },
             {
               "signature": "Uri Generate()",
-              "summary": null
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         }
@@ -2159,7 +2159,7 @@
           ],
           "entryPoints": [
             {
-              "signature": "static AnyArray<T> Any.ArrayOf<T>(IAny<T> item)",
+              "signature": "static AnyArray<T?> Any.ArrayOf<T>(IAny<T?> item)",
               "summary": "Starts an arbitrary array (T[]) generator over item — same constraint surface as ListOf, producing an array."
             }
           ],
@@ -2167,11 +2167,11 @@
           "constructors": [],
           "methods": [
             {
-              "signature": "AnyArray<T> Distinct()",
+              "signature": "AnyArray<T?> Distinct()",
               "summary": "Requires the elements to be pairwise distinct (default equality)."
             },
             {
-              "signature": "AnyArray<T> Distinct(IEqualityComparer<T> comparer)",
+              "signature": "AnyArray<T?> Distinct(IEqualityComparer<T?> comparer)",
               "summary": "Requires the elements to be pairwise distinct under comparer."
             }
           ]
@@ -2215,16 +2215,16 @@
               "summary": "Requires a number of elements within the inclusive range [minimum, maximum]."
             },
             {
-              "signature": "TSelf Containing(TItem value)",
+              "signature": "TSelf Containing(TItem? value)",
               "summary": "Requires the collection to contain value. May be declared several times; each required value takes one element's room. In a distinct collection the required values must themselves be distinct."
             },
             {
-              "signature": "TSelf ContainingAny(IAny<TItem> generator)",
+              "signature": "TSelf ContainingAny(IAny<TItem?> generator)",
               "summary": "Requires the collection to contain a value drawn from generator at generation time — useful to force a particular shape of element into an otherwise arbitrary collection. Named apart from Containing to keep the two cases legible: Containing pins a concrete value known now, whereas this method draws one from a generator when the collection is built."
             },
             {
-              "signature": "TResult Generate()",
-              "summary": null
+              "signature": "TResult? Generate()",
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -2240,11 +2240,11 @@
           ],
           "entryPoints": [
             {
-              "signature": "static AnyDictionary<TKey, TValue> Any.DictionaryOf<TKey, TValue>(IAny<TKey> keys, IAny<TValue> values)",
+              "signature": "static AnyDictionary<TKey, TValue?> Any.DictionaryOf<TKey, TValue>(IAny<TKey> keys, IAny<TValue?> values)",
               "summary": "Starts an arbitrary Dictionary generator drawing keys from keys and values from values. Keys are distinct by nature, so the key generator's domain gates feasibility exactly as it does for SetOf."
             },
             {
-              "signature": "static AnyDictionary<TKey, TValue> Any.DictionaryOf<TKey, TValue>(IAny<TKey> keys, IAny<TValue> values, IEqualityComparer<TKey> keyComparer)",
+              "signature": "static AnyDictionary<TKey, TValue?> Any.DictionaryOf<TKey, TValue>(IAny<TKey> keys, IAny<TValue?> values, IEqualityComparer<TKey> keyComparer)",
               "summary": "Starts an arbitrary Dictionary generator whose keys are deduplicated with keyComparer — the same comparer the resulting dictionary carries."
             }
           ],
@@ -2252,44 +2252,44 @@
           "constructors": [],
           "methods": [
             {
-              "signature": "AnyDictionary<TKey, TValue> NonEmpty()",
+              "signature": "AnyDictionary<TKey, TValue?> NonEmpty()",
               "summary": "Requires at least one entry."
             },
             {
-              "signature": "AnyDictionary<TKey, TValue> Empty()",
+              "signature": "AnyDictionary<TKey, TValue?> Empty()",
               "summary": "Fixes the dictionary to no entries."
             },
             {
-              "signature": "AnyDictionary<TKey, TValue> WithCount(int count)",
+              "signature": "AnyDictionary<TKey, TValue?> WithCount(int count)",
               "summary": "Fixes the exact number of entries. Declared once per generator."
             },
             {
-              "signature": "AnyDictionary<TKey, TValue> WithMinCount(int count)",
+              "signature": "AnyDictionary<TKey, TValue?> WithMinCount(int count)",
               "summary": "Requires at least count entries."
             },
             {
-              "signature": "AnyDictionary<TKey, TValue> WithMaxCount(int count)",
+              "signature": "AnyDictionary<TKey, TValue?> WithMaxCount(int count)",
               "summary": "Requires at most count entries."
             },
             {
-              "signature": "AnyDictionary<TKey, TValue> WithCountBetween(int minimum, int maximum)",
+              "signature": "AnyDictionary<TKey, TValue?> WithCountBetween(int minimum, int maximum)",
               "summary": "Requires a number of entries within the inclusive range [minimum, maximum]."
             },
             {
-              "signature": "AnyDictionary<TKey, TValue> ContainingKey(TKey key)",
+              "signature": "AnyDictionary<TKey, TValue?> ContainingKey(TKey key)",
               "summary": "Requires the dictionary to contain an entry for key. May be declared several times; each required key takes one entry's room and the required keys must be distinct. A key outside the key generator's domain extends the effective cardinality exactly as AnySet's containment does, so an otherwise impossible entry count becomes reachable; the entry's value is generated like any other. Named ContainingKey rather than a bare Containing so the surface reads unambiguously on a dictionary, whose elements are key/value pairs."
             },
             {
-              "signature": "AnyDictionary<TKey, TValue> ContainingAnyKey(IAny<TKey> generator)",
+              "signature": "AnyDictionary<TKey, TValue?> ContainingAnyKey(IAny<TKey> generator)",
               "summary": "Requires the dictionary to contain an entry whose key is drawn from generator at generation time — the key analogue of a collection's ContainingAny. Named apart from ContainingKey to keep the two cases legible: ContainingKey pins a concrete key known now, whereas this draws one from a generator when the dictionary is built. The drawn key takes one entry's room and its value is generated like any other."
             },
             {
-              "signature": "AnyDictionary<TKey, TValue> ContainingEntry(TKey key, TValue value)",
+              "signature": "AnyDictionary<TKey, TValue?> ContainingEntry(TKey key, TValue? value)",
               "summary": "Requires the dictionary to contain the entry key → value: the key is forced in exactly as ContainingKey does (inheriting the out-of-domain cardinality credit), and its value is pinned to value instead of being drawn from the value generator; the other entries stay arbitrary. Declaring two entries for the same key — or an entry and a ContainingKey for it — conflicts, since the keys must be distinct."
             },
             {
-              "signature": "Dictionary<TKey, TValue> Generate()",
-              "summary": null
+              "signature": "Dictionary<TKey, TValue?> Generate()",
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -2305,7 +2305,7 @@
           ],
           "entryPoints": [
             {
-              "signature": "static AnyList<T> Any.ListOf<T>(IAny<T> item)",
+              "signature": "static AnyList<T?> Any.ListOf<T>(IAny<T?> item)",
               "summary": "Starts an arbitrary List generator over item. Unconstrained, it yields 0 to 8 elements; chain constraints to express what the surrounding code requires (NonEmpty(), WithCount(...), Distinct(), Containing(...))."
             }
           ],
@@ -2313,11 +2313,11 @@
           "constructors": [],
           "methods": [
             {
-              "signature": "AnyList<T> Distinct()",
+              "signature": "AnyList<T?> Distinct()",
               "summary": "Requires the elements to be pairwise distinct (default equality)."
             },
             {
-              "signature": "AnyList<T> Distinct(IEqualityComparer<T> comparer)",
+              "signature": "AnyList<T?> Distinct(IEqualityComparer<T?> comparer)",
               "summary": "Requires the elements to be pairwise distinct under comparer."
             }
           ]
@@ -2334,7 +2334,7 @@
           ],
           "entryPoints": [
             {
-              "signature": "static AnySequence<T> Any.SequenceOf<T>(IAny<T> item)",
+              "signature": "static AnySequence<T?> Any.SequenceOf<T>(IAny<T?> item)",
               "summary": "Starts an arbitrary IEnumerable generator over item — same constraint surface as ListOf. The generated sequence is fully materialized, so it never re-draws when enumerated more than once."
             }
           ],
@@ -2342,11 +2342,11 @@
           "constructors": [],
           "methods": [
             {
-              "signature": "AnySequence<T> Distinct()",
+              "signature": "AnySequence<T?> Distinct()",
               "summary": "Requires the elements to be pairwise distinct (default equality)."
             },
             {
-              "signature": "AnySequence<T> Distinct(IEqualityComparer<T> comparer)",
+              "signature": "AnySequence<T?> Distinct(IEqualityComparer<T?> comparer)",
               "summary": "Requires the elements to be pairwise distinct under comparer."
             }
           ]
@@ -2363,11 +2363,11 @@
           ],
           "entryPoints": [
             {
-              "signature": "static AnySet<T> Any.SetOf<T>(IAny<T> item)",
+              "signature": "static AnySet<T?> Any.SetOf<T>(IAny<T?> item)",
               "summary": "Starts an arbitrary HashSet generator over item — distinct by nature. When the count exceeds the number of distinct values item can produce, the conflict is reported eagerly."
             },
             {
-              "signature": "static AnySet<T> Any.SetOf<T>(IAny<T> item, IEqualityComparer<T> comparer)",
+              "signature": "static AnySet<T?> Any.SetOf<T>(IAny<T?> item, IEqualityComparer<T?> comparer)",
               "summary": "Starts an arbitrary HashSet generator over item, deduplicating elements with comparer — the same comparer the resulting set carries."
             }
           ],
@@ -2393,7 +2393,7 @@
           "constructors": [],
           "methods": [
             {
-              "signature": "IAny<TResult> As<TSource, TResult>(this IAny<TSource> generator, Func<TSource, TResult> factory)",
+              "signature": "IAny<TResult?> As<TSource, TResult>(this IAny<TSource?> generator, Func<TSource?, TResult?> factory)",
               "summary": "Derives a generator of TResult by passing each generated TSource through factory — typically a value object's own factory method, so the constraints declared upstream express the invariant that factory enforces."
             }
           ]
@@ -2410,15 +2410,15 @@
           ],
           "entryPoints": [
             {
-              "signature": "static AnyOneOf<T> Any.OneOf<T>(params T[] values)",
+              "signature": "static AnyOneOf<T?> Any.OneOf<T>(params T?[] values)",
               "summary": "Draws an arbitrary value from an explicit pool of caller-supplied values, over the ambient random context — the top-level choice combinator for a value whose domain is a closed set the test does not assert on (\"one of the configured currencies\", \"one of the states in this table\"). The pool is the whole shape of the specification — T is opaque, so the returned generator offers no type-specific constraint, only the exclusion pair Except/DifferentFrom every generator carries — and it composes through As(...), OrNull(), Combine(...) and the collection generators like any other. To draw from a pool already held as a collection, use ElementOf."
             },
             {
-              "signature": "static AnyOneOf<T> Any.ElementOf<T>(IReadOnlyList<T> values)",
+              "signature": "static AnyOneOf<T?> Any.ElementOf<T>(IReadOnlyList<T?> values)",
               "summary": "Draws an arbitrary value from an explicit pool held as a list — the IReadOnlyList counterpart of OneOf, for a pool already materialized (a configuration list, a fixture, a lookup table of domain objects). Same contract as OneOf: duplicates collapse, the draw is uniform and reproducible under a seed, and Except/DifferentFrom narrow the pool — Any.ElementOf(orders).DifferentFrom(theOneAlreadyUsed) is the idiom this overload exists for."
             },
             {
-              "signature": "static AnyOneOf<T> Any.ElementOf<T>(IEnumerable<T> values)",
+              "signature": "static AnyOneOf<T?> Any.ElementOf<T>(IEnumerable<T?> values)",
               "summary": "Draws an arbitrary value from an explicit pool held as a sequence — the IEnumerable counterpart of ElementOf (a LINQ result, values loaded at setup). The sequence is materialized once, so a lazy query is never re-enumerated per draw."
             }
           ],
@@ -2426,16 +2426,16 @@
           "constructors": [],
           "methods": [
             {
-              "signature": "AnyOneOf<T> Except(params T[] values)",
+              "signature": "AnyOneOf<T?> Except(params T?[] values)",
               "summary": "Requires the generated value to be none of the supplied values — they are removed from the pool under Default, so the draw stays a single uniform pick over what is left. May be declared several times; the exclusions accumulate. A value that is not in the pool removes nothing."
             },
             {
-              "signature": "AnyOneOf<T> DifferentFrom(T value)",
+              "signature": "AnyOneOf<T?> DifferentFrom(T? value)",
               "summary": "Requires the generated value to differ from value — typically a value the test already holds, to exercise an inequality path while still drawing from the pool (Any.ElementOf(orders).DifferentFrom(theOneAlreadyUsed)). Semantically equivalent to Except; the name carries the intent at the call site."
             },
             {
-              "signature": "T Generate()",
-              "summary": null
+              "signature": "T? Generate()",
+              "summary": "Produces one arbitrary value satisfying every constraint declared on this generator."
             }
           ]
         },
@@ -2443,7 +2443,7 @@
           "id": "combine",
           "name": "Combine",
           "kind": "static method",
-          "signature": "static IAny<TResult> Any.Combine<T1, T2, TResult>(IAny<T1> first, IAny<T2> second, Func<T1, T2, TResult> compose)",
+          "signature": "static IAny<TResult?> Any.Combine<T1, T2, TResult>(IAny<T1?> first, IAny<T2?> second, Func<T1?, T2?, TResult?> compose)",
           "summary": "Composes two generators into one through a constructor lambda — the reflection-free way to assemble an object from constrained parts. Each part draws from its own random context when the composed generator generates.",
           "extends": null,
           "implements": [],
@@ -2452,31 +2452,31 @@
           "constructors": [],
           "methods": [
             {
-              "signature": "static IAny<TResult> Any.Combine<T1, T2, TResult>(IAny<T1> first, IAny<T2> second, Func<T1, T2, TResult> compose)",
+              "signature": "static IAny<TResult?> Any.Combine<T1, T2, TResult>(IAny<T1?> first, IAny<T2?> second, Func<T1?, T2?, TResult?> compose)",
               "summary": "Composes two generators into one through a constructor lambda — the reflection-free way to assemble an object from constrained parts. Each part draws from its own random context when the composed generator generates."
             },
             {
-              "signature": "static IAny<TResult> Any.Combine<T1, T2, T3, TResult>(IAny<T1> first, IAny<T2> second, IAny<T3> third, Func<T1, T2, T3, TResult> compose)",
+              "signature": "static IAny<TResult?> Any.Combine<T1, T2, T3, TResult>(IAny<T1?> first, IAny<T2?> second, IAny<T3?> third, Func<T1?, T2?, T3?, TResult?> compose)",
               "summary": "Composes three generators into one through a constructor lambda — see Combine."
             },
             {
-              "signature": "static IAny<TResult> Any.Combine<T1, T2, T3, T4, TResult>(IAny<T1> first, IAny<T2> second, IAny<T3> third, IAny<T4> fourth, Func<T1, T2, T3, T4, TResult> compose)",
+              "signature": "static IAny<TResult?> Any.Combine<T1, T2, T3, T4, TResult>(IAny<T1?> first, IAny<T2?> second, IAny<T3?> third, IAny<T4?> fourth, Func<T1?, T2?, T3?, T4?, TResult?> compose)",
               "summary": "Composes four generators into one through a constructor lambda — see Combine."
             },
             {
-              "signature": "static IAny<TResult> Any.Combine<T1, T2, T3, T4, T5, TResult>(IAny<T1> first, IAny<T2> second, IAny<T3> third, IAny<T4> fourth, IAny<T5> fifth, Func<T1, T2, T3, T4, T5, TResult> compose)",
+              "signature": "static IAny<TResult?> Any.Combine<T1, T2, T3, T4, T5, TResult>(IAny<T1?> first, IAny<T2?> second, IAny<T3?> third, IAny<T4?> fourth, IAny<T5?> fifth, Func<T1?, T2?, T3?, T4?, T5?, TResult?> compose)",
               "summary": "Composes five generators into one through a constructor lambda — see Combine."
             },
             {
-              "signature": "static IAny<TResult> Any.Combine<T1, T2, T3, T4, T5, T6, TResult>(IAny<T1> first, IAny<T2> second, IAny<T3> third, IAny<T4> fourth, IAny<T5> fifth, IAny<T6> sixth, Func<T1, T2, T3, T4, T5, T6, TResult> compose)",
+              "signature": "static IAny<TResult?> Any.Combine<T1, T2, T3, T4, T5, T6, TResult>(IAny<T1?> first, IAny<T2?> second, IAny<T3?> third, IAny<T4?> fourth, IAny<T5?> fifth, IAny<T6?> sixth, Func<T1?, T2?, T3?, T4?, T5?, T6?, TResult?> compose)",
               "summary": "Composes six generators into one through a constructor lambda — see Combine."
             },
             {
-              "signature": "static IAny<TResult> Any.Combine<T1, T2, T3, T4, T5, T6, T7, TResult>(IAny<T1> first, IAny<T2> second, IAny<T3> third, IAny<T4> fourth, IAny<T5> fifth, IAny<T6> sixth, IAny<T7> seventh, Func<T1, T2, T3, T4, T5, T6, T7, TResult> compose)",
+              "signature": "static IAny<TResult?> Any.Combine<T1, T2, T3, T4, T5, T6, T7, TResult>(IAny<T1?> first, IAny<T2?> second, IAny<T3?> third, IAny<T4?> fourth, IAny<T5?> fifth, IAny<T6?> sixth, IAny<T7?> seventh, Func<T1?, T2?, T3?, T4?, T5?, T6?, T7?, TResult?> compose)",
               "summary": "Composes seven generators into one through a constructor lambda — see Combine."
             },
             {
-              "signature": "static IAny<TResult> Any.Combine<T1, T2, T3, T4, T5, T6, T7, T8, TResult>(IAny<T1> first, IAny<T2> second, IAny<T3> third, IAny<T4> fourth, IAny<T5> fifth, IAny<T6> sixth, IAny<T7> seventh, IAny<T8> eighth, Func<T1, T2, T3, T4, T5, T6, T7, T8, TResult> compose)",
+              "signature": "static IAny<TResult?> Any.Combine<T1, T2, T3, T4, T5, T6, T7, T8, TResult>(IAny<T1?> first, IAny<T2?> second, IAny<T3?> third, IAny<T4?> fourth, IAny<T5?> fifth, IAny<T6?> sixth, IAny<T7?> seventh, IAny<T8?> eighth, Func<T1?, T2?, T3?, T4?, T5?, T6?, T7?, T8?, TResult?> compose)",
               "summary": "Composes eight generators into one through a constructor lambda — see Combine. Eight is the ceiling; a constructor needing more parts is better assembled from intermediate value objects."
             }
           ]
@@ -2512,7 +2512,7 @@
           "constructors": [],
           "methods": [
             {
-              "signature": "IAny<T> OrNull<T>(this IAny<T> generator) where T : class",
+              "signature": "IAny<T?> OrNull<T>(this IAny<T> generator) where T : class",
               "summary": "Derives a generator that yields null about half the time and, otherwise, a value drawn from generator — the dummy for an optional reference-type field."
             }
           ]
@@ -2521,7 +2521,7 @@
           "id": "pair-of",
           "name": "PairOf",
           "kind": "static method",
-          "signature": "static IAny<ValueTuple<T1, T2>> Any.PairOf<T1, T2>(IAny<T1> first, IAny<T2> second)",
+          "signature": "static IAny<ValueTuple<T1?, T2?>> Any.PairOf<T1, T2>(IAny<T1?> first, IAny<T2?> second)",
           "summary": "Composes two generators into a generator of the value tuple (T1, T2) — sugar over Combine for the common case of pairing two arbitrary values.",
           "extends": null,
           "implements": [],
@@ -2530,7 +2530,7 @@
           "constructors": [],
           "methods": [
             {
-              "signature": "static IAny<ValueTuple<T1, T2>> Any.PairOf<T1, T2>(IAny<T1> first, IAny<T2> second)",
+              "signature": "static IAny<ValueTuple<T1?, T2?>> Any.PairOf<T1, T2>(IAny<T1?> first, IAny<T2?> second)",
               "summary": "Composes two generators into a generator of the value tuple (T1, T2) — sugar over Combine for the common case of pairing two arbitrary values."
             }
           ]
@@ -2539,7 +2539,7 @@
           "id": "triple-of",
           "name": "TripleOf",
           "kind": "static method",
-          "signature": "static IAny<ValueTuple<T1, T2, T3>> Any.TripleOf<T1, T2, T3>(IAny<T1> first, IAny<T2> second, IAny<T3> third)",
+          "signature": "static IAny<ValueTuple<T1?, T2?, T3?>> Any.TripleOf<T1, T2, T3>(IAny<T1?> first, IAny<T2?> second, IAny<T3?> third)",
           "summary": "Composes three generators into a generator of the value tuple (T1, T2, T3) — sugar over Combine.",
           "extends": null,
           "implements": [],
@@ -2548,7 +2548,7 @@
           "constructors": [],
           "methods": [
             {
-              "signature": "static IAny<ValueTuple<T1, T2, T3>> Any.TripleOf<T1, T2, T3>(IAny<T1> first, IAny<T2> second, IAny<T3> third)",
+              "signature": "static IAny<ValueTuple<T1?, T2?, T3?>> Any.TripleOf<T1, T2, T3>(IAny<T1?> first, IAny<T2?> second, IAny<T3?> third)",
               "summary": "Composes three generators into a generator of the value tuple (T1, T2, T3) — sugar over Combine."
             }
           ]
@@ -2596,7 +2596,7 @@
           "id": "reproducibly",
           "name": "Reproducibly",
           "kind": "static method",
-          "signature": "static void Any.Reproducibly(Action body, Action<string>? report)",
+          "signature": "static void Any.Reproducibly(Action body, Action<string>? report = null)",
           "summary": "Runs body with the ambient random context pinned to a fresh seed and, if the body throws, reports that seed before letting the exception propagate. This is how a test that draws on Any stays reproducible: the values still vary between runs (which surfaces accidental dependencies), yet a failure names the exact seed to replay.",
           "extends": null,
           "implements": [],
@@ -2605,11 +2605,11 @@
           "constructors": [],
           "methods": [
             {
-              "signature": "static void Any.Reproducibly(Action body, Action<string>? report)",
+              "signature": "static void Any.Reproducibly(Action body, Action<string>? report = null)",
               "summary": "Runs body with the ambient random context pinned to a fresh seed and, if the body throws, reports that seed before letting the exception propagate. This is how a test that draws on Any stays reproducible: the values still vary between runs (which surfaces accidental dependencies), yet a failure names the exact seed to replay."
             },
             {
-              "signature": "static void Any.Reproducibly(int seed, Action body, Action<string>? report)",
+              "signature": "static void Any.Reproducibly(int seed, Action body, Action<string>? report = null)",
               "summary": "Replays body with the ambient random context pinned to seed, so a run first seen through the parameterless Reproducibly overload can be reproduced exactly. If the body throws, the seed is reported before the exception propagates."
             }
           ]
@@ -2618,7 +2618,7 @@
           "id": "reproducibly-async",
           "name": "ReproduciblyAsync",
           "kind": "static method",
-          "signature": "static Task Any.ReproduciblyAsync(Func<Task> body, Action<string>? report)",
+          "signature": "static Task Any.ReproduciblyAsync(Func<Task> body, Action<string>? report = null)",
           "summary": "Asynchronous counterpart of Reproducibly: awaits body under a fresh seed and reports it if the body faults.",
           "extends": null,
           "implements": [],
@@ -2627,11 +2627,11 @@
           "constructors": [],
           "methods": [
             {
-              "signature": "static Task Any.ReproduciblyAsync(Func<Task> body, Action<string>? report)",
+              "signature": "static Task Any.ReproduciblyAsync(Func<Task> body, Action<string>? report = null)",
               "summary": "Asynchronous counterpart of Reproducibly: awaits body under a fresh seed and reports it if the body faults."
             },
             {
-              "signature": "static Task Any.ReproduciblyAsync(int seed, Func<Task> body, Action<string>? report)",
+              "signature": "static Task Any.ReproduciblyAsync(int seed, Func<Task> body, Action<string>? report = null)",
               "summary": "Asynchronous counterpart of Reproducibly: awaits body under seed and reports it if the body faults."
             }
           ]

@@ -34,11 +34,7 @@ public static class Program {
         Assembly library = typeof(Any).Assembly;
         Assembly adapter = typeof(ReproducibleAttribute).Assembly;
 
-        Dictionary<string, string> docs = XmlDocs.Load(library);
-
-        foreach (KeyValuePair<string, string> entry in XmlDocs.Load(adapter)) {
-            docs[entry.Key] = entry.Value;
-        }
+        XmlDocCorpus docs = XmlDocs.Merge(XmlDocs.Load(library), XmlDocs.Load(adapter));
 
         Type[] types = library.GetExportedTypes().Concat(adapter.GetExportedTypes()).ToArray();
 
@@ -69,7 +65,7 @@ public static class Program {
 
         int entryCount = document.Categories.Sum(category => category.Entries.Length);
 
-        Console.WriteLine($"  {args[0]}  ({document.Categories.Length} categories, {entryCount} entries, {docs.Count} doc comments)");
+        Console.WriteLine($"  {args[0]}  ({document.Categories.Length} categories, {entryCount} entries, {docs.Summaries.Count} doc comments)");
 
         return 0;
     }
@@ -229,11 +225,11 @@ internal sealed class CatalogueBuilder {
         ["ReproduciblyAsync"] = Categories.Reproducibility,
     };
 
-    private readonly Dictionary<string, string> docs;
+    private readonly XmlDocCorpus docs;
     private readonly Dictionary<string, EntryBuilder> entriesByTypeName = new();
     private readonly List<EntryBuilder> looseEntries = [];
 
-    public CatalogueBuilder(Dictionary<string, string> docs) {
+    public CatalogueBuilder(XmlDocCorpus docs) {
         this.docs = docs;
     }
 

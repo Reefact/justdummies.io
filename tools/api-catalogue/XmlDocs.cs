@@ -6,6 +6,17 @@ using System.Xml.Linq;
 namespace JustDummies.ApiCatalogue;
 
 /// <summary>
+///     Every <c>&lt;summary&gt;</c> an assembly's doc file carries, plus the member keys whose own
+///     entry was only <c>&lt;inheritdoc/&gt;</c> with no <c>cref</c> — resolved lazily by
+///     <see cref="XmlDocs.For(MethodBase, XmlDocCorpus)" /> and
+///     <see cref="XmlDocs.For(PropertyInfo, XmlDocCorpus)" />, which is the first point in this
+///     tool that holds the real reflected member rather than the doc file's own text spelling of
+///     one. Matching "what does this override or implement" needs <see cref="Type.GetInterfaces" />
+///     on that real member, not a second pass over XML.
+/// </summary>
+internal sealed record XmlDocCorpus(Dictionary<string, string> Summaries, HashSet<string> InheritedKeys);
+
+/// <summary>
 ///     Reads an assembly's XML documentation file into the prose the /api pages show, resolving
 ///     the <c>&lt;see cref="…"&gt;</c> and <c>&lt;paramref&gt;</c> elements a raw <c>.Value</c>
 ///     read would silently drop — an untreated cross-reference reads as "arbitrary  generator",
@@ -18,10 +29,11 @@ internal static class XmlDocs {
     ///     the file itself uses (<c>T:</c>, <c>M:</c>, <c>P:</c> — see <see cref="TypeKey" />
     ///     and its siblings).
     /// </summary>
-    public static Dictionary<string, string> Load(Assembly assembly) {
+    public static XmlDocCorpus Load(Assembly assembly) {
         string xmlPath = FindXmlDocumentationFile(assembly);
 
-        Dictionary<string, string> docs = new();
+        Dictionary<string, string> summaries = new();
+        List<(string Key, string? Cref)> pendingInheritance = [];
         // PreserveWhitespace, or a single space sitting between two elements with nothing else
         // around it — <b>valid</b> <see cref="…"/> — is silently dropped as "insignificant",
         // and "valid" runs straight into the word the cref resolves to.
@@ -29,21 +41,132 @@ internal static class XmlDocs {
 
         foreach (XElement member in document.Descendants("member")) {
             string? name = member.Attribute("name")?.Value;
-            XElement? summary = member.Element("summary");
 
-            if (name is not null && summary is not null) {
-                docs[name] = Regex.Replace(Render(summary), @"\s+", " ").Trim();
+            if (name is null) {
+                continue;
+            }
+
+            if (member.Element("summary") is XElement summary) {
+                summaries[name] = Regex.Replace(Render(summary), @"\s+", " ").Trim();
+            } else if (member.Element("inheritdoc") is XElement inheritdoc) {
+                // <inheritdoc/> replaces a member's own doc entirely rather than sitting beside a
+                // <summary> — every concrete Generate() a housed type declares to satisfy IAny<T>
+                // carries nothing else, and reading only <summary> left every one of them null.
+                pendingInheritance.Add((name, inheritdoc.Attribute("cref")?.Value));
             }
         }
 
-        return docs;
+        HashSet<string> inheritedKeys = [];
+
+        // A second pass, not resolved inline above: the XML file is not topologically sorted, so
+        // an <inheritdoc cref="…"/> read early can name a member this loop has not reached yet.
+        foreach ((string key, string? cref) in pendingInheritance) {
+            if (cref is not null && summaries.TryGetValue(cref, out string? viaCref)) {
+                summaries[key] = viaCref;
+            } else if (cref is null) {
+                // No cref: "inherit from whatever this member overrides or implements", which
+                // only the real reflected member can answer — see ResolveInherited* below.
+                inheritedKeys.Add(key);
+            }
+        }
+
+        return new XmlDocCorpus(summaries, inheritedKeys);
     }
 
-    public static string? For(Type type, Dictionary<string, string> docs) => docs.GetValueOrDefault(TypeKey(type));
+    /// <summary>Combines two assemblies' corpora — <c>JustDummies</c> and <c>JustDummies.Xunit</c> are catalogued together.</summary>
+    public static XmlDocCorpus Merge(XmlDocCorpus first, XmlDocCorpus second) {
+        Dictionary<string, string> summaries = new(first.Summaries);
 
-    public static string? For(MethodBase method, Dictionary<string, string> docs) => docs.GetValueOrDefault(MethodKey(method));
+        foreach (KeyValuePair<string, string> entry in second.Summaries) {
+            summaries[entry.Key] = entry.Value;
+        }
 
-    public static string? For(PropertyInfo property, Dictionary<string, string> docs) => docs.GetValueOrDefault(PropertyKey(property));
+        return new XmlDocCorpus(summaries, [.. first.InheritedKeys, .. second.InheritedKeys]);
+    }
+
+    public static string? For(Type type, XmlDocCorpus docs) => docs.Summaries.GetValueOrDefault(TypeKey(type));
+
+    public static string? For(MethodBase method, XmlDocCorpus docs) {
+        string key = MethodKey(method);
+
+        if (docs.Summaries.TryGetValue(key, out string? own)) {
+            return own;
+        }
+
+        return docs.InheritedKeys.Contains(key) ? ResolveInheritedMethodSummary(method, docs) : null;
+    }
+
+    public static string? For(PropertyInfo property, XmlDocCorpus docs) {
+        string key = PropertyKey(property);
+
+        if (docs.Summaries.TryGetValue(key, out string? own)) {
+            return own;
+        }
+
+        return docs.InheritedKeys.Contains(key) ? ResolveInheritedPropertySummary(property, docs) : null;
+    }
+
+    /// <summary>
+    ///     Walks the declaring type's interfaces and base types for a member of the same name and
+    ///     arity — a concrete <c>AnyBoolean.Generate()</c> satisfying <c>IAny&lt;bool&gt;.Generate()</c>
+    ///     — and takes that member's own summary. Matched by name and parameter count rather than
+    ///     exact parameter types: the contract's own parameter can be an unbound generic parameter
+    ///     (<c>T</c>) where the implementation's is the closed type it was built for (<c>bool</c>),
+    ///     which a strict type comparison would treat as two different signatures.
+    /// </summary>
+    private static string? ResolveInheritedMethodSummary(MethodBase method, XmlDocCorpus docs) {
+        if (method.DeclaringType is null || method is not MethodInfo info) {
+            return null;
+        }
+
+        foreach (Type contract in Contracts(method.DeclaringType)) {
+            MethodInfo? match = contract.GetMethods()
+                .FirstOrDefault(candidate => candidate.Name == info.Name && candidate.GetParameters().Length == info.GetParameters().Length);
+
+            if (match is not null && docs.Summaries.TryGetValue(MethodKey(match), out string? inherited)) {
+                return inherited;
+            }
+        }
+
+        return null;
+    }
+
+    private static string? ResolveInheritedPropertySummary(PropertyInfo property, XmlDocCorpus docs) {
+        if (property.DeclaringType is null) {
+            return null;
+        }
+
+        foreach (Type contract in Contracts(property.DeclaringType)) {
+            PropertyInfo? match = contract.GetProperties().FirstOrDefault(candidate => candidate.Name == property.Name);
+
+            if (match is not null && docs.Summaries.TryGetValue(PropertyKey(match), out string? inherited)) {
+                return inherited;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    ///     Everything a type's member could be inheriting documentation from: the interfaces it
+    ///     implements, then its base chain.
+    ///
+    ///     Reduced to generic type DEFINITIONS, which is the whole point: reflection hands back the
+    ///     constructed <c>IAny&lt;bool&gt;</c>, whose <c>FullName</c> spells out its argument
+    ///     (<c>JustDummies.IAny`1[[System.Boolean, …]]</c>), while the doc file keys the member off
+    ///     the open definition (<c>JustDummies.IAny`1</c>). Looking the constructed form up finds
+    ///     nothing, silently — which is exactly what left all 33 concrete <c>Generate()</c> methods
+    ///     undocumented on the first attempt at this.
+    /// </summary>
+    private static IEnumerable<Type> Contracts(Type type) {
+        foreach (Type contract in type.GetInterfaces()) {
+            yield return contract.IsGenericType ? contract.GetGenericTypeDefinition() : contract;
+        }
+
+        for (Type? ancestor = type.BaseType; ancestor is not null && ancestor != typeof(object); ancestor = ancestor.BaseType) {
+            yield return ancestor.IsGenericType ? ancestor.GetGenericTypeDefinition() : ancestor;
+        }
+    }
 
     /// <summary>
     ///     The doc file for a loaded assembly, found in the NuGet cache rather than beside

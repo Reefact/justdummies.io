@@ -62,7 +62,7 @@ internal sealed class EntryBuilder {
         this.methods = methods;
     }
 
-    public static EntryBuilder From(Type type, string category, Dictionary<string, string> docs) {
+    public static EntryBuilder From(Type type, string category, XmlDocCorpus docs) {
         PropertyDocument[] properties = type
             .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly)
             .Select(property => new PropertyDocument(Signatures.PropertySignature(property), XmlDocs.For(property, docs)))
@@ -102,7 +102,7 @@ internal sealed class EntryBuilder {
     ///     rather than an <c>entryPoints</c> annotation on someone else's entry, because there is
     ///     no someone else here.
     /// </summary>
-    public static EntryBuilder FromLooseMethods(string name, string category, MethodInfo[] overloads, Dictionary<string, string> docs) {
+    public static EntryBuilder FromLooseMethods(string name, string category, MethodInfo[] overloads, XmlDocCorpus docs) {
         MethodDocument[] methods = overloads
             .Select(method => new MethodDocument(Signatures.MethodSignature(method, "Any"), XmlDocs.For(method, docs)))
             .ToArray();
@@ -112,7 +112,7 @@ internal sealed class EntryBuilder {
     }
 
     /// <summary>Attaches the static <see cref="Any" /> method(s) that construct this entry's type — <c>Any.String()</c> onto <c>AnyString</c>.</summary>
-    public void AddEntryPoints(MethodInfo[] overloads, Dictionary<string, string> docs) {
+    public void AddEntryPoints(MethodInfo[] overloads, XmlDocCorpus docs) {
         entryPoints.AddRange(overloads.Select(method => new MethodDocument(Signatures.MethodSignature(method, "Any"), XmlDocs.For(method, docs))));
     }
 
