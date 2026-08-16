@@ -26,3 +26,18 @@ window.jdHeroReportHeight = function jdHeroReportHeight() {
 if (window.parent !== window && typeof ResizeObserver === 'function') {
     new ResizeObserver(() => window.jdHeroReportHeight()).observe(document.documentElement);
 }
+
+// A framed widget is not a page, and must not reserve a page's scrollbar.
+//
+// app.css sets `scrollbar-gutter: stable` on <html> so the standalone playground and the site
+// are laid out in viewports of the same width — without it the short playground page keeps the
+// fifteen pixels the tall site page gives up, and every centred measure below lands seven and a
+// half pixels off the page it is matching. This document is the same document: /hero and /
+// share one shell, so the rule reaches the widget too, where it takes those fifteen pixels off
+// a width the framing document has already decided and rewraps the expression inside it.
+//
+// Set through the CSSOM rather than in the stylesheet, because the stylesheet cannot tell the
+// two apart — only `window.parent` can.
+if (window.parent !== window) {
+    document.documentElement.style.scrollbarGutter = 'auto';
+}
