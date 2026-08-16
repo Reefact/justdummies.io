@@ -15,6 +15,10 @@
 # filter gates the *whole* workflow — the build would be skipped too, and a pull request
 # with no checks at all is worse than a slow one.
 #
+# THIS ANSWERS FOR PULL REQUESTS ONLY. The tip of main is rendered every time it moves,
+# unconditionally, and `build.yml` says why: what breaks there is a combination rather than
+# a change, and no filter over a diff can see one coming. Nothing below is consulted for it.
+#
 # WHAT IS LISTED IS WHAT DOES NOT RENDER, AND THAT IS THE SECOND ATTEMPT.
 #
 # The first listed what does. It read well — one entry per thing a browser can see, each
