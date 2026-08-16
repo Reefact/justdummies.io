@@ -315,12 +315,14 @@ const en = {
     'why.note.justdummies.graph':
         'A full graph is built by composing one generator per type; nothing walks the graph for you.',
     'why.note.justdummies.compileTime':
-        'A missing constraint throws at run time, the first time the generator is asked for a value — nothing about it is caught by the compiler.',
+        'The 28 analyzers bundled in the main package catch a chain of constraints that admits no value — a contradiction — at compile time. A missing constraint is a different defect: it still only throws once a value is drawn.',
     'why.note.justdummies.exploration':
         'One arbitrary, reproducible value is drawn per run, not a systematic search of the input space.',
 
     'why.note.bogus.invariants':
         "Only if every RuleFor() is written by hand to match the domain's rules — nothing checks that it does.",
+    'why.note.bogus.callSite':
+        'A RuleFor() — including a bounded generator like Random.Int(min, max) — can sit on a Faker<T> built inline, right before Generate(), at the cost of writing it by hand each time.',
     'why.note.bogus.reuse': 'A Faker<T> can be defined once and reused across tests, the same way a JustDummies generator can.',
     'why.note.bogus.graph': 'Nested objects are composed by hand inside the rules, not built automatically.',
     'why.note.bogus.compileTime':
@@ -331,6 +333,8 @@ const en = {
         "Generation throws until a Customization or an ISpecimenBuilder is written to satisfy the constructor's guard clauses.",
     'why.note.autofixture.callSite':
         'Only through Build<T>().With(x => x.Prop, value) — pinning an exact value or a hand-written generator lambda inline, not a declarative business constraint.',
+    'why.note.autofixture.testIntent':
+        'Only for a Build<T>().With(x => x.Prop, expected) that names the value an assertion actually checks — the same scope the manual literal above is credited for.',
     'why.note.autofixture.reuse': 'An ICustomization packages a set of rules once, for reuse across tests.',
 
     'why.note.manual.invariants':
@@ -344,7 +348,7 @@ const en = {
 
     'why.notFor.heading': 'When not to use JustDummies',
     'why.notFor.body':
-        "Not when a test needs data that looks real rather than data that is merely valid — reach for a fake-data generator instead. Not when a type carries no domain invariant worth declaring — a plain anonymous-object library does that with less ceremony. And every package is still a preview: an API that is still moving is a cost worth knowing about before it sits under a large test suite.",
+        "Not when a test needs data that looks real rather than data that is merely valid — reach for a fake-data generator instead. Not when a type carries no domain invariant worth declaring — a plain anonymous-object library does that with less ceremony. And every package is still pre-release: an API that is still moving is a cost worth knowing about before it sits under a large test suite.",
 
     /** The date itself is never typed here — it comes from `comparison.ts`'s `comparisonVerifiedOn`, formatted per locale, so the two cannot disagree. */
     'why.verified.label': 'Comparisons last verified:',
@@ -621,12 +625,14 @@ const fr: Record<UiKey, string> = {
     'why.note.justdummies.graph':
         "Un graphe complet se construit en composant un générateur par type ; rien ne parcourt le graphe à votre place.",
     'why.note.justdummies.compileTime':
-        "Une contrainte manquante échoue à l'exécution, au premier tirage — rien n'est détecté par le compilateur.",
+        "Les 28 analyseurs embarqués dans le paquet principal détectent à la compilation une chaîne de contraintes qui n'admet aucune valeur — une contradiction. Une contrainte manquante est un défaut différent : elle n'échoue toujours qu'au tirage d'une valeur.",
     'why.note.justdummies.exploration':
         "Une valeur arbitraire et reproductible est tirée par exécution, pas une exploration systématique de l'espace d'entrée.",
 
     'why.note.bogus.invariants':
         "Seulement si chaque RuleFor() est écrit à la main pour respecter les règles du domaine — rien ne le vérifie.",
+    'why.note.bogus.callSite':
+        "Un RuleFor() — y compris un générateur borné comme Random.Int(min, max) — peut se placer sur un Faker<T> construit à la volée, juste avant Generate(), au prix de l'écrire à la main à chaque fois.",
     'why.note.bogus.reuse': "Un Faker<T> peut être défini une fois et réutilisé entre les tests, comme un générateur JustDummies.",
     'why.note.bogus.graph': "Les objets imbriqués sont composés à la main dans les règles, pas construits automatiquement.",
     'why.note.bogus.compileTime':
@@ -637,6 +643,8 @@ const fr: Record<UiKey, string> = {
         "La génération échoue tant qu'une Customization ou un ISpecimenBuilder n'est pas écrit pour satisfaire les clauses de garde du constructeur.",
     'why.note.autofixture.callSite':
         "Seulement via Build<T>().With(x => x.Prop, value) — épingler une valeur exacte ou une lambda génératrice écrite à la main, pas une contrainte métier déclarative.",
+    'why.note.autofixture.testIntent':
+        "Seulement pour un Build<T>().With(x => x.Prop, expected) qui nomme la valeur qu'une assertion vérifie réellement — la même portée que celle créditée à la valeur manuelle ci-dessus.",
     'why.note.autofixture.reuse': "Une ICustomization regroupe un ensemble de règles une fois, pour les réutiliser entre les tests.",
 
     'why.note.manual.invariants':
