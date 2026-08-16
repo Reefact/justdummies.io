@@ -902,7 +902,16 @@ const fr: Record<UiKey, string> = {
      * formule où le test « parlerait » de quelque chose ; « la préparation » remplace
      * « l'arrange », qui est un mot anglais porté en français sans rien pour l'expliquer.
      */
-    'why.heading': 'Pourquoi JustDummies ?',
+    /**
+     * No question mark, and it was measured rather than argued. French would normally mark a
+     * title opening on « Pourquoi », but this string is also the nav label and the page
+     * title, and at 375px « Pourquoi JustDummies ? » needs 338 pixels of a 328-pixel column:
+     * it wraps to two lines where the English heading and the playground's own take one, and
+     * `chrome-parity.spec.ts` measures the two applications against each other on this very
+     * page. Every place the page genuinely asks the reader something — the three questions at
+     * the top, the four families, the ten criteria — keeps its mark.
+     */
+    'why.heading': 'Pourquoi JustDummies',
     'why.meta.description':
         "Quand choisir JustDummies, Bogus, AutoFixture ou une valeur écrite à la main — critère par critère, y compris là où les autres font mieux.",
 
