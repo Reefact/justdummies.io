@@ -42,6 +42,30 @@ export const axes: ReadonlyArray<{ id: AxisId; labelKey: UiKey }> = [
     { id: 'exploration', labelKey: 'why.axis.exploration' },
 ];
 
+/**
+ * `Record<AxisId, Cell>` already forces every `Ratings` object to carry all ten axes and no
+ * others, but `axes` itself is a plain array — edited by hand, read by `ComparisonTable.astro`
+ * to decide what rows to draw — so nothing stops it from dropping one or repeating another
+ * while every `Ratings` object still type-checks, and the table's caption keeps promising ten.
+ * This is the runtime half for `axes`, the same pattern the competitor `id` check above uses.
+ */
+const allAxisIds: readonly AxisId[] = [
+    'invariants',
+    'callSite',
+    'testIntent',
+    'reuse',
+    'realism',
+    'graph',
+    'reproducibility',
+    'compileTime',
+    'codeGen',
+    'exploration',
+];
+
+if (axes.length !== allAxisIds.length || allAxisIds.some((id) => !axes.some((axis) => axis.id === id))) {
+    throw new Error('comparison.ts: axes must list every AxisId exactly once.');
+}
+
 /** §11.4 — three values, and never a checkmark or a cross: the sign is never colour alone. */
 export type Rating = 'core' | 'possible' | 'out-of-scope';
 
@@ -92,7 +116,7 @@ export const justDummies: Ratings = {
     realism: { rating: 'out-of-scope', noteKey: 'why.note.justdummies.realism' },
     graph: { rating: 'possible', noteKey: 'why.note.justdummies.graph' },
     reproducibility: { rating: 'core' },
-    compileTime: { rating: 'out-of-scope', noteKey: 'why.note.justdummies.compileTime' },
+    compileTime: { rating: 'possible', noteKey: 'why.note.justdummies.compileTime' },
     codeGen: { rating: 'core' },
     exploration: { rating: 'out-of-scope', noteKey: 'why.note.justdummies.exploration' },
 };
@@ -100,9 +124,10 @@ export const justDummies: Ratings = {
 /**
  * Verified against the project's own README at
  * https://github.com/bchavez/Bogus — realistic locale-aware data (Name, Address,
- * Internet, Commerce…), rules configured up front with `RuleFor()`, `UseSeed()` /
- * `Randomizer.Seed` for reproducible runs, and a paid "Bogus Premium" tier whose Roslyn
- * analyzer flags and can insert a missing `RuleFor()`.
+ * Internet, Commerce…), rules — including bounded generators like `Random.Int(min, max)` —
+ * that can be chained on a `Faker<T>` built inline, right before `Generate()`, as readily
+ * as configured up front; `UseSeed()`/`Randomizer.Seed` for reproducible runs; and a paid
+ * "Bogus Premium" tier whose Roslyn analyzer flags and can insert a missing `RuleFor()`.
  */
 const bogus: Competitor = {
     id: 'bogus',
@@ -113,7 +138,7 @@ const bogus: Competitor = {
     chooseInsteadKey: 'why.bogus.chooseInstead',
     ratings: {
         invariants: { rating: 'possible', noteKey: 'why.note.bogus.invariants' },
-        callSite: { rating: 'out-of-scope' },
+        callSite: { rating: 'possible', noteKey: 'why.note.bogus.callSite' },
         testIntent: { rating: 'out-of-scope' },
         reuse: { rating: 'possible', noteKey: 'why.note.bogus.reuse' },
         realism: { rating: 'core' },
@@ -144,7 +169,7 @@ const autoFixture: Competitor = {
     ratings: {
         invariants: { rating: 'possible', noteKey: 'why.note.autofixture.invariants' },
         callSite: { rating: 'possible', noteKey: 'why.note.autofixture.callSite' },
-        testIntent: { rating: 'out-of-scope' },
+        testIntent: { rating: 'possible', noteKey: 'why.note.autofixture.testIntent' },
         reuse: { rating: 'possible', noteKey: 'why.note.autofixture.reuse' },
         realism: { rating: 'out-of-scope' },
         graph: { rating: 'core' },
