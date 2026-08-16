@@ -232,6 +232,10 @@ comment elles se vérifient.
 * Le [guide de déploiement](../deployment-fr.md) gagne l'étape qui allume la mesure — le site du
   tableau de bord, le jeton public du beacon, et le jeu de données. La façon dont c'est câblé est de
   la spécification et vit là-bas, pas ici.
+* Déclarer le binding rend un réglage de compte obligatoire pour **tout** déploiement, mesure ou
+  non : Analytics Engine doit être activé sur le compte, une fois, sans quoi l'API refuse de créer
+  une version. C'est l'étape 5 du guide qui le porte, parce qu'il précède la première publication
+  plutôt que la mesure.
 * Deux choses à confirmer sur un déploiement réel, et à ajouter à la liste de §12.5 en attendant : que
   le beacon se charge et rapporte sous la politique générée, et qu'une requête de page n'invoque
   jamais le Worker.

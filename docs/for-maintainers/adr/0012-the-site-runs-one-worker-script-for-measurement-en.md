@@ -217,6 +217,10 @@ documented expectations, and Follow-up Actions says how they get checked.
 * The [deployment guide](../deployment-en.md) gains the step that turns the measurement on — the
   dashboard site, the public beacon token, and the dataset. How it is wired is specification and
   lives there, not here.
+* Declaring the binding makes an account setting mandatory for **every** deployment, measurement or
+  not: Analytics Engine has to be enabled on the account, once, or the API refuses to create a
+  version. The guide's step 5 carries it, because it precedes the first publish rather than the
+  measurement.
 * Two things to confirm on a real deployment, and to add to §12.5's list until they are: that the
   beacon loads and reports under the generated policy, and that a request for a page never invokes
   the Worker.
