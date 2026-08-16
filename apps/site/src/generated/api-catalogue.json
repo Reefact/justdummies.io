@@ -41,7 +41,128 @@
             }
           ],
           "constructors": [],
-          "methods": []
+          "methods": [
+            {
+              "signature": "AnyString String()",
+              "summary": "Starts an arbitrary String generator drawing from this context — same fluent surface as String, deterministic under this context's seed."
+            },
+            {
+              "signature": "AnyPattern StringMatching(string pattern)",
+              "summary": "Starts a generator of arbitrary strings matching pattern drawing from this context — same fluent surface as StringMatching, deterministic under this context's seed."
+            },
+            {
+              "signature": "AnyPattern StringMatching(Regex pattern)",
+              "summary": "Starts a generator of arbitrary strings matching pattern drawing from this context — same fluent surface as StringMatching, deterministic under this context's seed. IgnoreCase is honoured; IgnorePatternWhitespace is rejected; the remaining options are ignored."
+            },
+            {
+              "signature": "AnyUri Uri()",
+              "summary": "Starts an arbitrary Uri generator drawing from this context — same fluent surface as Uri, deterministic under this context's seed."
+            },
+            {
+              "signature": "AnyInt32 Int32()",
+              "summary": "Starts an arbitrary Int32 generator drawing from this context — same fluent surface as Int32, deterministic under this context's seed."
+            },
+            {
+              "signature": "AnySByte SByte()",
+              "summary": "Starts an arbitrary SByte generator drawing from this context — deterministic under this context's seed: full range unless constrained. Same constraint algebra as AnyInt32."
+            },
+            {
+              "signature": "AnyByte Byte()",
+              "summary": "Starts an arbitrary Byte generator drawing from this context — deterministic under this context's seed: full range unless constrained. Same constraint algebra as AnyInt32, less Positive() and Negative(), which an unsigned type cannot express."
+            },
+            {
+              "signature": "AnyInt16 Int16()",
+              "summary": "Starts an arbitrary Int16 generator drawing from this context — deterministic under this context's seed: full range unless constrained. Same constraint algebra as AnyInt32."
+            },
+            {
+              "signature": "AnyUInt16 UInt16()",
+              "summary": "Starts an arbitrary UInt16 generator drawing from this context — deterministic under this context's seed: full range unless constrained. Same constraint algebra as AnyInt32, less Positive() and Negative(), which an unsigned type cannot express."
+            },
+            {
+              "signature": "AnyUInt32 UInt32()",
+              "summary": "Starts an arbitrary UInt32 generator drawing from this context — deterministic under this context's seed: full range unless constrained. Same constraint algebra as AnyInt32, less Positive() and Negative(), which an unsigned type cannot express."
+            },
+            {
+              "signature": "AnyInt64 Int64()",
+              "summary": "Starts an arbitrary Int64 generator drawing from this context — deterministic under this context's seed: full range unless constrained. Same constraint algebra as AnyInt32."
+            },
+            {
+              "signature": "AnyUInt64 UInt64()",
+              "summary": "Starts an arbitrary UInt64 generator drawing from this context — deterministic under this context's seed: full range unless constrained. Same constraint algebra as AnyInt32, less Positive() and Negative(), which an unsigned type cannot express."
+            },
+            {
+              "signature": "AnyTimeSpan TimeSpan()",
+              "summary": "Starts an arbitrary TimeSpan generator drawing from this context — deterministic under this context's seed: full range unless constrained, negative durations included. Same constraint algebra as AnyInt32, less MultipleOf(...) and plus WithGranularity(...)."
+            },
+            {
+              "signature": "AnyDateTime DateTime()",
+              "summary": "Starts an arbitrary DateTime generator drawing from this context — deterministic under this context's seed: any representable instant unless constrained; generated values carry Utc kind. Same constraint algebra as AnyInt32 with the bounds renamed After(...)/Before(...): no sign or zero constraint, no MultipleOf(...), plus WithGranularity(...)."
+            },
+            {
+              "signature": "AnyDateTimeOffset DateTimeOffset()",
+              "summary": "Starts an arbitrary DateTimeOffset generator drawing from this context — deterministic under this context's seed: any representable instant unless constrained; generated values carry a zero (UTC) offset. Same constraint algebra as AnyInt32 with the bounds renamed After(...)/Before(...): no sign or zero constraint, no MultipleOf(...), plus WithGranularity(...) and WithOffset(...)."
+            },
+            {
+              "signature": "AnyDouble Double()",
+              "summary": "Starts an arbitrary Double generator drawing from this context — deterministic under this context's seed: finite values only — NaN and infinities are never generated. Same constraint algebra as AnyInt32, less MultipleOf(...)."
+            },
+            {
+              "signature": "AnySingle Single()",
+              "summary": "Starts an arbitrary Single generator drawing from this context — deterministic under this context's seed: finite values only — NaN and infinities are never generated. Same constraint algebra as AnyInt32, less MultipleOf(...)."
+            },
+            {
+              "signature": "AnyDecimal Decimal()",
+              "summary": "Starts an arbitrary Decimal generator drawing from this context — deterministic under this context's seed: full range unless constrained. Same constraint algebra as AnyInt32, less MultipleOf(...) and plus WithScale(...)."
+            },
+            {
+              "signature": "AnyBoolean Boolean()",
+              "summary": "Starts an arbitrary Boolean generator drawing from this context (deterministic under this context's seed) — an even coin flip unless pinned with True() or False()."
+            },
+            {
+              "signature": "AnyGuid Guid()",
+              "summary": "Starts an arbitrary Guid generator drawing from this context (deterministic under this context's seed) — unlike NewGuid, reproducible inside an Any.Reproducibly(...) run, and for every practical purpose never empty."
+            },
+            {
+              "signature": "AnyEnum<TEnum> Enum<TEnum>() where TEnum : struct, Enum",
+              "summary": "Starts an arbitrary TEnum generator drawing from this context (deterministic under this context's seed) — uniformly across the enum's declared members, never an undeclared numeric value."
+            },
+            {
+              "signature": "AnyChar Char()",
+              "summary": "Starts an arbitrary Char generator drawing from this context (deterministic under this context's seed) — ASCII letters and digits unless constrained, mirroring AnyString's character families."
+            },
+            {
+              "signature": "AnyDateOnly DateOnly()",
+              "summary": "Starts an arbitrary DateOnly generator drawing from this context (deterministic under this context's seed) — any representable date unless constrained. Net8.0 target only, like the type itself."
+            },
+            {
+              "signature": "AnyTimeOnly TimeOnly()",
+              "summary": "Starts an arbitrary TimeOnly generator drawing from this context (deterministic under this context's seed) — any time of day unless constrained. Net8.0 target only, like the type itself."
+            },
+            {
+              "signature": "AnyInt128 Int128()",
+              "summary": "Starts an arbitrary Int128 generator drawing from this context (deterministic under this context's seed) — full range unless constrained. Net8.0 target only, like the type itself."
+            },
+            {
+              "signature": "AnyUInt128 UInt128()",
+              "summary": "Starts an arbitrary UInt128 generator drawing from this context (deterministic under this context's seed) — full range unless constrained. Net8.0 target only, like the type itself."
+            },
+            {
+              "signature": "AnyHalf Half()",
+              "summary": "Starts an arbitrary Half generator drawing from this context (deterministic under this context's seed) — finite values only. Net8.0 target only, like the type itself."
+            },
+            {
+              "signature": "AnyOneOf<T> OneOf<T>(params T[] values)",
+              "summary": "Draws an arbitrary value from an explicit pool of caller-supplied values drawing from this context — same surface as OneOf, deterministic under this context's seed."
+            },
+            {
+              "signature": "AnyOneOf<T> ElementOf<T>(IReadOnlyList<T> values)",
+              "summary": "Draws an arbitrary value from an explicit pool held as a list drawing from this context — same surface as ElementOf, deterministic under this context's seed."
+            },
+            {
+              "signature": "AnyOneOf<T> ElementOf<T>(IEnumerable<T> values)",
+              "summary": "Draws an arbitrary value from an explicit pool held as a sequence drawing from this context — same surface as ElementOf, deterministic under this context's seed. The sequence is materialized once."
+            }
+          ]
         },
         {
           "id": "iany",
@@ -74,9 +195,7 @@
           "summary": "A fluent generator of arbitrary Boolean values. True() and False() pin the value — mostly useful for symmetry when a test sweeps cases — and contradictory pins fail eagerly with a ConflictingAnyConstraintException naming both sides, like every other generator.",
           "extends": null,
           "implements": [
-            "IAny<bool>",
-            "IHasRandomSource",
-            "ICardinalityHint<bool>"
+            "IAny<bool>"
           ],
           "entryPoints": [
             {
@@ -113,9 +232,7 @@
           "summary": "A fluent generator of arbitrary Byte values — the same contract as AnyInt32: constraints express what the surrounding code requires of the value, never what the test asserts; contradictory constraints fail eagerly with a ConflictingAnyConstraintException naming both sides; instances are immutable recipes, and each value is built to satisfy the constraints in one draw.",
           "extends": null,
           "implements": [
-            "IAny<byte>",
-            "IHasRandomSource",
-            "ICardinalityHint<byte>"
+            "IAny<byte>"
           ],
           "entryPoints": [
             {
@@ -159,11 +276,11 @@
               "summary": "Requires the value to be a multiple of value — drawn directly on that lattice, so the declared range keeps its meaning (unlike a post-hoc As(x => x * k) projection). Declared once per generator."
             },
             {
-              "signature": "AnyByte OneOf(byte[] values)",
+              "signature": "AnyByte OneOf(params byte[] values)",
               "summary": "Requires the value to be one of the supplied values. Declared once per generator."
             },
             {
-              "signature": "AnyByte Except(byte[] values)",
+              "signature": "AnyByte Except(params byte[] values)",
               "summary": "Requires the value to be none of the supplied values."
             },
             {
@@ -184,9 +301,7 @@
           "summary": "A fluent generator of arbitrary Char values. Unconstrained, it draws from ASCII letters and digits — the same readable default as AnyString's filler — and the constraints mirror the string character families: Alpha, Numeric, AlphaNumeric, LowerCase, UpperCase, plus OneOf / Except / DifferentFrom. A combination that empties the pool fails eagerly with a ConflictingAnyConstraintException.",
           "extends": null,
           "implements": [
-            "IAny<Char>",
-            "IHasRandomSource",
-            "ICardinalityHint<Char>"
+            "IAny<Char>"
           ],
           "entryPoints": [
             {
@@ -218,11 +333,11 @@
               "summary": "Requires an alphabetic character to be uppercase. Declared once per generator."
             },
             {
-              "signature": "AnyChar OneOf(Char[] values)",
+              "signature": "AnyChar OneOf(params Char[] values)",
               "summary": "Requires the character to be one of the supplied values. Declared once per generator."
             },
             {
-              "signature": "AnyChar Except(Char[] values)",
+              "signature": "AnyChar Except(params Char[] values)",
               "summary": "Requires the character to be none of the supplied values."
             },
             {
@@ -243,9 +358,7 @@
           "summary": "A fluent generator of arbitrary DateOnly values — the same contract as AnyInt32: constraints express what the surrounding code requires of the value, never what the test asserts; contradictory constraints fail eagerly with a ConflictingAnyConstraintException naming both sides; instances are immutable recipes, and each value is built to satisfy the constraints in one draw. Available on the net8.0 target only, like the type itself. There is deliberately no clock-relative constraint: a reproducible test pins its reference dates explicitly with After and Before.",
           "extends": null,
           "implements": [
-            "IAny<DateOnly>",
-            "IHasRandomSource",
-            "ICardinalityHint<DateOnly>"
+            "IAny<DateOnly>"
           ],
           "entryPoints": [
             {
@@ -277,11 +390,11 @@
               "summary": "Requires a date within the inclusive range [start, end]."
             },
             {
-              "signature": "AnyDateOnly OneOf(DateOnly[] values)",
+              "signature": "AnyDateOnly OneOf(params DateOnly[] values)",
               "summary": "Requires the date to be one of the supplied values. Declared once per generator."
             },
             {
-              "signature": "AnyDateOnly Except(DateOnly[] values)",
+              "signature": "AnyDateOnly Except(params DateOnly[] values)",
               "summary": "Requires the date to be none of the supplied values."
             },
             {
@@ -302,9 +415,7 @@
           "summary": "A fluent generator of arbitrary DateTime values — the same contract as AnyInt32: constraints express what the surrounding code requires of the value, never what the test asserts; contradictory constraints fail eagerly with a ConflictingAnyConstraintException naming both sides; instances are immutable recipes, and each value is built to satisfy the constraints in one draw.",
           "extends": null,
           "implements": [
-            "IAny<DateTime>",
-            "IHasRandomSource",
-            "ICardinalityHint<DateTime>"
+            "IAny<DateTime>"
           ],
           "entryPoints": [
             {
@@ -340,11 +451,11 @@
               "summary": "Requires the instant to fall on a lattice of granularity from MinValue — a round instant (a whole second, a quarter-hour, a whole day), built on the grid rather than snapped after the fact, so tick-precision values never surprise a serialization round-trip. Declared once per generator."
             },
             {
-              "signature": "AnyDateTime OneOf(DateTime[] values)",
+              "signature": "AnyDateTime OneOf(params DateTime[] values)",
               "summary": "Requires the instant to be one of the supplied values. Declared once per generator."
             },
             {
-              "signature": "AnyDateTime Except(DateTime[] values)",
+              "signature": "AnyDateTime Except(params DateTime[] values)",
               "summary": "Requires the instant to be none of the supplied values."
             },
             {
@@ -365,9 +476,7 @@
           "summary": "A fluent generator of arbitrary DateTimeOffset values — the same contract as AnyInt32: constraints express what the surrounding code requires of the value, never what the test asserts; contradictory constraints fail eagerly with a ConflictingAnyConstraintException naming both sides; instances are immutable recipes, and each value is built to satisfy the constraints in one draw.",
           "extends": null,
           "implements": [
-            "IAny<DateTimeOffset>",
-            "IHasRandomSource",
-            "ICardinalityHint<DateTimeOffset>"
+            "IAny<DateTimeOffset>"
           ],
           "entryPoints": [
             {
@@ -411,11 +520,11 @@
               "summary": "Draws the offset dimension from the inclusive range [minimum, maximum] — a bounded, whole-minute offset — so a test can exercise offset-sensitive logic while staying valid. The instant is tightened so every offset in the range stays valid. Declared once per generator."
             },
             {
-              "signature": "AnyDateTimeOffset OneOf(DateTimeOffset[] values)",
+              "signature": "AnyDateTimeOffset OneOf(params DateTimeOffset[] values)",
               "summary": "Requires the instant to be one of the supplied values — returned as given, offset included. Declared once per generator."
             },
             {
-              "signature": "AnyDateTimeOffset Except(DateTimeOffset[] values)",
+              "signature": "AnyDateTimeOffset Except(params DateTimeOffset[] values)",
               "summary": "Requires the instant to be none of the supplied values (compared by instant)."
             },
             {
@@ -436,9 +545,7 @@
           "summary": "A fluent generator of arbitrary Decimal values — the same contract as AnyInt32: constraints express what the surrounding code requires of the value, never what the test asserts; contradictory constraints fail eagerly with a ConflictingAnyConstraintException naming both sides; instances are immutable recipes. Exclusive bounds are expressed as the inclusive bound plus a point exclusion, since Decimal has no next-representable-value ladder.",
           "extends": null,
           "implements": [
-            "IAny<decimal>",
-            "IHasRandomSource",
-            "ICardinalityHint<decimal>"
+            "IAny<decimal>"
           ],
           "entryPoints": [
             {
@@ -490,11 +597,11 @@
               "summary": "Requires the value to be expressible in scale decimal places — a multiple of 10^-scale (a valid amount in cents is WithScale(2)), drawn directly on that grid. A value lattice, not a representation contract: the drawn value lies on the grid but is not padded with trailing zeros. Declared once per generator."
             },
             {
-              "signature": "AnyDecimal OneOf(decimal[] values)",
+              "signature": "AnyDecimal OneOf(params decimal[] values)",
               "summary": "Requires the value to be one of the supplied values. Declared once per generator."
             },
             {
-              "signature": "AnyDecimal Except(decimal[] values)",
+              "signature": "AnyDecimal Except(params decimal[] values)",
               "summary": "Requires the value to be none of the supplied values."
             },
             {
@@ -515,9 +622,7 @@
           "summary": "A fluent generator of arbitrary Double values — the same contract as AnyInt32: constraints express what the surrounding code requires of the value, never what the test asserts; contradictory constraints fail eagerly with a ConflictingAnyConstraintException naming both sides; instances are immutable recipes. NaN and the infinities are never generated nor accepted.",
           "extends": null,
           "implements": [
-            "IAny<double>",
-            "IHasRandomSource",
-            "ICardinalityHint<double>"
+            "IAny<double>"
           ],
           "entryPoints": [
             {
@@ -565,11 +670,11 @@
               "summary": "Requires a value within the inclusive range [minimum, maximum]."
             },
             {
-              "signature": "AnyDouble OneOf(double[] values)",
+              "signature": "AnyDouble OneOf(params double[] values)",
               "summary": "Requires the value to be one of the supplied values. Declared once per generator."
             },
             {
-              "signature": "AnyDouble Except(double[] values)",
+              "signature": "AnyDouble Except(params double[] values)",
               "summary": "Requires the value to be none of the supplied values."
             },
             {
@@ -590,9 +695,7 @@
           "summary": "A fluent generator of arbitrary TEnum values, drawn uniformly from the enum's declared members — never from undeclared numeric values. Constraints narrow the pool (OneOf, Except, DifferentFrom), and a combination that empties it fails eagerly with a ConflictingAnyConstraintException naming both sides.",
           "extends": null,
           "implements": [
-            "IAny<TEnum>",
-            "IHasRandomSource",
-            "ICardinalityHint<TEnum>"
+            "IAny<TEnum>"
           ],
           "entryPoints": [
             {
@@ -608,12 +711,12 @@
               "summary": "Widens the draw from the declared members to every combination of them — the values a FlagsAttribute enum is designed to hold. Without it, a flags dummy carries at most one bit and a branch reading two never runs."
             },
             {
-              "signature": "AnyEnum<TEnum> OneOf(TEnum[] values)",
-              "summary": null
+              "signature": "AnyEnum<TEnum> OneOf(params TEnum[] values)",
+              "summary": "Requires the value to be one of the supplied members. Declared once per generator."
             },
             {
-              "signature": "AnyEnum<TEnum> Except(TEnum[] values)",
-              "summary": null
+              "signature": "AnyEnum<TEnum> Except(params TEnum[] values)",
+              "summary": "Requires the value to be none of the supplied ones, compared by equality — under AllowingCombinations too, so Except(Read) forbids Read and still allows Read | Write."
             },
             {
               "signature": "AnyEnum<TEnum> DifferentFrom(TEnum value)",
@@ -633,9 +736,7 @@
           "summary": "A fluent generator of arbitrary Guid values, drawn from the seedable source — unlike NewGuid, a generated identifier is reproducible inside an Any.Reproducibly(...) run. An unconstrained draw is, for every practical purpose, never Empty; chain NonEmpty to make that requirement explicit, or Empty to pin the empty identifier. Contradictory constraints fail eagerly with a ConflictingAnyConstraintException naming both sides.",
           "extends": null,
           "implements": [
-            "IAny<Guid>",
-            "IHasRandomSource",
-            "ICardinalityHint<Guid>"
+            "IAny<Guid>"
           ],
           "entryPoints": [
             {
@@ -655,11 +756,11 @@
               "summary": "Pins the identifier to Empty."
             },
             {
-              "signature": "AnyGuid OneOf(Guid[] values)",
+              "signature": "AnyGuid OneOf(params Guid[] values)",
               "summary": "Requires the identifier to be one of the supplied values. Declared once per generator."
             },
             {
-              "signature": "AnyGuid Except(Guid[] values)",
+              "signature": "AnyGuid Except(params Guid[] values)",
               "summary": "Requires the identifier to be none of the supplied values."
             },
             {
@@ -680,9 +781,7 @@
           "summary": "A fluent generator of arbitrary Half values — the same contract as AnyInt32: constraints express what the surrounding code requires of the value, never what the test asserts; contradictory constraints fail eagerly with a ConflictingAnyConstraintException naming both sides; instances are immutable recipes. NaN and the infinities are never generated nor accepted. Available on the net8.0 target only, like the type itself.",
           "extends": null,
           "implements": [
-            "IAny<Half>",
-            "IHasRandomSource",
-            "ICardinalityHint<Half>"
+            "IAny<Half>"
           ],
           "entryPoints": [
             {
@@ -730,11 +829,11 @@
               "summary": "Requires a value within the inclusive range [minimum, maximum]."
             },
             {
-              "signature": "AnyHalf OneOf(Half[] values)",
+              "signature": "AnyHalf OneOf(params Half[] values)",
               "summary": "Requires the value to be one of the supplied values. Declared once per generator."
             },
             {
-              "signature": "AnyHalf Except(Half[] values)",
+              "signature": "AnyHalf Except(params Half[] values)",
               "summary": "Requires the value to be none of the supplied values."
             },
             {
@@ -755,9 +854,7 @@
           "summary": "A fluent generator of arbitrary Int128 values — the same contract as AnyInt32: constraints express what the surrounding code requires of the value, never what the test asserts; contradictory constraints fail eagerly with a ConflictingAnyConstraintException naming both sides; instances are immutable recipes, and each value is built to satisfy the constraints in one draw. Available on the net8.0 target only, like the type itself.",
           "extends": null,
           "implements": [
-            "IAny<Int128>",
-            "IHasRandomSource",
-            "ICardinalityHint<Int128>"
+            "IAny<Int128>"
           ],
           "entryPoints": [
             {
@@ -809,11 +906,11 @@
               "summary": "Requires the value to be a multiple of value — drawn directly on that lattice, so the declared range keeps its meaning (unlike a post-hoc As(x => x * k) projection). Declared once per generator."
             },
             {
-              "signature": "AnyInt128 OneOf(Int128[] values)",
+              "signature": "AnyInt128 OneOf(params Int128[] values)",
               "summary": "Requires the value to be one of the supplied values. Declared once per generator."
             },
             {
-              "signature": "AnyInt128 Except(Int128[] values)",
+              "signature": "AnyInt128 Except(params Int128[] values)",
               "summary": "Requires the value to be none of the supplied values."
             },
             {
@@ -834,9 +931,7 @@
           "summary": "A fluent generator of arbitrary Int16 values — the same contract as AnyInt32: constraints express what the surrounding code requires of the value, never what the test asserts; contradictory constraints fail eagerly with a ConflictingAnyConstraintException naming both sides; instances are immutable recipes, and each value is built to satisfy the constraints in one draw.",
           "extends": null,
           "implements": [
-            "IAny<short>",
-            "IHasRandomSource",
-            "ICardinalityHint<short>"
+            "IAny<short>"
           ],
           "entryPoints": [
             {
@@ -888,11 +983,11 @@
               "summary": "Requires the value to be a multiple of value — drawn directly on that lattice, so the declared range keeps its meaning (unlike a post-hoc As(x => x * k) projection). Declared once per generator."
             },
             {
-              "signature": "AnyInt16 OneOf(short[] values)",
+              "signature": "AnyInt16 OneOf(params short[] values)",
               "summary": "Requires the value to be one of the supplied values. Declared once per generator."
             },
             {
-              "signature": "AnyInt16 Except(short[] values)",
+              "signature": "AnyInt16 Except(params short[] values)",
               "summary": "Requires the value to be none of the supplied values."
             },
             {
@@ -913,9 +1008,7 @@
           "summary": "A fluent generator of arbitrary Int32 values. Each constraint narrows the domain the value is drawn from — the constraints express what the surrounding code requires of the value (an invariant, a precondition), never what the test asserts. Constraints that contradict each other fail immediately with a ConflictingAnyConstraintException naming both sides, so an impossible Arrange reads as the test defect it is.",
           "extends": null,
           "implements": [
-            "IAny<int>",
-            "IHasRandomSource",
-            "ICardinalityHint<int>"
+            "IAny<int>"
           ],
           "entryPoints": [
             {
@@ -967,11 +1060,11 @@
               "summary": "Requires the value to be a multiple of value — drawn directly on that lattice, so the declared range keeps its meaning (unlike a post-hoc As(x => x * k) projection). Declared once per generator."
             },
             {
-              "signature": "AnyInt32 OneOf(int[] values)",
+              "signature": "AnyInt32 OneOf(params int[] values)",
               "summary": "Requires the value to be one of the supplied values. Declared once per generator."
             },
             {
-              "signature": "AnyInt32 Except(int[] values)",
+              "signature": "AnyInt32 Except(params int[] values)",
               "summary": "Requires the value to be none of the supplied values."
             },
             {
@@ -992,9 +1085,7 @@
           "summary": "A fluent generator of arbitrary Int64 values — the same contract as AnyInt32: constraints express what the surrounding code requires of the value, never what the test asserts; contradictory constraints fail eagerly with a ConflictingAnyConstraintException naming both sides; instances are immutable recipes, and each value is built to satisfy the constraints in one draw.",
           "extends": null,
           "implements": [
-            "IAny<long>",
-            "IHasRandomSource",
-            "ICardinalityHint<long>"
+            "IAny<long>"
           ],
           "entryPoints": [
             {
@@ -1046,11 +1137,11 @@
               "summary": "Requires the value to be a multiple of value — drawn directly on that lattice, so the declared range keeps its meaning (unlike a post-hoc As(x => x * k) projection). Declared once per generator."
             },
             {
-              "signature": "AnyInt64 OneOf(long[] values)",
+              "signature": "AnyInt64 OneOf(params long[] values)",
               "summary": "Requires the value to be one of the supplied values. Declared once per generator."
             },
             {
-              "signature": "AnyInt64 Except(long[] values)",
+              "signature": "AnyInt64 Except(params long[] values)",
               "summary": "Requires the value to be none of the supplied values."
             },
             {
@@ -1071,8 +1162,7 @@
           "summary": "A generator of arbitrary strings that match a regular expression — the dummy for a value whose format is defined by a pattern (an order reference, a SKU, a currency code). The pattern is the whole shape of the specification: unlike AnyString this generator exposes no further shape or length constraints — express those inside the pattern instead. What it does expose is the exclusion pair Except and DifferentFrom, which every other generator carries. It also composes like any other generator: pipe it through As(...) into a value object, make it optional with OrNull(), or fold it into Combine(...) and the collection generators.",
           "extends": null,
           "implements": [
-            "IAny<string>",
-            "IHasRandomSource"
+            "IAny<string>"
           ],
           "entryPoints": [
             {
@@ -1088,7 +1178,7 @@
           "constructors": [],
           "methods": [
             {
-              "signature": "AnyPattern Except(string[] values)",
+              "signature": "AnyPattern Except(params string[] values)",
               "summary": "Requires the generated value to be none of the supplied values. May be declared several times; the exclusions accumulate. The pattern still builds the value — an exclusion only rejects and redraws — so a pattern whose language the exclusions leave nothing of surfaces at Generate as a seed-bearing AnyGenerationException, never as a declaration-time conflict: the library does not enumerate a regular language to prove it empty. Comparison is ordinal, like string equality itself, whether or not the pattern ignores case."
             },
             {
@@ -1109,9 +1199,7 @@
           "summary": "A fluent generator of arbitrary SByte values — the same contract as AnyInt32: constraints express what the surrounding code requires of the value, never what the test asserts; contradictory constraints fail eagerly with a ConflictingAnyConstraintException naming both sides; instances are immutable recipes, and each value is built to satisfy the constraints in one draw.",
           "extends": null,
           "implements": [
-            "IAny<sbyte>",
-            "IHasRandomSource",
-            "ICardinalityHint<sbyte>"
+            "IAny<sbyte>"
           ],
           "entryPoints": [
             {
@@ -1163,11 +1251,11 @@
               "summary": "Requires the value to be a multiple of value — drawn directly on that lattice, so the declared range keeps its meaning (unlike a post-hoc As(x => x * k) projection). Declared once per generator."
             },
             {
-              "signature": "AnySByte OneOf(sbyte[] values)",
+              "signature": "AnySByte OneOf(params sbyte[] values)",
               "summary": "Requires the value to be one of the supplied values. Declared once per generator."
             },
             {
-              "signature": "AnySByte Except(sbyte[] values)",
+              "signature": "AnySByte Except(params sbyte[] values)",
               "summary": "Requires the value to be none of the supplied values."
             },
             {
@@ -1188,9 +1276,7 @@
           "summary": "A fluent generator of arbitrary Single values — the same contract as AnyInt32: constraints express what the surrounding code requires of the value, never what the test asserts; contradictory constraints fail eagerly with a ConflictingAnyConstraintException naming both sides; instances are immutable recipes. NaN and the infinities are never generated nor accepted.",
           "extends": null,
           "implements": [
-            "IAny<float>",
-            "IHasRandomSource",
-            "ICardinalityHint<float>"
+            "IAny<float>"
           ],
           "entryPoints": [
             {
@@ -1238,11 +1324,11 @@
               "summary": "Requires a value within the inclusive range [minimum, maximum]."
             },
             {
-              "signature": "AnySingle OneOf(float[] values)",
+              "signature": "AnySingle OneOf(params float[] values)",
               "summary": "Requires the value to be one of the supplied values. Declared once per generator."
             },
             {
-              "signature": "AnySingle Except(float[] values)",
+              "signature": "AnySingle Except(params float[] values)",
               "summary": "Requires the value to be none of the supplied values."
             },
             {
@@ -1263,9 +1349,7 @@
           "summary": "A fluent generator of arbitrary String values. Each constraint narrows the shape of the generated string — the constraints express what the surrounding code requires of the value (a value object's format invariant, a contract precondition), never what the test asserts. Constraints that contradict each other fail immediately with a ConflictingAnyConstraintException naming both sides, so an impossible Arrange reads as the test defect it is.",
           "extends": null,
           "implements": [
-            "IAny<string>",
-            "IHasRandomSource",
-            "ICardinalityHint<string>"
+            "IAny<string>"
           ],
           "entryPoints": [
             {
@@ -1333,7 +1417,7 @@
               "summary": "Requires every alphabetic character to be uppercase. Declared once per generator."
             },
             {
-              "signature": "AnyString Except(string[] values)",
+              "signature": "AnyString Except(params string[] values)",
               "summary": "Requires the generated string to be none of the supplied values. May be declared several times; the exclusions accumulate. On a shaped string, and unlike the shape constraints, an exclusion is met by a bounded redraw of the constructed layout, so one tight enough to leave the shape unsatisfiable surfaces at Generate as a seed-bearing AnyGenerationException rather than as a declaration-time conflict. On a string drawn from a value set (OneOf) there is nothing to redraw: the excluded values are removed from the set at once, and removing all of them is a conflict here and now. The empty string is a valid value to exclude; a null element is not."
             },
             {
@@ -1341,7 +1425,7 @@
               "summary": "Requires the generated string to differ from value — typically an existing value the test already holds, to exercise an inequality path while preserving the declared shape. Semantically equivalent to Except, including when a value set is in force; the name carries the intent at the call site."
             },
             {
-              "signature": "AnyString OneOf(string[] values)",
+              "signature": "AnyString OneOf(params string[] values)",
               "summary": "Draws the string from an explicit, fixed set of values instead of shaping one — the dummy for a value whose domain is a closed list the test does not assert on (a currency code, a well-known name). Declared once per generator, and composable like every other family's OneOf: the other constraints keep their meaning and narrow the set rather than shaping a string, so OneOf(\"abc\", \"de\").WithLength(3) yields \"abc\". A constraint no supplied value satisfies is a ConflictingAnyConstraintException naming both sides, whichever order the two were declared in. Duplicate values are collapsed; the generated string is one of the surviving values, drawn uniformly and reproducibly under a seed."
             },
             {
@@ -1362,9 +1446,7 @@
           "summary": "A fluent generator of arbitrary TimeOnly values — the same contract as AnyInt32: constraints express what the surrounding code requires of the value, never what the test asserts; contradictory constraints fail eagerly with a ConflictingAnyConstraintException naming both sides; instances are immutable recipes, and each value is built to satisfy the constraints in one draw. Available on the net8.0 target only, like the type itself. There is deliberately no clock-relative constraint: a reproducible test pins its reference time of days explicitly with After and Before.",
           "extends": null,
           "implements": [
-            "IAny<TimeOnly>",
-            "IHasRandomSource",
-            "ICardinalityHint<TimeOnly>"
+            "IAny<TimeOnly>"
           ],
           "entryPoints": [
             {
@@ -1400,11 +1482,11 @@
               "summary": "Requires the time of day to fall on a lattice of granularity from MinValue — a round time of day (a whole second, a quarter-hour), built on the grid rather than snapped after the fact, so tick-precision values never surprise a serialization round-trip. Declared once per generator."
             },
             {
-              "signature": "AnyTimeOnly OneOf(TimeOnly[] values)",
+              "signature": "AnyTimeOnly OneOf(params TimeOnly[] values)",
               "summary": "Requires the time of day to be one of the supplied values. Declared once per generator."
             },
             {
-              "signature": "AnyTimeOnly Except(TimeOnly[] values)",
+              "signature": "AnyTimeOnly Except(params TimeOnly[] values)",
               "summary": "Requires the time of day to be none of the supplied values."
             },
             {
@@ -1425,9 +1507,7 @@
           "summary": "A fluent generator of arbitrary TimeSpan values — the same contract as AnyInt32: constraints express what the surrounding code requires of the value, never what the test asserts; contradictory constraints fail eagerly with a ConflictingAnyConstraintException naming both sides; instances are immutable recipes, and each value is built to satisfy the constraints in one draw. Unconstrained, it draws from the full TimeSpan range, negative durations included.",
           "extends": null,
           "implements": [
-            "IAny<TimeSpan>",
-            "IHasRandomSource",
-            "ICardinalityHint<TimeSpan>"
+            "IAny<TimeSpan>"
           ],
           "entryPoints": [
             {
@@ -1479,11 +1559,11 @@
               "summary": "Requires the duration to fall on a lattice of granularity from Zero — a whole number of that granularity, built on the grid rather than snapped after the fact, so tick-precision values never surprise a serialization round-trip. Declared once per generator."
             },
             {
-              "signature": "AnyTimeSpan OneOf(TimeSpan[] values)",
+              "signature": "AnyTimeSpan OneOf(params TimeSpan[] values)",
               "summary": "Requires the duration to be one of the supplied values. Declared once per generator."
             },
             {
-              "signature": "AnyTimeSpan Except(TimeSpan[] values)",
+              "signature": "AnyTimeSpan Except(params TimeSpan[] values)",
               "summary": "Requires the duration to be none of the supplied values."
             },
             {
@@ -1504,9 +1584,7 @@
           "summary": "A fluent generator of arbitrary UInt128 values — the same contract as AnyInt32: constraints express what the surrounding code requires of the value, never what the test asserts; contradictory constraints fail eagerly with a ConflictingAnyConstraintException naming both sides; instances are immutable recipes, and each value is built to satisfy the constraints in one draw. Available on the net8.0 target only, like the type itself.",
           "extends": null,
           "implements": [
-            "IAny<UInt128>",
-            "IHasRandomSource",
-            "ICardinalityHint<UInt128>"
+            "IAny<UInt128>"
           ],
           "entryPoints": [
             {
@@ -1550,11 +1628,11 @@
               "summary": "Requires the value to be a multiple of value — drawn directly on that lattice, so the declared range keeps its meaning (unlike a post-hoc As(x => x * k) projection). Declared once per generator."
             },
             {
-              "signature": "AnyUInt128 OneOf(UInt128[] values)",
+              "signature": "AnyUInt128 OneOf(params UInt128[] values)",
               "summary": "Requires the value to be one of the supplied values. Declared once per generator."
             },
             {
-              "signature": "AnyUInt128 Except(UInt128[] values)",
+              "signature": "AnyUInt128 Except(params UInt128[] values)",
               "summary": "Requires the value to be none of the supplied values."
             },
             {
@@ -1575,9 +1653,7 @@
           "summary": "A fluent generator of arbitrary UInt16 values — the same contract as AnyInt32: constraints express what the surrounding code requires of the value, never what the test asserts; contradictory constraints fail eagerly with a ConflictingAnyConstraintException naming both sides; instances are immutable recipes, and each value is built to satisfy the constraints in one draw.",
           "extends": null,
           "implements": [
-            "IAny<UInt16>",
-            "IHasRandomSource",
-            "ICardinalityHint<UInt16>"
+            "IAny<UInt16>"
           ],
           "entryPoints": [
             {
@@ -1621,11 +1697,11 @@
               "summary": "Requires the value to be a multiple of value — drawn directly on that lattice, so the declared range keeps its meaning (unlike a post-hoc As(x => x * k) projection). Declared once per generator."
             },
             {
-              "signature": "AnyUInt16 OneOf(UInt16[] values)",
+              "signature": "AnyUInt16 OneOf(params UInt16[] values)",
               "summary": "Requires the value to be one of the supplied values. Declared once per generator."
             },
             {
-              "signature": "AnyUInt16 Except(UInt16[] values)",
+              "signature": "AnyUInt16 Except(params UInt16[] values)",
               "summary": "Requires the value to be none of the supplied values."
             },
             {
@@ -1646,9 +1722,7 @@
           "summary": "A fluent generator of arbitrary UInt32 values — the same contract as AnyInt32: constraints express what the surrounding code requires of the value, never what the test asserts; contradictory constraints fail eagerly with a ConflictingAnyConstraintException naming both sides; instances are immutable recipes, and each value is built to satisfy the constraints in one draw.",
           "extends": null,
           "implements": [
-            "IAny<UInt32>",
-            "IHasRandomSource",
-            "ICardinalityHint<UInt32>"
+            "IAny<UInt32>"
           ],
           "entryPoints": [
             {
@@ -1692,11 +1766,11 @@
               "summary": "Requires the value to be a multiple of value — drawn directly on that lattice, so the declared range keeps its meaning (unlike a post-hoc As(x => x * k) projection). Declared once per generator."
             },
             {
-              "signature": "AnyUInt32 OneOf(UInt32[] values)",
+              "signature": "AnyUInt32 OneOf(params UInt32[] values)",
               "summary": "Requires the value to be one of the supplied values. Declared once per generator."
             },
             {
-              "signature": "AnyUInt32 Except(UInt32[] values)",
+              "signature": "AnyUInt32 Except(params UInt32[] values)",
               "summary": "Requires the value to be none of the supplied values."
             },
             {
@@ -1717,9 +1791,7 @@
           "summary": "A fluent generator of arbitrary UInt64 values — the same contract as AnyInt32: constraints express what the surrounding code requires of the value, never what the test asserts; contradictory constraints fail eagerly with a ConflictingAnyConstraintException naming both sides; instances are immutable recipes, and each value is built to satisfy the constraints in one draw.",
           "extends": null,
           "implements": [
-            "IAny<UInt64>",
-            "IHasRandomSource",
-            "ICardinalityHint<UInt64>"
+            "IAny<UInt64>"
           ],
           "entryPoints": [
             {
@@ -1763,11 +1835,11 @@
               "summary": "Requires the value to be a multiple of value — drawn directly on that lattice, so the declared range keeps its meaning (unlike a post-hoc As(x => x * k) projection). Declared once per generator."
             },
             {
-              "signature": "AnyUInt64 OneOf(UInt64[] values)",
+              "signature": "AnyUInt64 OneOf(params UInt64[] values)",
               "summary": "Requires the value to be one of the supplied values. Declared once per generator."
             },
             {
-              "signature": "AnyUInt64 Except(UInt64[] values)",
+              "signature": "AnyUInt64 Except(params UInt64[] values)",
               "summary": "Requires the value to be none of the supplied values."
             },
             {
@@ -1793,8 +1865,7 @@
           "summary": "A generator of arbitrary ftp URIs — the classic ftp://user:password@host/path shape of legacy code. An FTP URI carries user-info but no query and no fragment, so this builder does not expose them.",
           "extends": null,
           "implements": [
-            "IAny<Uri>",
-            "IHasRandomSource"
+            "IAny<Uri>"
           ],
           "entryPoints": null,
           "properties": [],
@@ -1846,8 +1917,7 @@
           "summary": "A generator of arbitrary mailto URIs — mailto:local@domain, optionally with headers. The local-part and domain are drawn from ASCII characters, so the value is an arbitrary well-formed address, never a realistic one (this library does not fabricate plausible data). A mailto URI is not authority-based, so this builder exposes no host/port/user-info in the authority sense — only the address parts and headers.",
           "extends": null,
           "implements": [
-            "IAny<Uri>",
-            "IHasRandomSource"
+            "IAny<Uri>"
           ],
           "entryPoints": null,
           "properties": [],
@@ -1879,8 +1949,7 @@
           "summary": "A generator of arbitrary relative URI references — a path with an optional query and fragment, and no scheme or authority (e.g. orders/42?page=2 or /a/b/c#top). A relative reference is well-formed on its own; only its resolution against a base needs a base, not its validity. Generate returns a Uri with IsAbsoluteUri false.",
           "extends": null,
           "implements": [
-            "IAny<Uri>",
-            "IHasRandomSource"
+            "IAny<Uri>"
           ],
           "entryPoints": null,
           "properties": [],
@@ -1916,8 +1985,7 @@
           "summary": "A fluent generator of arbitrary yet valid Uri values. Unconstrained, it spans the whole safe URI space — an absolute web (http/https), WebSocket (ws/wss), FTP or mailto URI, or a relative reference — drawn from the ambient random context. Narrow it to one family to reach that family's constraints: each narrowing returns a family-specific builder that exposes only the components that family actually has, so an impossible combination (a port on a mailto, a fragment on a WebSocket) cannot even be written.",
           "extends": null,
           "implements": [
-            "IAny<Uri>",
-            "IHasRandomSource"
+            "IAny<Uri>"
           ],
           "entryPoints": [
             {
@@ -1962,8 +2030,7 @@
           "summary": "A generator of arbitrary ws/wss URIs. Per RFC 6455 a WebSocket URI carries no user-info and no fragment, so — unlike AnyWebUri — this builder does not expose them. Pin the TLS variant with UsingWs/UsingWss; unpinned, the scheme is drawn from both.",
           "extends": null,
           "implements": [
-            "IAny<Uri>",
-            "IHasRandomSource"
+            "IAny<Uri>"
           ],
           "entryPoints": null,
           "properties": [],
@@ -2015,8 +2082,7 @@
           "summary": "A generator of arbitrary http/https URIs. Exposes the full authority surface — user-info, host, port, path, query and fragment. Pin the TLS variant with UsingHttp/UsingHttps; unpinned, the scheme is drawn from both. Every component is drawn from ASCII-unreserved characters, so a value is valid by construction and reproducible under a seed.",
           "extends": null,
           "implements": [
-            "IAny<Uri>",
-            "IHasRandomSource"
+            "IAny<Uri>"
           ],
           "entryPoints": null,
           "properties": [],
@@ -2089,8 +2155,7 @@
           "summary": "A fluent generator of arbitrary array (T[]) values over an element generator. Shares the collection constraint surface (AnyCollection) — count bounds and contained values — and adds Distinct to require pairwise-distinct elements.",
           "extends": "AnyCollection<T, T[], AnyArray<T>>",
           "implements": [
-            "IAny<T[]>",
-            "IHasRandomSource"
+            "IAny<T[]>"
           ],
           "entryPoints": [
             {
@@ -2119,8 +2184,7 @@
           "summary": "The shared fluent surface of the collection generators. Every collection — a AnyList, an AnyArray, an AnySequence or an AnySet — carries a count and, optionally, values it must contain; the concrete generators add only how the elements are shaped (a set is always distinct) and what type Generate returns.",
           "extends": null,
           "implements": [
-            "IAny<TResult>",
-            "IHasRandomSource"
+            "IAny<TResult>"
           ],
           "entryPoints": null,
           "properties": [],
@@ -2172,8 +2236,7 @@
           "summary": "A fluent generator of arbitrary Dictionary values over a key generator and a value generator. The keys are distinct by nature — the count constraints bound the number of entries, and the key generator's domain gates feasibility exactly as it does for a AnySet: too small a key domain for the requested count fails eagerly with a ConflictingAnyConstraintException, a genuine shortfall surfaces at generation as an AnyGenerationException.",
           "extends": null,
           "implements": [
-            "IAny<Dictionary<TKey, TValue>>",
-            "IHasRandomSource"
+            "IAny<Dictionary<TKey, TValue>>"
           ],
           "entryPoints": [
             {
@@ -2238,8 +2301,7 @@
           "summary": "A fluent generator of arbitrary List values over an element generator. Shares the collection constraint surface (AnyCollection) — count bounds and contained values — and adds Distinct to require pairwise-distinct elements.",
           "extends": "AnyCollection<T, List<T>, AnyList<T>>",
           "implements": [
-            "IAny<List<T>>",
-            "IHasRandomSource"
+            "IAny<List<T>>"
           ],
           "entryPoints": [
             {
@@ -2268,8 +2330,7 @@
           "summary": "A fluent generator of arbitrary IEnumerable values over an element generator. The generated sequence is fully materialized: it never defers work, so enumerating it twice yields the same elements and never re-draws. Shares the collection constraint surface (AnyCollection) — count bounds and contained values — and adds Distinct to require pairwise-distinct elements.",
           "extends": "AnyCollection<T, IEnumerable<T>, AnySequence<T>>",
           "implements": [
-            "IAny<IEnumerable<T>>",
-            "IHasRandomSource"
+            "IAny<IEnumerable<T>>"
           ],
           "entryPoints": [
             {
@@ -2298,8 +2359,7 @@
           "summary": "A fluent generator of arbitrary HashSet values over an element generator. A set is distinct by nature, so it carries the collection constraint surface (AnyCollection) — count bounds and contained values — without a Distinct() toggle. When the element generator advertises fewer distinct values than the requested count, the contradiction is caught eagerly with a ConflictingAnyConstraintException; otherwise a genuine shortfall surfaces at generation as an AnyGenerationException.",
           "extends": "AnyCollection<T, HashSet<T>, AnySet<T>>",
           "implements": [
-            "IAny<HashSet<T>>",
-            "IHasRandomSource"
+            "IAny<HashSet<T>>"
           ],
           "entryPoints": [
             {
@@ -2346,14 +2406,12 @@
           "summary": "A generator that draws an arbitrary value from an explicit, fixed pool supplied by the caller — the dummy for a value whose domain is a closed set a test does not assert on (one of the currencies a context is configured with, one of the orders already in a fixture, one of a handful of domain states). Unlike the typed builders' OneOf, which narrows within a scalar's own domain, this draws from values the library could never synthesize on its own. It still composes like any other generator — pipe it through As(...) into a value object, make it optional with OrNull(), or fold it into Combine(...) and the collection generators.",
           "extends": null,
           "implements": [
-            "IAny<T>",
-            "IHasRandomSource",
-            "ICardinalityHint<T>"
+            "IAny<T>"
           ],
           "entryPoints": [
             {
-              "signature": "static AnyOneOf<T> Any.OneOf<T>(T[] values)",
-              "summary": null
+              "signature": "static AnyOneOf<T> Any.OneOf<T>(params T[] values)",
+              "summary": "Draws an arbitrary value from an explicit pool of caller-supplied values, over the ambient random context — the top-level choice combinator for a value whose domain is a closed set the test does not assert on (\"one of the configured currencies\", \"one of the states in this table\"). The pool is the whole shape of the specification — T is opaque, so the returned generator offers no type-specific constraint, only the exclusion pair Except/DifferentFrom every generator carries — and it composes through As(...), OrNull(), Combine(...) and the collection generators like any other. To draw from a pool already held as a collection, use ElementOf."
             },
             {
               "signature": "static AnyOneOf<T> Any.ElementOf<T>(IReadOnlyList<T> values)",
@@ -2368,8 +2426,8 @@
           "constructors": [],
           "methods": [
             {
-              "signature": "AnyOneOf<T> Except(T[] values)",
-              "summary": null
+              "signature": "AnyOneOf<T> Except(params T[] values)",
+              "summary": "Requires the generated value to be none of the supplied values — they are removed from the pool under Default, so the draw stays a single uniform pick over what is left. May be declared several times; the exclusions accumulate. A value that is not in the pool removes nothing."
             },
             {
               "signature": "AnyOneOf<T> DifferentFrom(T value)",
@@ -2538,7 +2596,7 @@
           "id": "reproducibly",
           "name": "Reproducibly",
           "kind": "static method",
-          "signature": "static void Any.Reproducibly(Action body, Action<string> report)",
+          "signature": "static void Any.Reproducibly(Action body, Action<string>? report)",
           "summary": "Runs body with the ambient random context pinned to a fresh seed and, if the body throws, reports that seed before letting the exception propagate. This is how a test that draws on Any stays reproducible: the values still vary between runs (which surfaces accidental dependencies), yet a failure names the exact seed to replay.",
           "extends": null,
           "implements": [],
@@ -2547,11 +2605,11 @@
           "constructors": [],
           "methods": [
             {
-              "signature": "static void Any.Reproducibly(Action body, Action<string> report)",
+              "signature": "static void Any.Reproducibly(Action body, Action<string>? report)",
               "summary": "Runs body with the ambient random context pinned to a fresh seed and, if the body throws, reports that seed before letting the exception propagate. This is how a test that draws on Any stays reproducible: the values still vary between runs (which surfaces accidental dependencies), yet a failure names the exact seed to replay."
             },
             {
-              "signature": "static void Any.Reproducibly(int seed, Action body, Action<string> report)",
+              "signature": "static void Any.Reproducibly(int seed, Action body, Action<string>? report)",
               "summary": "Replays body with the ambient random context pinned to seed, so a run first seen through the parameterless Reproducibly overload can be reproduced exactly. If the body throws, the seed is reported before the exception propagates."
             }
           ]
@@ -2560,7 +2618,7 @@
           "id": "reproducibly-async",
           "name": "ReproduciblyAsync",
           "kind": "static method",
-          "signature": "static Task Any.ReproduciblyAsync(Func<Task> body, Action<string> report)",
+          "signature": "static Task Any.ReproduciblyAsync(Func<Task> body, Action<string>? report)",
           "summary": "Asynchronous counterpart of Reproducibly: awaits body under a fresh seed and reports it if the body faults.",
           "extends": null,
           "implements": [],
@@ -2569,11 +2627,11 @@
           "constructors": [],
           "methods": [
             {
-              "signature": "static Task Any.ReproduciblyAsync(Func<Task> body, Action<string> report)",
+              "signature": "static Task Any.ReproduciblyAsync(Func<Task> body, Action<string>? report)",
               "summary": "Asynchronous counterpart of Reproducibly: awaits body under a fresh seed and reports it if the body faults."
             },
             {
-              "signature": "static Task Any.ReproduciblyAsync(int seed, Func<Task> body, Action<string> report)",
+              "signature": "static Task Any.ReproduciblyAsync(int seed, Func<Task> body, Action<string>? report)",
               "summary": "Asynchronous counterpart of Reproducibly: awaits body under seed and reports it if the body faults."
             }
           ]

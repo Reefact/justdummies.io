@@ -14,11 +14,15 @@
  * collapsed on a phone-width screen, where the sidebar would otherwise push the page's own
  * heading below a full category list and a search box. It runs synchronously immediately after
  * the element lands in the DOM, so the collapse happens before first paint rather than after —
- * the same reasoning behind `Base.astro`'s own reveal-arming script.
+ * the same reasoning behind `Base.astro`'s own reveal-arming script. That same script also
+ * forces `open` back on whenever the viewport crosses above the breakpoint afterwards — a phone
+ * rotated to landscape, say — because past that width the media query below hides `summary`
+ * entirely; a `<details>` left closed there would strand the whole sidebar and search with no
+ * control left to reopen it.
  */
 import { pathForLocale } from '../i18n/routing';
 import { useTranslations, type Locale } from '../i18n/ui';
-import { allApiCategories, type ApiEntry } from '../apiCatalogue';
+import { allApiCategories, type ApiEntry, type ApiMember } from '../apiCatalogue';
 
 interface Props {
     locale: Locale;
@@ -49,14 +53,32 @@ interface SearchEntry {
     href: string;
 }
 
+/**
+ * A member indexed under the entry that declares it — "the control is presented as a member
+ * search" (a reader typing `WithLength` or `Generate` should find it), so the index has to hold
+ * more than the 55 entry names or those exact queries return nothing despite the member being in
+ * the catalogue. The href always lands on the declaring entry's anchor: members have no anchor
+ * of their own, and the entry they belong to is themselves the useful destination.
+ */
+function memberEntries(entry: ApiEntry, categorySlug: string): SearchEntry[] {
+    const members: readonly ApiMember[] = [...entry.properties, ...entry.constructors, ...entry.methods, ...(entry.entryPoints ?? [])];
+
+    return members.map((member) => ({
+        label: member.signature,
+        category: entry.name,
+        href: `${apiPath(categorySlug)}#${entry.id}`,
+    }));
+}
+
 const searchIndex: SearchEntry[] = allApiCategories().flatMap((category) =>
-    category.entries.map(
-        (entry: ApiEntry): SearchEntry => ({
+    category.entries.flatMap((entry: ApiEntry): SearchEntry[] => [
+        {
             label: entry.name,
             category: categoryLabel[category.slug] ?? category.slug,
             href: `${apiPath(category.slug)}#${entry.id}`,
-        }),
-    ),
+        },
+        ...memberEntries(entry, category.slug),
+    ]),
 );
 ---
 
@@ -94,12 +116,28 @@ const searchIndex: SearchEntry[] = allApiCategories().flatMap((category) =>
 </details>
 
 <script is:inline>
-    (function collapseOnNarrowScreens() {
+    (function manageNarrowScreenCollapse() {
         const details = document.currentScript.previousElementSibling;
 
-        if (details instanceof HTMLDetailsElement && window.matchMedia('(max-width: 56rem)').matches) {
+        if (!(details instanceof HTMLDetailsElement)) {
+            return;
+        }
+
+        const narrowScreen = window.matchMedia('(max-width: 56rem)');
+
+        if (narrowScreen.matches) {
             details.open = false;
         }
+
+        // Widening past the breakpoint hides `summary` (see the media query below), which is
+        // the only control that can reopen a closed `<details>` — so a resize or a rotation
+        // that crosses the breakpoint has to force `open` back on itself, or the sidebar and
+        // search stay stranded closed with nothing left on the page able to reach them.
+        narrowScreen.addEventListener('change', (event) => {
+            if (!event.matches) {
+                details.open = true;
+            }
+        });
     })();
 </script>
 

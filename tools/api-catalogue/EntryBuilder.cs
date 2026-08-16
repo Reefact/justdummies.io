@@ -11,16 +11,17 @@ namespace JustDummies.ApiCatalogue;
 internal sealed class EntryBuilder {
 
     /// <summary>
-    ///     Declared methods are suppressed for these types — not omitted from the catalogue,
+    ///     Declared methods are suppressed for this type — not omitted from the catalogue,
     ///     redistributed instead. Every one of <see cref="Any" />'s own static methods ends up
     ///     as the <c>entryPoints</c> of the type it returns, or as its own loose entry when it
     ///     returns nothing this catalogue houses (<see cref="CatalogueBuilder.AddLooseAnyMembers" />);
-    ///     listing them here too would print each one twice. <see cref="AnyContext" /> mirrors
-    ///     nearly all forty of them under an isolated seed, and gets the same treatment for the
-    ///     same reason — its entry states once, in prose, that it mirrors <see cref="Any" />'s
-    ///     surface, rather than repeating the whole of the primitives category underneath it.
+    ///     listing them here too would print each one twice. <see cref="AnyContext" /> is
+    ///     deliberately NOT in this set even though it mirrors nearly all forty of them under an
+    ///     isolated seed: nothing redistributes an <see cref="AnyContext" /> instance method
+    ///     anywhere else, so suppressing them here would make them vanish from the catalogue
+    ///     rather than move — its entry lists its own methods like any other type.
     /// </summary>
-    private static readonly HashSet<string> MethodsSuppressed = ["Any", "AnyContext"];
+    private static readonly HashSet<string> MethodsSuppressed = ["Any"];
 
     public string Category { get; }
     public string Name { get; }
