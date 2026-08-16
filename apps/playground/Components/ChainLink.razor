@@ -20,7 +20,12 @@
 <div class="chain-link">
     <span class="prefix">@Prefix</span>
 
-    <select @ref="_select" @onchange="HandleMethodChosen" value="@(State.Chosen?.Key ?? "")" aria-label="@SelectLabel">
+    <select @ref="_select"
+            @onchange="HandleMethodChosen"
+            value="@(State.Chosen?.Key ?? "")"
+            aria-label="@SelectLabel"
+            aria-describedby="@(DescribesSelect ? ErrorId : null)"
+            aria-invalid="@(DescribesSelect ? "true" : null)">
         <option value="" disabled selected="@(State.Chosen is null)">@PlaygroundStrings.T(LocaleState.Current, "playground.chooseMethod")</option>
         @foreach (var option in Options) {
             <option value="@option.Key" selected="@(State.Chosen?.Key == option.Key)">@DisplayName(option)</option>
@@ -98,6 +103,13 @@
     /// value) — the same fallback the UI used before per-argument targeting existed.</summary>
     private bool DescribesInput(int index) =>
         HasError && (State.ErrorArgumentIndex is { } errorIndex ? errorIndex == index : true);
+
+    /// <summary>Whether the error belongs on the <c>&lt;select&gt;</c> instead. A refusal of a
+    /// parameterless step — <c>False()</c> after <c>True()</c> — has no argument input to
+    /// carry it, so without this the only control the visitor can focus in that step says
+    /// nothing about why it is invalid, and the live region's announcement is gone the moment
+    /// they navigate away from it.</summary>
+    private bool DescribesSelect => HasError && State.Chosen is { Parameters.Count: 0 };
     private string SelectLabel => PlaygroundStrings.T(LocaleState.Current, "playground.selectAria", LinkIndex + 1);
 
     private static string DisplayName(MemberDescriptor member) =>

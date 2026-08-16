@@ -197,15 +197,21 @@ public static class ArgumentParsing {
     }
 
     /// <summary>True if <paramref name="raw" /> ends with an explicit UTC/offset marker
-    /// ("Z"/"z", or "+HH:mm"/"-HH:mm"/"+HH"/"-HH") — the shapes ISO 8601 allows for a
-    /// <c>DateTimeOffset</c>'s offset component. Checked before trusting
+    /// ("Z"/"z", or "+HH:mm"/"-HH:mm"/"+HH"/"-HH") <em>on a value that also carries a
+    /// time</em> — the shapes ISO 8601 allows for a <c>DateTimeOffset</c>'s offset component.
+    /// Checked before trusting
     /// <see cref="DateTimeOffset.TryParse(string, IFormatProvider, DateTimeStyles, out DateTimeOffset)" />,
     /// which accepts an offsetless string just as happily by silently assuming the host's own
     /// local offset.</summary>
     private static bool HasExplicitOffset(string raw) {
         var trimmed = raw.TrimEnd();
+
+        // A time-of-day component is required by both branches below. A DateTimeOffset names
+        // an instant, and the field asks for "a date and time with an offset" — "2026-08-15Z"
+        // is a date wearing an offset, which TryParse would happily complete to midnight.
+        // Every representation carrying a real time has a ':' in it; a bare date never does.
         if (trimmed.EndsWith('Z') || trimmed.EndsWith('z')) {
-            return true;
+            return trimmed.Contains(':');
         }
 
         // "+HH:mm" / "-HH:mm" / "+HH" / "-HH", anchored to the end of the string — a plain
