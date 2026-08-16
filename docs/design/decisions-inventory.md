@@ -94,6 +94,19 @@ publié.
 pour le raisonnement mais pas pour la décision.
 **Résolu :** [ADR-0010](../for-maintainers/adr/0010-le-catalogue-du-playground-est-du-code-c-genere-pas-du-json-fr.md).
 
+**A6 — Aucun script serveur** — **résolu, et retiré de cet inventaire :**
+[ADR-0012](../for-maintainers/adr/0012-le-site-execute-un-script-worker-pour-la-mesure-fr.md),
+accepté le 2026-08-16. Le raisonnement, les alternatives écartées et le coût redouté vivent
+là-bas désormais.
+
+*Ce qu'il reste ici est une adresse de réexpédition, pas une fiche.* Des documents citent
+encore **A6** par son nom : les deux guides de déploiement — redirigés — et les deux moitiés
+d'[ADR-0002](../for-maintainers/adr/0002-the-site-answers-on-one-hostname-en.md), qui est
+`Accepted` et donc immuable. Sa référence ne peut pas être redirigée sans réécrire un
+enregistrement accepté, ce que la convention interdit. Un numéro qui disparaît en laissant
+un lien mort coûte davantage que trois lignes qui disent où il est parti — c'est déjà le
+raisonnement de la note sur le 0008 retiré, en tête de l'index des ADR.
+
 **A7 — L'intégration continue construit, l'hébergeur reçoit un artefact déjà bâti**
 *Alternative écartée :* le CI intégré de l'hébergeur, qui ne convient pas ici parce que
 le pipeline a besoin du SDK .NET **et** de Node dans le même environnement, plus des

@@ -280,7 +280,10 @@ Le point le plus important, celui qui explique la moitié de la configuration du
 > site qui tombe.
 
 Le raisonnement complet est dans [`design/decisions-inventory.md`](../design/decisions-inventory.md),
-fiches **A1** (pourquoi Workers et pas Pages) et **A6** (pourquoi aucun script).
+fiche **A1** (pourquoi Workers et pas Pages), et dans
+[ADR-0012](adr/0012-le-site-execute-un-script-worker-pour-la-mesure-fr.md) (pourquoi le seul script
+qui existe reste hors du chemin du site). La seconde moitié était la fiche **A6**, qui a quitté cet
+inventaire le jour où ADR-0012 a été accepté.
 
 ---
 

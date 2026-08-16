@@ -2,8 +2,9 @@
 
 🌍 🇫🇷 Français (ce fichier) · 🇬🇧 [English](0013-mirrored-library-content-is-pinned-to-a-release-tag-en.md)
 
-**Statut :** Proposé
+**Statut :** Accepté
 **Proposé le :** 2026-08-16
+**Accepté le :** 2026-08-16
 **Décideurs :** Reefact
 
 ## Contexte

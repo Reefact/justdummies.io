@@ -2,8 +2,9 @@
 
 🌍 🇬🇧 English (this file) · 🇫🇷 [Français](0013-le-contenu-repris-de-la-bibliotheque-est-epingle-a-un-tag-fr.md)
 
-**Status:** Proposed
+**Status:** Accepted
 **Proposed:** 2026-08-16
+**Accepted:** 2026-08-16
 **Decision Makers:** Reefact
 
 ## Context
