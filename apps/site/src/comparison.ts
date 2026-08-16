@@ -128,10 +128,11 @@ const bogus: Competitor = {
 /**
  * Verified against the project's own README and wiki cheat sheet at
  * https://github.com/AutoFixture/AutoFixture — anonymous (not realistic) values,
- * automatic graph construction ("create values of virtually any type"), customization
- * through a separate `ISpecimenBuilder`/`Customize<T>()` rather than at the call site,
- * and no built-in seeding: repeatable random values remain an open feature request
- * (github.com/AutoFixture/AutoFixture/issues/1406).
+ * automatic graph construction ("create values of virtually any type"), a per-call
+ * override on the `Build<T>()` chain (`.With(x => x.Prop, value)` — a pinned value or a
+ * hand-written generator lambda, not a declarative constraint) alongside the separate,
+ * reusable `ISpecimenBuilder`/`Customize<T>()` path, and no built-in seeding: repeatable
+ * random values remain an open feature request (github.com/AutoFixture/AutoFixture/issues/1406).
  */
 const autoFixture: Competitor = {
     id: 'autofixture',
@@ -142,7 +143,7 @@ const autoFixture: Competitor = {
     chooseInsteadKey: 'why.autofixture.chooseInstead',
     ratings: {
         invariants: { rating: 'possible', noteKey: 'why.note.autofixture.invariants' },
-        callSite: { rating: 'out-of-scope' },
+        callSite: { rating: 'possible', noteKey: 'why.note.autofixture.callSite' },
         testIntent: { rating: 'out-of-scope' },
         reuse: { rating: 'possible', noteKey: 'why.note.autofixture.reuse' },
         realism: { rating: 'out-of-scope' },
@@ -168,12 +169,12 @@ const manual: Competitor = {
     ratings: {
         invariants: { rating: 'possible', noteKey: 'why.note.manual.invariants' },
         callSite: { rating: 'out-of-scope' },
-        testIntent: { rating: 'out-of-scope' },
+        testIntent: { rating: 'possible', noteKey: 'why.note.manual.testIntent' },
         reuse: { rating: 'out-of-scope' },
         realism: { rating: 'possible', noteKey: 'why.note.manual.realism' },
         graph: { rating: 'possible', noteKey: 'why.note.manual.graph' },
         reproducibility: { rating: 'core' },
-        compileTime: { rating: 'core' },
+        compileTime: { rating: 'out-of-scope', noteKey: 'why.note.manual.compileTime' },
         codeGen: { rating: 'out-of-scope' },
         exploration: { rating: 'out-of-scope' },
     },
