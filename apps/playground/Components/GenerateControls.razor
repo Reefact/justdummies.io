@@ -18,12 +18,12 @@
         @PlaygroundStrings.T(LocaleState.Current, "playground.copyCode")
     </button>
 
-    <span class="visually-hidden" role="status" aria-live="polite">@_copyStatus</span>
+    <span class="visually-hidden" role="status" aria-live="polite">@(_hasCopied ? PlaygroundStrings.T(LocaleState.Current, "playground.copied") : "")</span>
 
     @if (Refusal is not null) {
         <output class="refusal">@Refusal</output>
     } else if (HasResult) {
-        <output class="value">@Value</output>
+        <output class="value">@DisplayValue(Value)</output>
     }
 </div>
 
@@ -35,7 +35,7 @@
     [Parameter, EditorRequired] public string CodeText { get; set; } = "";
     [Parameter, EditorRequired] public EventCallback OnGenerate { get; set; }
 
-    private string _copyStatus = "";
+    private bool _hasCopied;
 
     private bool HasResult => Value is not null || Refusal is not null;
 
@@ -43,7 +43,16 @@
 
     private async Task HandleCopy() {
         await JS.InvokeVoidAsync("navigator.clipboard.writeText", CodeText);
-        _copyStatus = PlaygroundStrings.T(LocaleState.Current, "playground.copied");
+        _hasCopied = true;
     }
+
+    /// <summary>A generated <c>string</c>/<c>char</c> can legitimately be empty or made only of
+    /// control characters, which would otherwise render as nothing at all inside &lt;output&gt;.
+    /// Quoting mirrors how Home.razor already formats these two types for the copied code.</summary>
+    private static string DisplayValue(object? value) => value switch {
+        string s => $"\"{s}\"",
+        char c   => $"'{c}'",
+        _        => value?.ToString() ?? "",
+    };
 
 }

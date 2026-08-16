@@ -9,9 +9,12 @@
     the trimmer sees real call sites and keeps them (§10.8).
 
     This project is never published on its own; it exists to be referenced by
-    apps/playground. Its own dependency is JustDummies itself, pinned centrally like
-    everywhere else, because the dispatch table's generated lambdas call the real
-    library types by name.
+    apps/playground. Core.cs (MemberDescriptor, ChainStep, ChainResult, and the partial
+    PlaygroundCatalogue/PlaygroundDispatch declarations the Generated/ files complete)
+    stays here rather than in the sibling -core project: C# partial class parts must share
+    one assembly, and Generated/ is exactly the other half of those same partial classes.
+    ArgumentParsing lives in -core instead, since it has no such constraint and the
+    generator needs to reference it directly (see that project's own comment).
   -->
   <PropertyGroup>
     <IsPackable>false</IsPackable>
@@ -20,6 +23,10 @@
 
   <ItemGroup>
     <PackageReference Include="JustDummies" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\playground-catalogue-core\JustDummies.Playground.Catalogue.Core.csproj" />
   </ItemGroup>
 
 </Project>

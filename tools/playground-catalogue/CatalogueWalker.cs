@@ -53,7 +53,7 @@ public sealed class CatalogueWalker {
         var members      = new List<CatalogueEntry>();
         var receiverTypes = new Dictionary<string, Type>();
         var autoExcluded = new List<ExcludedEntry>();
-        var manualyExcluded = new List<ExcludedEntry>();
+        var manuallyExcluded = new List<ExcludedEntry>();
         var seenKeys     = new HashSet<string>();
         var toVisit      = new Queue<Type>();
         var enqueued     = new HashSet<Type>();
@@ -63,15 +63,20 @@ public sealed class CatalogueWalker {
         //    generator entry points and extension methods, so no name list is needed.
         foreach (var staticClass in _libraryAssembly.GetExportedTypes().Where(IsStaticClass)) {
             foreach (var method in staticClass.GetMethods(BindingFlags.Public | BindingFlags.Static).Where(m => !m.IsSpecialName)) {
-                var member = DocIdOf(method);
-                var classification = Classify(method, receiver: null);
+                var docId = DocIdOf(method);
 
-                if (!classification.Eligible) {
-                    Record(member, method, staticClass.Name, isEntryPoint: true, classification.Reason!, autoExcluded, manualyExcluded);
+                if (TryApplyManualExclusion(docId, staticClass.Name, method, manuallyExcluded)) {
                     continue;
                 }
 
-                var entry = ToEntry(method, global::JustDummies.Playground.Catalogue.PlaygroundCatalogue.EntryPointReceiver, receiverClrType: null, isTerminal: false);
+                var classification = Classify(method, receiver: null);
+
+                if (!classification.Eligible) {
+                    autoExcluded.Add(new ExcludedEntry(docId, classification.Reason!, WasManual: false));
+                    continue;
+                }
+
+                var entry = ToEntry(method, CatalogueKeys.EntryPointReceiver, receiverClrType: null, isTerminal: false);
                 if (!seenKeys.Add(entry.Key)) {
                     throw new InvalidOperationException($"two eligible entry points share the key '{entry.Key}' — overload resolution is not supported in v1.");
                 }
@@ -106,11 +111,16 @@ public sealed class CatalogueWalker {
                     continue;
                 }
 
-                var member = DocIdOf(method);
+                var docId = DocIdOf(method);
+
+                if (TryApplyManualExclusion(docId, receiverType.Name, method, manuallyExcluded)) {
+                    continue;
+                }
+
                 var classification = Classify(method, receiverType);
 
                 if (!classification.Eligible) {
-                    Record(member, method, receiverType.Name, isEntryPoint: false, classification.Reason!, autoExcluded, manualyExcluded);
+                    autoExcluded.Add(new ExcludedEntry(docId, classification.Reason!, WasManual: false));
                     continue;
                 }
 
@@ -131,29 +141,35 @@ public sealed class CatalogueWalker {
             Members                = members,
             ReceiverTypes          = receiverTypes,
             AutoExcluded           = autoExcluded,
-            ManuallyExcluded       = manualyExcluded,
+            ManuallyExcluded       = manuallyExcluded,
             UnusedManualExclusions = unusedManualExclusions,
         };
     }
 
-    private void Record(string docId, MethodInfo method, string declaringTypeName, bool isEntryPoint, string autoReason,
-                         List<ExcludedEntry> autoExcluded, List<ExcludedEntry> manuallyExcluded) {
+    /// <summary>
+    ///     Checked before structural classification, for every discovered member — not only ones
+    ///     classification already rejected. A member editorially excluded via
+    ///     excluded-members.jsonc (specification §10.6) can be structurally eligible; checking only
+    ///     after an automatic rejection would mean that entry never matches, and would report as
+    ///     stale a manual exclusion that is doing exactly what it was written to do.
+    /// </summary>
+    private bool TryApplyManualExclusion(string docId, string declaringTypeName, MethodInfo method, List<ExcludedEntry> manuallyExcluded) {
         var precise  = PreciseKeyOf(declaringTypeName, method);
         var nameOnly = NameOnlyKeyOf(declaringTypeName, method);
 
-        if (_manualExclusions.TryGet(precise, out var manualReason)) {
+        if (_manualExclusions.TryGet(precise, out var reason)) {
             _usedManualExclusionKeys.Add(precise);
-            manuallyExcluded.Add(new ExcludedEntry(docId, manualReason, WasManual: true));
-            return;
+            manuallyExcluded.Add(new ExcludedEntry(docId, reason, WasManual: true));
+            return true;
         }
 
-        if (_manualExclusions.TryGet(nameOnly, out manualReason)) {
+        if (_manualExclusions.TryGet(nameOnly, out reason)) {
             _usedManualExclusionKeys.Add(nameOnly);
-            manuallyExcluded.Add(new ExcludedEntry(docId, manualReason, WasManual: true));
-            return;
+            manuallyExcluded.Add(new ExcludedEntry(docId, reason, WasManual: true));
+            return true;
         }
 
-        autoExcluded.Add(new ExcludedEntry(docId, autoReason, WasManual: false));
+        return false;
     }
 
     private static bool IsStaticClass(Type t) => t is { IsAbstract: true, IsSealed: true, IsClass: true };
@@ -251,16 +267,55 @@ public sealed class CatalogueWalker {
 
     private static string TypeKeyOf(Type t) => t.FullName ?? t.Name;
 
+    /// <summary>
+    ///     The standard XML-doc member ID for <paramref name="method" /> — "M:Namespace.Type.Method"
+    ///     or "M:Namespace.Type.Method(Param1,Param2)", matching the keys JustDummies.xml itself
+    ///     uses. Handles generic methods and generic parameter types explicitly (double-backtick
+    ///     method type-parameter markers, single-backtick declaring-type markers, braces for
+    ///     constructed generic types) rather than relying on <see cref="Type.FullName" />, which is
+    ///     <c>null</c> for an open generic parameter — every excluded generic member would otherwise
+    ///     collapse to the same empty-parenthesis ID, indistinguishable from its siblings in the
+    ///     exclusion report (specification §10.6 needs that report to actually name what it excludes).
+    /// </summary>
     private static string DocIdOf(MethodInfo method) {
-        var parameters = method.GetParameters();
-        var declaring  = method.DeclaringType!.FullName;
+        var declaring = method.DeclaringType!.FullName;
+        var name = method.IsGenericMethodDefinition
+            ? $"{method.Name}``{method.GetGenericArguments().Length}"
+            : method.Name;
 
+        var parameters = method.GetParameters();
         if (parameters.Length == 0) {
-            return $"M:{declaring}.{method.Name}";
+            return $"M:{declaring}.{name}";
         }
 
-        var paramList = string.Join(",", parameters.Select(p => p.ParameterType.FullName));
-        return $"M:{declaring}.{method.Name}({paramList})";
+        var paramList = string.Join(",", parameters.Select(p => DocTypeName(p.ParameterType)));
+        return $"M:{declaring}.{name}({paramList})";
+    }
+
+    /// <summary>The doc-ID form of a type: itself for an ordinary closed type, a backtick-indexed
+    /// marker for a generic parameter, or "Namespace.Type{Arg1,Arg2}" for a constructed generic type.</summary>
+    private static string DocTypeName(Type t) {
+        if (t.IsGenericMethodParameter) {
+            return $"``{t.GenericParameterPosition}";
+        }
+
+        if (t.IsGenericTypeParameter) {
+            return $"`{t.GenericParameterPosition}";
+        }
+
+        if (t.IsArray) {
+            return DocTypeName(t.GetElementType()!) + "[]";
+        }
+
+        if (t.IsGenericType && !t.IsGenericTypeDefinition) {
+            var definitionName = t.GetGenericTypeDefinition().FullName!;
+            var arityMarker    = definitionName.IndexOf('`');
+            var baseName       = arityMarker < 0 ? definitionName : definitionName[..arityMarker];
+            var args           = string.Join(",", t.GetGenericArguments().Select(DocTypeName));
+            return $"{baseName}{{{args}}}";
+        }
+
+        return t.FullName ?? t.Name;
     }
 
     private static string PreciseKeyOf(string declaringTypeName, MethodInfo method) {
