@@ -139,7 +139,7 @@ const bogus: Competitor = {
     ratings: {
         invariants: { rating: 'possible', noteKey: 'why.note.bogus.invariants' },
         callSite: { rating: 'possible', noteKey: 'why.note.bogus.callSite' },
-        testIntent: { rating: 'out-of-scope' },
+        testIntent: { rating: 'possible', noteKey: 'why.note.bogus.testIntent' },
         reuse: { rating: 'possible', noteKey: 'why.note.bogus.reuse' },
         realism: { rating: 'core' },
         graph: { rating: 'possible', noteKey: 'why.note.bogus.graph' },
@@ -195,7 +195,7 @@ const manual: Competitor = {
         invariants: { rating: 'possible', noteKey: 'why.note.manual.invariants' },
         callSite: { rating: 'out-of-scope' },
         testIntent: { rating: 'possible', noteKey: 'why.note.manual.testIntent' },
-        reuse: { rating: 'out-of-scope' },
+        reuse: { rating: 'possible', noteKey: 'why.note.manual.reuse' },
         realism: { rating: 'possible', noteKey: 'why.note.manual.realism' },
         graph: { rating: 'possible', noteKey: 'why.note.manual.graph' },
         reproducibility: { rating: 'core' },

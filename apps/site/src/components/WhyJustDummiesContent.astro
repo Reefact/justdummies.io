@@ -20,7 +20,15 @@ const t = useTranslations(locale);
  * Runs at build time, in Astro's own Node process, so a stale comparison shows up in
  * the build log rather than only in a reader noticing an old citation.
  */
-const daysSinceVerified: number = Math.floor((Date.now() - new Date(comparisonVerifiedOn).getTime()) / 86_400_000);
+const verifiedOnMs: number = new Date(`${comparisonVerifiedOn}T00:00:00Z`).getTime();
+
+if (Number.isNaN(verifiedOnMs) || verifiedOnMs > Date.now()) {
+    throw new Error(
+        `comparison.ts: comparisonVerifiedOn ("${comparisonVerifiedOn}") must be a real calendar date no later than the build date.`,
+    );
+}
+
+const daysSinceVerified: number = Math.floor((Date.now() - verifiedOnMs) / 86_400_000);
 
 if (daysSinceVerified > comparisonStaleAfterDays) {
     console.warn(
@@ -29,9 +37,7 @@ if (daysSinceVerified > comparisonStaleAfterDays) {
 }
 
 /** Formatted from the one source date (§6.5), never a second hand-typed copy of it. */
-const verifiedDate = new Intl.DateTimeFormat(localeTags[locale], { dateStyle: 'long', timeZone: 'UTC' }).format(
-    new Date(`${comparisonVerifiedOn}T00:00:00Z`),
-);
+const verifiedDate = new Intl.DateTimeFormat(localeTags[locale], { dateStyle: 'long', timeZone: 'UTC' }).format(verifiedOnMs);
 
 /** §11.8 — the correction issue the page invites every cited author to use. */
 const reportUrl = `${site.siteRepository}/issues/new?title=${encodeURIComponent('why-justdummies: ')}`;
