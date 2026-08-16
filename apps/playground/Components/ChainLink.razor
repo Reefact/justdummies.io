@@ -20,7 +20,7 @@
 <div class="chain-link">
     <span class="prefix">@Prefix</span>
 
-    <select @onchange="HandleMethodChosen" value="@(State.Chosen?.Key ?? "")" aria-label="@SelectLabel">
+    <select @ref="_select" @onchange="HandleMethodChosen" value="@(State.Chosen?.Key ?? "")" aria-label="@SelectLabel">
         <option value="" disabled selected="@(State.Chosen is null)">@PlaygroundStrings.T(LocaleState.Current, "playground.chooseMethod")</option>
         @foreach (var option in Options) {
             <option value="@option.Key" selected="@(State.Chosen?.Key == option.Key)">@DisplayName(option)</option>
@@ -77,6 +77,14 @@
     [Parameter, EditorRequired] public EventCallback<(int LinkIndex, MemberDescriptor Chosen)> OnMethodChosen { get; set; }
     [Parameter, EditorRequired] public EventCallback<(int LinkIndex, int ArgumentIndex, string Value)> OnArgumentChanged { get; set; }
     [Parameter, EditorRequired] public EventCallback<int> OnDelete { get; set; }
+
+    private ElementReference _select;
+
+    /// <summary>Lets Home.razor put keyboard focus back on this link's own <c>&lt;select&gt;</c>
+    /// after a deletion replaces the chain from here on with a fresh empty step — otherwise the
+    /// button that triggered the deletion is gone from the DOM and focus silently falls back to
+    /// &lt;body&gt;, forcing a keyboard user to renavigate the page from the top.</summary>
+    public ValueTask FocusAsync() => _select.FocusAsync();
 
     private bool HasError => !string.IsNullOrEmpty(Error);
     private string ErrorId => $"chain-link-{LinkIndex}-error";
