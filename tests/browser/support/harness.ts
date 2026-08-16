@@ -1,4 +1,4 @@
-import { test as base, expect, type BrowserContext } from '@playwright/test';
+import { test as base, expect, type Browser, type BrowserContext, type BrowserContextOptions } from '@playwright/test';
 
 /**
  * The suite's own `test`, which differs from Playwright's in exactly one way: **no check
@@ -42,13 +42,43 @@ async function refuseMeasurement(context: BrowserContext): Promise<void> {
  * `auto: true` so no spec has to remember. A check that opts in is a check somebody forgets
  * to opt in, and the failure is silent — the run passes and the analytics are wrong.
  */
-export const test = base.extend<{ measurementRefused: void }>({
+export const test = base.extend<{ measurementRefused: void }, { browser: Browser }>({
     measurementRefused: [
         async ({ context }, use) => {
             await refuseMeasurement(context);
             await use();
         },
         { auto: true },
+    ],
+
+    /**
+     * The fixture above covers the `context` Playwright injects, and that is not every
+     * context a run opens: `weight.spec.ts` builds its own with `browser.newContext()` to
+     * emulate a three-times screen, and a context built that way never passes through it.
+     * One page, loading `/`, reaching the real beacon — the leak this file exists to close,
+     * left open in the one spec that does not take the ordinary route.
+     *
+     * Patching `newContext` covers it without asking that spec, or the next one like it, to
+     * remember anything. The original is put back afterwards rather than left in place: this
+     * fixture is worker-scoped because the one it overrides is, so the patch would otherwise
+     * outlive the run it belongs to.
+     */
+    browser: [
+        async ({ browser }, use) => {
+            const openContext = browser.newContext.bind(browser);
+
+            browser.newContext = async (options?: BrowserContextOptions): Promise<BrowserContext> => {
+                const context: BrowserContext = await openContext(options);
+                await refuseMeasurement(context);
+
+                return context;
+            };
+
+            await use(browser);
+
+            browser.newContext = openContext;
+        },
+        { scope: 'worker' },
     ],
 });
 
