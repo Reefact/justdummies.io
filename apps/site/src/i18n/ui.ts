@@ -233,7 +233,7 @@ const en = {
         "It doesn't need to know who you are to work. There's no account to create, no tracking cookie, and nothing we measure is ever sold or shared with anyone.",
     'privacy.analytics.label': 'Audience measurement.',
     'privacy.analytics.body':
-        "We use Cloudflare Web Analytics to know how many people visit the site and whether pages load quickly. This tool sets no cookie and doesn't identify anyone individually — it counts visits and load times, not people. No finer-grained measurement — knowing which button you clicked, for instance — is active today.",
+        "We use Cloudflare Web Analytics to know how many people visit the site and whether pages load quickly. This tool sets no cookie and doesn't identify anyone individually — it counts visits and load times, not people. One further thing is measured, deliberately: when you copy an install command, the site records which part of the page you copied it from and which command it was, along with the page's language. That is the whole record — no identifier, no address, nothing you typed, nothing that can be traced back to you. It answers one question, which is which part of the page actually helps.",
     'privacy.playground.label': 'The playground.',
     'privacy.playground.body':
         "The playground, which runs the library, works entirely inside your browser. Nothing you type there is ever sent to a server — there's no server to send it to.",
@@ -246,7 +246,7 @@ const en = {
     'privacy.rights.label': 'Your rights.',
     'privacy.rights.body':
         "Since this site doesn't collect any data that identifies you individually, there's in practice nothing to correct or delete about you. For any question on this, write to privacy@reefact.net.",
-    'privacy.updated': 'Last updated: August 15, 2026.',
+    'privacy.updated': 'Last updated: August 16, 2026.',
 
     /**
      * /api — the public surface of the JustDummies and JustDummies.Xunit packages, reflected
@@ -614,7 +614,7 @@ const fr: Record<UiKey, string> = {
         "Il n'a pas besoin de savoir qui vous êtes pour fonctionner. Il n'y a pas de compte à créer, pas de cookie de suivi, et rien de ce que nous mesurons n'est revendu ni partagé avec qui que ce soit.",
     'privacy.analytics.label': "Mesure d'audience.",
     'privacy.analytics.body':
-        "Nous utilisons Cloudflare Web Analytics pour savoir combien de personnes visitent le site et si les pages se chargent rapidement. Cet outil ne dépose aucun cookie et n'identifie personne individuellement : il compte des visites et des temps de chargement, pas des personnes. Aucune mesure plus fine — savoir quel bouton précis vous avez cliqué, par exemple — n'est activée aujourd'hui.",
+        "Nous utilisons Cloudflare Web Analytics pour savoir combien de personnes visitent le site et si les pages se chargent rapidement. Cet outil ne dépose aucun cookie et n'identifie personne individuellement : il compte des visites et des temps de chargement, pas des personnes. Une chose de plus est mesurée, délibérément : quand vous copiez une commande d'installation, le site enregistre depuis quel endroit de la page vous l'avez copiée et de quelle commande il s'agit, ainsi que la langue de la page. C'est tout l'enregistrement — aucun identifiant, aucune adresse, rien de ce que vous avez saisi, rien qui puisse remonter jusqu'à vous. Il répond à une seule question : quelle partie de la page sert vraiment.",
     'privacy.playground.label': 'Le playground.',
     'privacy.playground.body':
         "Le playground, qui exécute la bibliothèque, tourne entièrement dans votre navigateur. Ce que vous y saisissez n'est jamais envoyé à un serveur — il n'y a d'ailleurs aucun serveur à qui l'envoyer.",
@@ -627,7 +627,7 @@ const fr: Record<UiKey, string> = {
     'privacy.rights.label': 'Vos droits.',
     'privacy.rights.body':
         "Comme ce site ne collecte aucune donnée qui vous identifie individuellement, il n'y a en pratique rien à corriger ou à effacer vous concernant. Pour toute question sur ce point, écrivez à privacy@reefact.net.",
-    'privacy.updated': 'Dernière mise à jour : 15 août 2026.',
+    'privacy.updated': 'Dernière mise à jour : 16 août 2026.',
 
     'api.meta.description': "La surface publique de JustDummies et JustDummies.Xunit : chaque générateur, chaque contrainte, reflétés depuis les paquets publiés.",
     'api.english.note':

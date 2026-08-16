@@ -1006,6 +1006,9 @@ cassé.
 | Accessibilité | 13.4 | Audit automatisé, dans chaque locale |
 | Liens internes et réciprocité des `hreflang` | 6.5 | Vérification de l'artefact |
 | Fraîcheur du comparatif | 11.8 | Avertissement de build au-delà du délai déclaré |
+| Un emplacement de mesure indexé sur une position | 15.3 | Vérification de l'artefact, et refus du collecteur |
+| Une paire emplacement/variante qui désigne deux choses | 15.2 | Vérification de l'artefact |
+| Le beacon d'audience et la politique qui doit l'admettre | 15.1, 13.2 | Vérification de l'artefact, dans les deux sens |
 
 Quand une règle de ce document n'a pas de ligne ici, c'est qu'elle repose sur
 l'attention. Le dire est plus utile que de faire semblant.

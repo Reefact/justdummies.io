@@ -23,20 +23,48 @@
     // unverified, and the check that settles it is written there.
     "workers_dev": false,
 
-    // No "main": this Worker has no script, deliberately.
+    // There IS a script now, and it took an ADR to put it here — ADR-0010.
     //
-    // Requests served as static assets are free and unmetered; requests that invoke
-    // a Worker script count against the plan's request quota, and on the free plan
-    // exhausting that quota answers 429 rather than falling back to the assets. The
-    // difference between a script and no script is therefore the difference between
-    // a site that degrades and a site that goes down.
+    // What this file said until then, and why it was right to say it: requests served
+    // as static assets are free and unmetered, requests that invoke a Worker script
+    // count against the plan's request quota, and exhausting that quota answers 429.
+    // The difference between a script and no script was the difference between a site
+    // that degrades and a site that goes down.
     //
-    // Adding one is a decision to take on purpose, not something to discover in a
-    // diff. Shareable playground URLs are the case that will tempt it; encoding the
-    // state in the URL fragment costs nothing on the server and is the preferred
-    // answer.
+    // What changed is not the appetite for a script, it is what a script costs when it
+    // is kept off the path. A request matching a static asset is served from the asset
+    // store WITHOUT invoking the script; a request matching none is answered by
+    // "not_found_handling", also without invoking it. Only the paths named in
+    // "run_worker_first" below reach the script at all. So the quota this script can
+    // exhaust is its own, and exhausting it stops the measurement — not a page, not an
+    // asset, not the 404.
+    //
+    // That confinement is the whole basis of the decision. Widening
+    // "run_worker_first", or dropping it, puts the site back in front of the quota and
+    // is not a change to make without reopening ADR-0010.
+    //
+    // The other case that will tempt a script is still shareable playground URLs, and
+    // the answer there is still no: encoding the state in the URL fragment costs
+    // nothing on the server.
+    "main": "worker/index.ts",
+
+    // Where the dimensioned events land (§15.2). Free-plan allowance is 100,000 data
+    // points a day, and a data point here is one visitor copying one install command.
+    "analytics_engine_datasets": [
+        {
+            "binding": "MEASUREMENT",
+            "dataset": "justdummies_measurement"
+        }
+    ],
+
     "assets": {
         "directory": "./dist/",
+
+        // The one path that reaches the Worker. Everything absent from this list keeps
+        // the asset-first behaviour described above, which is what makes the script
+        // unable to affect the site. An exact path, not a glob: the collector answers
+        // on one address and has no second one to grow into.
+        "run_worker_first": ["/_event"],
 
         // "404-page" serves the nearest 404.html for a request that matches no
         // asset. "Nearest" is what makes it right here: /fr/... falls back to

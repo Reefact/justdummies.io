@@ -351,6 +351,84 @@ if [ -f "${dist}/_headers" ]; then
   [ "${uncovered}" -eq 0 ] && pass "every inline script is covered by a policy hash"
 fi
 
+# --- What the measurement may not lose (§15) --------------------------------------
+#
+# Every element that reports itself carries a placement and a variant, and §15 puts
+# two rules on that pair. Neither is visible by reading a component: both are
+# properties of the whole built page, which is why they are checked here.
+#
+# One node pass rather than a grep, because both attributes have to come off the same
+# tag and their order in the markup is the author's, not a guarantee.
+measurement="$(node -e '
+  const { readFileSync } = require("node:fs");
+  for (const page of process.argv.slice(1)) {
+    const html = readFileSync(page, "utf8");
+    for (const match of html.matchAll(/<[a-zA-Z][^>]*>/g)) {
+      const tag = match[0];
+      const placement = tag.match(/\bdata-placement="([^"]*)"/);
+      if (!placement) { continue; }
+      const variant = tag.match(/\bdata-variant="([^"]*)"/);
+      // What the element actually does, which is how the pair is judged below: the
+      // command a button copies, or the address a link opens.
+      const payload = tag.match(/\bdata-command="([^"]*)"/) ?? tag.match(/\bhref="([^"]*)"/);
+      console.log([page, placement[1], variant ? variant[1] : "", payload ? payload[1] : ""].join("\t"));
+    }
+  }' $(find "${dist}" -name '*.html') 2> /dev/null || true)"
+
+if [ -z "${measurement}" ]; then
+  fail "no element in the artefact reports a placement — §15.2's events carry no dimension"
+else
+  # §15.3, and the reason is empirical rather than stylistic: the page went from
+  # eleven scenes to fourteen between two drafts and the final exit changed ordinal.
+  # An identifier carrying that position would have made two measurement periods
+  # incomparable. `act-one-exit` spells the number as a word to stay outside this.
+  positional="$(printf '%s\n' "${measurement}" | awk -F'\t' '$2 ~ /[0-9]/ { print $2 }' | sort -u || true)"
+  if [ -z "${positional}" ]; then
+    pass "no measurement placement is indexed on a position"
+  else
+    fail "placement carries a digit, which §15.3 forbids as an identifier: ${positional}"
+  fi
+
+  # §15.2 asks the pair to say which door was taken from which moment, so a pair must
+  # never mean two different things at once — the symptom of that is a dashboard number
+  # which is quietly the sum of two doors.
+  #
+  # NOT "a pair appears once". It appears more than once by design, and this check was
+  # written the wrong way round first and caught it: the NuGet link is deliberately
+  # repeated in both install panels, and its variant deliberately names the package
+  # rather than the panel, so that the names already recorded keep their meaning
+  # (InstallTabs.astro). Two elements reporting one pair are correct precisely when they
+  # do the same thing. What is checked is therefore the payload, not the count.
+  ambiguous="$(printf '%s\n' "${measurement}" | sort -u \
+    | awk -F'\t' '{ print $1 "\t" $2 "\t" $3 }' | uniq -d \
+    | awk -F'\t' '{ print $2 "/" $3 }' | sort -u | paste -sd' ' - || true)"
+  if [ -z "${ambiguous}" ]; then
+    pass "no placement and variant pair reports two different things"
+  else
+    fail "one placement and variant pair covers two different commands or links, so the dashboard cannot separate them: ${ambiguous}"
+  fi
+fi
+
+# The audience beacon and the policy that has to admit it, checked against each other
+# in both directions. A beacon the policy blocks loads nothing and says so only in a
+# console nobody is watching; a policy naming hosts the artefact never contacts is
+# permission granted to something that is not there. generate-headers.mjs derives one
+# from the other, so this asserts that it did.
+if [ -f "${dist}/_headers" ]; then
+  if grep -rqs 'static\.cloudflareinsights\.com' "${dist}" --include='*.html'; then
+    if grep -q "script-src[^;]*https://static\.cloudflareinsights\.com" "${dist}/_headers" \
+      && grep -q "connect-src[^;]*https://cloudflareinsights\.com" "${dist}/_headers"; then
+      pass "the audience beacon is present and the policy admits both of its hosts"
+    else
+      fail "the artefact carries the audience beacon but the policy does not admit it — it will be blocked"
+    fi
+  elif grep -q 'cloudflareinsights' "${dist}/_headers"; then
+    fail "the policy names the analytics hosts, but no document carries the beacon"
+  else
+    pass "no audience beacon was built in, and the policy grants it nothing"
+  fi
+fi
+
 if [ "${failures}" -ne 0 ]; then
   echo "verify-output: ${failures} check(s) failed." >&2
   exit 1

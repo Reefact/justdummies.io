@@ -67,6 +67,15 @@ if [ -d "${dist}/playground/_framework" ]; then
   report "playground runtime, Brotli (informational)" "$(kib "${framework_br}")"
 fi
 
+# --- Informational: what the landing figure above does NOT include ---------------
+# The audience beacon is a third-party file, so nothing here can weigh it: it is not
+# in the artefact, and a build that fetched it to measure it would be a build with a
+# network dependency. Saying so is the point — a budget that quietly excludes part of
+# what a visitor downloads reads as complete while being short by whatever it skipped.
+if grep -rqs 'static\.cloudflareinsights\.com' "${dist}" --include='*.html'; then
+  report "audience beacon (third party, not counted above)" "~5 KiB, fetched from Cloudflare"
+fi
+
 if [ "${failures}" -ne 0 ]; then
   echo "check-budgets: ${failures} budget(s) exceeded." >&2
   exit 1
