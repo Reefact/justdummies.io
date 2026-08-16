@@ -91,6 +91,19 @@ public static class ArgumentParsing {
     public const int SandboxTextLengthLimit = 200;
 
     /// <summary>
+    ///     A second, much larger ceiling the UI truncates raw input to at capture time —
+    ///     deliberately not the same number as <see cref="SandboxTextLengthLimit" />. If the UI
+    ///     truncated to that visible limit directly, every over-limit paste would already be
+    ///     exactly at the limit by the time it reached <see cref="TryParse" />, and the "too
+    ///     long" error this class exists to report would never actually fire — the chain would
+    ///     just run silently on a value the visitor never typed. This ceiling exists only to
+    ///     bound worst-case memory for a pathological multi-megabyte paste; anything under it,
+    ///     however far over <see cref="SandboxTextLengthLimit" />, still reaches <see cref="TryParse" />
+    ///     unmodified and gets the real, visible error.
+    /// </summary>
+    public const int SandboxTextLengthHardCeiling = 4_000;
+
+    /// <summary>
     ///     Parses <paramref name="raw" /> as <paramref name="typeKey" />, or returns the
     ///     <c>PlaygroundStrings</c> key naming what was expected.
     /// </summary>
@@ -143,7 +156,15 @@ public static class ArgumentParsing {
             case TypeKeyDateOnly:
                 return TryParse(raw, KeyExpectsDate, (string s, out DateOnly v) => DateOnly.TryParse(s, CultureInfo.InvariantCulture, out v), out value, out errorKey);
             case TypeKeyDateTime:
-                return TryParse(raw, KeyExpectsDateTime, (string s, out DateTime v) => DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.None, out v), out value, out errorKey);
+                // DateTimeStyles.None still silently converts a zone-bearing input (a trailing
+                // "Z" or explicit offset) through the host's local time zone, so the same input
+                // could parse to a different instant depending on where the playground — or the
+                // copied code — happens to run. DateTime doesn't carry a zone of its own; a
+                // visitor who needs one is pointed at DateTimeOffset instead.
+                return TryParse(raw, KeyExpectsDateTime, (string s, out DateTime v) => {
+                    v = default;
+                    return !HasExplicitOffset(s) && DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.None, out v);
+                }, out value, out errorKey);
             case TypeKeyDateTimeOffset:
                 // DateTimeOffset.TryParse silently fills in a missing offset with the host's
                 // local one — the playground's own text promises "a date and time with an
@@ -182,12 +203,21 @@ public static class ArgumentParsing {
         }
 
         // "+HH:mm" / "-HH:mm" / "+HH" / "-HH", anchored to the end of the string — a plain
-        // "-" appearing earlier (a date separator) must not satisfy this.
+        // "-" appearing earlier (a date separator, e.g. the one in "2026-08-15" itself) must
+        // not satisfy this.
         var signIndex = trimmed.Length - 6 >= 0 && (trimmed[^6] is '+' or '-') ? trimmed.Length - 6
             : trimmed.Length - 3 >= 0 && (trimmed[^3] is '+' or '-')           ? trimmed.Length - 3
             : -1;
 
         if (signIndex < 0) {
+            return false;
+        }
+
+        // A date-only value's own separators ("2026-08-15") can land a '+'/'-' exactly 3
+        // characters from the end too — "-15" reads the same as a "-HH" offset would. Requiring
+        // a ':' somewhere before the sign rules that out: every representation with a real
+        // time-of-day component carries one (e.g. "14:30:00"), and a bare date never does.
+        if (!trimmed[..signIndex].Contains(':')) {
             return false;
         }
 

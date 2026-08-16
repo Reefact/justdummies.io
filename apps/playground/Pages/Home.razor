@@ -63,10 +63,10 @@
     protected override void OnInitialized() {
         base.OnInitialized();
 
-        // Errors already on screen were resolved in whatever locale was current when the chain
-        // was last replayed — a language switch redraws every PlaygroundStrings.T(...) call in
-        // this component's own markup for free, but link.Error and _refusal are plain strings
-        // captured at that moment, not live lookups. Recompute() re-resolves them.
+        // A step's own error, if any, was resolved in whatever locale was current when the
+        // chain was last replayed — a language switch redraws every PlaygroundStrings.T(...)
+        // call in this component's own markup for free, but link.Error is a plain string
+        // captured at that moment, not a live lookup. ReplayChain() re-resolves it.
         LocaleState.Changed += HandleLocaleChanged;
     }
 
@@ -75,7 +75,8 @@
     }
 
     private void HandleLocaleChanged() {
-        Recompute();
+        ReplayChain();
+        StateHasChanged();
     }
 
     private IReadOnlyList<MemberDescriptor> OptionsFor(int index) {
@@ -149,13 +150,31 @@
     }
 
     /// <summary>
-    ///     Replays the chosen chain from the top on every change — the same pattern
-    ///     Pages/Hero.razor uses for its fixed-shape chain, generalised to a variable-length
-    ///     one. Each step's own error (an unparsable argument, or the library's own refusal at
-    ///     that step) is attached to that step so it can be shown next to the field that caused
-    ///     it, per specification §13.4.
+    ///     Replays the chosen chain from the top after an actual change to it (a method chosen,
+    ///     an argument edited, a step deleted) — the same pattern Pages/Hero.razor uses for its
+    ///     fixed-shape chain, generalised to a variable-length one. Clears the last generated
+    ///     value/refusal too, since a changed chain makes them stale.
     /// </summary>
     private void Recompute() {
+        ReplayChain();
+        _generatedValue = null;
+        _refusal        = null;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    ///     The chain-replay half of <see cref="Recompute" />, split out so a locale switch can
+    ///     re-run it alone: each step's own error (an unparsable argument, or the library's own
+    ///     refusal at that step) is attached to that step so it can be shown next to the field
+    ///     that caused it (specification §13.4), and re-resolving it is exactly what a language
+    ///     switch needs — but the chain itself, and therefore <see cref="_generatedValue" />/
+    ///     <see cref="_refusal" />, has not changed, so unlike <see cref="Recompute" /> this
+    ///     leaves them alone. (<see cref="_refusal" /> would not need re-resolving anyway — it
+    ///     only ever holds the library's own untranslated wording, never a translated key — but
+    ///     clearing it on every language switch would still make the drawn value disappear for
+    ///     no reason.)
+    /// </summary>
+    private void ReplayChain() {
         object? current  = null;
         var     typeKey   = PlaygroundCatalogue.EntryPointReceiver;
         var     stopped   = false;
@@ -179,12 +198,9 @@
             }
         }
 
-        _currentValue  = current;
+        _currentValue   = current;
         _currentTypeKey = typeKey;
         _canGenerate    = !stopped && _links.Any(l => l.Chosen is not null);
-        _generatedValue = null;
-        _refusal        = null;
-        StateHasChanged();
     }
 
     /// <summary>
@@ -231,6 +247,11 @@
         ArgumentParsing.TypeKeyString  => $"\"{EscapeForStringLiteral(raw)}\"",
         ArgumentParsing.TypeKeyChar    => $"'{raw.Replace("\\", "\\\\").Replace("'", "\\'")}'",
         ArgumentParsing.TypeKeyInt32   => raw,
+        // bool.Parse has no Parse(string, IFormatProvider) overload — the uniform Parse(...)
+        // fallback below doesn't compile for it. A bare "true"/"false" literal is valid C#,
+        // but the raw input itself might not be lowercase (bool.TryParse accepts "True"), so
+        // this re-derives the canonical literal rather than trusting the raw text verbatim.
+        ArgumentParsing.TypeKeyBoolean => bool.Parse(raw) ? "true" : "false",
         // decimal.Parse(string, IFormatProvider) alone defaults to NumberStyles.Number, which
         // excludes AllowExponent — unlike float/double/Half, whose 2-argument Parse already
         // defaults to NumberStyles.Float. ArgumentParsing itself always parses with
