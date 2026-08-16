@@ -313,107 +313,318 @@ const en = {
     'api.seeAlso.playground': 'Playground — try it live',
 
     /**
-     * /why-justdummies — the comparative positioning page (§11). Axis labels and rating
-     * words are deliberately short: they are table headers and cells, read many times
-     * down a column, not sentences.
+     * /why-justdummies — the comparative positioning page (§11), read at four depths (§11.3).
+     *
+     * TWO RULES GOVERN EVERY STRING BELOW, and both were written after the first version of
+     * this page was found to fail them.
+     *
+     * A criterion is taught before it is used (§11.4). Every axis therefore has four keys —
+     * a plain-language `.label`, the `.question` it settles, an `.explanation`, and where one
+     * exists the `.term` that names it — and the technical term always comes last, because it
+     * names an idea rather than explaining one.
+     *
+     * A note is self-contained (§11.10). It never says "above" or "below", because the duel
+     * hides columns and the matrix reorders nothing the reader can rely on; and it never
+     * points at the landing page's narrative, because a reader who arrived here from a search
+     * has not read it.
      */
     'why.heading': 'Why JustDummies',
     'why.meta.description':
-        'How JustDummies compares with Bogus, AutoFixture, and writing values by hand — including where it loses.',
-    'why.intro.p1':
-        'JustDummies asks for no migration. It works on a single test, coexists with whatever you already use in the same codebase, and asks you to remove nothing to try it.',
-    'why.intro.p2':
-        'For most of what a dummy-data library replaces, the real alternative is not another library — it is a value typed by hand. The comparison below treats that as a genuine option, not an oversight.',
+        'When to reach for JustDummies, for Bogus, for AutoFixture, or for a value you write by hand — criterion by criterion, including where JustDummies loses.',
 
-    'why.axis.invariants': 'Business invariants',
-    'why.axis.callSite': 'Constraints at the call site',
-    'why.axis.testIntent': 'What the test is about',
-    'why.axis.reuse': 'Reuse across tests',
-    'why.axis.realism': 'Realistic data',
-    'why.axis.graph': 'A complete object graph',
-    'why.axis.reproducibility': 'Reproducibility',
-    'why.axis.compileTime': 'Compile-time detection',
-    'why.axis.codeGen': 'Code generation',
-    'why.axis.exploration': 'Exploring the input space',
+    'why.lede':
+        'JustDummies generates the arbitrary values a test needs, and lets you state the rules those values have to satisfy.',
 
-    'why.rating.core': 'Core',
-    'why.rating.possible': 'Possible',
-    'why.rating.outOfScope': 'Out of scope',
+    /** §4's three questions, answered before the first criterion. */
+    'why.orient.replace.question': 'Does it replace what I already use?',
+    'why.orient.replace.answer':
+        'No. It is a package that draws values. Your test framework, your assertion library and any data library you already use all stay exactly where they are.',
+    'why.orient.gap.question': 'What does my tool not do?',
+    'why.orient.gap.answer':
+        'Most tools draw a value and let you pin an exact one. Fewer let you say, on the spot, what the value has to satisfy for your own code to accept it.',
+    'why.orient.try.question': 'Can I try it on one test?',
+    'why.orient.try.answer':
+        'Yes. One package, one line in one arrangement. If it does not earn its place, backing it out is deleting that line.',
 
-    'why.table.caption': 'JustDummies compared across ten axes.',
-    'why.table.axisHeader': 'Axis',
+    'why.toc.label': 'On this page',
+
+    'why.problem.heading': 'The problem it solves',
+    'why.problem.body1':
+        'A test about cancelling an order needs an order. An order needs a reference, a customer and an amount. This test checks none of the three — the constructor simply demands them.',
+    'why.problem.body2':
+        'Nothing in that arrangement says which of the four arguments the test is about. ORD-54XEM4545 and 42.00 read as values somebody chose on purpose. Here is the same test with the three it does not check drawn instead of typed.',
+    'why.problem.body3':
+        'The reference, the customer and the amount change on every run, and they are valid on every run, because the rules they have to satisfy were declared once. Any.Order() is a generator for your own type: you write it, or the dum tool writes it for you. What is left in the test is the one thing the test is about.',
+    'why.problem.rules.summary': 'What "valid" means here',
+    'why.problem.rules.body':
+        'These are the checks a reference has to get past. Ordinary C#: a factory that refuses what it will not accept. A string drawn at random fails them almost always, which is why the generator has to be told about them.',
+
+    'why.choose.heading': 'Which of these do you need?',
+    'why.choose.lede':
+        'These four are usually listed as rivals. They answer four different questions, and most projects ask more than one of them. Find the sentence you would say out loud.',
+
+    'why.tool.repoLink': 'View the repository',
+
+    'why.tool.justdummies.need': 'I do not care what this value is, but it has to be valid.',
+    'why.tool.justdummies.description':
+        'Arbitrary values for everything a test does not check, with the rules they must satisfy written where the value is asked for.',
+    'why.tool.justdummies.concretely':
+        'In practice: a reference that is never empty, never longer than twenty characters and always starts with ORD-, drawn fresh on every run.',
+
+    'why.tool.bogus.need': 'I need data that looks real.',
+    'why.tool.bogus.description':
+        'A simple fake data generator for C#, F#, and VB.NET — ported from the well-known faker.js.',
+    'why.tool.bogus.concretely':
+        'In practice: names, addresses, emails, phone numbers, product labels — locale-aware, and convincing to a person reading a screenshot or a demo database.',
+    'why.tool.bogus.chooseInstead':
+        'Choose Bogus when the data has to look real: names, addresses, emails, a demo database somebody will read. Its catalogue is locale-aware, which is work you would otherwise do by hand. JustDummies draws valid values, not believable ones.',
+    'why.tool.bogus.checked':
+        'Read: the locale-aware catalogue (Name, Address, Internet, Commerce), RuleFor and the rules that can be chained on a Faker<T> built inline, the bounded draws such as Random.Int(min, max), StrictMode and AssertConfigurationIsValid, UseSeed and Randomizer.Seed, and the paid Bogus Premium tier whose analyzer flags a missing RuleFor and can insert it.',
+
+    'why.tool.autofixture.need': 'Just build me the object. I do not care what is in it.',
+    'why.tool.autofixture.description':
+        "A library that removes the need to hand-code anonymous variables when setting up a test's fixture.",
+    'why.tool.autofixture.concretely':
+        'In practice: one call returns a fully populated object, everything it holds filled in too, including types you did not write — with nothing declared anywhere.',
+    'why.tool.autofixture.chooseInstead':
+        'Choose AutoFixture when the test needs a whole object and has nothing to say about what is in it. One call fills the object and everything it holds, including types you did not write. JustDummies starts from the rules; where there are no rules to state, it adds a step and buys nothing.',
+    'why.tool.autofixture.checked':
+        'Read: anonymous rather than realistic values, automatic construction of values of virtually any type, the [Range], [StringLength] and [RegularExpression] annotations honoured with no configuration, the Build<T>().With(...) override, the separate ISpecimenBuilder and Customize<T>() path, and the still-open request for repeatable random values.',
+
+    'why.tool.manual.name': 'Writing the value by hand',
+    'why.tool.manual.need': 'This exact value is what the test checks.',
+    'why.tool.manual.description': 'No library at all: the value typed straight into the test, on the line that uses it.',
+    'why.tool.manual.concretely':
+        'In practice: the amount an assertion compares against, or the status a behaviour turns on. A reader sees it without leaving the test.',
+    'why.tool.manual.chooseInstead':
+        'Write the literal for the value the test is about — the amount an assertion compares against, the status a behaviour turns on. A reader sees the exact value on the line that uses it. A drawn value there would only ask them to take it on trust.',
+
+    'why.compare.heading': 'Compare it with what you use',
+    'why.compare.lede':
+        'Ten criteria, each one a question about your own tests, answered for all four options.',
+
+    'why.legend.heading': 'The three answers',
+    'why.legend.core': 'The tool is built for this, and does it with no extra setup.',
+    'why.legend.possible': 'The tool can get there, but you write something to get there. The note says what.',
+    'why.legend.outOfScope':
+        'The tool does not do this. Sometimes its authors decided against it, sometimes nobody has built it yet — the note says which.',
+    'why.legend.order':
+        'The criteria are grouped under the four questions you arrive with, not ranked by how well JustDummies answers them. On several of them JustDummies is the one that does not try, which is the word just in its name doing its job.',
+
+    'why.rating.core': 'Built for this',
+    'why.rating.possible': 'Possible, with work',
+    'why.rating.outOfScope': 'Not what it does',
 
     'why.duel.label': 'Compare JustDummies with',
-    'why.duel.showMatrix': 'Show the full comparison',
-    'why.duel.showDuel': 'Back to one-on-one',
+    'why.duel.everything': 'all three alternatives',
+    'why.duel.showingOne': 'Showing JustDummies and',
+    'why.duel.showingAll': 'Showing JustDummies and all three alternatives.',
 
-    'why.library.repoLink': 'View the repository',
-    'why.library.chooseHeading': 'Choose it instead when',
+    /**
+     * The four questions the ten criteria are grouped under (§11.5). They are the reader's
+     * questions, in the order a reader meets them — which is what replaced an ordering by
+     * how well JustDummies scored.
+     */
+    'why.family.accepted': 'Will the value get through my own code?',
+    'why.family.readable': 'Will my test still be readable?',
+    'why.family.kind': 'What kind of value do I actually need?',
+    'why.family.wrong': 'What happens when it goes wrong, and who writes the setup?',
 
-    'why.bogus.description':
-        'A simple fake data generator for C#, F#, and VB.NET — ported from the well-known faker.js.',
-    'why.bogus.chooseInstead':
-        "Reach for Bogus when a test, a demo, or a seeded database needs data that looks real — names, addresses, emails — rather than data that merely satisfies a domain rule. That is Bogus's actual subject, and JustDummies does not compete with it there.",
+    'why.axis.termLabel': 'Technical term:',
 
-    'why.autofixture.description':
-        "A library that removes the need to hand-code anonymous variables when setting up a test's fixture — any object of the right shape, with no configuration.",
-    'why.autofixture.chooseInstead':
-        "Reach for AutoFixture when a test truly does not care what is inside an object — any value, anywhere in the graph, will do — and you want the whole graph populated automatically, including types you don't own. JustDummies asks you to say what must be true first; a test with nothing to say there has nothing to gain from it.",
+    'why.axis.invariants.label': 'Values your own code will accept',
+    'why.axis.invariants.question': 'Will the generated value get past my own constructor?',
+    'why.axis.invariants.explanation':
+        'Most domain types refuse bad input. OrderReference.Create rejects a string that does not start with ORD-, and rejects one longer than twenty characters. A test that needs any reference still needs one that clears both checks.',
+    'why.axis.invariants.term': 'business invariant, or precondition in design by contract',
 
-    'why.manual.name': 'Writing values by hand',
-    'why.manual.description': "No library: the value a test needs, typed directly into its arrangement.",
-    'why.manual.chooseInstead':
-        "Write a plain literal for the one value a test is actually about — the thing its assertion checks. A reader sees the exact number; a generated one would only ask them to trust that it is valid. JustDummies is for every parameter around it, the ones the test does not care about.",
+    'why.axis.callSite.label': 'Rules stated where the value is asked for',
+    'why.axis.callSite.question': 'Can I write "any number between 1 and 100" on the line that needs it?',
+    'why.axis.callSite.explanation':
+        'Some rules belong to one test rather than to the domain: this quantity has to be at least two, this date has to be in the past. The question is whether you can say so on the spot, or have to declare a type, register a customisation or build a fixture first.',
+    'why.axis.callSite.term': 'call site — the place in your code where the value is asked for',
+
+    'why.axis.testIntent.label': 'Showing which value the test checks',
+    'why.axis.testIntent.question': 'Can a reader tell which values the assertion depends on?',
+    'why.axis.testIntent.explanation':
+        'A test that builds an order from four arguments does not say which of the four it is about. Drawing three of them and writing the fourth as a literal answers that in the arrangement itself.',
+
+    'why.axis.reuse.label': 'Describing a valid object once',
+    'why.axis.reuse.question': 'The day my type gains a constructor parameter, how many test files do I reopen?',
+    'why.axis.reuse.explanation':
+        'Whatever describes a valid order — a chain of constraints, a set of rules, a builder — is worth writing once and calling from everywhere. The question is what that costs to set up, and how much of it the tool writes for you.',
+
+    'why.axis.realism.label': 'Data that looks real',
+    'why.axis.realism.question': 'Will a person look at this value, or only an assertion?',
+    'why.axis.realism.explanation':
+        'Valid and believable are two different jobs. A reference that clears every rule can still read as machine noise. That is fine in an assertion and wrong in a screenshot.',
+    'why.axis.realism.term': 'fake data — the faker family of libraries',
+
+    'why.axis.graph.label': 'Filling nested objects for you',
+    'why.axis.graph.question': 'My type is three levels deep and the test cares about none of it — who fills it?',
+    'why.axis.graph.explanation':
+        'An order holds a customer, which holds an address. Either something inspects your class and populates every level, or you supply one generator per type and plug them together.',
+    'why.axis.graph.term': 'object graph',
+
+    'why.axis.reproducibility.label': 'Replaying the run that failed',
+    'why.axis.reproducibility.question': 'CI went red on a drawn value. Can I get that exact value back?',
+    'why.axis.reproducibility.explanation':
+        'Values that change on every run mean a test can fail today and pass tomorrow. What makes that workable is a number the failing run reports, which draws the same values again when you paste it back.',
+    'why.axis.reproducibility.term': 'seed',
+
+    'why.axis.compileTime.label': 'Caught before the test runs',
+    'why.axis.compileTime.question': 'Do I learn the setup is wrong in the editor, or ten minutes later?',
+    'why.axis.compileTime.explanation':
+        'A chain of constraints can contradict itself: at most three characters, and starting with ORD-. Nothing satisfies that. The question is whether it shows up as a build error or as an exception on the first run.',
+    'why.axis.compileTime.term': 'Roslyn analyzer',
+
+    'why.axis.codeGen.label': 'A tool writing the setup for you',
+    'why.axis.codeGen.question': 'Do I hand-write a builder for each of my forty domain types?',
+    'why.axis.codeGen.explanation':
+        'The constraints for an order are a file somebody has to write, and rewrite the day the type gains a parameter. The question is whether a tool reads your own source and writes it. What it writes is ordinary C# in your test project: read it, edit it, commit it.',
+    'why.axis.codeGen.term': 'scaffolding — not a source generator, which runs at build time and leaves you no file',
+
+    'why.axis.exploration.label': 'Hunting for the value that breaks your code',
+    'why.axis.exploration.question': 'Do I want one arbitrary value, or hundreds looking for a counter-example?',
+    'why.axis.exploration.explanation':
+        'One drawn value per run tells you the code held for that value. The opposite approach runs the same assertion over hundreds of generated inputs, then narrows any failure down to the smallest input that still fails.',
+    'why.axis.exploration.term': 'property-based testing, and shrinking',
+    'why.axis.exploration.elsewhere':
+        'None of the four does this. In .NET the usual answers are FsCheck and CsCheck, and they sit beside any of these rather than replacing one.',
+
+    'why.matrix.summary': 'The whole comparison on one screen',
+    'why.matrix.intro':
+        'The same answers as above, without their notes. Each criterion links back to the block that explains it.',
+    'why.table.caption': 'Four ways to get a test value, criterion by criterion.',
+    'why.table.axisHeader': 'Criterion',
 
     'why.note.justdummies.reuse':
-        'A generator becomes reusable once it is written — by hand, or scaffolded once by the dum tool — not automatically from a single call.',
+        'Write the generator once, in your own test project, and every test can call it. The dum tool can write that file for you. Neither happens from a single call.',
     'why.note.justdummies.realism':
-        'Values are arbitrary, not realistic-looking — a name generator is not what this library is for.',
+        'Valid, not believable. There is no catalogue of names, addresses or emails here.',
     'why.note.justdummies.graph':
-        'A full graph is built by composing one generator per type; nothing walks the graph for you.',
+        'You supply one generator per type and compose them. Nothing inspects your class and fills the levels underneath.',
+    /**
+     * The one note on the page that qualifies a "built for this" cell rather than a lesser
+     * one, and it has to: the criterion is answered by the xUnit adapter, and a reader on
+     * NUnit or MSTest would otherwise find that out after installing.
+     */
+    'why.note.justdummies.reproducibility':
+        'A failing test case reports its seed, and that seed redraws exactly the same values. Each case seeds itself, so a suite running in parallel still hands back the seed of the one that failed. This comes from the xUnit adapter; there is no NUnit or MSTest adapter today.',
     'why.note.justdummies.compileTime':
-        'The analyzers bundled in the main package catch a chain of constraints that admits no value — a contradiction — at compile time. A missing constraint is a different defect: it still only throws once a value is drawn.',
+        'The analyzers ship inside the main package, so installing the library installs them. They catch a chain no value can satisfy. A constraint you simply forgot is a different mistake, and it still only surfaces when a value is drawn.',
+    'why.note.justdummies.codeGen':
+        'The dum tool reads your type and writes the generator into your test project. The file is ordinary C#, and it is yours to edit and commit.',
     'why.note.justdummies.exploration':
-        'One arbitrary, reproducible value is drawn per run, not a systematic search of the input space.',
+        'One value is drawn per run, and you can draw it again. There is no systematic search for the input that fails.',
 
     'why.note.bogus.invariants':
-        "Only if every RuleFor() is written by hand to match the domain's rules — nothing checks that it does.",
+        "A Faker<T> satisfies a domain rule once a RuleFor is written to match it — or a CustomInstantiator that calls the type's own factory. StrictMode(true) then checks that every property has a rule at all. What no check covers is whether a rule produces a value the domain would accept.",
     'why.note.bogus.callSite':
-        'A RuleFor() — including a bounded generator like Random.Int(min, max) — can sit on a Faker<T> built inline, right before Generate(), at the cost of writing it by hand each time.',
+        'A Faker<T> can be built inline in the test, right before Generate, with its rules on it — Random.Int(min, max) and the like. You write those rules out again in every test that needs them.',
     'why.note.bogus.testIntent':
-        'Only for a RuleFor(x => x.Prop, expected) that pins the exact value an assertion checks — the same scope credited to the AutoFixture override and the manual literal below.',
-    'why.note.bogus.reuse': 'A Faker<T> can be defined once and reused across tests, the same way a JustDummies generator can.',
-    'why.note.bogus.graph': 'Nested objects are composed by hand inside the rules, not built automatically.',
+        'RuleFor(x => x.Prop, expected) pins the exact value the assertion checks, so the subject of the test is written down. The rules around it are written down just as visibly.',
+    'why.note.bogus.reuse': 'A Faker<T> is defined once and reused across tests, the same way a JustDummies generator is.',
+    'why.note.bogus.graph': 'A nested object is built by hand inside the rule that produces it. Bogus does not descend into it for you.',
+    'why.note.bogus.reproducibility':
+        'UseSeed on a Faker, or Randomizer.Seed for the whole run, makes a run repeatable.',
     'why.note.bogus.compileTime':
-        "Bogus Premium's analyzer flags a missing RuleFor() at build time — a paid add-on, not part of the free package.",
-    'why.note.bogus.codeGen': 'The same Premium analyzer can insert a missing RuleFor() as a code fix.',
+        'The free package catches a missing rule when the test runs: StrictMode(true) makes Generate throw, and AssertConfigurationIsValid checks on demand. Catching it while you type is the Bogus Premium analyzer, which is a paid licence.',
+    'why.note.bogus.codeGen':
+        'The same Premium analyzer offers the missing rule as a one-click fix in the editor. That is help of a different shape from a file a tool writes and you keep.',
+    'why.note.bogus.exploration':
+        'Bogus fills values. It does not run your test repeatedly looking for one that fails.',
 
     'why.note.autofixture.invariants':
-        "Generation throws until a Customization or an ISpecimenBuilder is written to satisfy the constructor's guard clauses.",
+        'A rule a type carries as an annotation — [Range], [StringLength], [RegularExpression] — is already honoured, with no configuration at all. A rule enforced inside a constructor is the other case: generation throws until a Register, a Customize<T> or an ISpecimenBuilder is written to satisfy it.',
     'why.note.autofixture.callSite':
-        'Only through Build<T>().With(x => x.Prop, value) — pinning an exact value or a hand-written generator lambda inline, not a declarative business constraint.',
+        'A rule that lives on the type is honoured everywhere without a line in the test. A rule that belongs to this one test is written inline through Build<T>().With(x => x.Prop, value) — a pinned value, or a lambda you write, one property at a time.',
     'why.note.autofixture.testIntent':
-        'Only for a Build<T>().With(x => x.Prop, expected) that names the value an assertion actually checks — the same scope the manual literal above is credited for.',
-    'why.note.autofixture.reuse': 'An ICustomization packages a set of rules once, for reuse across tests.',
+        'This is the goal AutoFixture states for itself: the values a test does not care about disappear, because you never describe them. What disappears with them is any statement of what those values must satisfy.',
+    'why.note.autofixture.reuse':
+        'An ICustomization packages a set of rules once, in a class of its own, and every test that opts into it gets them.',
+    'why.note.autofixture.realism':
+        'The values are anonymous by design — a string comes out as a property name and a GUID. Looking real is not what AutoFixture is trying to do.',
+    'why.note.autofixture.reproducibility':
+        'There is no seed to set, so a run cannot be replayed value for value. That is a gap rather than a decision: repeatable random numbers are an open request on the project, filed in September 2023.',
+    'why.note.autofixture.compileTime':
+        'No analyzer ships with it. A customization that can never produce a value is found when the test runs.',
+    'why.note.autofixture.codeGen':
+        'Nothing writes a file for you, and the point is the opposite: with no rules to declare, there is no setup code to write.',
+    'why.note.autofixture.exploration':
+        'One anonymous value per request, not a search for the one that makes your code fail.',
 
     'why.note.manual.invariants':
-        'Valid only because a person chose a value they knew to be valid — nothing checks that it stayed that way.',
+        'Valid because a person chose a value they knew was valid. Nothing checks that it still is the day the rule changes.',
+    'why.note.manual.callSite':
+        'The rule is never stated. You pick a value that happens to satisfy it, and the rule stays in the head of whoever picked it.',
     'why.note.manual.testIntent':
-        'Only for the one value the test is actually about; used for the parameters around it too, it becomes exactly the boilerplate Act I opens on.',
+        'It shows the value the test is about with no indirection at all. Used for the parameters around it as well, the arrangement grows a line per parameter and the subject stops standing out.',
     'why.note.manual.reuse':
-        'A literal can be pulled into a named constant or a helper and reused across tests — at the cost of maintaining it by hand, and of every test that reuses it losing whatever variation a generator would have given it.',
-    'why.note.manual.realism': 'As realistic as whoever is typing bothers to make it, by hand, every time.',
-    'why.note.manual.graph': "Every nested object is constructed by hand — the arrangement Act I opens on.",
+        'A literal can move into a named constant or a helper and be shared. You then maintain it by hand, and every test that shares it runs on the same value.',
+    'why.note.manual.realism':
+        'As realistic as the value you type: marie.durand@acme.fr is every bit as convincing as a generated one. You type it again in the next test.',
+    'why.note.manual.graph':
+        'Every nested object is constructed by hand, level by level, and each constructor is a line you write and then maintain.',
+    'why.note.manual.reproducibility':
+        'The same value on every run, because it is the value you typed. Nothing to replay, and nothing that varies.',
     'why.note.manual.compileTime':
-        'The compiler accepts any value of the right type — an overlong string, say — and only the domain constructor catches it, at run time.',
+        'The compiler accepts any value of the right type — an overlong string, say. Only the domain constructor catches it, at run time.',
+    'why.note.manual.codeGen': 'You type it. There is nothing to generate.',
+    'why.note.manual.exploration': 'One value, chosen once, and the same one for the life of the test.',
+
+    'why.instead.heading': 'When another tool is the better answer',
+    'why.instead.lede': 'Three cases where one of the others is the right choice.',
 
     'why.notFor.heading': 'When not to use JustDummies',
-    'why.notFor.body':
-        "Not when a test needs data that looks real rather than data that is merely valid — reach for a fake-data generator instead. Not when a type carries no domain invariant worth declaring — a plain anonymous-object library does that with less ceremony. And every package is still pre-release: an API that is still moving is a cost worth knowing about before it sits under a large test suite.",
+    'why.notFor.lede': 'Cases where another tool, or no tool at all, is the better answer.',
+    'why.notFor.realism.label': 'The data has to look real.',
+    'why.notFor.realism.body':
+        'A demo, a screenshot, a database somebody will browse. Reach for a fake-data generator. A valid value is not a believable one.',
+    'why.notFor.noRules.label': 'Nothing about the value has to be true.',
+    'why.notFor.noRules.body':
+        'If your types accept anything of the right type, there is no rule to declare, and declaring one is ceremony. A library that hands back any object of the right shape asks less of you.',
+    'why.notFor.exploration.label': 'You want the test to go looking for a counter-example.',
+    'why.notFor.exploration.body':
+        'Running one assertion over hundreds of generated inputs, then shrinking a failure to its smallest case, is property-based testing. JustDummies draws one value per run, and it is not that tool.',
+    'why.notFor.secrets.label': 'You need a password, a token or a key.',
+    'why.notFor.secrets.body':
+        'The generators produce test values, not secrets. Nothing drawn here is fit to be used as a credential, in a test or anywhere else.',
+    /**
+     * KNOWN DUPLICATION, bounded: this says out loud what `site.library.version` already
+     * says in a version string. The component renders it only while that version carries a
+     * pre-release suffix, so the paragraph leaves the page on the day a stable one ships
+     * rather than staying true-until-somebody-notices.
+     */
+    'why.notFor.preRelease.label': 'You need an API that has stopped moving.',
+    'why.notFor.preRelease.body':
+        'Every package is still a pre-release, so installing means passing --prerelease, and it means a surface that can still change under a test suite you have already written.',
+    /**
+     * The paragraph §11.1 is bought with. A page that asks a team to put a dependency under
+     * every test they write and does not mention who maintains it has left out the first
+     * question a lead asks — and a reader who finds it out elsewhere stops believing the
+     * rest. It is a fact about this project, not a comparison, so it names nobody else.
+     */
+    'why.notFor.solo.label': "It is one person's project.",
+    'why.notFor.solo.body':
+        'JustDummies is written and maintained by one developer. Bogus and AutoFixture each have years of contributors behind them. For something that would sit under every test you write, that is worth weighing, and it does not get better by being left out.',
 
+    'why.tryIt.heading': 'Try it on one test',
+    'why.tryIt.body':
+        'Add the package to a test project and change one line of one arrangement. Every other test stays as it is. Bogus, AutoFixture, your own builders and every literal you have already written keep working, in the same project and in the same file. If it does not earn its place, backing it out is deleting the lines you added.',
+    'why.tryIt.install': 'Install the library',
+
+    'why.sources.heading': 'How this comparison was checked',
+    'why.sources.body':
+        "Every claim about another project on this page comes from that project's own documentation or repository. What was read, and where, is below.",
     /** The date itself is never typed here — it comes from `comparison.ts`'s `comparisonVerifiedOn`, formatted per locale, so the two cannot disagree. */
-    'why.verified.label': 'Comparisons last verified:',
-    'why.report.label': 'Spotted something inaccurate about a library listed here? Open an issue.',
+    'why.verified.label': 'Last checked on',
+    'why.sources.mentioned': 'Named but not compared',
+    'why.sources.mentionedBody':
+        'The two property-based testing libraries this page points to, for the one criterion none of the four options answers. Both were read to confirm they do what the page says.',
+    'why.report.prompt':
+        'If you maintain one of these projects and this page gets it wrong, an issue is the fastest way to have it corrected.',
+    'why.report.label': 'Open an issue',
 
     /**
      * /release-notes — a snapshot of the library's own CHANGELOG.md files, one train at
@@ -640,7 +851,7 @@ const fr: Record<UiKey, string> = {
     'api.nav.uris': 'URI',
     'api.nav.collections': 'Collections',
     'api.nav.composition': 'Composition',
-    'api.nav.reproducibility': 'Graines et reproductibilité',
+    'api.nav.reproducibility': 'Seeds et reproductibilité',
     'api.nav.exceptions': 'Exceptions',
     'api.nav.toggle': "Sections de l'API",
 
@@ -663,7 +874,7 @@ const fr: Record<UiKey, string> = {
     'api.collections.lede': 'Tableaux, listes, séquences, ensembles et dictionnaires, chacun construit sur un générateur pour ses éléments.',
     'api.composition.heading': 'Composition',
     'api.composition.lede': 'Transformer plusieurs générateurs en un seul — par une fabrique, un tuple, un ensemble de choix fermé, ou une valeur optionnelle.',
-    'api.reproducibility.heading': 'Graines et reproductibilité',
+    'api.reproducibility.heading': 'Seeds et reproductibilité',
     'api.reproducibility.lede':
         "Ce qui rend un échec sur une valeur arbitraire exactement rejouable, plutôt qu'un mystère qui change d'apparence à chaque exécution.",
     'api.exceptions.heading': 'Exceptions',
@@ -683,102 +894,298 @@ const fr: Record<UiKey, string> = {
     'api.seeAlso.heading': 'Voir aussi',
     'api.seeAlso.playground': 'Playground — essayer en direct',
 
-    'why.heading': 'Pourquoi JustDummies',
+    /**
+     * /why-justdummies — le français n'est pas une traduction de l'anglais, c'est la même
+     * page écrite en français. Trois choix de vocabulaire tiennent la page entière :
+     * « vraisemblable » et « valide » restent deux mots distincts, parce que la différence
+     * entre les deux est le sujet du comparatif ; « le sujet du test » remplace toute
+     * formule où le test « parlerait » de quelque chose ; « la préparation » remplace
+     * « l'arrange », qui est un mot anglais porté en français sans rien pour l'expliquer.
+     */
+    'why.heading': 'Pourquoi JustDummies ?',
     'why.meta.description':
-        "Comment JustDummies se compare à Bogus, AutoFixture et l'écriture à la main — y compris là où il perd.",
-    'why.intro.p1':
-        "JustDummies ne demande aucune migration. Il s'installe sur un seul test, coexiste avec ce que vous utilisez déjà dans la même base de code, et ne vous demande de retirer rien pour l'essayer.",
-    'why.intro.p2':
-        "Pour la plupart de ce qu'une bibliothèque de données de test remplace, le vrai concurrent n'est pas une autre bibliothèque — c'est une valeur tapée à la main. Le comparatif ci-dessous la traite comme une option à part entière, pas comme un oubli.",
+        "Quand choisir JustDummies, Bogus, AutoFixture ou une valeur écrite à la main — critère par critère, y compris là où les autres font mieux.",
 
-    'why.axis.invariants': 'Invariants métier',
-    'why.axis.callSite': "Contraintes au point d'appel",
-    'why.axis.testIntent': 'Ce que le test décrit',
-    'why.axis.reuse': 'Réutilisation entre tests',
-    'why.axis.realism': 'Données réalistes',
-    'why.axis.graph': "Un graphe d'objets complet",
-    'why.axis.reproducibility': 'Reproductibilité',
-    'why.axis.compileTime': 'Détection à la compilation',
-    'why.axis.codeGen': 'Génération de code',
-    'why.axis.exploration': "Exploration de l'espace d'entrée",
+    'why.lede':
+        "JustDummies produit les valeurs arbitraires dont un test a besoin, et vous laisse énoncer les règles que ces valeurs doivent respecter.",
 
-    'why.rating.core': 'Cœur de métier',
-    'why.rating.possible': 'Possible',
-    'why.rating.outOfScope': 'Hors périmètre',
+    'why.orient.replace.question': "Est-ce que ça remplace ce que j'utilise déjà ?",
+    'why.orient.replace.answer':
+        "Non. C'est un paquet qui tire des valeurs. Votre framework de test, votre bibliothèque d'assertions et la bibliothèque de données que vous utilisez déjà restent en place.",
+    'why.orient.gap.question': 'Que ne fait pas mon outil actuel ?',
+    'why.orient.gap.answer':
+        "La plupart des outils tirent une valeur et vous laissent en épingler une précise. Peu vous laissent dire, sur place, ce que la valeur doit respecter pour que votre propre code l'accepte.",
+    'why.orient.try.question': "Puis-je l'essayer sur un seul test ?",
+    'why.orient.try.answer':
+        "Oui. Un paquet, une ligne dans une seule préparation. S'il ne fait pas ses preuves, revenir en arrière consiste à supprimer cette ligne.",
 
-    'why.table.caption': 'JustDummies comparé sur dix axes.',
-    'why.table.axisHeader': 'Axe',
+    'why.toc.label': 'Sur cette page',
 
-    'why.duel.label': 'Comparer JustDummies à',
-    'why.duel.showMatrix': 'Afficher le comparatif complet',
-    'why.duel.showDuel': 'Revenir au duel',
+    'why.problem.heading': "Le problème qu'il résout",
+    'why.problem.body1':
+        "Un test sur l'annulation d'une commande a besoin d'une commande. Une commande a besoin d'une référence, d'un client et d'un montant. Ce test n'en vérifie aucun des trois : le constructeur les exige, c'est tout.",
+    'why.problem.body2':
+        "Rien dans cette préparation ne dit sur lequel des quatre arguments porte le test. ORD-54XEM4545 et 42.00 se lisent comme des valeurs choisies exprès. Voici le même test, avec les trois valeurs qu'il ne vérifie pas tirées au lieu d'être tapées.",
+    'why.problem.body3':
+        "La référence, le client et le montant changent à chaque exécution, et ils sont valides à chaque fois, parce que les règles qu'ils doivent respecter ont été déclarées une fois pour toutes. Any.Order() est un générateur pour votre propre type : vous l'écrivez, ou l'outil dum l'écrit pour vous. Il ne reste dans le test que le sujet du test.",
+    'why.problem.rules.summary': "Ce que « valide » veut dire ici",
+    'why.problem.rules.body':
+        "Voici les contrôles qu'une référence doit passer. Du C# ordinaire : une fabrique qui refuse ce qu'elle n'accepte pas. Une chaîne tirée au hasard échoue presque à tous les coups, et c'est pour cela qu'il faut en informer le générateur.",
 
-    'why.library.repoLink': 'Voir le dépôt',
-    'why.library.chooseHeading': 'À choisir à la place quand',
+    'why.choose.heading': 'Lequel de ces besoins est le vôtre ?',
+    'why.choose.lede':
+        "Ces quatre réponses passent souvent pour des rivales. Elles répondent à quatre questions différentes, et la plupart des projets s'en posent plusieurs. Cherchez la phrase que vous diriez à voix haute.",
 
-    'why.bogus.description':
-        "Un générateur de fausses données simple, pour C#, F# et VB.NET — porté du célèbre faker.js.",
-    'why.bogus.chooseInstead':
-        "Choisissez Bogus quand un test, une démo ou une base de données de démonstration a besoin de données qui ressemblent à du réel — noms, adresses, e-mails — plutôt que de données qui respectent seulement une règle métier. C'est le vrai sujet de Bogus, et JustDummies ne s'y mesure pas.",
+    'why.tool.repoLink': 'Voir le dépôt',
 
-    'why.autofixture.description':
-        "Une bibliothèque qui évite d'écrire à la main des variables anonymes pour préparer un test — n'importe quel objet de la bonne forme, sans configuration.",
-    'why.autofixture.chooseInstead':
-        "Choisissez AutoFixture quand un test ne se soucie vraiment pas de ce que contient un objet — n'importe quelle valeur, n'importe où dans le graphe, convient — et que vous voulez que tout le graphe soit rempli automatiquement, y compris des types que vous ne possédez pas. JustDummies vous demande d'abord de dire ce qui doit être vrai ; un test qui n'a rien à en dire n'a rien à y gagner.",
+    'why.tool.justdummies.need': "Peu m'importe cette valeur, mais elle doit être valide.",
+    'why.tool.justdummies.description':
+        "Des valeurs arbitraires pour tout ce qu'un test ne vérifie pas, avec les règles qu'elles doivent respecter, écrites là où le test demande la valeur.",
+    'why.tool.justdummies.concretely':
+        "Concrètement : une référence jamais vide, jamais plus longue que vingt caractères, commençant toujours par ORD-, et tirée à chaque exécution.",
 
-    'why.manual.name': 'Écrire les valeurs à la main',
-    'why.manual.description': "Aucune bibliothèque : la valeur dont un test a besoin, tapée directement dans son arrange.",
-    'why.manual.chooseInstead':
-        "Écrivez une simple valeur à la main pour celle dont le test parle vraiment — celle que son assertion vérifie. Le lecteur voit le nombre exact ; une valeur générée ne ferait que lui demander de croire qu'elle est valide. JustDummies s'occupe de tous les autres paramètres, ceux dont le test se moque.",
+    'why.tool.bogus.need': "J'ai besoin de données qui ont l'air vraies.",
+    'why.tool.bogus.description':
+        "Un générateur simple de fausses données pour C#, F# et VB.NET — le portage du célèbre faker.js.",
+    'why.tool.bogus.concretely':
+        "Concrètement : des noms, des adresses, des e-mails, des numéros de téléphone, des libellés de produits — adaptés à la locale, et crédibles pour qui regarde une capture d'écran ou une base de démonstration.",
+    'why.tool.bogus.chooseInstead':
+        "Choisissez Bogus quand les données doivent être vraisemblables : noms, adresses, e-mails, une base de démonstration que quelqu'un va lire. Son catalogue est adapté à la locale, un travail que vous feriez sinon à la main. JustDummies tire des valeurs valides, pas des valeurs crédibles.",
+    'why.tool.bogus.checked':
+        "Lu : le catalogue adapté à la locale (Name, Address, Internet, Commerce), RuleFor et les règles qui se chaînent sur un Faker<T> construit sur place, les tirages bornés comme Random.Int(min, max), StrictMode et AssertConfigurationIsValid, UseSeed et Randomizer.Seed, et l'offre payante Bogus Premium, dont l'analyseur signale un RuleFor manquant et sait l'insérer.",
+
+    'why.tool.autofixture.need': "Construisez-moi l'objet, son contenu m'est égal.",
+    'why.tool.autofixture.description':
+        "Une bibliothèque qui vous dispense d'écrire à la main les variables anonymes dont la préparation d'un test a besoin.",
+    'why.tool.autofixture.concretely':
+        "Concrètement : un appel renvoie un objet entièrement rempli, y compris tout ce qu'il contient et les types dont vous n'avez pas le code — sans que vous ayez rien déclaré nulle part.",
+    'why.tool.autofixture.chooseInstead':
+        "Choisissez AutoFixture quand le test a besoin d'un objet entier et n'a rien à dire de son contenu. Un appel remplit l'objet et tout ce qu'il contient, y compris les types dont vous n'avez pas le code. JustDummies, lui, part des règles : là où il n'y a aucune règle à énoncer, il ajoute une étape et n'apporte rien.",
+    'why.tool.autofixture.checked':
+        "Lu : des valeurs anonymes plutôt que réalistes, la construction automatique de valeurs de presque n'importe quel type, la prise en compte des annotations [Range], [StringLength] et [RegularExpression] sans configuration, la surcharge Build<T>().With(...), la voie séparée ISpecimenBuilder et Customize<T>(), et la demande toujours ouverte d'un tirage aléatoire rejouable.",
+
+    'why.tool.manual.name': 'Écrire la valeur à la main',
+    'why.tool.manual.need': "Cette valeur précise, c'est ce que le test vérifie.",
+    'why.tool.manual.description':
+        "Aucune bibliothèque : la valeur tapée directement dans le test, sur la ligne qui l'utilise.",
+    'why.tool.manual.concretely':
+        "Concrètement : le montant qu'une assertion compare, ou le statut dont dépend un comportement. Le lecteur le voit sans quitter le test.",
+    'why.tool.manual.chooseInstead':
+        "Écrivez la valeur en clair quand elle est le sujet du test — le montant qu'une assertion compare, le statut dont dépend un comportement. Le lecteur voit la valeur exacte sur la ligne qui l'utilise. Une valeur tirée l'obligerait à croire sur parole qu'elle convient.",
+
+    'why.compare.heading': 'Comparez-le à ce que vous utilisez',
+    'why.compare.lede':
+        "Dix critères, chacun posé comme une question sur vos propres tests, puis tranché pour les quatre options.",
+
+    'why.legend.heading': 'Les trois réponses',
+    'why.legend.core': "L'outil est fait pour ça, et il le fait sans configuration supplémentaire.",
+    'why.legend.possible':
+        "On y arrive, mais il faut écrire quelque chose pour y arriver. La note dit quoi.",
+    'why.legend.outOfScope':
+        "L'outil ne le fait pas. Parfois parce que ses auteurs en ont décidé ainsi, parfois parce que personne ne l'a encore écrit — la note précise lequel des deux.",
+    'why.legend.order':
+        "Les critères sont regroupés sous les quatre questions qu'on se pose en arrivant, et non classés selon ce que JustDummies y répond. Sur plusieurs d'entre eux, JustDummies est celui qui n'essaie pas : c'est le mot « just » de son nom qui fait son travail.",
+
+    'why.rating.core': 'Conçu pour ça',
+    'why.rating.possible': 'Possible, avec du travail',
+    'why.rating.outOfScope': "Ce n'est pas son rôle",
+
+    'why.duel.label': 'Comparer JustDummies avec',
+    'why.duel.everything': 'les trois autres options',
+    'why.duel.showingOne': 'Affiché : JustDummies et',
+    'why.duel.showingAll': 'Affiché : JustDummies et les trois autres options.',
+
+    'why.family.accepted': 'La valeur passera-t-elle mon propre code ?',
+    'why.family.readable': 'Mon test restera-t-il lisible ?',
+    'why.family.kind': "De quelle nature de valeur ai-je besoin ?",
+    'why.family.wrong': 'Que se passe-t-il quand ça casse, et qui écrit la préparation ?',
+
+    'why.axis.termLabel': 'Terme technique :',
+
+    'why.axis.invariants.label': 'Les valeurs que votre code accepte',
+    'why.axis.invariants.question': 'La valeur produite passera-t-elle mon propre constructeur ?',
+    'why.axis.invariants.explanation':
+        "La plupart des types du domaine refusent ce qui ne leur convient pas. OrderReference.Create rejette une chaîne qui ne commence pas par ORD-, et rejette celles qui dépassent vingt caractères. Un test qui a besoin d'une référence quelconque a quand même besoin d'une référence qui passe ces deux contrôles.",
+    'why.axis.invariants.term': 'invariant métier, ou précondition en design par contrat',
+
+    'why.axis.callSite.label': 'Des règles énoncées sur place',
+    'why.axis.callSite.question':
+        "Puis-je écrire « un nombre quelconque entre 1 et 100 » sur la ligne qui en a besoin ?",
+    'why.axis.callSite.explanation':
+        "Certaines règles appartiennent à un test plutôt qu'au domaine : cette quantité vaut au moins deux, cette date est passée. La question est de savoir si vous pouvez le dire là où le test demande la valeur, ou s'il faut d'abord déclarer un type, enregistrer une configuration ou monter une fixture.",
+    'why.axis.callSite.term': "point d'appel — l'endroit exact du code où la valeur est demandée",
+
+    'why.axis.testIntent.label': 'Voir quelle valeur le test vérifie',
+    'why.axis.testIntent.question': "Un lecteur peut-il dire de quelles valeurs dépend l'assertion ?",
+    'why.axis.testIntent.explanation':
+        "Un test qui construit une commande à partir de quatre arguments ne dit pas sur lequel des quatre il porte. En tirer trois et écrire le quatrième en clair répond à la question dans la préparation elle-même.",
+
+    'why.axis.reuse.label': 'Décrire un objet valide une seule fois',
+    'why.axis.reuse.question':
+        'Le jour où mon type gagne un paramètre de constructeur, combien de fichiers de test dois-je rouvrir ?',
+    'why.axis.reuse.explanation':
+        "Ce qui décrit une commande valide — une chaîne de contraintes, un jeu de règles, un builder — mérite d'être écrit une fois et appelé partout. La question est de savoir ce que cela coûte à mettre en place, et quelle part l'outil en écrit pour vous.",
+
+    'why.axis.realism.label': 'Des données vraisemblables',
+    'why.axis.realism.question': 'Cette valeur sera-t-elle lue par un humain, ou seulement par une assertion ?',
+    'why.axis.realism.explanation':
+        "Valide et vraisemblable ne sont pas la même chose. Une référence qui respecte toutes les règles peut très bien ressembler à du bruit. C'est sans importance dans une assertion, et gênant dans une capture d'écran.",
+    'why.axis.realism.term': 'fausses données — la famille des bibliothèques faker',
+
+    'why.axis.graph.label': 'Remplir les objets imbriqués à votre place',
+    'why.axis.graph.question':
+        "Mon type a trois niveaux d'imbrication et le test ne s'intéresse à aucun : qui les remplit ?",
+    'why.axis.graph.explanation':
+        "Une commande contient un client, qui contient une adresse. Soit un outil inspecte votre classe et remplit tous les niveaux, soit vous fournissez un générateur par type et vous les assemblez.",
+    'why.axis.graph.term': "graphe d'objets",
+
+    'why.axis.reproducibility.label': "Rejouer l'exécution qui a échoué",
+    'why.axis.reproducibility.question':
+        'La CI est passée au rouge sur une valeur tirée. Puis-je récupérer exactement cette valeur ?',
+    'why.axis.reproducibility.explanation':
+        "Des valeurs qui changent à chaque exécution, c'est un test qui peut échouer aujourd'hui et passer demain. Ce qui rend la chose vivable, c'est un numéro que l'exécution en échec rapporte, et qui retire exactement les mêmes valeurs quand vous le recollez.",
+    'why.axis.reproducibility.term': 'seed',
+
+    'why.axis.compileTime.label': "Détecté avant même de lancer le test",
+    'why.axis.compileTime.question': "Est-ce que je l'apprends dans l'éditeur, ou dix minutes plus tard ?",
+    'why.axis.compileTime.explanation':
+        "Une chaîne de contraintes peut se contredire : trois caractères au plus, et commençant par ORD-. Rien ne satisfait les deux. La question est de savoir si cela apparaît comme une erreur de compilation, ou comme une exception à la première exécution.",
+    'why.axis.compileTime.term': 'analyseur Roslyn',
+
+    'why.axis.codeGen.label': 'Un outil qui écrit la préparation pour vous',
+    'why.axis.codeGen.question':
+        'Dois-je écrire à la main un builder pour chacun de mes quarante types du domaine ?',
+    'why.axis.codeGen.explanation':
+        "Les contraintes d'une commande, c'est un fichier que quelqu'un doit écrire, puis réécrire le jour où le type gagne un paramètre. La question est de savoir si un outil lit vos propres sources et l'écrit. Ce qu'il écrit est du C# ordinaire, dans votre projet de test : vous le lisez, vous le modifiez, vous le committez.",
+    'why.axis.codeGen.term':
+        "scaffolding — et non un générateur de source, qui tourne à la compilation et ne vous laisse aucun fichier",
+
+    'why.axis.exploration.label': 'Chercher la valeur qui casse votre code',
+    'why.axis.exploration.question':
+        "Est-ce que je veux une valeur quelconque, ou des centaines à la recherche d'un contre-exemple ?",
+    'why.axis.exploration.explanation':
+        "Une valeur tirée par exécution vous dit que le code a tenu pour cette valeur-là. L'approche inverse exécute la même assertion sur des centaines d'entrées générées, puis réduit tout échec à la plus petite entrée qui échoue encore.",
+    'why.axis.exploration.term': 'property-based testing, et shrinking',
+    'why.axis.exploration.elsewhere':
+        "Aucune des quatre options ne le fait. En .NET, on se tourne d'ordinaire vers FsCheck ou CsCheck, et ils cohabitent avec n'importe laquelle d'entre elles plutôt que de la remplacer.",
+
+    'why.matrix.summary': 'Tout le comparatif sur un écran',
+    'why.matrix.intro':
+        "Les mêmes réponses que ci-dessus, sans leurs notes. Chaque critère renvoie au bloc qui l'explique.",
+    'why.table.caption': "Quatre façons d'obtenir une valeur de test, critère par critère.",
+    'why.table.axisHeader': 'Critère',
 
     'why.note.justdummies.reuse':
-        "Un générateur devient réutilisable une fois écrit — à la main, ou généré une fois par l'outil dum — pas automatiquement depuis un seul appel.",
+        "Il faut d'abord écrire le générateur, dans votre propre projet de test ; ensuite, tous vos tests l'appellent. L'outil dum peut écrire ce fichier pour vous. Un simple appel ne le fait pas apparaître.",
     'why.note.justdummies.realism':
-        "Les valeurs sont quelconques, pas réalistes — un générateur de noms n'est pas ce à quoi sert cette bibliothèque.",
+        "Valides, pas vraisemblables. Il n'y a ici aucun catalogue de noms, d'adresses ou d'e-mails.",
     'why.note.justdummies.graph':
-        "Un graphe complet se construit en composant un générateur par type ; rien ne parcourt le graphe à votre place.",
+        "Vous fournissez un générateur par type et vous les composez. Rien n'inspecte votre classe pour remplir les niveaux du dessous.",
+    'why.note.justdummies.reproducibility':
+        "Un cas de test qui échoue rapporte son seed, et ce seed retire exactement les mêmes valeurs. Chaque cas tire le sien : une suite qui tourne en parallèle vous rend donc bien celui du cas qui a échoué. C'est l'adaptateur xUnit qui le fournit ; il n'existe aujourd'hui ni adaptateur NUnit ni adaptateur MSTest.",
     'why.note.justdummies.compileTime':
-        "Les analyseurs embarqués dans le paquet principal détectent à la compilation une chaîne de contraintes qui n'admet aucune valeur — une contradiction. Une contrainte manquante est un défaut différent : elle n'échoue toujours qu'au tirage d'une valeur.",
+        "Les analyseurs sont livrés dans le paquet principal : installer la bibliothèque les installe. Ils repèrent une chaîne qu'aucune valeur ne peut satisfaire. Une contrainte simplement oubliée est un autre défaut, et celle-là ne se manifeste qu'au moment du tirage.",
+    'why.note.justdummies.codeGen':
+        "L'outil dum lit votre type et écrit le générateur dans votre projet de test. Le fichier est du C# ordinaire, et il vous appartient : à vous de le modifier et de le committer.",
     'why.note.justdummies.exploration':
-        "Une valeur arbitraire et reproductible est tirée par exécution, pas une exploration systématique de l'espace d'entrée.",
+        "Chaque exécution tire une valeur, et vous pouvez la tirer de nouveau à l'identique. Il n'y a pas de balayage systématique à la recherche de l'entrée qui échoue.",
 
     'why.note.bogus.invariants':
-        "Seulement si chaque RuleFor() est écrit à la main pour respecter les règles du domaine — rien ne le vérifie.",
+        "Un Faker<T> respecte une règle métier dès qu'un RuleFor est écrit pour elle — ou un CustomInstantiator qui appelle la fabrique du type. StrictMode(true) vérifie ensuite que chaque propriété a bien une règle. Ce qu'aucun contrôle ne couvre, c'est de savoir si une règle produit une valeur que le domaine accepterait.",
     'why.note.bogus.callSite':
-        "Un RuleFor() — y compris un générateur borné comme Random.Int(min, max) — peut se placer sur un Faker<T> construit à la volée, juste avant Generate(), au prix de l'écrire à la main à chaque fois.",
+        "Un Faker<T> peut être construit sur place dans le test, juste avant Generate, avec ses règles dessus — Random.Int(min, max) et consorts. Il faut simplement les réécrire dans chaque test qui en a besoin.",
     'why.note.bogus.testIntent':
-        "Seulement pour un RuleFor(x => x.Prop, expected) qui épingle la valeur exacte qu'une assertion vérifie — la même portée que celle créditée à AutoFixture et à la valeur manuelle ci-dessous.",
-    'why.note.bogus.reuse': "Un Faker<T> peut être défini une fois et réutilisé entre les tests, comme un générateur JustDummies.",
-    'why.note.bogus.graph': "Les objets imbriqués sont composés à la main dans les règles, pas construits automatiquement.",
+        "RuleFor(x => x.Prop, expected) épingle la valeur exacte que vérifie l'assertion : le sujet du test est donc écrit noir sur blanc. Les règles autour le sont tout autant.",
+    'why.note.bogus.reuse':
+        "Un Faker<T> se définit une fois et se réutilise d'un test à l'autre, exactement comme un générateur JustDummies.",
+    'why.note.bogus.graph':
+        "Un objet imbriqué se construit à la main, dans la règle qui le produit. Bogus n'y descend pas à votre place.",
+    'why.note.bogus.reproducibility':
+        "UseSeed sur un Faker, ou Randomizer.Seed pour toute l'exécution, rend un tirage rejouable.",
     'why.note.bogus.compileTime':
-        "L'analyseur de Bogus Premium détecte un RuleFor() manquant à la compilation — un module payant, absent du paquet gratuit.",
-    'why.note.bogus.codeGen': "Le même analyseur Premium peut insérer le RuleFor() manquant sous forme de correctif de code.",
+        "Le paquet gratuit détecte une règle manquante à l'exécution : StrictMode(true) fait échouer Generate, et AssertConfigurationIsValid le vérifie à la demande. La détecter pendant que vous tapez, c'est l'analyseur de Bogus Premium, qui relève d'une licence payante.",
+    'why.note.bogus.codeGen':
+        "Le même analyseur Premium propose la règle manquante sous forme de correctif en un clic dans l'éditeur. C'est une aide d'une autre nature qu'un fichier écrit par un outil et que vous gardez.",
+    'why.note.bogus.exploration':
+        "Bogus remplit des valeurs. Il n'exécute pas votre test en boucle pour en trouver une qui échoue.",
 
     'why.note.autofixture.invariants':
-        "La génération échoue tant qu'une Customization ou un ISpecimenBuilder n'est pas écrit pour satisfaire les clauses de garde du constructeur.",
+        "Une règle que le type porte sous forme d'annotation — [Range], [StringLength], [RegularExpression] — est déjà respectée, sans aucune configuration. Une règle appliquée à l'intérieur d'un constructeur, c'est l'autre cas : la génération échoue tant qu'un Register, un Customize<T> ou un ISpecimenBuilder n'a pas été écrit pour la satisfaire.",
     'why.note.autofixture.callSite':
-        "Seulement via Build<T>().With(x => x.Prop, value) — épingler une valeur exacte ou une lambda génératrice écrite à la main, pas une contrainte métier déclarative.",
+        "Une règle portée par le type est respectée partout, sans une ligne dans le test. Une règle propre à ce test-là s'écrit sur place via Build<T>().With(x => x.Prop, value) — une valeur épinglée, ou une lambda que vous écrivez, une propriété à la fois.",
     'why.note.autofixture.testIntent':
-        "Seulement pour un Build<T>().With(x => x.Prop, expected) qui nomme la valeur qu'une assertion vérifie réellement — la même portée que celle créditée à la valeur manuelle ci-dessus.",
-    'why.note.autofixture.reuse': "Une ICustomization regroupe un ensemble de règles une fois, pour les réutiliser entre les tests.",
+        "C'est l'objectif qu'AutoFixture se donne lui-même : les valeurs dont le test se moque disparaissent, parce que vous ne les décrivez jamais. Ce qui disparaît avec elles, c'est tout énoncé de ce que ces valeurs doivent respecter.",
+    'why.note.autofixture.reuse':
+        "Une ICustomization rassemble un jeu de règles écrit une seule fois, dans une classe à part, et chaque test qui l'active en hérite.",
+    'why.note.autofixture.realism':
+        "Les valeurs sont anonymes par conception — une chaîne, c'est un nom de propriété suivi d'un GUID. Ressembler à du réel n'est pas ce qu'AutoFixture cherche à faire.",
+    'why.note.autofixture.reproducibility':
+        "Il n'y a pas de seed à fixer : une exécution ne se rejoue pas valeur pour valeur. C'est un manque, pas une décision — le tirage aléatoire rejouable est une demande encore ouverte chez le projet, déposée en septembre 2023.",
+    'why.note.autofixture.compileTime':
+        "Aucun analyseur n'est livré avec. Une configuration incapable de produire une valeur se découvre à l'exécution du test.",
+    'why.note.autofixture.codeGen':
+        "Rien n'écrit de fichier à votre place, et c'est l'inverse qui est visé : sans règle à déclarer, il n'y a pas de code de préparation à écrire.",
+    'why.note.autofixture.exploration':
+        "Une valeur anonyme par demande, pas une recherche de celle qui met votre code en défaut.",
 
     'why.note.manual.invariants':
-        "Valide seulement parce qu'une personne a choisi une valeur qu'elle savait valide — rien ne vérifie qu'elle l'est restée.",
+        "La valeur est valide parce que quelqu'un l'a choisie ainsi, et pour cette seule raison. Rien ne vérifie qu'elle l'est restée depuis.",
+    'why.note.manual.callSite':
+        "La règle n'est jamais énoncée. Vous choisissez une valeur qui la respecte, et la règle reste dans la tête de celui qui l'a choisie.",
     'why.note.manual.testIntent':
-        "Seulement pour la valeur dont le test parle vraiment ; utilisée aussi pour les paramètres autour, elle redevient exactement le boilerplate sur lequel s'ouvre l'acte I.",
+        "Elle montre sans détour la valeur qui est le sujet du test. Employée aussi pour les paramètres autour, la préparation gagne une ligne par paramètre, et le sujet cesse de ressortir.",
     'why.note.manual.reuse':
-        "Une valeur peut être extraite dans une constante nommée ou un helper et réutilisée entre les tests — au prix de la maintenir à la main, et pour chaque test qui la réutilise, de perdre la variation qu'un générateur lui aurait donnée.",
-    'why.note.manual.realism': "Aussi réaliste que ce que la personne qui tape prend la peine d'écrire, à la main, à chaque fois.",
-    'why.note.manual.graph': "Chaque objet imbriqué est construit à la main — l'arrange sur lequel s'ouvre l'acte I.",
+        "Une valeur peut être extraite dans une constante nommée ou un helper, puis partagée. Vous la maintenez alors à la main, et tous les tests qui la partagent tournent sur la même valeur.",
+    'why.note.manual.realism':
+        "Aussi vraisemblable que la valeur que vous tapez : marie.durand@acme.fr l'est autant qu'une valeur générée. Il faut la retaper au test suivant.",
+    'why.note.manual.graph':
+        "Chaque objet imbriqué se construit à la main, niveau par niveau, et le constructeur de chacun est une ligne que vous écrivez puis maintenez.",
+    'why.note.manual.reproducibility':
+        "La même valeur à chaque exécution, puisque c'est celle que vous avez tapée. Rien à rejouer, et rien qui varie.",
     'why.note.manual.compileTime':
-        "Le compilateur accepte toute valeur du bon type — une chaîne trop longue, par exemple — et seul le constructeur du domaine l'attrape, à l'exécution.",
+        "Le compilateur accepte toute valeur du bon type — une chaîne trop longue, par exemple. Seul le constructeur du domaine l'arrête, à l'exécution.",
+    'why.note.manual.codeGen': "Vous la tapez. Il n'y a rien à générer.",
+    'why.note.manual.exploration': 'Une valeur, choisie une fois, et la même pour toute la vie du test.',
+
+    'why.instead.heading': 'Quand un autre outil est la bonne réponse',
+    'why.instead.lede': "Trois cas où l'une des autres options est le bon choix.",
 
     'why.notFor.heading': 'Quand ne pas utiliser JustDummies',
-    'why.notFor.body':
-        "Pas quand un test a besoin de données qui ressemblent à du réel plutôt que de données simplement valides — un générateur de fausses données fera mieux l'affaire. Pas non plus quand un type ne porte aucun invariant métier qui vaille la peine d'être déclaré — une bibliothèque de valeurs anonymes fait le travail avec moins de cérémonie. Et chaque paquet est encore en préversion : une API qui bouge encore est un coût qu'il vaut mieux connaître avant de la mettre sous une grande suite de tests.",
+    'why.notFor.lede': 'Les cas où un autre outil, ou aucun outil, vaut mieux.',
+    'why.notFor.realism.label': 'Les données doivent être vraisemblables.',
+    'why.notFor.realism.body':
+        "Une démo, une capture d'écran, une base que quelqu'un va parcourir. Prenez un générateur de fausses données. Une valeur valide n'est pas une valeur crédible.",
+    'why.notFor.noRules.label': 'Aucune règle ne pèse sur la valeur.',
+    'why.notFor.noRules.body':
+        "Si vos types acceptent n'importe quelle valeur du bon type, il n'y a aucune règle à déclarer, et en déclarer une devient une formalité. Une bibliothèque qui rend n'importe quel objet du type voulu vous en demande moins.",
+    'why.notFor.exploration.label': "Vous voulez que le test parte chercher un contre-exemple.",
+    'why.notFor.exploration.body':
+        "Exécuter une même assertion sur des centaines d'entrées générées, puis réduire un échec à son plus petit cas, c'est du property-based testing. JustDummies tire une valeur par exécution, et ce n'est pas cet outil-là.",
+    'why.notFor.secrets.label': "Vous avez besoin d'un mot de passe, d'un jeton ou d'une clé.",
+    'why.notFor.secrets.body':
+        "Les générateurs produisent des valeurs de test, pas des secrets. Rien de ce qui est tiré ici n'est propre à servir d'élément d'authentification, dans un test comme ailleurs.",
+    'why.notFor.preRelease.label': "Vous avez besoin d'une API qui a cessé de bouger.",
+    'why.notFor.preRelease.body':
+        "Tous les paquets sont encore en préversion : il faut passer --prerelease pour les installer, et la surface peut encore changer sous une suite de tests déjà écrite.",
+    'why.notFor.solo.label': "C'est le projet d'une seule personne.",
+    'why.notFor.solo.body':
+        "JustDummies est écrit et maintenu par un seul développeur. Bogus et AutoFixture ont chacun des années de contributeurs derrière eux. Pour une bibliothèque qui se retrouverait sous chacun de vos tests, cela se pèse, et le passer sous silence n'y changerait rien.",
 
-    'why.verified.label': 'Comparatif vérifié pour la dernière fois le',
-    'why.report.label': 'Une inexactitude sur une bibliothèque citée ici ? Ouvrez une issue.',
+    'why.tryIt.heading': 'Essayez-le sur un seul test',
+    'why.tryIt.body':
+        "Ajoutez le paquet à un projet de test et changez une ligne dans une seule préparation. Tous les autres tests restent tels quels. Bogus, AutoFixture, vos propres builders et toutes les valeurs que vous avez déjà écrites continuent de fonctionner, dans le même projet et dans le même fichier. S'il ne fait pas ses preuves, revenir en arrière consiste à supprimer les lignes ajoutées.",
+    'why.tryIt.install': 'Installer la bibliothèque',
+
+    'why.sources.heading': 'Comment ce comparatif a été vérifié',
+    'why.sources.body':
+        "Toute affirmation portant sur un autre projet vient de sa propre documentation ou de son dépôt. Ce qui a été lu, et où, figure ci-dessous.",
+    'why.verified.label': 'Dernière vérification :',
+    'why.sources.mentioned': 'Cités sans être comparés',
+    'why.sources.mentionedBody':
+        "Les deux bibliothèques de property-based testing vers lesquelles cette page renvoie, pour le seul critère auquel aucune des quatre options ne répond. Toutes deux ont été lues pour confirmer qu'elles font bien ce que la page en dit.",
+    'why.report.prompt':
+        "Si vous maintenez l'un de ces projets et que cette page le décrit mal, une issue est le moyen le plus rapide d'obtenir une correction.",
+    'why.report.label': 'Ouvrir une issue',
 
     'releaseNotes.heading': 'Notes de version',
     'releaseNotes.lead':

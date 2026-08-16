@@ -71,6 +71,73 @@ assert_prose "§9.2 the second act opens on the same test" \
 assert_prose "the third act opens on what the reader gets, not on the mechanism" \
   "act3\.attribute\.title[\s\S]{0,120}?before it reaches production"
 
+# --- the positioning page's notes stand on their own (§11.10) --------------------
+#
+# Three rules that a rewording breaks silently, and that were all broken at once before
+# this existed. A note said "the manual literal below" while the duel had that column
+# hidden; two notes pointed at "Act I", which is a division of the landing page a reader
+# arriving here from a search has never seen; and the intro explained to the reader why our
+# own comparison was well built, which is a sentence written for us.
+#
+# Comments are stripped before the scan, deliberately: the note above this one uses the
+# very words it forbids, and a check that cannot tell prose from the reasoning about prose
+# would either fail on itself or be weakened until it failed on nothing.
+selfcontained="$(node -e '
+const { readFileSync } = require("node:fs");
+
+const lines = readFileSync(process.argv[1], "utf8").split(/\r?\n/);
+const entries = [];
+let current = null;
+
+for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("/**") || trimmed.startsWith("*") || trimmed.startsWith("//") || trimmed.startsWith("/*")) {
+        continue;
+    }
+    // A key at the indentation the object uses, quoted either way, then whatever follows
+    // it on that line; continuation lines belong to the key above them.
+    const keyed = /^ {4}.([a-zA-Z0-9.]+).:\s*(.*)$/.exec(line);
+
+    if (keyed) {
+        current = { key: keyed[1], text: keyed[2] };
+        entries.push(current);
+    } else if (current !== null) {
+        current.text += " " + trimmed;
+    }
+}
+
+const wrong = [];
+const positional = /\b(above|below|ci-dessus|ci-dessous)\b/i;
+const acts = /\b(act|acte)\s+(one|two|three|i{1,3})\b/i;
+const meta = /\b(the comparison (below|above)|ce comparatif ci|le comparatif ci-dessous|not an oversight|pas comme un oubli)\b/i;
+
+for (const { key, text } of entries) {
+    if (!key.startsWith("why.")) { continue; }
+    if (key.startsWith("why.note.") && positional.test(text)) {
+        wrong.push(`${key} points at a position another view moves or hides`);
+    }
+    if (acts.test(text)) {
+        wrong.push(`${key} cites the landing page acts, which this page never shows`);
+    }
+    if (meta.test(text)) {
+        wrong.push(`${key} explains our own comparison to the reader instead of informing them`);
+    }
+}
+
+// The scan is only worth anything if it found the strings at all.
+if (entries.filter((entry) => entry.key.startsWith("why.note.")).length < 60) {
+    wrong.push("the scan found fewer why.note.* entries than the two locales carry — it is reading the file wrong");
+}
+
+process.stdout.write(wrong.join("; "));
+' "${strings}")"
+
+if [ -z "${selfcontained}" ]; then
+  pass "§11.10 every note on the positioning page stands on its own, in both locales"
+else
+  fail "${selfcontained}"
+fi
+
 # --- the first act shows nothing the reader cannot use yet (ADR-0006) ------------
 #
 # `.As(...)` was on this page once, in a first-act scene that worked. It came off because a

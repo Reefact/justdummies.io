@@ -110,44 +110,143 @@ for (const path of ['/about', '/privacy', '/why-justdummies']) {
 }
 
 /**
- * The comparison table follows the same ADR-0004 contract `InstallTabs` does: without
- * scripting, the `<select>` and the mode toggle stay hidden — a control that would
- * filter nothing is worse than no control — and what a reader gets instead is the full
- * matrix, every competitor's column already there.
+ * The positioning page, checked against its intentions rather than its wording.
+ *
+ * Every assertion below names a decision from §11 and would go red if that decision were
+ * undone. None of them pins a sentence: the copy is expected to keep improving, and a test
+ * that freezes a phrase is a test that makes the next editorial pass a chore. What is
+ * frozen is structure — the criteria are taught, the ratings are defined, the honest
+ * sections exist, and nothing essential waits for a script.
  */
-test('/why-justdummies shows the full matrix, and no dead control, without scripting', async ({ browser }) => {
+const WHY_PAGES: ReadonlyArray<{ path: string; possible: string; solo: RegExp }> = [
+    { path: '/why-justdummies', possible: 'Possible, with work', solo: /one developer/ },
+    { path: '/fr/why-justdummies', possible: 'Possible, avec du travail', solo: /un seul développeur/ },
+];
+
+for (const { path, possible, solo } of WHY_PAGES) {
+
+    test(`${path} teaches every criterion it compares on`, async ({ page }) => {
+        await page.goto(path);
+
+        // §11.4 — ten criteria, and not one of them is a bare label: each carries the
+        // question it settles and the sentence that explains it, both visible.
+        await expect(page.locator('.criterion')).toHaveCount(10);
+        await expect(page.locator('.criterion .question')).toHaveCount(10);
+        await expect(page.locator('.criterion .explanation')).toHaveCount(10);
+
+        // §11.5 — grouped under the reader's four questions, not ranked by our own margin.
+        await expect(page.locator('.family > h4')).toHaveCount(4);
+
+        // §11.6 — the three answers are defined on the page, before their first use.
+        await expect(page.locator('.legend dd')).toHaveCount(3);
+        await expect(page.locator('.legend')).toContainText(possible);
+
+        // Four options on every criterion, JustDummies included and never hideable.
+        await expect(page.locator('.criterion .verdicts > li')).toHaveCount(40);
+        await expect(page.locator('.criterion .verdicts > li[data-self]')).toHaveCount(10);
+    });
+
+    test(`${path} says where it is the wrong choice`, async ({ page }) => {
+        await page.goto(path);
+
+        // §11.8 — "when to choose it over JustDummies", one per competitor, never empty.
+        const instead = page.locator('#instead .instead');
+
+        await expect(instead).toHaveCount(3);
+
+        for (const text of await instead.locator('p').allInnerTexts()) {
+            expect(text.trim().length, 'a competitor is listed with nothing said about it').toBeGreaterThan(40);
+        }
+
+        // §11.8 — its own section, not buried, and enumerated case by case.
+        await expect(page.locator('#not-for .case').first()).toBeVisible();
+        expect(await page.locator('#not-for .case').count()).toBeGreaterThanOrEqual(4);
+
+        // The admission the section is bought with: one person maintains this.
+        await expect(page.locator('#not-for')).toContainText(solo);
+    });
+
+    test(`${path} shows what was checked, when, and how to say it is wrong`, async ({ page }) => {
+        await page.goto(path);
+
+        // §11.10 — the sources are on the page, not in a code comment.
+        await expect(page.locator('#sources a[href*="github.com/bchavez/Bogus"]').first()).toBeVisible();
+        await expect(page.locator('#sources a[href*="github.com/AutoFixture/AutoFixture"]').first()).toBeVisible();
+
+        // The date, formatted per locale from one source, and the right of reply.
+        await expect(page.locator('#sources .verified')).toContainText('2026');
+        await expect(page.locator('#sources a[href*="/issues/new"]')).toBeVisible();
+    });
+
+}
+
+/**
+ * ADR-0004 on this page: the `<select>` that narrows the comparison is absent until its
+ * script can act, and what it enhances — all four options, every rating, every note — is
+ * already there. A reader without scripting loses a convenience, never an answer.
+ */
+test('/why-justdummies is whole, and offers no dead control, without scripting', async ({ browser }) => {
     const context = await browser.newContext({ javaScriptEnabled: false });
     const page = await context.newPage();
 
     await page.goto('/why-justdummies');
 
     await expect(page.locator('[data-duel-controls]:visible')).toHaveCount(0);
-    await expect(page.locator('table')).toBeVisible();
-    await expect(page.locator('thead th[data-competitor]')).toHaveCount(3);
-    await expect(page.locator('thead th[data-competitor]:visible')).toHaveCount(3);
+
+    // The teaching is not behind the script, and neither is a single verdict.
+    await expect(page.locator('.criterion .question:visible')).toHaveCount(10);
+    await expect(page.locator('.criterion .verdicts > li:visible')).toHaveCount(40);
+    await expect(page.locator('.legend dd:visible')).toHaveCount(3);
 
     await context.close();
 });
 
-test('/why-justdummies narrows to one competitor, and back to the full matrix', async ({ page }) => {
+/**
+ * A phone gets the same markup and all of it. The matrix is the one thing a narrow screen
+ * does not get — it is a grid, and there is no grid — and §11.7 asks for it to be
+ * *replaced* rather than shrunk, so this checks that what replaces it holds every rating
+ * the grid would have shown.
+ */
+test('/why-justdummies keeps every verdict on a phone', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 780 });
+    await page.goto('/why-justdummies');
+
+    await expect(page.locator('.criterion .verdicts > li')).toHaveCount(40);
+    await expect(page.locator('.matrix')).toBeHidden();
+});
+
+test('/why-justdummies narrows to one alternative, and back to all of them', async ({ page }) => {
     await page.goto('/why-justdummies');
 
     const select = page.locator('[data-compare-select]');
-    const toggle = page.locator('[data-mode-toggle]');
-    const autofixtureColumn = page.locator('thead th[data-competitor="autofixture"]');
-    const bogusColumn = page.locator('thead th[data-competitor="bogus"]');
+    const status = page.locator('[data-duel-status]');
+    const autofixture = page.locator('.criterion .verdicts > li[data-competitor="autofixture"]').first();
+    const bogus = page.locator('.criterion .verdicts > li[data-competitor="bogus"]').first();
 
-    // Duel is the default once scripting runs (§11.5), narrowed to the select's own
-    // first option.
+    // §11.7 — the scripted page opens where the unscripted one stops: everything shown.
     await expect(select).toBeVisible();
-    await expect(bogusColumn).toBeVisible();
-    await expect(autofixtureColumn).toBeHidden();
+    await expect(bogus).toBeVisible();
+    await expect(autofixture).toBeVisible();
 
     await select.selectOption('autofixture');
-    await expect(autofixtureColumn).toBeVisible();
-    await expect(bogusColumn).toBeHidden();
+    await expect(autofixture).toBeVisible();
+    await expect(bogus).toBeHidden();
 
-    await toggle.click();
-    await expect(bogusColumn).toBeVisible();
-    await expect(autofixtureColumn).toBeVisible();
+    // §11.7 — and the change is said in words, not only by a column going away.
+    await expect(status).toContainText('AutoFixture');
+
+    await select.selectOption('all');
+    await expect(bogus).toBeVisible();
+    await expect(autofixture).toBeVisible();
+});
+
+test('/why-justdummies keeps JustDummies on screen in every mode', async ({ page }) => {
+    await page.goto('/why-justdummies');
+
+    await page.locator('[data-compare-select]').selectOption('bogus');
+
+    // The constant column of the comparison carries no `data-competitor`, so no choice can
+    // take it away — checked here rather than trusted, because a single attribute added by
+    // a well-meant refactor would make the page compare JustDummies with nothing.
+    await expect(page.locator('.criterion .verdicts > li[data-self]:visible')).toHaveCount(10);
 });

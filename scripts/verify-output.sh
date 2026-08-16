@@ -284,6 +284,55 @@ else
   fail "no folded figure in the shipped page — the file the tool writes is the one that needs it"
 fi
 
+# The positioning page teaches its criteria, and does it in the markup (§11.4).
+#
+# Three assertions per locale, and each one alone passes while the page is broken. The
+# first is that all ten criteria reached the document — a criterion silently dropped by a
+# refactor is a comparison the reader cannot audit. The second is ADR-0004 on the one
+# control this page has. The third is the rule that the first version of this page broke
+# on a phone: the teaching and the verdicts are never behind a disclosure widget, so a
+# reader meets them without opening anything.
+for locale in "" "/fr"; do
+  why="${dist}${locale}/why-justdummies/index.html"
+
+  if [ ! -f "${why}" ]; then
+    fail "${why#"${dist}"/} is missing — the positioning page does not exist in this locale"
+    continue
+  fi
+
+  taught="$(grep -oE 'id="criterion-[a-zA-Z]+"' "${why}" | wc -l)"
+  if [ "${taught}" -eq 10 ]; then
+    pass "the positioning page carries its ten criteria${locale:+ (${locale#/})}"
+  else
+    fail "${why#"${dist}"/} carries ${taught} criterion block(s), not the ten the comparison rates"
+  fi
+
+  if grep -qE '<div[^>]*data-duel-controls[^>]*[[:space:]]hidden' "${why}"; then
+    pass "and the control that narrows it ships hidden, so it never appears dead${locale:+ (${locale#/})}"
+  else
+    fail "${why#"${dist}"/} ships the comparison control visible — without scripting it filters nothing"
+  fi
+
+  # A `<details>` may hold the matrix, the guard clauses or the language menu. It may not
+  # hold a verdict: `class="rating"` inside one would mean the reader has to open something
+  # before the comparison says anything, which is the defect the card view had on a phone.
+  behind_disclosure="$(node -e '
+const { readFileSync } = require("node:fs");
+const page = readFileSync(process.argv[1], "utf8");
+let found = 0;
+for (const block of page.matchAll(/<details[\s\S]*?<\/details>/g)) {
+    if (/class="rating/.test(block[0])) { found += 1; }
+}
+process.stdout.write(String(found));
+' "${why}")"
+
+  if [ "${behind_disclosure}" -eq 0 ]; then
+    pass "and no verdict waits behind a disclosure widget${locale:+ (${locale#/})}"
+  else
+    fail "${why#"${dist}"/} hides ${behind_disclosure} verdict(s) inside a <details> — the comparison says nothing until it is opened"
+  fi
+done
+
 # `100vw` is the viewport *including* the classic scrollbar, so anything sized by it on a
 # desktop showing one comes out about fifteen pixels wider than the page — and the document
 # scrolls sideways for no visible reason. It was the full-bleed act grounds, it was reported

@@ -1,0 +1,588 @@
+---
+/**
+ * The comparison itself (§11.7): the legend, the criterion blocks, and — for a screen wide
+ * enough to hold a grid — the matrix. Three renders of one source (`../comparison.ts`).
+ *
+ * WHAT CHANGED, AND WHY IT IS NOT A REFACTOR. The first version of this component was a
+ * five-column table: ten rows of two-word axis labels, each cell a rating and a note. It
+ * satisfied §11 as it was then written, and it asked the reader to learn ten criteria from
+ * their names before the page had told them anything. §11.4 now forbids that, so the
+ * primary render is a **block per criterion**: the plain-language name, the question it
+ * settles, the sentence that explains it, and only then where the four options stand.
+ *
+ * That shape is also what removes the two layout defects the table had. It is one column
+ * of stacked blocks at every width, so nothing can scroll sideways (§11.7) and there is no
+ * mobile replacement to keep in step — what a phone gets is the same markup, and all of
+ * it. The matrix survives as the at-a-glance view it always was, below, and adds nothing
+ * a reader has not already been given with its explanation attached.
+ *
+ * NO JAVASCRIPT, NO DEAD CONTROL (ADR-0004, same rule `InstallTabs` and `LanguageSelector`
+ * follow). What is on disk shows every option, everywhere: a complete, honest answer with
+ * nothing that needs a script. The `<select>` and the line saying what is on screen are
+ * marked `hidden` in the markup and revealed only once the script has proved it can act. A
+ * reader without scripting never sees a control that would have done nothing.
+ *
+ * THE SCRIPTED PAGE STARTS WHERE THE UNSCRIPTED ONE DOES (§11.7). The duel used to be the
+ * default the moment scripting ran, which was the right call for a five-column table and is
+ * the wrong one here: it narrowed a page that had just promised the reader four options
+ * down to two, chose the second for them, and did it without a word. So all four are shown
+ * to everybody, and the `<select>` narrows to one on request — one control doing one job,
+ * with "all four" as its first option and the way back. Every element tagged
+ * `data-competitor` is hidden or shown by its own `hidden` property; the script's whole job
+ * is deciding which one that is, and saying so in words.
+ */
+import CodeSample from './CodeSample.astro';
+import { localeFromPath } from '../i18n/routing';
+import { useTranslations } from '../i18n/ui';
+import { axisOf, competitors, families, ratings, tools, type Cell, type Rating, type Tool } from '../comparison';
+
+const t = useTranslations(localeFromPath(Astro.url.pathname));
+
+function nameOf(entry: Tool): string {
+    return entry.kind === 'manual' ? t(entry.nameKey) : entry.name;
+}
+
+/** One lookup for both the cells and the legend, so a word cannot appear undefined (§11.6). */
+function ratingLabel(rating: Rating): string {
+    return t(ratings.find((entry) => entry.id === rating)!.labelKey);
+}
+---
+
+<div class="comparison" data-comparison>
+    <div class="legend">
+        <h4 id="why-legend-heading">{t('why.legend.heading')}</h4>
+        <dl aria-labelledby="why-legend-heading">
+            {
+                ratings.map((rating) => (
+                    <div class="legend-row" data-rating={rating.id}>
+                        <dt>{t(rating.labelKey)}</dt>
+                        <dd>{t(rating.legendKey)}</dd>
+                    </div>
+                ))
+            }
+        </dl>
+        <p class="order">{t('why.legend.order')}</p>
+    </div>
+
+    {/*
+      Everything in here needs the script. The line saying what is on screen is in here too,
+      and deliberately: on a page showing all four options it would state the obvious, and
+      it only becomes information once something can take options away.
+    */}
+    <div class="controls" data-duel-controls hidden>
+        <div class="picker">
+            <label for="compare-with">{t('why.duel.label')}</label>
+            <select id="compare-with" data-compare-select>
+                <option value="all">{t('why.duel.everything')}</option>
+                {competitors.map((entry: Tool) => <option value={entry.id}>{nameOf(entry)}</option>)}
+            </select>
+        </div>
+        <p
+            class="showing"
+            role="status"
+            data-duel-status
+            data-one={t('why.duel.showingOne')}
+            data-all={t('why.duel.showingAll')}
+        >
+        </p>
+    </div>
+
+    {
+        families.map((family) => (
+            <div class="family">
+                <h4>{t(family.headingKey)}</h4>
+
+                {family.axes.map((id) => {
+                    const axis = axisOf(id);
+
+                    return (
+                        <div class="criterion" id={`criterion-${axis.id}`}>
+                            <h5>{t(axis.labelKey)}</h5>
+                            <p class="question">{t(axis.questionKey)}</p>
+                            <p class="explanation">{t(axis.explanationKey)}</p>
+                            {axis.termKey && (
+                                <p class="term">
+                                    <span class="term-label">{t('why.axis.termLabel')}</span> {t(axis.termKey)}
+                                </p>
+                            )}
+                            {axis.figure && (
+                                <div class="figure">
+                                    <CodeSample
+                                        id={axis.figure.id}
+                                        outcome={axis.figure.outcome}
+                                        from={axis.figure.from}
+                                    />
+                                </div>
+                            )}
+
+                            <ul class="verdicts">
+                                {tools.map((tool: Tool) => {
+                                    const cell: Cell = tool.ratings[axis.id];
+
+                                    return (
+                                        <li
+                                            data-competitor={tool.kind === 'self' ? undefined : tool.id}
+                                            data-rating={cell.rating}
+                                            data-self={tool.kind === 'self' ? '' : undefined}
+                                        >
+                                            <span class="who">{nameOf(tool)}</span>
+                                            <span class="rating">{ratingLabel(cell.rating)}</span>
+                                            {cell.noteKey && <p class="note">{t(cell.noteKey)}</p>}
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+
+                            {axis.elsewhereKey && <p class="elsewhere">{t(axis.elsewhereKey)}</p>}
+                        </div>
+                    );
+                })}
+            </div>
+        ))
+    }
+
+    {/*
+      The grid, and only where a grid can be read. Every rating in it is already above, with
+      the question it answers and the note that qualifies it, so what this adds is the one
+      thing the blocks cannot give: all forty at once. Below the width that holds five
+      columns it is *replaced* by those blocks rather than shrunk or set scrolling sideways
+      (§11.7) — which is why it carries no note, and why nothing here is the only copy of
+      anything.
+    */}
+    <details class="matrix">
+        <summary>{t('why.matrix.summary')}</summary>
+        <p class="matrix-intro">{t('why.matrix.intro')}</p>
+        <table>
+            <caption>{t('why.table.caption')}</caption>
+            <thead>
+                <tr>
+                    <th scope="col">{t('why.table.axisHeader')}</th>
+                    {
+                        tools.map((tool: Tool) => (
+                            <th scope="col" data-competitor={tool.kind === 'self' ? undefined : tool.id}>
+                                {nameOf(tool)}
+                            </th>
+                        ))
+                    }
+                </tr>
+            </thead>
+            {
+                families.map((family) => (
+                    <tbody>
+                        <tr class="family-row">
+                            <th scope="colgroup" colspan={tools.length + 1}>
+                                {t(family.headingKey)}
+                            </th>
+                        </tr>
+                        {family.axes.map((id) => {
+                            const axis = axisOf(id);
+
+                            return (
+                                <tr>
+                                    <th scope="row">
+                                        <a href={`#criterion-${axis.id}`}>{t(axis.labelKey)}</a>
+                                    </th>
+                                    {tools.map((tool: Tool) => (
+                                        <td
+                                            data-competitor={tool.kind === 'self' ? undefined : tool.id}
+                                            data-rating={tool.ratings[axis.id].rating}
+                                        >
+                                            {ratingLabel(tool.ratings[axis.id].rating)}
+                                        </td>
+                                    ))}
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                ))
+            }
+        </table>
+    </details>
+</div>
+
+<script>
+    /**
+     * Narrows the comparison to one alternative, and only once this runs (ADR-0004).
+     *
+     * Every element tagged `data-competitor` — a verdict in a criterion block, a header
+     * cell, a body cell — is hidden or shown by setting its own `hidden` property, the same
+     * mechanism `InstallTabs` and `CopyableCommand` already use. That is what keeps a `<td>`
+     * a table cell and an `<li>` a list item once it reappears: `hidden` removed is the
+     * element's own default display, never a value this script has to know or restate
+     * (base.css's `[hidden] { display: none !important }` is the only other half this relies
+     * on). JustDummies carries no such attribute anywhere, so no choice can take it off screen.
+     *
+     * IT STARTS ON "ALL FOUR", which is the state the markup already ships. A script whose
+     * first act is to remove two of the four options the section just introduced is a script
+     * that answers a question nobody asked yet.
+     *
+     * The line saying what is on screen is not decoration. A reader who cannot see two
+     * columns vanish — because they are listening, or because they are on the phone layout
+     * where the columns were never columns — otherwise has no way to know the page changed
+     * shape. It is a `role="status"` that exists before the first change, so the change is
+     * announced and the initial state is not.
+     */
+    for (const root of document.querySelectorAll<HTMLElement>('[data-comparison]')) {
+        const controls: HTMLElement | null = root.querySelector('[data-duel-controls]');
+        const select: HTMLSelectElement | null = root.querySelector('[data-compare-select]');
+        const status: HTMLElement | null = root.querySelector('[data-duel-status]');
+        const entries: HTMLElement[] = Array.from(root.querySelectorAll<HTMLElement>('[data-competitor]'));
+
+        if (controls === null || select === null || status === null || entries.length === 0) {
+            continue;
+        }
+
+        const apply = (): void => {
+            const chosen: string = select.value;
+            const everything: boolean = chosen === 'all';
+
+            for (const entry of entries) {
+                entry.hidden = !everything && entry.dataset.competitor !== chosen;
+            }
+
+            status.textContent = everything
+                ? (status.dataset.all ?? '')
+                : `${status.dataset.one ?? ''} ${select.options[select.selectedIndex]?.text ?? ''}`;
+        };
+
+        select.addEventListener('change', apply);
+
+        apply();
+        controls.hidden = false;
+    }
+</script>
+
+<style>
+    .comparison {
+        max-width: 60rem;
+    }
+
+    /* Prose stays at a readable measure even where its block is wide. The 38rem is the
+       measure the rest of the page uses; it is repeated here rather than inherited because
+       Astro scopes styles per component and this one owns its own paragraphs. */
+    .legend dd,
+    .order,
+    .question,
+    .explanation,
+    .term,
+    .note,
+    .elsewhere,
+    .matrix-intro {
+        max-width: 38rem;
+    }
+
+    /* --- the legend: the three words, defined before their first use (§11.6) ---------- */
+
+    .legend {
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-md);
+        background: var(--jd-surface);
+        padding: var(--jd-space-4);
+        margin: 0 0 var(--jd-space-6);
+    }
+
+    .legend h4 {
+        font-size: var(--jd-text-sm);
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        color: var(--jd-text-muted);
+        margin: 0 0 var(--jd-space-3);
+    }
+
+    .legend dl {
+        margin: 0;
+        display: grid;
+        gap: var(--jd-space-2);
+    }
+
+    .legend-row {
+        display: grid;
+        grid-template-columns: minmax(0, 11rem) 1fr;
+        gap: var(--jd-space-1) var(--jd-space-4);
+    }
+
+    .legend dt {
+        font-weight: 600;
+        color: var(--jd-text-primary);
+    }
+
+    .legend-row[data-rating='out-of-scope'] dt {
+        font-weight: 400;
+        color: var(--jd-text-muted);
+    }
+
+    .legend dd {
+        margin: 0;
+        color: var(--jd-text-muted);
+        font-size: var(--jd-text-sm);
+    }
+
+    .order {
+        margin: var(--jd-space-3) 0 0;
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+    }
+
+    @media (max-width: 34rem) {
+        .legend-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* --- the controls, and what they are doing --------------------------------------- */
+
+    .controls {
+        margin: 0 0 var(--jd-space-6);
+        font-size: var(--jd-text-sm);
+    }
+
+    .picker {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--jd-space-3);
+    }
+
+    .picker label {
+        color: var(--jd-text-muted);
+    }
+
+    .picker select {
+        font: inherit;
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-primary);
+        background: var(--jd-surface);
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-sm);
+        padding: var(--jd-space-1) var(--jd-space-2);
+    }
+
+    .picker select:focus-visible {
+        outline: 2px solid var(--jd-accent);
+        outline-offset: 2px;
+    }
+
+    .showing {
+        margin: var(--jd-space-2) 0 0;
+        color: var(--jd-text-muted);
+    }
+
+    /* --- the four questions, and the criteria under each ----------------------------- */
+
+    .family {
+        margin: var(--jd-space-8) 0 0;
+    }
+
+    .family h4 {
+        font-size: var(--jd-text-lg);
+        line-height: var(--jd-line-tight);
+        margin: 0;
+        padding-bottom: var(--jd-space-2);
+        border-bottom: 2px solid var(--jd-accent);
+        max-width: 38rem;
+    }
+
+    /* --- a criterion: taught, then answered ------------------------------------------ */
+
+    .criterion {
+        border-top: 1px solid var(--jd-border);
+        padding: var(--jd-space-6) 0;
+    }
+
+    .family > .criterion:first-of-type {
+        border-top: 0;
+    }
+
+    .criterion h5 {
+        font-size: var(--jd-text-base);
+        font-weight: 600;
+        line-height: var(--jd-line-tight);
+        margin: 0 0 var(--jd-space-2);
+    }
+
+    /* The question is the criterion's own sentence, and it is what a reader scanning the
+       page reads instead of the heading — so it is set as text, not as a caption. */
+    .question {
+        margin: 0 0 var(--jd-space-2);
+        color: var(--jd-text-primary);
+    }
+
+    .explanation {
+        margin: 0 0 var(--jd-space-2);
+        color: var(--jd-text-muted);
+    }
+
+    /* The technical term arrives after the idea (§11.4), and looks like the footnote it is. */
+    .term {
+        margin: 0;
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+    }
+
+    .term-label {
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        font-size: 0.75em;
+    }
+
+    .figure {
+        margin: var(--jd-space-4) 0 0;
+    }
+
+    .verdicts {
+        list-style: none;
+        margin: var(--jd-space-4) 0 0;
+        padding: 0;
+        display: grid;
+        gap: var(--jd-space-3);
+        grid-template-columns: repeat(auto-fit, minmax(min(13rem, 100%), 1fr));
+    }
+
+    .verdicts li {
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-md);
+        padding: var(--jd-space-3);
+        background: var(--jd-surface);
+    }
+
+    /* The one column no mode hides reads as the subject it is. */
+    .verdicts li[data-self] {
+        border-color: var(--jd-accent);
+    }
+
+    .who {
+        display: block;
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+    }
+
+    .rating {
+        display: block;
+        margin-top: var(--jd-space-1);
+    }
+
+    .verdicts li[data-rating='core'] .rating {
+        color: var(--jd-text-primary);
+        font-weight: 600;
+    }
+
+    .verdicts li[data-rating='possible'] .rating {
+        color: var(--jd-text-primary);
+        font-style: italic;
+    }
+
+    .verdicts li[data-rating='out-of-scope'] .rating {
+        color: var(--jd-text-muted);
+    }
+
+    .note {
+        margin: var(--jd-space-2) 0 0;
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+    }
+
+    .elsewhere {
+        margin: var(--jd-space-4) 0 0;
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+    }
+
+    /* --- the matrix, where a grid can be read ---------------------------------------- */
+
+    .matrix {
+        display: none;
+        margin: var(--jd-space-8) 0 0;
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-md);
+        padding: var(--jd-space-3) var(--jd-space-4);
+    }
+
+    /* Five columns of short words. Below this the criterion blocks above are the answer,
+       and they hold every rating this grid holds, each with its explanation. */
+    @media (min-width: 48rem) {
+        .matrix {
+            display: block;
+        }
+    }
+
+    summary {
+        cursor: pointer;
+        font-weight: 600;
+        color: var(--jd-text-primary);
+    }
+
+    summary:focus-visible {
+        outline: 2px solid var(--jd-accent);
+        outline-offset: 2px;
+    }
+
+    .matrix-intro {
+        margin: var(--jd-space-3) 0;
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    caption {
+        text-align: left;
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+        margin: 0 0 var(--jd-space-3);
+    }
+
+    th,
+    td {
+        text-align: left;
+        vertical-align: top;
+        padding: var(--jd-space-2) var(--jd-space-3);
+        border-bottom: 1px solid var(--jd-border);
+        font-size: var(--jd-text-sm);
+    }
+
+    thead th {
+        color: var(--jd-text-muted);
+        font-weight: 600;
+    }
+
+    /* JustDummies' own column, the one that never hides in duel mode. */
+    thead th:nth-child(2) {
+        color: var(--jd-text-primary);
+    }
+
+    /* Wrapping, on purpose. The labels are sentences now, and `white-space: nowrap` on this
+       column is what used to push the table past the page and start it scrolling sideways. */
+    tbody th {
+        font-weight: 400;
+        width: 30%;
+    }
+
+    /* The family's own question, repeated inside the grid so a row is never read without
+       the question it answers. */
+    .family-row th {
+        font-weight: 600;
+        color: var(--jd-text-muted);
+        background: var(--jd-surface);
+        font-size: var(--jd-text-sm);
+    }
+
+    /* Three answers, three treatments. With only two, the middle one read as the absence of
+       a verdict rather than as a verdict of its own — and it is the most common cell here. */
+    td[data-rating='core'] {
+        color: var(--jd-text-primary);
+        font-weight: 600;
+    }
+
+    td[data-rating='possible'] {
+        color: var(--jd-text-primary);
+        font-style: italic;
+    }
+
+    td[data-rating='out-of-scope'] {
+        color: var(--jd-text-muted);
+    }
+</style>

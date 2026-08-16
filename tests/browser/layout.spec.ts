@@ -25,7 +25,24 @@ const WIDTHS: readonly number[] = [320, 360, 768, 1024, 1280, 1440];
  * from the sitewide footer, so covered like any other real page rather than left an orphan
  * the way `/version` deliberately is.
  */
-for (const path of PAGES.concat('/playground/', '/about', '/fr/about', '/privacy', '/fr/privacy', '/404.html', '/fr/404.html')) {
+/*
+ * `/why-justdummies` is in the sweep for a reason of its own, and it is the page most
+ * likely to break this: it carries a five-column grid, ten code-bearing criterion blocks
+ * and a list of raw source URLs, each of which is a way to be wider than a phone. One of
+ * them was — a repository URL is one unbreakable word, and it took the whole document
+ * sideways at 360px before `overflow-wrap` was put on the list that holds them.
+ */
+for (const path of PAGES.concat(
+    '/playground/',
+    '/about',
+    '/fr/about',
+    '/privacy',
+    '/fr/privacy',
+    '/why-justdummies',
+    '/fr/why-justdummies',
+    '/404.html',
+    '/fr/404.html',
+)) {
 
     for (const width of WIDTHS) {
 

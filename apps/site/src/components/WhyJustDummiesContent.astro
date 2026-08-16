@@ -1,22 +1,45 @@
 ---
 /**
- * The comparative positioning page (§11): coexistence up front (§11.7), the table
- * (§11.4–§11.5), a card per competitor (§11.6) including the one that is not a library
- * (§11.2), and — in its own section, not folded into a card — when JustDummies is not
- * the right choice at all (§11.6's closing line).
+ * The comparative positioning page (§11), read at four depths (§11.3).
+ *
+ * The order is the decision. The first version of this page opened on a coexistence
+ * promise and a ten-axis matrix, and a reader who had not already met the library met the
+ * comparison apparatus before the subject. So: what the problem is, which of four needs is
+ * yours, then the criteria — each taught where it is used — then where the others win,
+ * then where this one should not be used at all, then the way in, then the evidence.
+ *
+ * Every section below answers to a rule rather than to a taste:
+ *
+ *   #problem   §11.3's first depth — the page says what the library does before comparing it
+ *   #choose    §11.3's second depth, §11.8 — a card per option, JustDummies included
+ *   #compare   §11.4, §11.7 — the criteria, taught, then answered
+ *   #instead   §11.8 — "when to choose it over JustDummies", never empty, never ironic
+ *   #not-for   §11.8 — in its own section, case by case, not a paragraph
+ *   #try-it    §11.9 — coexistence made into an action, after the reasons not to
+ *   #sources   §11.10 — what was checked, where, when, and how to say we got it wrong
  */
-import ComparisonTable from './ComparisonTable.astro';
-import LibraryCard from './LibraryCard.astro';
+import CodeSample from './CodeSample.astro';
+import Comparison from './Comparison.astro';
+import CopyableCommand from './CopyableCommand.astro';
+import ToolCard from './ToolCard.astro';
 import { localeFromPath } from '../i18n/routing';
-import { localeTags, useTranslations } from '../i18n/ui';
+import { localeTags, useTranslations, type UiKey } from '../i18n/ui';
 import { site } from '../site';
-import { competitors, comparisonStaleAfterDays, comparisonVerifiedOn, type Competitor } from '../comparison';
+import {
+    comparisonStaleAfterDays,
+    comparisonVerifiedOn,
+    competitors,
+    mentioned,
+    tools,
+    type Competitor,
+    type Tool,
+} from '../comparison';
 
 const locale = localeFromPath(Astro.url.pathname);
 const t = useTranslations(locale);
 
 /**
- * §11.8 — "a last-verified date is content, and past a declared delay the build warns."
+ * §11.10 — "a last-verified date is content, and past a declared delay the build warns."
  * Runs at build time, in Astro's own Node process, so a stale comparison shows up in
  * the build log rather than only in a reader noticing an old citation.
  *
@@ -57,35 +80,245 @@ if (daysSinceVerified > comparisonStaleAfterDays) {
 /** Formatted from the one source date (§6.5), never a second hand-typed copy of it. */
 const verifiedDate = new Intl.DateTimeFormat(localeTags[locale], { dateStyle: 'long', timeZone: 'UTC' }).format(verifiedOnMs);
 
-/** §11.8 — the correction issue the page invites every cited author to use. */
-const reportUrl = `${site.siteRepository}/issues/new?title=${encodeURIComponent('why-justdummies: ')}`;
+/**
+ * §11.10 — the correction issue the page invites every cited author to use.
+ *
+ * The body is prefilled, and that is not decoration: a blank form asks the person doing us
+ * a favour to work out what we need. It stays English, like every other issue in this
+ * repository (CONTRIBUTING's language rule), while the link that opens it is translated.
+ */
+const reportBody = [
+    '**Which claim is wrong**',
+    '',
+    '**Where it appears** (criterion, tool, or the URL of the section)',
+    '',
+    '**What your own documentation says, and where**',
+    '',
+].join('\n');
+
+const reportUrl =
+    `${site.siteRepository}/issues/new` +
+    `?title=${encodeURIComponent('why-justdummies: ')}` +
+    `&body=${encodeURIComponent(reportBody)}`;
+
+/**
+ * The one "not for" case that is a state rather than a property, so it is read off the
+ * state rather than asserted in prose (§2, §14.1). A version with no pre-release suffix
+ * takes the paragraph off the page on the day it ships, instead of leaving a sentence that
+ * was true when somebody typed it.
+ */
+const isPreRelease: boolean = site.library.version.includes('-');
+
+/**
+ * The libraries whose claims have a source to show. The hand-written literal has none to
+ * have: its ratings follow from what a literal is, not from a project's documentation.
+ */
+type CitedLibrary = Extract<Tool, { kind: 'library' }>;
+
+const cited: readonly CitedLibrary[] = tools.filter((entry: Tool): entry is CitedLibrary => entry.kind === 'library');
+
+/** Named once here so the nav and the headings cannot drift apart. */
+const sections: ReadonlyArray<{ id: string; key: UiKey }> = [
+    { id: 'problem', key: 'why.problem.heading' },
+    { id: 'choose', key: 'why.choose.heading' },
+    { id: 'compare', key: 'why.compare.heading' },
+    { id: 'instead', key: 'why.instead.heading' },
+    { id: 'not-for', key: 'why.notFor.heading' },
+    { id: 'try-it', key: 'why.tryIt.heading' },
+    { id: 'sources', key: 'why.sources.heading' },
+];
 ---
 
-<section class="why" aria-labelledby="why-heading">
+<div class="why">
     <h2 id="why-heading">{t('why.heading')}</h2>
 
-    <p>{t('why.intro.p1')}</p>
-    <p>{t('why.intro.p2')}</p>
+    <p class="lede">{t('why.lede')}</p>
 
-    <ComparisonTable />
+    {/*
+      §4's three questions, answered before the first criterion. This is the whole page in
+      sixty words, and it is what a reader who scrolls no further leaves with.
+    */}
+    <dl class="orientation">
+        <div>
+            <dt>{t('why.orient.replace.question')}</dt>
+            <dd>{t('why.orient.replace.answer')}</dd>
+        </div>
+        <div>
+            <dt>{t('why.orient.gap.question')}</dt>
+            <dd>{t('why.orient.gap.answer')}</dd>
+        </div>
+        <div>
+            <dt>{t('why.orient.try.question')}</dt>
+            <dd>{t('why.orient.try.answer')}</dd>
+        </div>
+    </dl>
 
-    <p class="meta">
-        {t('why.verified.label')} {verifiedDate}.
-        <a href={reportUrl} target="_blank" rel="noopener noreferrer">
-            {t('why.report.label')}
-            <span class="visually-hidden"> {t('state.newTab')}</span>
-        </a>
-    </p>
+    <nav class="toc" aria-label={t('why.toc.label')}>
+        <span class="toc-label">{t('why.toc.label')}</span>
+        <ul>
+            {sections.map((section) => (
+                <li>
+                    <a href={`#${section.id}`}>{t(section.key)}</a>
+                </li>
+            ))}
+        </ul>
+    </nav>
 
-    <div class="cards">
-        {competitors.map((entry: Competitor) => <LibraryCard entry={entry} />)}
-    </div>
+    <section id="problem" aria-labelledby="why-problem-heading">
+        <h3 id="why-problem-heading">{t('why.problem.heading')}</h3>
 
-    <div class="not-for" aria-labelledby="why-notfor-heading">
+        <p>{t('why.problem.body1')}</p>
+
+        <CodeSample id="literal-test" outcome="none" />
+
+        <p>{t('why.problem.body2')}</p>
+
+        <CodeSample id="concise-test" outcome="none" />
+
+        <p>{t('why.problem.body3')}</p>
+
+        {/*
+          The guard clauses, folded. They are the evidence behind "your own code refuses
+          things", and a reader who already believes that does not need to read three
+          `throw`s to keep going — which is exactly what `<details>` is for, and why nothing
+          above depends on opening it.
+        */}
+        <details class="rules">
+            <summary>{t('why.problem.rules.summary')}</summary>
+            <p>{t('why.problem.rules.body')}</p>
+            <CodeSample id="order-reference-invariants" outcome="none" />
+        </details>
+    </section>
+
+    <section id="choose" aria-labelledby="why-choose-heading">
+        <h3 id="why-choose-heading">{t('why.choose.heading')}</h3>
+
+        <p>{t('why.choose.lede')}</p>
+
+        <div class="cards">
+            {tools.map((entry: Tool) => <ToolCard entry={entry} />)}
+        </div>
+    </section>
+
+    <section id="compare" aria-labelledby="why-compare-heading">
+        <h3 id="why-compare-heading">{t('why.compare.heading')}</h3>
+
+        <p>{t('why.compare.lede')}</p>
+
+        <Comparison />
+    </section>
+
+    <section id="instead" aria-labelledby="why-instead-heading">
+        <h3 id="why-instead-heading">{t('why.instead.heading')}</h3>
+
+        <p>{t('why.instead.lede')}</p>
+
+        {
+            competitors.map((entry: Competitor) => (
+                <div class="instead">
+                    <h4>{entry.kind === 'manual' ? t(entry.nameKey) : entry.name}</h4>
+                    <p>{t(entry.chooseInsteadKey)}</p>
+                </div>
+            ))
+        }
+    </section>
+
+    <section id="not-for" aria-labelledby="why-notfor-heading">
         <h3 id="why-notfor-heading">{t('why.notFor.heading')}</h3>
-        <p>{t('why.notFor.body')}</p>
-    </div>
-</section>
+
+        <p>{t('why.notFor.lede')}</p>
+
+        <div class="case">
+            <h4>{t('why.notFor.realism.label')}</h4>
+            <p>{t('why.notFor.realism.body')}</p>
+        </div>
+        <div class="case">
+            <h4>{t('why.notFor.noRules.label')}</h4>
+            <p>{t('why.notFor.noRules.body')}</p>
+        </div>
+        <div class="case">
+            <h4>{t('why.notFor.exploration.label')}</h4>
+            <p>{t('why.notFor.exploration.body')}</p>
+        </div>
+        <div class="case">
+            <h4>{t('why.notFor.secrets.label')}</h4>
+            <p>{t('why.notFor.secrets.body')}</p>
+        </div>
+        {
+            isPreRelease && (
+                <div class="case">
+                    <h4>{t('why.notFor.preRelease.label')}</h4>
+                    <p>{t('why.notFor.preRelease.body')}</p>
+                </div>
+            )
+        }
+        <div class="case">
+            <h4>{t('why.notFor.solo.label')}</h4>
+            <p>{t('why.notFor.solo.body')}</p>
+        </div>
+    </section>
+
+    <section id="try-it" aria-labelledby="why-tryit-heading">
+        <h3 id="why-tryit-heading">{t('why.tryIt.heading')}</h3>
+
+        <p>{t('why.tryIt.body')}</p>
+
+        <p class="install-label">{t('why.tryIt.install')}</p>
+        <CopyableCommand command={site.library.installCommand} placement="why-try-one-test" variant="library install" />
+    </section>
+
+    <section id="sources" aria-labelledby="why-sources-heading">
+        <h3 id="why-sources-heading">{t('why.sources.heading')}</h3>
+
+        <p>{t('why.sources.body')}</p>
+
+        <p class="verified">{t('why.verified.label')} {verifiedDate}.</p>
+
+        {
+            cited.map((entry: CitedLibrary) => (
+                <div class="source">
+                    <h4>{entry.name}</h4>
+                    <p>{t(entry.checkedKey)}</p>
+                    <ul>
+                        {entry.sources.map((url: string) => (
+                            <li>
+                                <a href={url} target="_blank" rel="noopener noreferrer">
+                                    {url.replace('https://', '')}
+                                    <span class="visually-hidden"> {t('state.newTab')}</span>
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            ))
+        }
+
+        <div class="source">
+            <h4>{t('why.sources.mentioned')}</h4>
+            <p>{t('why.sources.mentionedBody')}</p>
+            <ul>
+                {
+                    mentioned.map((url: string) => (
+                        <li>
+                            <a href={url} target="_blank" rel="noopener noreferrer">
+                                {url.replace('https://', '')}
+                                <span class="visually-hidden"> {t('state.newTab')}</span>
+                            </a>
+                        </li>
+                    ))
+                }
+            </ul>
+        </div>
+
+        <p class="report">
+            {t('why.report.prompt')}{' '}
+            <a href={reportUrl} target="_blank" rel="noopener noreferrer">
+                {t('why.report.label')}
+                <span class="visually-hidden"> {t('state.newTab')}</span>
+            </a>
+        </p>
+    </section>
+</div>
 
 <style>
     .why {
@@ -95,43 +328,189 @@ const reportUrl = `${site.siteRepository}/issues/new?title=${encodeURIComponent(
     h2 {
         font-size: var(--jd-text-xl);
         line-height: var(--jd-line-tight);
-        margin: 0 0 var(--jd-space-6);
-    }
-
-    p {
         margin: 0 0 var(--jd-space-4);
     }
 
-    .meta {
-        font-size: var(--jd-text-sm);
-        color: var(--jd-text-muted);
-        margin: var(--jd-space-2) 0 var(--jd-space-8);
-    }
-
-    .meta a {
-        display: block;
-        margin-top: var(--jd-space-1);
-    }
-
-    .cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-        gap: var(--jd-space-4);
-        margin: 0 0 var(--jd-space-8);
-    }
-
-    .not-for {
-        border-top: 1px solid var(--jd-border);
-        padding-top: var(--jd-space-6);
-    }
-
-    .not-for h3 {
+    h3 {
         font-size: var(--jd-text-lg);
         line-height: var(--jd-line-tight);
-        margin: 0 0 var(--jd-space-2);
+        margin: 0 0 var(--jd-space-3);
     }
 
-    .not-for p {
+    h4 {
+        font-size: var(--jd-text-base);
+        font-weight: 600;
+        margin: 0 0 var(--jd-space-1);
+    }
+
+    /*
+     * Prose runs at a comfortable measure, not at the width of the widest thing on the page.
+     * The section shell stays 60rem so a card grid and a table have room; a paragraph inside
+     * it stops at 38rem, which is around seventy characters — and French, 15 to 20 % longer
+     * than English (§6.5), is the case that decided the number.
+     */
+    p,
+    dd {
+        margin: 0 0 var(--jd-space-4);
+        max-width: 38rem;
+    }
+
+    .lede {
+        font-size: var(--jd-text-lg);
+        line-height: var(--jd-line-body);
+        color: var(--jd-text-primary);
+    }
+
+    section {
+        border-top: 1px solid var(--jd-border);
+        padding-top: var(--jd-space-8);
+        margin-top: var(--jd-space-8);
+    }
+
+    /* --- the three questions, answered above everything else ------------------------- */
+
+    .orientation {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+        gap: var(--jd-space-4);
+        margin: 0 0 var(--jd-space-6);
+        padding: var(--jd-space-4);
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-md);
+        background: var(--jd-surface);
+    }
+
+    .orientation dt {
+        font-weight: 600;
+        margin-bottom: var(--jd-space-1);
+    }
+
+    .orientation dd {
         margin: 0;
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+    }
+
+    /* --- where the page goes next ---------------------------------------------------- */
+
+    .toc {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: var(--jd-space-1) var(--jd-space-3);
+        margin: 0 0 var(--jd-space-4);
+        font-size: var(--jd-text-sm);
+    }
+
+    .toc-label {
+        color: var(--jd-text-muted);
+    }
+
+    .toc ul {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--jd-space-1) var(--jd-space-4);
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* --- the problem ------------------------------------------------------------------ */
+
+    .rules {
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-md);
+        padding: var(--jd-space-3) var(--jd-space-4);
+        margin: var(--jd-space-4) 0 0;
+    }
+
+    .rules summary {
+        cursor: pointer;
+        font-weight: 600;
+        color: var(--jd-text-primary);
+    }
+
+    .rules summary:focus-visible {
+        outline: 2px solid var(--jd-accent);
+        outline-offset: 2px;
+    }
+
+    .rules p {
+        margin: var(--jd-space-3) 0;
+    }
+
+    /* --- the four needs --------------------------------------------------------------- */
+
+    /*
+     * Two by two, not three and a widow. The four are peers and the grid should say so;
+     * 22rem is the smallest minimum that stops a third column fitting on the 60rem measure.
+     *
+     * `min(22rem, 100%)` and not `22rem`, and this is the trap that caught it: a track whose
+     * *minimum* is wider than its container does not shrink to fit, it overflows — so a
+     * phone at 320px got a 352px column and the whole document scrolled sideways. The
+     * browser check found it at 320 and 360 and nowhere else, which is exactly the width
+     * band a `minmax()` minimum goes wrong in.
+     */
+    .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
+        gap: var(--jd-space-4);
+    }
+
+    /* --- where another tool wins, and where none of them do --------------------------- */
+
+    .instead,
+    .case {
+        margin: 0 0 var(--jd-space-6);
+    }
+
+    .instead:last-child,
+    .case:last-child {
+        margin-bottom: 0;
+    }
+
+    .instead p,
+    .case p {
+        margin: 0;
+    }
+
+    /* --- the way in -------------------------------------------------------------------- */
+
+    .install-label {
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+        margin-bottom: var(--jd-space-2);
+    }
+
+    /* --- what was checked, and where --------------------------------------------------- */
+
+    .verified {
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+    }
+
+    .source {
+        margin: 0 0 var(--jd-space-4);
+    }
+
+    .source p {
+        margin: 0 0 var(--jd-space-1);
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+    }
+
+    /* A source is a URL, and a URL is one word. Left alone, the longest of them is wider
+       than a phone and takes the whole document sideways with it — which is the one thing
+       §11.7 asks this page never to do. */
+    .source ul {
+        margin: 0;
+        padding-inline-start: var(--jd-space-4);
+        font-size: var(--jd-text-sm);
+        overflow-wrap: anywhere;
+    }
+
+    .report {
+        margin-top: var(--jd-space-6);
+        margin-bottom: 0;
     }
 </style>
