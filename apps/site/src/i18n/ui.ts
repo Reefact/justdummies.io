@@ -315,7 +315,7 @@ const en = {
     'why.note.justdummies.graph':
         'A full graph is built by composing one generator per type; nothing walks the graph for you.',
     'why.note.justdummies.compileTime':
-        'The 28 analyzers bundled in the main package catch a chain of constraints that admits no value — a contradiction — at compile time. A missing constraint is a different defect: it still only throws once a value is drawn.',
+        'The analyzers bundled in the main package catch a chain of constraints that admits no value — a contradiction — at compile time. A missing constraint is a different defect: it still only throws once a value is drawn.',
     'why.note.justdummies.exploration':
         'One arbitrary, reproducible value is drawn per run, not a systematic search of the input space.',
 
@@ -323,6 +323,8 @@ const en = {
         "Only if every RuleFor() is written by hand to match the domain's rules — nothing checks that it does.",
     'why.note.bogus.callSite':
         'A RuleFor() — including a bounded generator like Random.Int(min, max) — can sit on a Faker<T> built inline, right before Generate(), at the cost of writing it by hand each time.',
+    'why.note.bogus.testIntent':
+        'Only for a RuleFor(x => x.Prop, expected) that pins the exact value an assertion checks — the same scope credited to the AutoFixture override and the manual literal below.',
     'why.note.bogus.reuse': 'A Faker<T> can be defined once and reused across tests, the same way a JustDummies generator can.',
     'why.note.bogus.graph': 'Nested objects are composed by hand inside the rules, not built automatically.',
     'why.note.bogus.compileTime':
@@ -341,6 +343,8 @@ const en = {
         'Valid only because a person chose a value they knew to be valid — nothing checks that it stayed that way.',
     'why.note.manual.testIntent':
         'Only for the one value the test is actually about; used for the parameters around it too, it becomes exactly the boilerplate Act I opens on.',
+    'why.note.manual.reuse':
+        'A literal can be pulled into a named constant or a helper and reused across tests — at the cost of maintaining it by hand, and of every test that reuses it losing whatever variation a generator would have given it.',
     'why.note.manual.realism': 'As realistic as whoever is typing bothers to make it, by hand, every time.',
     'why.note.manual.graph': "Every nested object is constructed by hand — the arrangement Act I opens on.",
     'why.note.manual.compileTime':
@@ -625,7 +629,7 @@ const fr: Record<UiKey, string> = {
     'why.note.justdummies.graph':
         "Un graphe complet se construit en composant un générateur par type ; rien ne parcourt le graphe à votre place.",
     'why.note.justdummies.compileTime':
-        "Les 28 analyseurs embarqués dans le paquet principal détectent à la compilation une chaîne de contraintes qui n'admet aucune valeur — une contradiction. Une contrainte manquante est un défaut différent : elle n'échoue toujours qu'au tirage d'une valeur.",
+        "Les analyseurs embarqués dans le paquet principal détectent à la compilation une chaîne de contraintes qui n'admet aucune valeur — une contradiction. Une contrainte manquante est un défaut différent : elle n'échoue toujours qu'au tirage d'une valeur.",
     'why.note.justdummies.exploration':
         "Une valeur arbitraire et reproductible est tirée par exécution, pas une exploration systématique de l'espace d'entrée.",
 
@@ -633,6 +637,8 @@ const fr: Record<UiKey, string> = {
         "Seulement si chaque RuleFor() est écrit à la main pour respecter les règles du domaine — rien ne le vérifie.",
     'why.note.bogus.callSite':
         "Un RuleFor() — y compris un générateur borné comme Random.Int(min, max) — peut se placer sur un Faker<T> construit à la volée, juste avant Generate(), au prix de l'écrire à la main à chaque fois.",
+    'why.note.bogus.testIntent':
+        "Seulement pour un RuleFor(x => x.Prop, expected) qui épingle la valeur exacte qu'une assertion vérifie — la même portée que celle créditée à AutoFixture et à la valeur manuelle ci-dessous.",
     'why.note.bogus.reuse': "Un Faker<T> peut être défini une fois et réutilisé entre les tests, comme un générateur JustDummies.",
     'why.note.bogus.graph': "Les objets imbriqués sont composés à la main dans les règles, pas construits automatiquement.",
     'why.note.bogus.compileTime':
@@ -651,6 +657,8 @@ const fr: Record<UiKey, string> = {
         "Valide seulement parce qu'une personne a choisi une valeur qu'elle savait valide — rien ne vérifie qu'elle l'est restée.",
     'why.note.manual.testIntent':
         "Seulement pour la valeur dont le test parle vraiment ; utilisée aussi pour les paramètres autour, elle redevient exactement le boilerplate sur lequel s'ouvre l'acte I.",
+    'why.note.manual.reuse':
+        "Une valeur peut être extraite dans une constante nommée ou un helper et réutilisée entre les tests — au prix de la maintenir à la main, et pour chaque test qui la réutilise, de perdre la variation qu'un générateur lui aurait donnée.",
     'why.note.manual.realism': "Aussi réaliste que ce que la personne qui tape prend la peine d'écrire, à la main, à chaque fois.",
     'why.note.manual.graph': "Chaque objet imbriqué est construit à la main — l'arrange sur lequel s'ouvre l'acte I.",
     'why.note.manual.compileTime':
