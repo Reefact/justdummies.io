@@ -1,6 +1,6 @@
 /**
  * The measurement collector — the only server-side code this site runs, and the
- * reason ADR-0010 exists.
+ * reason ADR-0012 exists.
  *
  * WHY THERE IS A SCRIPT HERE AT ALL. §15.2 asks a question the page is built to
  * answer: not "do people copy the install command" but "which moment convinced

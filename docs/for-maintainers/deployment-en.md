@@ -635,7 +635,7 @@ env.MEASUREMENT (justdummies_measurement)  Analytics Engine Dataset
 
 > **`Total Upload` is not the size of your files.** It is the size of the Worker **script**, which
 > this site has exactly one of: the measurement collector, added deliberately and argued in
-> [ADR-0010](adr/0010-the-site-runs-one-worker-script-for-measurement-en.md). Your files are counted
+> [ADR-0012](adr/0012-the-site-runs-one-worker-script-for-measurement-en.md). Your files are counted
 > separately, on the line above, and go up as *static assets* — free and unlimited.
 >
 > **This line used to read `0.34 KiB` and `No bindings found`**, because there was no `main` at all
@@ -647,7 +647,7 @@ env.MEASUREMENT (justdummies_measurement)  Analytics Engine Dataset
 > mistake"; it is that **this** script stays the only one and stays small. A `Total Upload` in the
 > tens or hundreds of kibibytes, or a second binding appearing under the first, means the Worker has
 > grown work it was confined not to do — and that confinement, `run_worker_first` naming a single
-> path, is the whole reason ADR-0010 could answer §12.3's objection. This line and step 10's third
+> path, is the whole reason ADR-0012 could answer §12.3's objection. This line and step 10's third
 > check are the two places it is visible from outside.
 
 This check does **not** prove you are authenticated: `--dry-run` never contacts Cloudflare. Step 4's
@@ -1113,7 +1113,7 @@ testing the collector by hand — into the same dataset production will use.
 What is missing is the **audience** half. The beacon is not rendered, because it has no token to
 report to, and the token lives in the dashboard rather than in the repository — which is why building
 and deploying does not switch it on. What each half is for, and
-why there are two of them, is [ADR-0010](adr/0010-the-site-runs-one-worker-script-for-measurement-en.md).
+why there are two of them, is [ADR-0012](adr/0012-the-site-runs-one-worker-script-for-measurement-en.md).
 
 **Do**
 
@@ -1216,7 +1216,7 @@ that load: a blocked beacon reports itself there and nowhere else. Nothing shoul
 Check 3 is the one that proves the decision rather than the wiring, and it reads the body precisely
 because the status does not prove anything: both paths end in a 404. A page coming back means the
 asset layer answered without the Worker running, which is what keeps the script's quota off the site.
-An empty body means the Worker answered, `run_worker_first` has been widened, and ADR-0010's central
+An empty body means the Worker answered, `run_worker_first` has been widened, and ADR-0012's central
 claim no longer holds.
 
 ### Reading what was recorded
@@ -1318,6 +1318,6 @@ once, and two periods measured by position would not be comparable.
   decision.
 - **That a page request never invokes the Worker.** Asserted from Cloudflare's documentation and
   from `run_worker_first`, not yet from this deployment. It belongs on §12.5's list until check 3
-  of step 10 has been run against the real site, because ADR-0010's central claim rests on it.
+  of step 10 has been run against the real site, because ADR-0012's central claim rests on it.
 - **The beacon's two hosts.** That the script host and the reporting host are the two the policy
   names is documented rather than observed. The browser console on a real load settles it.

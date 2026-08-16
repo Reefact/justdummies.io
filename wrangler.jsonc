@@ -23,7 +23,7 @@
     // unverified, and the check that settles it is written there.
     "workers_dev": false,
 
-    // There IS a script now, and it took an ADR to put it here — ADR-0010.
+    // There IS a script now, and it took an ADR to put it here — ADR-0012.
     //
     // What this file said until then, and why it was right to say it: requests served
     // as static assets are free and unmetered, requests that invoke a Worker script
@@ -41,7 +41,7 @@
     //
     // That confinement is the whole basis of the decision. Widening
     // "run_worker_first", or dropping it, puts the site back in front of the quota and
-    // is not a change to make without reopening ADR-0010.
+    // is not a change to make without reopening ADR-0012.
     //
     // The other case that will tempt a script is still shareable playground URLs, and
     // the answer there is still no: encoding the state in the URL fragment costs
