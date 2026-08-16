@@ -1152,6 +1152,11 @@ chaque moitié, et pourquoi il y en a deux, c'est
    comme secret, il serait masqué dans les journaux de build pour rien, et la personne suivante le
    prendrait pour quelque chose à protéger.
 
+   Il n'y a rien d'autre à câbler : `.github/workflows/build.yml` le passe déjà à l'étape qui
+   construit l'artefact. Ce mappage n'est pas décoratif — une variable de dépôt n'est *pas*
+   automatiquement une variable d'environnement de processus, et sans lui le jeton resterait
+   configuré et jamais lu, chaque artefact promu par le pipeline ne mesurant aucune audience.
+
    Un build sans lui est un build normal : pas de beacon, pas de chiffres de fréquentation, et une
    politique qui n'accorde rien aux hôtes d'analytique. `generate-headers.mjs` imprime laquelle des
    deux il a produite, de sorte qu'un build qui a silencieusement cessé de mesurer se voit dans le

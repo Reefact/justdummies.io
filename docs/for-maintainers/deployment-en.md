@@ -1121,6 +1121,11 @@ why there are two of them, is [ADR-0010](adr/0010-the-site-runs-one-worker-scrip
    is rendered into every page of the site and is meant to be read. Filed as a secret it would be
    masked in build logs for no reason, and the next person would treat it as something to protect.
 
+   There is nothing else to wire: `.github/workflows/build.yml` already maps it into the step that
+   builds the artefact. That mapping is not optional decoration — a repository variable is *not*
+   automatically a process environment variable, so without it the token would sit configured and
+   unread, and every artefact the pipeline promoted would measure no audience.
+
    A build without it is a normal build: no beacon, no audience figures, and a policy that grants
    the analytics hosts nothing. `generate-headers.mjs` prints which of the two it produced, so a
    build that silently stopped measuring is visible in the log rather than three weeks later on an
