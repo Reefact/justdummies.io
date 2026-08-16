@@ -95,6 +95,7 @@ public static class PlaygroundStrings {
         ["argument.expectsTime"]                       = "a time, e.g. 14:30:00",
         ["argument.expectsDuration"]                   = "a duration, e.g. 01:30:00",
         ["argument.expectsWithinSandboxRange"]         = "a value no greater than 100,000 in magnitude — this playground caps it there; the library itself has no such limit",
+        ["argument.expectsTextWithinSandboxLength"]    = "a text no longer than 200 characters — this playground caps it there; the library itself has no such limit",
         ["argument.template"]                          = "this argument expects {0}",
 
         ["limit.length"] = "This playground caps the length at {0} characters; the library itself has no such limit.",
@@ -170,6 +171,9 @@ public static class PlaygroundStrings {
         ["argument.expectsWithinSandboxRange"]       = new(
             "une valeur d'une magnitude d'au plus 100 000 — ce playground la limite là ; la librairie elle-même n'impose aucune limite",
             "a value no greater than 100,000 in magnitude — this playground caps it there; the library itself has no such limit"),
+        ["argument.expectsTextWithinSandboxLength"]  = new(
+            "un texte d'au plus 200 caractères — ce playground le limite là ; la librairie elle-même n'impose aucune limite",
+            "a text no longer than 200 characters — this playground caps it there; the library itself has no such limit"),
         ["argument.template"]                        = new("cet argument attend {0}", "this argument expects {0}"),
 
         ["limit.length"] = new(

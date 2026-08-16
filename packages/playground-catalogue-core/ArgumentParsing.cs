@@ -65,6 +65,7 @@ public static class ArgumentParsing {
     public const string KeyExpectsTime                    = "argument.expectsTime";
     public const string KeyExpectsDuration                = "argument.expectsDuration";
     public const string KeyExpectsWithinSandboxRange       = "argument.expectsWithinSandboxRange";
+    public const string KeyExpectsTextWithinSandboxLength  = "argument.expectsTextWithinSandboxLength";
 
     /// <summary>
     ///     A ceiling on the magnitude of any integer argument this playground will actually pass to
@@ -79,12 +80,29 @@ public static class ArgumentParsing {
     public const int SandboxMagnitudeLimit = 100_000;
 
     /// <summary>
+    ///     A ceiling on the length of any free-form text argument (e.g. <c>StartingWith</c>'s
+    ///     prefix, <c>StringMatching</c>'s pattern text) this playground will store, replay
+    ///     through the library, and re-embed into the copied code. Unlike the integer cap above,
+    ///     an unbounded string has no natural failure mode inside the library itself — the risk
+    ///     is entirely on this playground's own side, where every keystroke re-parses the whole
+    ///     chain and rewrites <c>CodeText</c>, so a pasted multi-megabyte value would repeat that
+    ///     work on every input event.
+    /// </summary>
+    public const int SandboxTextLengthLimit = 200;
+
+    /// <summary>
     ///     Parses <paramref name="raw" /> as <paramref name="typeKey" />, or returns the
     ///     <c>PlaygroundStrings</c> key naming what was expected.
     /// </summary>
     public static bool TryParse(string typeKey, string raw, out object? value, out string? errorKey) {
         switch (typeKey) {
             case TypeKeyString:
+                if (raw.Length > SandboxTextLengthLimit) {
+                    value    = null;
+                    errorKey = KeyExpectsTextWithinSandboxLength;
+                    return false;
+                }
+
                 value    = raw;
                 errorKey = null;
                 return true;
@@ -127,7 +145,15 @@ public static class ArgumentParsing {
             case TypeKeyDateTime:
                 return TryParse(raw, KeyExpectsDateTime, (string s, out DateTime v) => DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.None, out v), out value, out errorKey);
             case TypeKeyDateTimeOffset:
-                return TryParse(raw, KeyExpectsDateTimeOffset, (string s, out DateTimeOffset v) => DateTimeOffset.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.None, out v), out value, out errorKey);
+                // DateTimeOffset.TryParse silently fills in a missing offset with the host's
+                // local one — the playground's own text promises "a date and time with an
+                // offset", so an input without one is rejected before that silent fill-in can
+                // make the same displayed chain mean a different instant depending on which
+                // time zone parsed it (the browser's now, or wherever copied code runs later).
+                return TryParse(raw, KeyExpectsDateTimeOffset, (string s, out DateTimeOffset v) => {
+                    v = default;
+                    return HasExplicitOffset(s) && DateTimeOffset.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.None, out v);
+                }, out value, out errorKey);
             case TypeKeyTimeOnly:
                 return TryParse(raw, KeyExpectsTime, (string s, out TimeOnly v) => TimeOnly.TryParse(s, CultureInfo.InvariantCulture, out v), out value, out errorKey);
             case TypeKeyTimeSpan:
@@ -141,6 +167,31 @@ public static class ArgumentParsing {
                 errorKey = null;
                 throw new InvalidOperationException($"no argument parser registered for type key '{typeKey}'");
         }
+    }
+
+    /// <summary>True if <paramref name="raw" /> ends with an explicit UTC/offset marker
+    /// ("Z"/"z", or "+HH:mm"/"-HH:mm"/"+HH"/"-HH") — the shapes ISO 8601 allows for a
+    /// <c>DateTimeOffset</c>'s offset component. Checked before trusting
+    /// <see cref="DateTimeOffset.TryParse(string, IFormatProvider, DateTimeStyles, out DateTimeOffset)" />,
+    /// which accepts an offsetless string just as happily by silently assuming the host's own
+    /// local offset.</summary>
+    private static bool HasExplicitOffset(string raw) {
+        var trimmed = raw.TrimEnd();
+        if (trimmed.EndsWith('Z') || trimmed.EndsWith('z')) {
+            return true;
+        }
+
+        // "+HH:mm" / "-HH:mm" / "+HH" / "-HH", anchored to the end of the string — a plain
+        // "-" appearing earlier (a date separator) must not satisfy this.
+        var signIndex = trimmed.Length - 6 >= 0 && (trimmed[^6] is '+' or '-') ? trimmed.Length - 6
+            : trimmed.Length - 3 >= 0 && (trimmed[^3] is '+' or '-')           ? trimmed.Length - 3
+            : -1;
+
+        if (signIndex < 0) {
+            return false;
+        }
+
+        return trimmed[(signIndex + 1)..].All(c => c is (>= '0' and <= '9') or ':');
     }
 
     private delegate bool Parser<T>(string raw, out T value);

@@ -38,11 +38,13 @@
                 }
                 <input
                     type="@InputTypeFor(parameter.TypeKey)"
+                    step="@StepFor(parameter.TypeKey)"
                     placeholder="@parameter.Placeholder"
                     aria-label="@($"{chosen.MethodName} {parameter.Name}")"
-                    aria-describedby="@(HasError ? ErrorId : null)"
+                    aria-describedby="@(DescribesInput(index) ? ErrorId : null)"
+                    aria-invalid="@(DescribesInput(index) ? "true" : null)"
                     value="@State.Argument(index)"
-                    @oninput="e => HandleArgumentChanged(index, e)" />
+                    @oninput="e => HandleArgumentChanged(index, parameter.TypeKey, e)" />
             }
             <span class="paren">)</span>
         </span>
@@ -88,6 +90,14 @@
 
     private bool HasError => !string.IsNullOrEmpty(Error);
     private string ErrorId => $"chain-link-{LinkIndex}-error";
+
+    /// <summary>Whether the error message should be associated with the argument at
+    /// <paramref name="index" />: the offending one specifically, when the failure names one
+    /// (a parse error — <see cref="ChainLinkState.ErrorArgumentIndex" />), or every argument in
+    /// the step, when it does not (a library refusal, about the whole call rather than one
+    /// value) — the same fallback the UI used before per-argument targeting existed.</summary>
+    private bool DescribesInput(int index) =>
+        HasError && (State.ErrorArgumentIndex is { } errorIndex ? errorIndex == index : true);
     private string SelectLabel => PlaygroundStrings.T(LocaleState.Current, "playground.selectAria", LinkIndex + 1);
 
     private static string DisplayName(MemberDescriptor member) =>
@@ -103,14 +113,34 @@
         _ => "text",
     };
 
+    /// <summary>The HTML default <c>step</c> is 1 — without overriding it, a fractional value
+    /// like "1.5" parses fine but the browser still flags the control as a step mismatch.
+    /// Integer type keys are left with the (correct) default.</summary>
+    private static string? StepFor(string typeKey) => typeKey switch {
+        "System.Single" or "System.Double" or "System.Half" or "System.Decimal" => "any",
+        _ => null,
+    };
+
     private Task HandleMethodChosen(ChangeEventArgs e) {
         var key = e.Value as string;
         var chosen = Options.FirstOrDefault(o => o.Key == key);
         return chosen is null ? Task.CompletedTask : OnMethodChosen.InvokeAsync((LinkIndex, chosen));
     }
 
-    private Task HandleArgumentChanged(int argumentIndex, ChangeEventArgs e) =>
-        OnArgumentChanged.InvokeAsync((LinkIndex, argumentIndex, e.Value as string ?? ""));
+    /// <summary>Truncates a free-form text argument to <see cref="ArgumentParsing.SandboxTextLengthLimit" />
+    /// before it ever reaches <see cref="ChainLinkState" /> — a pasted multi-megabyte value
+    /// would otherwise be re-parsed, replayed through the library and re-embedded into
+    /// <c>CodeText</c> on every keystroke. <see cref="ArgumentParsing.TryParse" /> enforces the
+    /// same limit independently, but only after the value is already stored; capping here means
+    /// it never is.</summary>
+    private Task HandleArgumentChanged(int argumentIndex, string parameterTypeKey, ChangeEventArgs e) {
+        var raw = e.Value as string ?? "";
+        if (parameterTypeKey == ArgumentParsing.TypeKeyString && raw.Length > ArgumentParsing.SandboxTextLengthLimit) {
+            raw = raw[..ArgumentParsing.SandboxTextLengthLimit];
+        }
+
+        return OnArgumentChanged.InvokeAsync((LinkIndex, argumentIndex, raw));
+    }
 
     private Task HandleDelete() => OnDelete.InvokeAsync(LinkIndex);
 

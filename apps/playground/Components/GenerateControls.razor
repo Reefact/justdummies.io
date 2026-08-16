@@ -45,8 +45,19 @@
     private enum CopyStatus { None, Copied, Failed }
 
     private CopyStatus _copyStatus;
+    private string? _lastCopyStatusCodeText;
 
     private bool HasResult => Value is not null || Refusal is not null;
+
+    /// <summary>The chain the visitor last copied can change under them — an edited argument or
+    /// a newly chosen method both rewrite <see cref="CodeText" /> without the visitor touching
+    /// Copy again. Without this, "copied to clipboard" would keep being announced/displayed
+    /// after the clipboard's actual contents have gone stale.</summary>
+    protected override void OnParametersSet() {
+        if (_copyStatus == CopyStatus.Copied && CodeText != _lastCopyStatusCodeText) {
+            _copyStatus = CopyStatus.None;
+        }
+    }
 
     private string CopyStatusText => _copyStatus switch {
         CopyStatus.Copied => PlaygroundStrings.T(LocaleState.Current, "playground.copied"),
@@ -67,7 +78,8 @@
 
         try {
             await JS.InvokeVoidAsync("navigator.clipboard.writeText", CodeText);
-            _copyStatus = CopyStatus.Copied;
+            _copyStatus             = CopyStatus.Copied;
+            _lastCopyStatusCodeText = CodeText;
         } catch (JSException) {
             _copyStatus = CopyStatus.Failed;
         }
