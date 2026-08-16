@@ -8,11 +8,12 @@
 import ComparisonTable from './ComparisonTable.astro';
 import LibraryCard from './LibraryCard.astro';
 import { localeFromPath } from '../i18n/routing';
-import { useTranslations } from '../i18n/ui';
+import { localeTags, useTranslations } from '../i18n/ui';
 import { site } from '../site';
 import { competitors, comparisonStaleAfterDays, comparisonVerifiedOn, type Competitor } from '../comparison';
 
-const t = useTranslations(localeFromPath(Astro.url.pathname));
+const locale = localeFromPath(Astro.url.pathname);
+const t = useTranslations(locale);
 
 /**
  * §11.8 — "a last-verified date is content, and past a declared delay the build warns."
@@ -23,9 +24,14 @@ const daysSinceVerified: number = Math.floor((Date.now() - new Date(comparisonVe
 
 if (daysSinceVerified > comparisonStaleAfterDays) {
     console.warn(
-        `[why-justdummies] the comparison was last verified ${daysSinceVerified} days ago (past the ${comparisonStaleAfterDays}-day window). Re-check every claim against each library's own docs or repository, then update comparison.ts's comparisonVerifiedOn and ui.ts's why.verified together.`,
+        `[why-justdummies] the comparison was last verified ${daysSinceVerified} days ago (past the ${comparisonStaleAfterDays}-day window). Re-check every claim against each library's own docs or repository, then update comparison.ts's comparisonVerifiedOn.`,
     );
 }
+
+/** Formatted from the one source date (§6.5), never a second hand-typed copy of it. */
+const verifiedDate = new Intl.DateTimeFormat(localeTags[locale], { dateStyle: 'long', timeZone: 'UTC' }).format(
+    new Date(`${comparisonVerifiedOn}T00:00:00Z`),
+);
 
 /** §11.8 — the correction issue the page invites every cited author to use. */
 const reportUrl = `${site.siteRepository}/issues/new?title=${encodeURIComponent('why-justdummies: ')}`;
@@ -40,7 +46,7 @@ const reportUrl = `${site.siteRepository}/issues/new?title=${encodeURIComponent(
     <ComparisonTable />
 
     <p class="meta">
-        {t('why.verified')}
+        {t('why.verified.label')} {verifiedDate}.
         <a href={reportUrl} target="_blank" rel="noopener noreferrer">
             {t('why.report.label')}
             <span class="visually-hidden"> {t('state.newTab')}</span>
