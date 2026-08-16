@@ -115,14 +115,10 @@ const sourceLang = locale === 'en' ? undefined : 'en';
 
                 <div class="releases">
                     {train.releases.map((release) => (
-                        <article class="release" data-unreleased={release.unreleased ? '' : undefined}>
+                        <article class="release">
                             <div class="release-head">
                                 <span class="version">{release.version}</span>
-                                {release.unreleased ? (
-                                    <span class="pill progress">{t('releaseNotes.unreleased')}</span>
-                                ) : (
-                                    <span class="pill">{release.maturity}</span>
-                                )}
+                                <span class="pill">{release.maturity}</span>
                                 {release.date !== null && (
                                     <span class="release-date">
                                         <time datetime={release.date}>{formatDate(release.date)}</time>
@@ -364,11 +360,6 @@ const sourceLang = locale === 'en' ? undefined : 'en';
         padding: var(--jd-space-6);
     }
 
-    .release[data-unreleased] {
-        background: var(--jd-surface-sunken);
-        border-style: dashed;
-    }
-
     .release-head {
         display: flex;
         flex-wrap: wrap;
@@ -383,11 +374,6 @@ const sourceLang = locale === 'en' ? undefined : 'en';
         font-weight: 600;
     }
 
-    .release[data-unreleased] .version {
-        color: var(--jd-text-muted);
-        font-weight: 500;
-    }
-
     .pill {
         font-size: var(--jd-text-sm);
         color: var(--jd-text-muted);
@@ -395,11 +381,6 @@ const sourceLang = locale === 'en' ? undefined : 'en';
         border-radius: 999px;
         padding: 0.1em 0.65em;
         white-space: nowrap;
-    }
-
-    .pill.progress {
-        color: var(--jd-accent);
-        border-color: var(--jd-accent);
     }
 
     .release-date {

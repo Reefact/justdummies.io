@@ -39,9 +39,6 @@ const TRAINS = [
     { key: 'cli', directory: 'JustDummies.Cli', package: 'JustDummies.Cli' },
 ];
 
-/** What "no changes recorded yet" looks like, so an empty Unreleased section is dropped. */
-const EMPTY_UNRELEASED = /^_.*no unreleased changes.*_$/i;
-
 function escapeHtml(text) {
     return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
@@ -224,17 +221,15 @@ function releasesOf(markdown, relativeTo) {
         }
 
         const [, version, date] = currentHeading;
-        const unreleased = version === 'Unreleased';
 
-        if (unreleased && currentLines.every((line) => line.trim() === '' || EMPTY_UNRELEASED.test(line.trim()))) {
-            return; // Nothing recorded yet — no card to show for it.
+        if (version === 'Unreleased') {
+            return; // This page shows cut releases only — work in progress has no card.
         }
 
         releases.push({
             version,
-            unreleased,
             date: date ?? null,
-            maturity: unreleased ? null : maturityOf(version),
+            maturity: maturityOf(version),
             tagUrl: tagUrls.get(version) ?? null,
             summaryHtml: summaryOf(currentLines, relativeTo),
             sections: sectionsOf(currentLines, relativeTo),

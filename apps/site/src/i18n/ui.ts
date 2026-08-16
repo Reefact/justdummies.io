@@ -367,7 +367,6 @@ const en = {
     'releaseNotes.train.catalog': 'Diagnostic catalog',
     'releaseNotes.train.cli': 'CLI — dum',
 
-    'releaseNotes.unreleased': 'In progress',
     'releaseNotes.viewOnGithub': 'View on GitHub',
     'releaseNotes.more': 'more',
 
@@ -674,7 +673,6 @@ const fr: Record<UiKey, string> = {
     'releaseNotes.train.catalog': 'Catalogue de diagnostics',
     'releaseNotes.train.cli': 'CLI — dum',
 
-    'releaseNotes.unreleased': 'En cours',
     'releaseNotes.viewOnGithub': 'Voir sur GitHub',
     'releaseNotes.more': 'de plus',
 

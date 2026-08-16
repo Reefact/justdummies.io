@@ -16,9 +16,6 @@ export interface ReleaseSection {
 
 export interface Release {
     readonly version: string;
-    /** True for the `[Unreleased]` section — work recorded ahead of the next tag. */
-    readonly unreleased: boolean;
-    /** `null` for the unreleased entry, which has not been cut yet. */
     readonly date: string | null;
     readonly maturity: 'preview' | 'beta' | 'alpha' | 'rc' | 'stable' | null;
     /** Where this exact release lives on GitHub — a tag once cut, a compare view before. */
