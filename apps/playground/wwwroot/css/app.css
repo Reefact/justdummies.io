@@ -141,29 +141,39 @@ main {
 
 /* Blazor's router focuses the page's own title on navigation (App.razor's
    `FocusOnNavigate Selector=".page-title"`) so a screen reader lands on what
-   actually changed, and a sighted keyboard user needs the same cue: it marks
-   where navigation landed and where the next Tab stop starts. `:focus-visible`
-   matches that programmatic focus in Chromium, so it can't be scoped to
-   keyboard-only focus with `:not(:focus-visible)`. The browser's default ring —
-   a thick box drawn tight against the text — reads as a layout bug rather than
-   a navigation cue, so it's replaced with a thinner, offset one instead of
-   removed outright.
+   actually changed rather than on the brand it already knows. That focus move
+   is what this rule is about, and the rule's whole job is to make it invisible.
 
-   IT USED TO SAY `h1:focus`, AND ITS OWN COMMENT SAID IT HAD MOVED. It had not:
-   the selector stayed on the <h1> when the focus target became .page-title, so
-   the heading that is actually focused kept the default ring and drew a box the
-   full width of the measure around "Playground" — the one thing on that screen
-   that has no counterpart on the site it is supposed to match. Nothing carries
-   the ring on the <h1> any more: the only one on a routed page is the brand's,
-   which is never a focus target. */
+   NOTHING IS DRAWN HERE, AND `outline: none` IS THE ONLY WAY TO SAY SO. Left
+   unstyled, the heading takes the browser's own ring — a thick box drawn the
+   full width of the measure around "Playground" — and `FocusOnNavigate` fires
+   on the first render, so every visitor arriving at the playground meets that
+   box without having navigated anywhere. The site's own subtitle carries
+   nothing of the kind, and the two are meant to be the same page.
+
+   IT COSTS NO KEYBOARD USER ANYTHING, which is what makes it safe rather than
+   merely tidier. Blazor focuses this heading through `tabindex="-1"`: it is
+   not in the tab order, nobody reaches it by tabbing, and WCAG 2.4.7 is about
+   the indicator on components that keyboard focus can land on. The screen
+   reader announcement is unaffected — it comes from the focus moving, not from
+   what is painted around it. Every control on this page that a keyboard *can*
+   reach still shows its own ring (the `a:focus-visible` / `button:focus-visible`
+   rule above, and the per-control rules further down). */
 .page-title:focus {
-    outline: 1px solid var(--jd-text-muted);
-    outline-offset: 4px;
+    outline: none;
 }
 
+/* The page's opening paragraph, set to the same measure as the site's own prose
+   (WhyJustDummiesContent.astro's `p`): the column it sits in already carries the
+   60rem, so this states only the rhythm and lets `.page-body` state the width.
+
+   IT USED TO CAP ITSELF AT 46rem, which was the last thing on this page still
+   stopping short of where /why-justdummies puts the same words — same left
+   edge, a line ending fourteen rem early. A measure declared twice is a measure
+   that drifts, and this one had. */
 .lede {
     color: var(--jd-text-muted);
-    max-width: 46rem;
+    margin: 0 0 var(--jd-space-4);
 }
 
 /* The fixed prefix/suffix and the editable middle, per §11.2. */
