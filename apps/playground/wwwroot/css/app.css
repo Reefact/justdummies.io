@@ -389,10 +389,13 @@ h1:focus {
     color: var(--jd-text-primary);
 }
 
-/* Below the width the site's own header stacks at (Base.astro): the brand, "GitHub" and the
-   language switch no longer fit on one line, so this follows the same break rather than
-   overflowing sideways. */
-@media (max-width: 28rem) {
+/* Measured the same way Base.astro's own breakpoint is (in French, §6.5's "unfavourable
+   case"): this header carries one fewer link than the site's (no self-referential
+   "Playground" entry), so its own row fits down to a narrower 461 pixels of French rather
+   than the site header's 503 — a different number for a different bar, not the site's break
+   copied over. Below it, the brand, "Pourquoi JustDummies", "GitHub" and the language switch
+   no longer fit on one line, so this stacks rather than overflowing sideways. */
+@media (max-width: 30rem) {
     .site-header {
         flex-direction: column;
         align-items: flex-start;
