@@ -216,6 +216,14 @@ accident.
   plutôt que de faire échouer la publication — selon l'ADR-0001 et §11.8 ci-dessus. Un avertissement
   dans un pipeline vert n'est lu par personne, et le défaut dont on se garde ici est précisément un
   défaut que personne n'a remarqué.
+* **Ce contrôle n'existe pas encore, et ce record n'est pas ratifiable tant qu'il n'existe pas.**
+  [`CONTRIBUTING.md`](../../../CONTRIBUTING.md#a-decision-comes-with-something-that-fails-when-it-is-broken)
+  exige que la chose qui échoue existe avant que le travail n'atterrisse : ce record reste donc
+  `Proposed`, et la §16 de la spécification ne porte **aucune ligne** pour cette règle — ce tableau est
+  la liste des vœux transformés en contrôles, et une règle sans rien derrière elle repose sur
+  l'attention jusqu'à ce que le contrôle soit écrit. Nommer le manque est le but : un contrôle non
+  écrit inscrit comme un contrôle est exactement le faux-semblant que la dernière phrase de §16
+  refuse.
 * Il est éprouvé par la casse avant d'atterrir, selon
   [`CONTRIBUTING.md`](../../../CONTRIBUTING.md#a-decision-comes-with-something-that-fails-when-it-is-broken).
   La première exécution a un résultat attendu connu : l'écart du CLI mesuré au Contexte existe
