@@ -102,6 +102,11 @@ async function furniture(page: Page): Promise<Record<string, string>> {
             'the mark in it': at('h1[data-brand-heading] .mark'),
             'the claim under it': at('.brand-heading .tagline'),
             'the page’s own subtitle': at('main h2'),
+            // Where the prose starts and how far it runs, but not how tall it is: the two pages
+            // say different things under that subtitle, so one wraps onto more lines than the
+            // other and always will. The measure is the part that has to agree — it is the last
+            // thing on this page that did not, capped at 46rem where the site runs to 60.
+            'the opening paragraph': at('main h2 + p').replace(/ h=\S+/, ''),
             // The footer's y is the one number that legitimately differs: these are two pages of
             // different lengths, and where the bottom of a page falls is a fact about its
             // content. Its measure and its left edge are not, so only those are compared.
