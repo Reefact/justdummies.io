@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './support/harness';
 
 /**
  * The bar that is on every page, and the one rule its links follow.

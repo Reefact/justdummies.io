@@ -1,4 +1,5 @@
-import { expect, test, type Page, type Response } from '@playwright/test';
+import { expect, test } from './support/harness';
+import type { Page, Response } from '@playwright/test';
 
 /**
  * The page a visitor gets for an address that is not there.

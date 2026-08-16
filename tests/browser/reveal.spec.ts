@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './support/harness';
 
 /**
  * Scenes arrive, everything arrives eventually, and a reader who asked for stillness gets it.

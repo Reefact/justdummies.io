@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from './support/harness';
+import type { Page } from '@playwright/test';
 import type { AxeResults, Result } from 'axe-core';
 
 import { PAGES } from './support/watch';
