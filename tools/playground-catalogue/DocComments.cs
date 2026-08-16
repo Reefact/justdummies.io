@@ -41,7 +41,14 @@ public static class DocComments {
     ///     prose. <c>XElement.Value</c> alone would drop the content of self-closing inline
     ///     elements like <c>&lt;paramref name="x"/&gt;</c> and <c>&lt;see cref="M:..."/&gt;</c> —
     ///     they carry their text in an attribute, not as a child text node — so this walks the
-    ///     descendant nodes by hand and substitutes that attribute for such elements instead.
+    ///     nodes by hand and substitutes that attribute for such elements instead.
+    ///
+    ///     Nothing is inserted between nodes. The prose already carries its own spacing and
+    ///     punctuation right up against the tag — <c>&lt;see ... /&gt;;</c>,
+    ///     <c>&lt;paramref ... /&gt;,</c> — so forcing a separator around every inline element
+    ///     is what produced the "Except ;" and "range [ minimum , maximum ]" that reached
+    ///     visitors. Collapsing runs of whitespace at the end is all the normalisation the
+    ///     wrapped, indented source needs.
     /// </summary>
     private static string CleanText(XElement? element) {
         if (element is null) {
@@ -49,22 +56,38 @@ public static class DocComments {
         }
 
         var sb = new StringBuilder();
-        foreach (var node in element.DescendantNodesAndSelf()) {
-            switch (node) {
-                case XText text:
-                    sb.Append(text.Value).Append(' ');
-                    break;
-                case XElement { Name.LocalName: "paramref" or "typeparamref" } inline:
-                    sb.Append((string?)inline.Attribute("name")).Append(' ');
-                    break;
-                case XElement { Name.LocalName: "see" or "seealso" } inline:
-                    sb.Append(CrefText((string?)inline.Attribute("cref"))).Append(' ');
-                    break;
-            }
-        }
+        AppendFlattened(element, sb);
 
         var words = sb.ToString().Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
         return string.Join(' ', words);
+    }
+
+    private static void AppendFlattened(XElement element, StringBuilder sb) {
+        foreach (var node in element.Nodes()) {
+            switch (node) {
+                case XText text:
+                    sb.Append(text.Value);
+                    break;
+                case XElement { Name.LocalName: "paramref" or "typeparamref" } inline:
+                    sb.Append((string?)inline.Attribute("name"));
+                    break;
+                case XElement { Name.LocalName: "see" or "seealso" } inline:
+                    // <see cref="X"/> carries its text in the attribute, but the non-self-closing
+                    // <see cref="X">these words</see> overrides it with its own — emitting both
+                    // would say the same thing twice.
+                    if (inline.Nodes().Any()) {
+                        AppendFlattened(inline, sb);
+                    } else {
+                        sb.Append(CrefText((string?)inline.Attribute("cref")));
+                    }
+
+                    break;
+                case XElement other:
+                    // <c>, <b>, and anything else wrapping prose: keep the prose, drop the tag.
+                    AppendFlattened(other, sb);
+                    break;
+            }
+        }
     }
 
     /// <summary>A <c>cref</c> attribute is a full XML-doc member ID (e.g.
