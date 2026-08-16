@@ -1202,6 +1202,27 @@ curl -s -o /dev/null -w '%{http_code}\n' https://justdummies.io/_event         #
 curl -s https://justdummies.io/nexiste-pas | grep -c '<html'                   # attendu : 1, jamais 0
 ```
 
+Le contrôle suivant et la requête en fin d'étape appellent tous deux l'API de Cloudflare, et aucun
+ne fonctionne avec ce que les étapes précédentes te laissent en main : la 7.2 te fait seulement
+*noter* l'identifiant de compte, et la 7.1 dit en toutes lettres que le jeton de déploiement ne va
+**que** dans les secrets GitHub. Rien n'a jamais mis l'un ou l'autre dans un shell.
+
+```bash
+export CLOUDFLARE_ACCOUNT_ID='<identifiant noté en 7.2>'
+export CLOUDFLARE_API_TOKEN='<jeton portant Analytics Read — pas celui de déploiement, voir plus bas>'
+```
+
+> **Le jeton de déploiement ne peut pas faire ça**, et s'en servir répond une erreur
+> d'authentification plutôt qu'un compte de lignes — ce qui se lit comme un collecteur cassé alors
+> qu'il ne l'est pas. Le modèle *Edit Cloudflare Workers* de la 7.1 ne porte aucune permission
+> d'analytique, et l'API SQL réclame un **Analytics · Read** au niveau du compte (Cloudflare le
+> range sous *Account Analytics*).
+>
+> Ajoute cette permission au jeton de déploiement, ou crée un second jeton ne portant qu'elle. La
+> seconde option est meilleure et coûte une minute : un jeton d'analytique en lecture seule est
+> l'identifiant le moins dangereux de ce guide, et elle garde le jeton de publication sur la
+> trajectoire de *resserrement* que « Ce qui reste à trancher » lui promet déjà.
+
 Un dernier, et c'est celui que le contrôle 2 ne peut pas remplacer :
 
 ```bash

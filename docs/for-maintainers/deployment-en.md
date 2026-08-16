@@ -1169,6 +1169,26 @@ curl -s -o /dev/null -w '%{http_code}\n' https://justdummies.io/_event         #
 curl -s https://justdummies.io/does-not-exist | grep -c '<html'                # expect 1, never 0
 ```
 
+The next check and the query at the end of this step both call Cloudflare's API, and neither works
+with what the earlier steps leave you holding: 7.2 only has you *note* the account identifier, and
+7.1 says in as many words that the deploy token goes **only** into the GitHub secrets. Nothing has
+ever put either into a shell.
+
+```bash
+export CLOUDFLARE_ACCOUNT_ID='<the identifier from 7.2>'
+export CLOUDFLARE_API_TOKEN='<an analytics-reading token — not the deploy one, see below>'
+```
+
+> **The deploy token cannot do this**, and reaching for it answers an authentication error rather
+> than a row count — which reads like a broken collector and is not one. The *Edit Cloudflare
+> Workers* template of 7.1 carries no analytics permission at all, and the SQL API needs an
+> account-scoped **Analytics · Read** (Cloudflare lists it under *Account Analytics*).
+>
+> Add that permission to the deploy token, or create a second token carrying it and nothing else.
+> The second is better and costs a minute: a read-only analytics token is the least dangerous
+> credential in this guide, and it keeps the publishing token on the path to being *narrowed* rather
+> than widened — which is what "Still to be settled" already promises about it.
+
 One more, and it is the one check 2 cannot stand in for:
 
 ```bash
