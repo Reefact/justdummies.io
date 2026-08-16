@@ -67,7 +67,7 @@ nomme. Une exception écrite est une règle ; une exception tacite est une déri
 
 - la direction artistique détaillée ;
 - les textes marketing définitifs ;
-- le contenu de la documentation ;
+- le contenu de la documentation, qui appartient à la bibliothèque (§7.5) ;
 - les détails internes du tool de génération.
 
 ---
@@ -88,6 +88,7 @@ site va chercher la vérité, et par quel mécanisme.
 | Surface exposable du playground | L'assembly de la bibliothèque référencée | Catalogue généré au build (§10.4) |
 | Valeurs générées affichées | La bibliothèque elle-même | Produites au build, seed fixe (§14.3) |
 | Données du tableau comparatif | Un fichier de contenu validé par schéma, daté | Rendu depuis ce fichier (§11) |
+| Contenu des pages de documentation | La documentation utilisateur de la bibliothèque, à un tag de release publié | Instantané atomique, jamais réécrit (§7.5) |
 
 **Règle générale.** Si le site affiche une information dont la bibliothèque, un paquet
 ou un outil est la source, cette information descend jusqu'au site par un mécanisme,
@@ -335,8 +336,8 @@ boutons et les cartes se valident avec le français, qui est le cas défavorable
 
 ### 7.1 Navigation
 
-Elle reste courte. Elle porte le positionnement comparatif, le playground, le tooling,
-la documentation et le dépôt.
+Elle reste courte. Elle porte le positionnement comparatif, le playground, la
+documentation et le dépôt.
 
 La **commande d'installation est présente en permanence dans l'en-tête** dès que le
 hero est dépassé, sous forme compacte avec bouton de copie. Elle n'apparaît pas au
@@ -357,16 +358,26 @@ Exprimée pour une locale, et reproduite à l'identique dans les autres.
 ├── playground
 ├── why-justdummies
 ├── docs
-├── examples
-├── tooling
-│   ├── generator
+│   ├── guides
+│   ├── generators
+│   ├── packages
 │   └── analyzers
+├── examples
 ├── api
-├── changelog
+├── release-notes
 ├── about
 ├── privacy
 └── 404
 ```
+
+Les sections de `/docs` sont des **décisions de route** : le schéma d'URL est décidé ici,
+et §6.2 impose qu'il soit identique dans toutes les locales. Les **pages feuilles**, elles,
+viennent de l'instantané (§7.5) et ne sont jamais énumérées ici — les lister serait
+recopier un fait dont ce document n'est pas la source (§1.3).
+
+La distinction est ce qui fait tenir l'ajout : décider que les règles d'analyzer vivent
+sous `/docs/analyzers` est une décision d'architecture, qui survit à n'importe quel
+changement de la bibliothèque ; écrire combien il y en a n'en est pas une.
 
 ### 7.3 Condition de publication d'une route
 
@@ -390,6 +401,37 @@ la cible n'existe pas encore suit §5.7.
 
 Le contenu de chaque emplacement — nom de paquet, commande, URL — vient des
 métadonnées centralisées (§2, §14.1).
+
+### 7.5 Contenu repris de la bibliothèque
+
+Les routes sous `/docs` rendent un contenu que **le site n'écrit pas**. Il est repris de
+la documentation utilisateur de la bibliothèque, qui en reste l'unique auteur.
+
+La reprise est **atomique et épinglée à un tag de release publié** — la version que le
+site propose d'installer, de sorte que la documentation et la commande d'installation
+soient deux affirmations sur le même artefact. Le raisonnement, les alternatives écartées
+et le tag qui ancre l'instantané vivent dans le registre de décisions (§17), pas ici.
+
+Trois conséquences, qui sont des règles et non des commodités :
+
+- **§6.4 s'applique, et son exception ne couvre pas la reprise.** L'exception de §6.4 vise
+  le contenu que la bibliothèque ne publie **qu'en anglais** — messages levés à
+  l'exécution, documentation XML — et son motif est que le dépôt du site n'a alors aucun
+  français à servir. La documentation utilisateur n'est pas dans ce cas : la bibliothèque
+  la publie appariée et la tient à cette parité chez elle. Le lecteur reçoit donc sa
+  locale, et c'est §6.4 qui s'applique, pas son exception. Le critère est là, et il porte
+  sur **ce que la source publie**, jamais sur la nature du contenu. Le jour où la source
+  cesserait d'être appariée, c'est la reprise qui échoue — pas une page qui part à moitié
+  traduite ;
+- **`/api` n'est pas concernée.** Sa source est la surface publique réfléchie depuis
+  l'assembly (§2, §10.4), pas de la prose. Les deux répondent à deux questions distinctes
+  — ce que l'API expose, et comment on s'en sert — et se citent sans se dupliquer ;
+- **la péremption avertit, elle ne bloque pas.** Une documentation qui décrit une version
+  dépassée est signalée, jamais transformée en échec de publication : le même régime que
+  la fraîcheur du comparatif (§11.8), et pour un motif que §17 porte.
+
+Rien de ce qui est repris n'est corrigé ici. Un défaut trouvé dans une page reprise se
+corrige à la source, sans quoi la correction disparaît au prochain instantané.
 
 ---
 
@@ -1151,6 +1193,7 @@ cassé.
 | Un emplacement de mesure indexé sur une position | 15.3 | Vérification de l'artefact, et refus du collecteur |
 | Une paire emplacement/variante qui désigne deux choses | 15.2 | Vérification de l'artefact |
 | Le beacon d'audience et la politique qui doit l'admettre | 15.1, 13.2 | Vérification de l'artefact, dans les deux sens |
+| La documentation servie décrit la version proposée | 7.5 | Comparaison au registre ; avertissement et issue, jamais un échec de publication |
 
 Quand une règle de ce document n'a pas de ligne ici, c'est qu'elle repose sur
 l'attention. Le dire est plus utile que de faire semblant.
