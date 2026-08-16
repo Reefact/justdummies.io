@@ -183,10 +183,26 @@ const manual: Competitor = {
 export const competitors: readonly Competitor[] = [bogus, autoFixture, manual];
 
 /**
- * §11.8 — a content date, not a code comment: `WhyJustDummiesContent.astro` reads this to
- * warn at build time once it goes stale, and the page states it in prose (`why.verified`,
- * which restates this same date and must be kept in step with it — the `privacy.updated`
- * pattern this repository already accepts as duplication rather than build machinery).
+ * `id` cannot be made unique by the type system — TypeScript has no way to constrain
+ * sibling literals in an array against each other — so this is the runtime half of the
+ * same guarantee, the same way `PlaygroundStrings`' static constructor checks what its own
+ * type declarations cannot. A duplicate would make two competitors appear together under
+ * one `<select>` option and one `data-competitor` match, with neither reachable alone; this
+ * fails the build instead, the moment a page imports this module.
+ */
+const duplicateCompetitorId = competitors
+    .map((entry) => entry.id)
+    .find((id, index, ids) => ids.indexOf(id) !== index);
+
+if (duplicateCompetitorId !== undefined) {
+    throw new Error(`comparison.ts: duplicate competitor id "${duplicateCompetitorId}" — every competitor id must be unique.`);
+}
+
+/**
+ * §11.8 — a content date, not a code comment: `WhyJustDummiesContent.astro` reads this both
+ * to warn at build time once it goes stale, and to format the date `why.verified` displays
+ * (§6.5's locale rules) — one source rather than a hand-typed date that could disagree with
+ * the value the staleness check itself trusts.
  */
 export const comparisonVerifiedOn = '2026-08-15';
 

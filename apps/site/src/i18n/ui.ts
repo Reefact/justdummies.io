@@ -333,7 +333,8 @@ const en = {
     'why.notFor.body':
         "Not when a test needs data that looks real rather than data that is merely valid — reach for a fake-data generator instead. Not when a type carries no domain invariant worth declaring — a plain anonymous-object library does that with less ceremony. And every package is still a preview: an API that is still moving is a cost worth knowing about before it sits under a large test suite.",
 
-    'why.verified': 'Comparisons last verified: August 15, 2026.',
+    /** The date itself is never typed here — it comes from `comparison.ts`'s `comparisonVerifiedOn`, formatted per locale, so the two cannot disagree. */
+    'why.verified.label': 'Comparisons last verified:',
     'why.report.label': 'Spotted something inaccurate about a library listed here? Open an issue.',
 
     /**
@@ -630,7 +631,7 @@ const fr: Record<UiKey, string> = {
     'why.notFor.body':
         "Pas quand un test a besoin de données qui ressemblent à du réel plutôt que de données simplement valides — un générateur de fausses données fera mieux l'affaire. Pas non plus quand un type ne porte aucun invariant métier qui vaille la peine d'être déclaré — une bibliothèque de valeurs anonymes fait le travail avec moins de cérémonie. Et chaque paquet est encore en préversion : une API qui bouge encore est un coût qu'il vaut mieux connaître avant de la mettre sous une grande suite de tests.",
 
-    'why.verified': 'Comparatif vérifié pour la dernière fois le 15 août 2026.',
+    'why.verified.label': 'Comparatif vérifié pour la dernière fois le',
     'why.report.label': 'Une inexactitude sur une bibliothèque citée ici ? Ouvrez une issue.',
 
     'releaseNotes.heading': 'Notes de version',
