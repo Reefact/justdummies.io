@@ -107,7 +107,15 @@ if [ -n "${matched}" ]; then
   # Printed rather than counted: a run that says "yes" without saying why is a run somebody
   # widens the exclusions to silence. Capped, because "yes" is the common answer now and a
   # large refactor would otherwise bury the rest of the log under its own file list.
-  echo "${matched}" | head -20 | sed 's/^/    /'
+  #
+  # `sed -n '1,20p'` RATHER THAN `head -20`, and the difference is not style. `head` stops
+  # reading once it has its twenty lines; with a list longer than the pipe buffer — a few
+  # thousand paths, which is what a large refactor is — the `echo` upstream is then killed
+  # by SIGPIPE, `pipefail` makes the pipeline 141, and `set -e` aborts the script before
+  # `needed` reaches $GITHUB_OUTPUT. The cap put there to keep big changes readable would
+  # have failed the step on exactly those changes. Reproduced at 200 000 paths: 141 with
+  # `head`, 0 with this. `sed` reads to the end and prints the first twenty.
+  echo "${matched}" | sed -n '1,20p' | sed 's/^/    /'
   over="$(( $(echo "${matched}" | wc -l) - 20 ))"
 
   if [ "${over}" -gt 0 ]; then
