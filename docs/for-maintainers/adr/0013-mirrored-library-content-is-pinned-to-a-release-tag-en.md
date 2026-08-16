@@ -206,6 +206,13 @@ first implementation did, which is how a decision turns into an accident.
   and again when this site is released, and it **opens or updates an issue** rather than failing the
   publish — per ADR-0001 and §11.8 above. A warning inside a green pipeline is read by nobody, and
   the failure this guards against is precisely one nobody noticed.
+* **That check does not exist yet, and this record is not ratifiable until it does.**
+  [`CONTRIBUTING.md`](../../../CONTRIBUTING.md#a-decision-comes-with-something-that-fails-when-it-is-broken)
+  requires the thing that fails to exist before the work lands, so this record stays `Proposed` and
+  the specification's §16 carries **no row** for the rule — that table is the list of wishes turned
+  into controls, and a rule with nothing behind it rests on attention until the check is written.
+  Naming the gap is the point: an unwritten check listed as a control is the exact pretence §16's
+  closing sentence refuses.
 * It is break-tested before it lands, per
   [`CONTRIBUTING.md`](../../../CONTRIBUTING.md#a-decision-comes-with-something-that-fails-when-it-is-broken).
   The first run has a known expected result: the CLI gap measured in Context exists today, so a check
