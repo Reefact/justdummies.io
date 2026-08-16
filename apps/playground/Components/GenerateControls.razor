@@ -25,11 +25,19 @@
 
     <span class="visually-hidden" role="status" aria-live="polite">@CopyStatusText</span>
 
+    @*
+        The result sits in a live region that stays in the DOM across draws, while the <output>
+        inside it is keyed on DrawToken. A draw that happens to produce the text already shown —
+        always, for a pinned chain like Boolean().True(), and often for a small result space —
+        would otherwise mutate nothing, and a screen reader would report nothing at all for a
+        press of "Generate again". Keying replaces the node instead of editing its text, and an
+        added node inside an aria-live region is announced whether or not its text is new.
+    *@
     <div class="result" role="status" aria-live="polite">
         @if (Refusal is not null) {
-            <output class="refusal">@Refusal</output>
+            <output @key="DrawToken" class="refusal">@Refusal</output>
         } else if (HasResult) {
-            <output class="value">@DisplayValue(Value)</output>
+            <output @key="DrawToken" class="value">@DisplayValue(Value)</output>
         }
     </div>
 </div>
@@ -41,6 +49,10 @@
     [Parameter] public string? Refusal { get; set; }
     [Parameter, EditorRequired] public string CodeText { get; set; } = "";
     [Parameter, EditorRequired] public EventCallback OnGenerate { get; set; }
+
+    /// <summary>Changes on every draw, including one that produces the value already shown —
+    /// see the note on the result region above for why the markup keys on it.</summary>
+    [Parameter] public int DrawToken { get; set; }
 
     private enum CopyStatus { None, Copied, Failed }
 
