@@ -160,10 +160,13 @@ public static class ArgumentParsing {
                 // "Z" or explicit offset) through the host's local time zone, so the same input
                 // could parse to a different instant depending on where the playground — or the
                 // copied code — happens to run. DateTime doesn't carry a zone of its own; a
-                // visitor who needs one is pointed at DateTimeOffset instead.
+                // visitor who needs one is pointed at DateTimeOffset instead. It also fills in
+                // a missing date from today's date, so a time-only input like "14:30" is
+                // rejected too — the playground's own text asks for "a date and time", and an
+                // accepted one would mean a different value on a different day.
                 return TryParse(raw, KeyExpectsDateTime, (string s, out DateTime v) => {
                     v = default;
-                    return !HasExplicitOffset(s) && DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.None, out v);
+                    return !HasExplicitOffset(s) && HasExplicitDate(s) && DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.None, out v);
                 }, out value, out errorKey);
             case TypeKeyDateTimeOffset:
                 // DateTimeOffset.TryParse silently fills in a missing offset with the host's
