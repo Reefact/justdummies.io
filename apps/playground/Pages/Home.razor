@@ -251,7 +251,11 @@
         // fallback below doesn't compile for it. A bare "true"/"false" literal is valid C#,
         // but the raw input itself might not be lowercase (bool.TryParse accepts "True"), so
         // this re-derives the canonical literal rather than trusting the raw text verbatim.
-        ArgumentParsing.TypeKeyBoolean => bool.Parse(raw) ? "true" : "false",
+        // CodeText is rebuilt on every render regardless of whether the chain is complete —
+        // GenerateControls only chooses not to display it while CanGenerate is false — so an
+        // empty or not-yet-valid argument must format to something rather than throw; TryParse
+        // rather than Parse is what keeps this a pure, non-throwing formatting function.
+        ArgumentParsing.TypeKeyBoolean => bool.TryParse(raw, out var b) && b ? "true" : "false",
         // decimal.Parse(string, IFormatProvider) alone defaults to NumberStyles.Number, which
         // excludes AllowExponent — unlike float/double/Half, whose 2-argument Parse already
         // defaults to NumberStyles.Float. ArgumentParsing itself always parses with
