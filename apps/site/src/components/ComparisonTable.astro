@@ -26,7 +26,7 @@ import { axes, competitors, justDummies, type Cell, type Competitor } from '../c
 const t = useTranslations(localeFromPath(Astro.url.pathname));
 
 function nameOf(entry: Competitor): string {
-    return entry.nameKey ? t(entry.nameKey) : (entry.name as string);
+    return entry.kind === 'manual' ? t(entry.nameKey) : entry.name;
 }
 
 function ratingLabel(rating: Cell['rating']): string {

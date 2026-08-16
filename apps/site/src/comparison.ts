@@ -59,21 +59,26 @@ export type Cell =
 
 export type Ratings = Record<AxisId, Cell>;
 
-export interface Competitor {
+interface CompetitorFields {
     id: string;
-    kind: 'library' | 'manual';
-    /** A proper noun, identical in both locales. Absent only for `kind: 'manual'`. */
-    name?: string;
-    /** Prose naming an approach rather than a product. Used instead of `name` for `kind: 'manual'`. */
-    nameKey?: UiKey;
-    /** The official repository (§11.6). Absent for `manual`: there is nothing to link to. */
-    repo?: string;
     /** A one-line description, close to how the project's own authors describe it. */
     descriptionKey: UiKey;
     /** §11.6 — "when to choose it instead of JustDummies". Mandatory, never empty, never ironic. */
     chooseInsteadKey: UiKey;
     ratings: Ratings;
 }
+
+/**
+ * A discriminated union on `kind`, for the same reason `Cell` is one: a `library` with no
+ * `name`/`repo`, or a `manual` entry with no `nameKey`, used to type-check and then render a
+ * blank heading or a card silently missing its "view the repository" link. Each kind now
+ * carries only the fields it can actually have — a library is a proper noun with a repository
+ * to link to (§11.6), and the one entry that is not a library (§11.2) names itself through a
+ * translated key instead, because "writing values by hand" is prose, not a trademark.
+ */
+export type Competitor =
+    | (CompetitorFields & { kind: 'library'; name: string; repo: string })
+    | (CompetitorFields & { kind: 'manual'; nameKey: UiKey });
 
 /**
  * JustDummies is not a `Competitor`: it is the constant column every duel and every row
