@@ -276,8 +276,11 @@ The most important point, and the one that explains half the repository's config
 > and on the free plan exhausting that quota answers an error rather than falling back to the
 > assets. That is the difference between a site that degrades and a site that goes down.
 
-The full reasoning is in [`design/decisions-inventory.md`](../design/decisions-inventory.md), entries
-**A1** (why Workers rather than Pages) and **A6** (why no script).
+The full reasoning is in [`design/decisions-inventory.md`](../design/decisions-inventory.md), entry
+**A1** (why Workers rather than Pages), and in
+[ADR-0012](adr/0012-the-site-runs-one-worker-script-for-measurement-en.md) (why the one script there
+is stays off the site's path). The second half used to be entry **A6**, and left that inventory when
+ADR-0012 was accepted.
 
 ---
 
