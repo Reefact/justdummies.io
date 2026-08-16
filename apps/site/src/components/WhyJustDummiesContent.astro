@@ -19,10 +19,28 @@ const t = useTranslations(locale);
  * §11.8 — "a last-verified date is content, and past a declared delay the build warns."
  * Runs at build time, in Astro's own Node process, so a stale comparison shows up in
  * the build log rather than only in a reader noticing an old citation.
+ *
+ * `Date` does not reject an impossible day — `new Date('2026-02-31T00:00:00Z')` silently
+ * normalizes to March 3rd rather than producing `NaN` — so parsing the components by hand
+ * and reading them back off the constructed date is what actually catches that, rather than
+ * a `Number.isNaN` check that a normalized date always passes.
  */
-const verifiedOnMs: number = new Date(`${comparisonVerifiedOn}T00:00:00Z`).getTime();
+const verifiedOnParts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(comparisonVerifiedOn);
 
-if (Number.isNaN(verifiedOnMs) || verifiedOnMs > Date.now()) {
+if (verifiedOnParts === null) {
+    throw new Error(`comparison.ts: comparisonVerifiedOn ("${comparisonVerifiedOn}") must be an ISO date (YYYY-MM-DD).`);
+}
+
+const [, verifiedOnYear, verifiedOnMonth, verifiedOnDay] = verifiedOnParts.map(Number);
+const verifiedOnMs: number = Date.UTC(verifiedOnYear, verifiedOnMonth - 1, verifiedOnDay);
+const verifiedOnRoundTrip = new Date(verifiedOnMs);
+
+if (
+    verifiedOnRoundTrip.getUTCFullYear() !== verifiedOnYear ||
+    verifiedOnRoundTrip.getUTCMonth() !== verifiedOnMonth - 1 ||
+    verifiedOnRoundTrip.getUTCDate() !== verifiedOnDay ||
+    verifiedOnMs > Date.now()
+) {
     throw new Error(
         `comparison.ts: comparisonVerifiedOn ("${comparisonVerifiedOn}") must be a real calendar date no later than the build date.`,
     );
