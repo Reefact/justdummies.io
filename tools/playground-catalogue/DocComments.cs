@@ -1,3 +1,4 @@
+using System.Text;
 using System.Xml.Linq;
 
 namespace JustDummies.PlaygroundCatalogueGenerator;
@@ -23,9 +24,9 @@ public static class DocComments {
                 continue;
             }
 
-            var summary = CleanText(member.Element("summary")?.Value);
+            var summary = CleanText(member.Element("summary"));
             var parameters = member.Elements("param")
-                                    .Select(p => (Name: (string?)p.Attribute("name"), Text: CleanText(p.Value)))
+                                    .Select(p => (Name: (string?)p.Attribute("name"), Text: CleanText(p)))
                                     .Where(p => p.Name is not null)
                                     .ToDictionary(p => p.Name!, p => p.Text);
 
@@ -35,14 +36,47 @@ public static class DocComments {
         return entries;
     }
 
-    /// <summary>Doc XML wraps prose across lines with indentation; collapse it to one readable line.</summary>
-    private static string CleanText(string? raw) {
-        if (string.IsNullOrWhiteSpace(raw)) {
+    /// <summary>
+    ///     Flattens a doc-comment element (e.g. <c>&lt;summary&gt;</c>) to one readable line of
+    ///     prose. <c>XElement.Value</c> alone would drop the content of self-closing inline
+    ///     elements like <c>&lt;paramref name="x"/&gt;</c> and <c>&lt;see cref="M:..."/&gt;</c> —
+    ///     they carry their text in an attribute, not as a child text node — so this walks the
+    ///     descendant nodes by hand and substitutes that attribute for such elements instead.
+    /// </summary>
+    private static string CleanText(XElement? element) {
+        if (element is null) {
             return string.Empty;
         }
 
-        var words = raw.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+        var sb = new StringBuilder();
+        foreach (var node in element.DescendantNodesAndSelf()) {
+            switch (node) {
+                case XText text:
+                    sb.Append(text.Value).Append(' ');
+                    break;
+                case XElement { Name.LocalName: "paramref" or "typeparamref" } inline:
+                    sb.Append((string?)inline.Attribute("name")).Append(' ');
+                    break;
+                case XElement { Name.LocalName: "see" or "seealso" } inline:
+                    sb.Append(CrefText((string?)inline.Attribute("cref"))).Append(' ');
+                    break;
+            }
+        }
+
+        var words = sb.ToString().Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
         return string.Join(' ', words);
+    }
+
+    /// <summary>A <c>cref</c> attribute is a full XML-doc member ID (e.g.
+    /// <c>"T:System.Guid"</c>); readers only need the simple name after the last separator.</summary>
+    private static string CrefText(string? cref) {
+        if (string.IsNullOrEmpty(cref)) {
+            return string.Empty;
+        }
+
+        var withoutPrefix = cref.Length > 2 && cref[1] == ':' ? cref[2..] : cref;
+        var lastSeparator = withoutPrefix.LastIndexOfAny(['.', '(']);
+        return lastSeparator < 0 ? withoutPrefix : withoutPrefix[(lastSeparator + 1)..];
     }
 
 }

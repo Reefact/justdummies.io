@@ -7,31 +7,31 @@ stated reason — this file is that reason, kept current on every generation.
 
 ## Auto-detected (77)
 
-- `M:JustDummies.Any.ArrayOf()` — open generic method — no closed instantiation is expressible as a flat chain step in v1
-- `M:JustDummies.Any.Combine(,,)` — open generic method — no closed instantiation is expressible as a flat chain step in v1
-- `M:JustDummies.Any.Combine(,,,)` — open generic method — no closed instantiation is expressible as a flat chain step in v1
-- `M:JustDummies.Any.Combine(,,,,)` — open generic method — no closed instantiation is expressible as a flat chain step in v1
-- `M:JustDummies.Any.Combine(,,,,,)` — open generic method — no closed instantiation is expressible as a flat chain step in v1
-- `M:JustDummies.Any.Combine(,,,,,,)` — open generic method — no closed instantiation is expressible as a flat chain step in v1
-- `M:JustDummies.Any.Combine(,,,,,,,)` — open generic method — no closed instantiation is expressible as a flat chain step in v1
-- `M:JustDummies.Any.Combine(,,,,,,,,)` — open generic method — no closed instantiation is expressible as a flat chain step in v1
-- `M:JustDummies.Any.DictionaryOf(,)` — open generic method — no closed instantiation is expressible as a flat chain step in v1
-- `M:JustDummies.Any.DictionaryOf(,,)` — open generic method — no closed instantiation is expressible as a flat chain step in v1
-- `M:JustDummies.Any.ElementOf()` — open generic method — no closed instantiation is expressible as a flat chain step in v1
-- `M:JustDummies.Any.ElementOf()` — open generic method — no closed instantiation is expressible as a flat chain step in v1
-- `M:JustDummies.Any.Enum` — open generic method — no closed instantiation is expressible as a flat chain step in v1
-- `M:JustDummies.Any.ListOf()` — open generic method — no closed instantiation is expressible as a flat chain step in v1
-- `M:JustDummies.Any.OneOf()` — open generic method — no closed instantiation is expressible as a flat chain step in v1
-- `M:JustDummies.Any.PairOf(,)` — open generic method — no closed instantiation is expressible as a flat chain step in v1
-- `M:JustDummies.Any.Reproducibly(System.Action,System.Action`1[[System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]])` — return type 'Void' does not implement IAny<T> — not a chain-eligible step
-- `M:JustDummies.Any.Reproducibly(System.Int32,System.Action,System.Action`1[[System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]])` — return type 'Void' does not implement IAny<T> — not a chain-eligible step
-- `M:JustDummies.Any.ReproduciblyAsync(System.Func`1[[System.Threading.Tasks.Task, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]],System.Action`1[[System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]])` — return type 'Task' does not implement IAny<T> — not a chain-eligible step
-- `M:JustDummies.Any.ReproduciblyAsync(System.Int32,System.Func`1[[System.Threading.Tasks.Task, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]],System.Action`1[[System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]])` — return type 'Task' does not implement IAny<T> — not a chain-eligible step
-- `M:JustDummies.Any.SequenceOf()` — open generic method — no closed instantiation is expressible as a flat chain step in v1
-- `M:JustDummies.Any.SetOf()` — open generic method — no closed instantiation is expressible as a flat chain step in v1
-- `M:JustDummies.Any.SetOf(,)` — open generic method — no closed instantiation is expressible as a flat chain step in v1
+- `M:JustDummies.Any.ArrayOf``1(JustDummies.IAny{``0})` — open generic method — no closed instantiation is expressible as a flat chain step in v1
+- `M:JustDummies.Any.Combine``3(JustDummies.IAny{``0},JustDummies.IAny{``1},System.Func{``0,``1,``2})` — open generic method — no closed instantiation is expressible as a flat chain step in v1
+- `M:JustDummies.Any.Combine``4(JustDummies.IAny{``0},JustDummies.IAny{``1},JustDummies.IAny{``2},System.Func{``0,``1,``2,``3})` — open generic method — no closed instantiation is expressible as a flat chain step in v1
+- `M:JustDummies.Any.Combine``5(JustDummies.IAny{``0},JustDummies.IAny{``1},JustDummies.IAny{``2},JustDummies.IAny{``3},System.Func{``0,``1,``2,``3,``4})` — open generic method — no closed instantiation is expressible as a flat chain step in v1
+- `M:JustDummies.Any.Combine``6(JustDummies.IAny{``0},JustDummies.IAny{``1},JustDummies.IAny{``2},JustDummies.IAny{``3},JustDummies.IAny{``4},System.Func{``0,``1,``2,``3,``4,``5})` — open generic method — no closed instantiation is expressible as a flat chain step in v1
+- `M:JustDummies.Any.Combine``7(JustDummies.IAny{``0},JustDummies.IAny{``1},JustDummies.IAny{``2},JustDummies.IAny{``3},JustDummies.IAny{``4},JustDummies.IAny{``5},System.Func{``0,``1,``2,``3,``4,``5,``6})` — open generic method — no closed instantiation is expressible as a flat chain step in v1
+- `M:JustDummies.Any.Combine``8(JustDummies.IAny{``0},JustDummies.IAny{``1},JustDummies.IAny{``2},JustDummies.IAny{``3},JustDummies.IAny{``4},JustDummies.IAny{``5},JustDummies.IAny{``6},System.Func{``0,``1,``2,``3,``4,``5,``6,``7})` — open generic method — no closed instantiation is expressible as a flat chain step in v1
+- `M:JustDummies.Any.Combine``9(JustDummies.IAny{``0},JustDummies.IAny{``1},JustDummies.IAny{``2},JustDummies.IAny{``3},JustDummies.IAny{``4},JustDummies.IAny{``5},JustDummies.IAny{``6},JustDummies.IAny{``7},System.Func{``0,``1,``2,``3,``4,``5,``6,``7,``8})` — open generic method — no closed instantiation is expressible as a flat chain step in v1
+- `M:JustDummies.Any.DictionaryOf``2(JustDummies.IAny{``0},JustDummies.IAny{``1})` — open generic method — no closed instantiation is expressible as a flat chain step in v1
+- `M:JustDummies.Any.DictionaryOf``2(JustDummies.IAny{``0},JustDummies.IAny{``1},System.Collections.Generic.IEqualityComparer{``0})` — open generic method — no closed instantiation is expressible as a flat chain step in v1
+- `M:JustDummies.Any.ElementOf``1(System.Collections.Generic.IEnumerable{``0})` — open generic method — no closed instantiation is expressible as a flat chain step in v1
+- `M:JustDummies.Any.ElementOf``1(System.Collections.Generic.IReadOnlyList{``0})` — open generic method — no closed instantiation is expressible as a flat chain step in v1
+- `M:JustDummies.Any.Enum``1` — open generic method — no closed instantiation is expressible as a flat chain step in v1
+- `M:JustDummies.Any.ListOf``1(JustDummies.IAny{``0})` — open generic method — no closed instantiation is expressible as a flat chain step in v1
+- `M:JustDummies.Any.OneOf``1(``0[])` — open generic method — no closed instantiation is expressible as a flat chain step in v1
+- `M:JustDummies.Any.PairOf``2(JustDummies.IAny{``0},JustDummies.IAny{``1})` — open generic method — no closed instantiation is expressible as a flat chain step in v1
+- `M:JustDummies.Any.Reproducibly(System.Action,System.Action{System.String})` — return type 'Void' does not implement IAny<T> — not a chain-eligible step
+- `M:JustDummies.Any.Reproducibly(System.Int32,System.Action,System.Action{System.String})` — return type 'Void' does not implement IAny<T> — not a chain-eligible step
+- `M:JustDummies.Any.ReproduciblyAsync(System.Func{System.Threading.Tasks.Task},System.Action{System.String})` — return type 'Task' does not implement IAny<T> — not a chain-eligible step
+- `M:JustDummies.Any.ReproduciblyAsync(System.Int32,System.Func{System.Threading.Tasks.Task},System.Action{System.String})` — return type 'Task' does not implement IAny<T> — not a chain-eligible step
+- `M:JustDummies.Any.SequenceOf``1(JustDummies.IAny{``0})` — open generic method — no closed instantiation is expressible as a flat chain step in v1
+- `M:JustDummies.Any.SetOf``1(JustDummies.IAny{``0})` — open generic method — no closed instantiation is expressible as a flat chain step in v1
+- `M:JustDummies.Any.SetOf``1(JustDummies.IAny{``0},System.Collections.Generic.IEqualityComparer{``0})` — open generic method — no closed instantiation is expressible as a flat chain step in v1
 - `M:JustDummies.Any.StringMatching(System.Text.RegularExpressions.Regex)` — parameter type 'System.Text.RegularExpressions.Regex' has no known argument parser
-- `M:JustDummies.Any.TripleOf(,,)` — open generic method — no closed instantiation is expressible as a flat chain step in v1
+- `M:JustDummies.Any.TripleOf``3(JustDummies.IAny{``0},JustDummies.IAny{``1},JustDummies.IAny{``2})` — open generic method — no closed instantiation is expressible as a flat chain step in v1
 - `M:JustDummies.Any.UseSeed(System.Int32)` — return type 'IDisposable' does not implement IAny<T> — not a chain-eligible step
 - `M:JustDummies.Any.UseSeed(System.Int32,System.String)` — return type 'IDisposable' does not implement IAny<T> — not a chain-eligible step
 - `M:JustDummies.Any.WithSeed(System.Int32)` — return type 'AnyContext' does not implement IAny<T> — not a chain-eligible step
@@ -49,7 +49,7 @@ stated reason — this file is that reason, kept current on every generation.
 - `M:JustDummies.AnyDecimal.OneOf(System.Decimal[])` — takes a collection-typed parameter — no v1 form-input shape for a multi-value argument
 - `M:JustDummies.AnyDouble.Except(System.Double[])` — takes a collection-typed parameter — no v1 form-input shape for a multi-value argument
 - `M:JustDummies.AnyDouble.OneOf(System.Double[])` — takes a collection-typed parameter — no v1 form-input shape for a multi-value argument
-- `M:JustDummies.AnyExtensions.As(,)` — open generic method — no closed instantiation is expressible as a flat chain step in v1
+- `M:JustDummies.AnyExtensions.As``2(JustDummies.IAny{``0},System.Func{``0,``1})` — open generic method — no closed instantiation is expressible as a flat chain step in v1
 - `M:JustDummies.AnyGuid.Except(System.Guid[])` — takes a collection-typed parameter — no v1 form-input shape for a multi-value argument
 - `M:JustDummies.AnyGuid.OneOf(System.Guid[])` — takes a collection-typed parameter — no v1 form-input shape for a multi-value argument
 - `M:JustDummies.AnyHalf.Except(System.Half[])` — takes a collection-typed parameter — no v1 form-input shape for a multi-value argument
@@ -68,7 +68,7 @@ stated reason — this file is that reason, kept current on every generation.
 - `M:JustDummies.AnySingle.Except(System.Single[])` — takes a collection-typed parameter — no v1 form-input shape for a multi-value argument
 - `M:JustDummies.AnySingle.OneOf(System.Single[])` — takes a collection-typed parameter — no v1 form-input shape for a multi-value argument
 - `M:JustDummies.AnyString.Except(System.String[])` — takes a collection-typed parameter — no v1 form-input shape for a multi-value argument
-- `M:JustDummies.AnyString.OneOf(System.Collections.Generic.IEnumerable`1[[System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]])` — takes a collection-typed parameter — no v1 form-input shape for a multi-value argument
+- `M:JustDummies.AnyString.OneOf(System.Collections.Generic.IEnumerable{System.String})` — takes a collection-typed parameter — no v1 form-input shape for a multi-value argument
 - `M:JustDummies.AnyString.OneOf(System.String[])` — takes a collection-typed parameter — no v1 form-input shape for a multi-value argument
 - `M:JustDummies.AnyTimeOnly.Except(System.TimeOnly[])` — takes a collection-typed parameter — no v1 form-input shape for a multi-value argument
 - `M:JustDummies.AnyTimeOnly.OneOf(System.TimeOnly[])` — takes a collection-typed parameter — no v1 form-input shape for a multi-value argument
@@ -82,8 +82,8 @@ stated reason — this file is that reason, kept current on every generation.
 - `M:JustDummies.AnyUInt32.OneOf(System.UInt32[])` — takes a collection-typed parameter — no v1 form-input shape for a multi-value argument
 - `M:JustDummies.AnyUInt64.Except(System.UInt64[])` — takes a collection-typed parameter — no v1 form-input shape for a multi-value argument
 - `M:JustDummies.AnyUInt64.OneOf(System.UInt64[])` — takes a collection-typed parameter — no v1 form-input shape for a multi-value argument
-- `M:JustDummies.NullableExtensions.OrNull()` — open generic method — no closed instantiation is expressible as a flat chain step in v1
-- `M:JustDummies.NullableReferenceExtensions.OrNull()` — open generic method — no closed instantiation is expressible as a flat chain step in v1
+- `M:JustDummies.NullableExtensions.OrNull``1(JustDummies.IAny{``0})` — open generic method — no closed instantiation is expressible as a flat chain step in v1
+- `M:JustDummies.NullableReferenceExtensions.OrNull``1(JustDummies.IAny{``0})` — open generic method — no closed instantiation is expressible as a flat chain step in v1
 
 ## Manual (`excluded-members.jsonc`) (0)
 

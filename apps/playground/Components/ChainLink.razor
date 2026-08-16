@@ -39,7 +39,7 @@
                 <input
                     type="@InputTypeFor(parameter.TypeKey)"
                     placeholder="@parameter.Placeholder"
-                    aria-label="@parameter.Name"
+                    aria-label="@($"{chosen.MethodName} {parameter.Name}")"
                     aria-describedby="@(HasError ? ErrorId : null)"
                     value="@State.Argument(index)"
                     @oninput="e => HandleArgumentChanged(index, e)" />

@@ -35,7 +35,7 @@ test.describe('the playground', () => {
         await page.getByRole('button', { name: 'Generate' }).click();
 
         const value = page.locator('.generate-controls .value');
-        await expect(value).toHaveText(/^ORD-.*$/);
+        await expect(value).toHaveText(/^"ORD-.*"$/);
 
         // Nothing may have 404'd on the way. This is the blank-page defect stated as an
         // assertion: the base href and the copy destination disagree, every asset misses, and

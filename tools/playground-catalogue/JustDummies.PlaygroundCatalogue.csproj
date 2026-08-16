@@ -36,10 +36,15 @@
   </Target>
 
   <ItemGroup>
-    <!-- Reused so the generator's notion of "a parameter type it can emit" never drifts from the
-         playground's own parser (ArgumentParsing.KnownTypeKeys), and so it can emit MemberDescriptor/
-         ChainStep/ChainResult literals directly rather than duplicating their shape. -->
-    <ProjectReference Include="..\..\packages\playground-catalogue\JustDummies.Playground.Catalogue.csproj" />
+    <!-- The -core project only, never packages/playground-catalogue itself: that project's
+         Generated/ is this generator's own output, and referencing it here would mean a stale
+         committed dispatch file (e.g. after a JustDummies release removes a method it still
+         calls) has to compile before the generator can run to replace it — the exact bootstrap
+         deadlock this split exists to avoid. Reused so the generator's notion of "a parameter
+         type it can emit" never drifts from the playground's own parser
+         (ArgumentParsing.KnownTypeKeys). MemberDescriptor/ChainStep/ChainResult are never
+         referenced as compiled types here — the emitters below write them out as text. -->
+    <ProjectReference Include="..\..\packages\playground-catalogue-core\JustDummies.Playground.Catalogue.Core.csproj" />
   </ItemGroup>
 
 </Project>

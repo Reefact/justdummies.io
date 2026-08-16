@@ -193,11 +193,44 @@
     }
 
     /// <summary>Formats one argument the way it would need to read in real C#, so "Copy code"
-    /// produces code that actually compiles rather than the raw text an input held.</summary>
+    /// produces code that actually compiles rather than the raw text an input held. Only
+    /// <c>string</c> (quoted), <c>char</c> (quoted) and <c>int</c> (a bare literal is already
+    /// valid C#) get special forms; every other supported type is emitted as
+    /// <c>TypeName.Parse("raw")</c> rather than as a bare literal, since several of them (Guid,
+    /// the date/time family, decimal, float, Half, Int128/UInt128, large unsigned values) have
+    /// no bare-literal form, or one that needs a type-specific suffix — Parse is correct and
+    /// uniform for all of them at once.</summary>
     private static string FormatArgumentLiteral(string typeKey, string raw) => typeKey switch {
-        ArgumentParsing.TypeKeyString => $"\"{raw.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"",
-        ArgumentParsing.TypeKeyChar   => $"'{raw.Replace("'", "\\'")}'",
-        _                             => raw,
+        ArgumentParsing.TypeKeyString => $"\"{EscapeForStringLiteral(raw)}\"",
+        ArgumentParsing.TypeKeyChar   => $"'{raw.Replace("\\", "\\\\").Replace("'", "\\'")}'",
+        ArgumentParsing.TypeKeyInt32  => raw,
+        _                             => $"{ClrTypeNameFor(typeKey)}.Parse(\"{EscapeForStringLiteral(raw)}\")",
+    };
+
+    private static string EscapeForStringLiteral(string raw) => raw.Replace("\\", "\\\\").Replace("\"", "\\\"");
+
+    private static string ClrTypeNameFor(string typeKey) => typeKey switch {
+        ArgumentParsing.TypeKeyBoolean        => "bool",
+        ArgumentParsing.TypeKeyByte           => "byte",
+        ArgumentParsing.TypeKeySByte          => "sbyte",
+        ArgumentParsing.TypeKeyInt16          => "short",
+        ArgumentParsing.TypeKeyUInt16         => "ushort",
+        ArgumentParsing.TypeKeyUInt32         => "uint",
+        ArgumentParsing.TypeKeyInt64          => "long",
+        ArgumentParsing.TypeKeyUInt64         => "ulong",
+        ArgumentParsing.TypeKeyInt128         => "System.Int128",
+        ArgumentParsing.TypeKeyUInt128        => "System.UInt128",
+        ArgumentParsing.TypeKeySingle         => "float",
+        ArgumentParsing.TypeKeyDouble         => "double",
+        ArgumentParsing.TypeKeyHalf           => "System.Half",
+        ArgumentParsing.TypeKeyDecimal        => "decimal",
+        ArgumentParsing.TypeKeyGuid           => "System.Guid",
+        ArgumentParsing.TypeKeyDateOnly       => "System.DateOnly",
+        ArgumentParsing.TypeKeyDateTime       => "System.DateTime",
+        ArgumentParsing.TypeKeyDateTimeOffset => "System.DateTimeOffset",
+        ArgumentParsing.TypeKeyTimeOnly       => "System.TimeOnly",
+        ArgumentParsing.TypeKeyTimeSpan       => "System.TimeSpan",
+        _                                     => throw new InvalidOperationException($"no C# type name registered for '{typeKey}'"),
     };
 
     private static string ReadLibraryVersion() {

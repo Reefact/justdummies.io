@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    ArgumentParsing — the one piece of the catalogue bridge tools/playground-catalogue (the
+    generator) genuinely needs to reference: KnownTypeKeys, so the generator's notion of "a
+    parameter type it can emit" never drifts from what the playground's own parser actually
+    accepts. It depends on nothing but the .NET base class library, not on JustDummies or on
+    the MemberDescriptor/ChainStep/ChainResult/PlaygroundCatalogue/PlaygroundDispatch types in
+    the sibling packages/playground-catalogue project (those live together with Generated/
+    there because C# partial classes must share one assembly).
+
+    Kept in its own project, separate from packages/playground-catalogue, specifically so the
+    generator's ProjectReference never pulls in Generated/ — that project's own output, which
+    the generator produces and must be able to compile without. Without this split, a stale
+    committed dispatch file (e.g. after a JustDummies release removes a method it still calls)
+    would fail to compile before the generator could even run to replace it: the generator
+    would be blocked from fixing exactly the class of break it exists to catch.
+  -->
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>JustDummies.Playground.Catalogue</RootNamespace>
+  </PropertyGroup>
+
+</Project>

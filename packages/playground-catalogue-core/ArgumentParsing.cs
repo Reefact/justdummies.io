@@ -64,6 +64,19 @@ public static class ArgumentParsing {
     public const string KeyExpectsDateTimeOffset          = "argument.expectsDateTimeOffset";
     public const string KeyExpectsTime                    = "argument.expectsTime";
     public const string KeyExpectsDuration                = "argument.expectsDuration";
+    public const string KeyExpectsWithinSandboxRange       = "argument.expectsWithinSandboxRange";
+
+    /// <summary>
+    ///     A ceiling on the magnitude of any integer argument this playground will actually pass to
+    ///     the library, independent of the parameter's own name or purpose. Nothing in the v1
+    ///     scalar catalogue needs a value larger than this for a meaningful demonstration, and an
+    ///     unbounded one — e.g. <c>Any.String().WithLength(2147483647)</c> — asks the WebAssembly
+    ///     runtime to allocate multiple gigabytes and can terminate the page with an uncaught
+    ///     <c>OutOfMemoryException</c>. Applied uniformly to every wide-enough integer type rather
+    ///     than only to parameters that look length-related, since the catalogue carries no
+    ///     per-parameter "this one drives an allocation" metadata to key a narrower rule on.
+    /// </summary>
+    public const int SandboxMagnitudeLimit = 100_000;
 
     /// <summary>
     ///     Parses <paramref name="raw" /> as <paramref name="typeKey" />, or returns the
@@ -86,17 +99,17 @@ public static class ArgumentParsing {
             case TypeKeyUInt16:
                 return TryParse(raw, KeyExpectsWholeNumberNonNegative, (string s, out ushort v) => ushort.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out v), out value, out errorKey);
             case TypeKeyInt32:
-                return TryParse(raw, KeyExpectsInteger, (string s, out int v) => int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out v), out value, out errorKey);
+                return TryParseCapped(raw, KeyExpectsInteger, (string s, out int v) => int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out v), out value, out errorKey);
             case TypeKeyUInt32:
-                return TryParse(raw, KeyExpectsWholeNumberNonNegative, (string s, out uint v) => uint.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out v), out value, out errorKey);
+                return TryParseCapped(raw, KeyExpectsWholeNumberNonNegative, (string s, out uint v) => uint.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out v), out value, out errorKey);
             case TypeKeyInt64:
-                return TryParse(raw, KeyExpectsWholeNumber, (string s, out long v) => long.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out v), out value, out errorKey);
+                return TryParseCapped(raw, KeyExpectsWholeNumber, (string s, out long v) => long.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out v), out value, out errorKey);
             case TypeKeyUInt64:
-                return TryParse(raw, KeyExpectsWholeNumberNonNegative, (string s, out ulong v) => ulong.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out v), out value, out errorKey);
+                return TryParseCapped(raw, KeyExpectsWholeNumberNonNegative, (string s, out ulong v) => ulong.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out v), out value, out errorKey);
             case TypeKeyInt128:
-                return TryParse(raw, KeyExpectsWholeNumber, (string s, out Int128 v) => Int128.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out v), out value, out errorKey);
+                return TryParseCapped(raw, KeyExpectsWholeNumber, (string s, out Int128 v) => Int128.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out v), out value, out errorKey);
             case TypeKeyUInt128:
-                return TryParse(raw, KeyExpectsWholeNumberNonNegative, (string s, out UInt128 v) => UInt128.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out v), out value, out errorKey);
+                return TryParseCapped(raw, KeyExpectsWholeNumberNonNegative, (string s, out UInt128 v) => UInt128.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out v), out value, out errorKey);
             case TypeKeySingle:
                 return TryParse(raw, KeyExpectsNumber, (string s, out float v) => float.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out v), out value, out errorKey);
             case TypeKeyDouble:
@@ -142,6 +155,24 @@ public static class ArgumentParsing {
         value    = null;
         errorKey = expectedKey;
         return false;
+    }
+
+    /// <summary>Like <see cref="TryParse{T}" />, but also rejects a value whose magnitude exceeds
+    /// <see cref="SandboxMagnitudeLimit" /> — see that constant's own comment for why.</summary>
+    private static bool TryParseCapped<T>(string raw, string expectedKey, Parser<T> parser, out object? value, out string? errorKey)
+        where T : System.Numerics.INumber<T> {
+        if (!TryParse(raw, expectedKey, parser, out value, out errorKey)) {
+            return false;
+        }
+
+        var parsed = (T)value!;
+        if (T.Abs(parsed) > T.CreateSaturating(SandboxMagnitudeLimit)) {
+            value    = null;
+            errorKey = KeyExpectsWithinSandboxRange;
+            return false;
+        }
+
+        return true;
     }
 
 }

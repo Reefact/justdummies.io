@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 using JustDummies;
 using JustDummies.PlaygroundCatalogueGenerator;
 
@@ -37,18 +39,29 @@ try {
     return 1;
 }
 
-// Self-check (specification §10.5): the descriptor key set and the dispatch key set must be
-// identical — a bug in either emitter, independently, would otherwise ship silently.
-var descriptorKeys = result.EntryPoints.Concat(result.Members).Select(e => e.Key).ToHashSet();
-var dispatchKeys    = result.EntryPoints.Concat(result.Members).Select(e => e.Key).ToHashSet();
+var descriptorsText = DescriptorEmitter.Emit(result);
+var dispatchText    = DispatchEmitter.Emit(result);
+
+// Self-check (specification §10.5): the key set actually present in each *emitted* file must be
+// identical — read back from the generated text itself, not from the shared WalkResult both
+// emitters were fed, so an emitter bug that drops or duplicates a key is actually caught rather
+// than trivially agreeing with itself.
+var descriptorKeys = ExtractKeys(descriptorsText, new Regex("new MemberDescriptor\\(\"((?:[^\"\\\\]|\\\\.)*)\""));
+var dispatchKeys    = ExtractKeys(dispatchText, new Regex("^\\s*\\[\"((?:[^\"\\\\]|\\\\.)*)\"\\]\\s*=\\s*\\(receiver", RegexOptions.Multiline));
 if (!descriptorKeys.SetEquals(dispatchKeys)) {
     Console.Error.WriteLine("error: descriptor and dispatch key sets disagree — this is a generator bug.");
+    foreach (var onlyInDescriptors in descriptorKeys.Except(dispatchKeys).OrderBy(k => k, StringComparer.Ordinal)) {
+        Console.Error.WriteLine($"  only in descriptors: {onlyInDescriptors}");
+    }
+    foreach (var onlyInDispatch in dispatchKeys.Except(descriptorKeys).OrderBy(k => k, StringComparer.Ordinal)) {
+        Console.Error.WriteLine($"  only in dispatch: {onlyInDispatch}");
+    }
     return 1;
 }
 
 Directory.CreateDirectory(outputDir);
-File.WriteAllText(Path.Combine(outputDir, "PlaygroundCatalogue.Descriptors.g.cs"), DescriptorEmitter.Emit(result));
-File.WriteAllText(Path.Combine(outputDir, "PlaygroundCatalogue.Dispatch.g.cs"), DispatchEmitter.Emit(result));
+File.WriteAllText(Path.Combine(outputDir, "PlaygroundCatalogue.Descriptors.g.cs"), descriptorsText);
+File.WriteAllText(Path.Combine(outputDir, "PlaygroundCatalogue.Dispatch.g.cs"), dispatchText);
 File.WriteAllText(Path.Combine(outputDir, "PlaygroundCatalogue.Excluded.g.md"), ExclusionReport.Emit(result));
 
 if (result.UnusedManualExclusions.Count > 0) {
@@ -61,3 +74,6 @@ Console.WriteLine(
     $"{result.AutoExcluded.Count} auto-excluded, {result.ManuallyExcluded.Count} manually excluded.");
 
 return 0;
+
+static HashSet<string> ExtractKeys(string emittedText, Regex keyPattern) =>
+    keyPattern.Matches(emittedText).Select(m => m.Groups[1].Value.Replace("\\\"", "\"").Replace("\\\\", "\\")).ToHashSet();
