@@ -58,18 +58,27 @@ jobs:
 
       # Never fails this job over what it finds — see the script's own header. A
       # non-zero exit here means the script's assumptions about the repository's own
-      # shape broke (a version string it cannot parse, a source file it cannot read),
-      # which is worth a red run rather than a silent report.
+      # shape broke (a version string it cannot parse, a package it does not know to
+      # look for, a source file it cannot read), which is worth a red run rather than
+      # a silent report. GitHub emails a scheduled workflow's own failure, which is
+      # signal enough for that case on its own — see the next step's gate.
       - name: Check declared package versions against the registry
+        id: freshness
         run: node scripts/check-package-freshness.mjs --out freshness-report.json
 
+      # Gated on the check itself having succeeded: when it did not, the script's
+      # report — if one was even written — describes a repository this script no
+      # longer understands, and touching the tracking issue on that basis could close
+      # it while the one thing genuinely broken is the check, not what it was
+      # checking. Leaving the issue exactly as it was is the safe default; the failed
+      # step above is what carries the signal in that case.
       - name: Open, update, or close the tracking issue
-        if: always()
+        if: always() && steps.freshness.outcome == 'success'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           if [ ! -f freshness-report.json ]; then
-            echo "::error title=No report written::check-package-freshness.mjs exited before writing freshness-report.json."
+            echo "::error title=No report written::check-package-freshness.mjs exited 0 but freshness-report.json is missing."
             exit 1
           fi
 
