@@ -18,13 +18,14 @@
 // compares them" comment since before this script existed. Reading both and reporting
 // a disagreement is that build step; the comment names this file now.
 //
-// Never exits non-zero over a package being behind the registry, or over the two
-// local sources disagreeing — ADR-0013 draws that distinction on purpose, the same
-// one §11.8 draws for the comparison table: an external fact moving is a warning and
-// an issue, never a failed publish. It exits non-zero only when this script's own
-// assumptions about the repository's shape stop holding (a version string it cannot
-// parse, a source file restructured out from under its regexes) — a defect in the
-// check itself, not a finding it exists to report.
+// Never exits non-zero over a package being behind the registry, never published at
+// all, or over the two local sources disagreeing — ADR-0013 draws that distinction on
+// purpose, the same one §11.8 draws for the comparison table: an external fact moving
+// is a warning and an issue, never a failed publish. It exits non-zero only when this
+// script's own assumptions about the repository's shape stop holding (a version
+// string it cannot parse, a package declared where its own PACKAGES list does not
+// expect one, a source file restructured out from under its regexes) — a defect in
+// the check itself, not a finding it exists to report.
 //
 // Usage:
 //   node scripts/check-package-freshness.mjs [--out <path>]
@@ -52,8 +53,26 @@ const PACKAGES = [
     { id: 'JustDummies.DiagnosticCatalog', siteTsKey: null, inPackagesProps: false },
 ];
 
+const KNOWN_IDS = new Set(PACKAGES.map((p) => p.id));
+
 function escapeRegExp(text) {
     return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Every `JustDummies.*` id either source file actually declares, found by content
+ * shape rather than looked up by name — so a fifth package added to `site.ts` or
+ * `Directory.Packages.props` without a matching entry in `PACKAGES` above is
+ * discovered here rather than silently skipped by every function that only walks
+ * the fixed list. `main()` treats an id this finds that `PACKAGES` does not know as
+ * the same class of defect as an unparseable version: this script's own assumptions
+ * about the repository's shape, stale.
+ */
+function allDeclaredIds(siteTs, packagesProps) {
+    const ids = new Set();
+    for (const m of siteTs.matchAll(/package:\s*'(JustDummies[^']*)'/g)) ids.add(m[1]);
+    for (const m of packagesProps.matchAll(/<PackageVersion Include="(JustDummies[^"]*)"/g)) ids.add(m[1]);
+    return ids;
 }
 
 /**
@@ -127,30 +146,63 @@ function compareVersions(a, b) {
     return 0;
 }
 
-async function latestPublished(packageId) {
-    const url = `https://api.nuget.org/v3-flatcontainer/${packageId.toLowerCase()}/index.json`;
-
-    let response;
-    try {
-        response = await fetch(url, { signal: AbortSignal.timeout(10_000) });
-    } catch (error) {
-        return { error: `could not reach nuget.org: ${error.message}` };
-    }
-
+async function fetchJson(url) {
+    const response = await fetch(url, { signal: AbortSignal.timeout(10_000) });
     if (!response.ok) {
-        return { error: `nuget.org answered ${response.status} for ${packageId}` };
+        throw new Error(`${url} answered ${response.status}`);
+    }
+    return response.json();
+}
+
+/**
+ * Every catalog entry nuget.org has ever published for this package, listed or not.
+ *
+ * The flat-container index (`v3-flatcontainer/{id}/index.json`) this used to read is
+ * just an array of version strings — it carries no `listed` flag, so a version
+ * withdrawn after publication (a bad release, pulled) is indistinguishable from one
+ * still installable by default. The registration resource is the one that carries
+ * that fact, at the cost of being paged: a package with enough versions splits into
+ * pages nuget.org returns as `{ "@id": <url>, "count": N }` with no inline `items`,
+ * which this follows rather than assumes away — none of this repository's own
+ * packages are anywhere near that threshold today, but a check that silently
+ * mishandled it the day one crossed it would be exactly the class of defect this
+ * file exists to catch elsewhere.
+ */
+async function registrationEntries(packageId) {
+    const index = await fetchJson(`https://api.nuget.org/v3/registration5-gz-semver2/${packageId.toLowerCase()}/index.json`);
+
+    const entries = [];
+    for (const page of index.items ?? []) {
+        const items = page.items ?? (await fetchJson(page['@id'])).items ?? [];
+        for (const item of items) entries.push(item.catalogEntry);
+    }
+    return entries;
+}
+
+async function latestPublished(packageId) {
+    let entries;
+    try {
+        entries = await registrationEntries(packageId);
+    } catch (error) {
+        return { error: `could not reach nuget.org's registration for ${packageId}: ${error.message}` };
     }
 
-    const body = await response.json();
-    const parsed = (body.versions ?? []).map((v) => ({ raw: v, parsed: parseVersion(v) })).filter((v) => v.parsed !== null);
-
-    if (parsed.length === 0) {
-        return { error: `nuget.org listed no parseable version for ${packageId}` };
+    if (entries.length === 0) {
+        return { error: `nuget.org's registration lists no version for ${packageId}` };
     }
 
-    const latest = parsed.reduce((best, candidate) => (compareVersions(candidate.parsed, best.parsed) > 0 ? candidate : best));
+    // `listed` is absent (not `false`) on entries from before the field existed, and
+    // absence means listed — only an explicit `false` means withdrawn.
+    const listed = entries.filter((e) => e.listed !== false);
+    const parsedListed = listed.map((e) => ({ raw: e.version, parsed: parseVersion(e.version) })).filter((v) => v.parsed !== null);
 
-    return { version: latest.raw };
+    if (parsedListed.length === 0) {
+        return { error: `nuget.org lists no currently-listed, parseable version for ${packageId}` };
+    }
+
+    const latest = parsedListed.reduce((best, candidate) => (compareVersions(candidate.parsed, best.parsed) > 0 ? candidate : best));
+
+    return { versions: new Set(entries.map((e) => e.version)), latest: latest.raw };
 }
 
 async function checkPackage(pkg, siteTs, packagesProps) {
@@ -185,9 +237,24 @@ async function checkPackage(pkg, siteTs, packagesProps) {
         return { id: pkg.id, status: 'unknown', declarations, declared, reason: registry.error };
     }
 
-    const isStale = compareVersions(parseVersion(declared), parseVersion(registry.version)) < 0;
+    // Ahead of the registry is not "fresh": a version this repository declares but
+    // nuget.org has never published — a typo, or a tag whose release run failed
+    // before packing (ADR-0013's own Context names exactly this case) — does not
+    // become installable by outranking everything that does exist.
+    if (!registry.versions.has(declared)) {
+        return {
+            id: pkg.id,
+            status: 'unpublished',
+            declarations,
+            declared,
+            latest: registry.latest,
+            reason: `'${declared}' does not exist on nuget.org for ${pkg.id} — nearest published version is ${registry.latest}`,
+        };
+    }
 
-    return { id: pkg.id, status: isStale ? 'stale' : 'fresh', declarations, declared, latest: registry.version };
+    const isStale = compareVersions(parseVersion(declared), parseVersion(registry.latest)) < 0;
+
+    return { id: pkg.id, status: isStale ? 'stale' : 'fresh', declarations, declared, latest: registry.latest };
 }
 
 function humanReport(results) {
@@ -203,6 +270,9 @@ function humanReport(results) {
             case 'stale':
                 lines.push(`  ✗ ${label}  ${r.declared} — nuget.org has ${r.latest}`);
                 break;
+            case 'unpublished':
+                lines.push(`  ✗ ${label}  ${r.declared} does not exist on nuget.org (nearest: ${r.latest})`);
+                break;
             case 'inconsistent':
                 lines.push(`  ✗ ${label}  disagrees between sources: ${r.declarations.map((d) => `${d.source}=${d.version}`).join(', ')}`);
                 break;
@@ -215,6 +285,9 @@ function humanReport(results) {
             case 'unparseable':
                 lines.push(`  ! ${label}  ${r.reason}`);
                 break;
+            case 'undiscovered':
+                lines.push(`  ! ${label}  ${r.reason}`);
+                break;
         }
     }
 
@@ -223,6 +296,7 @@ function humanReport(results) {
 
 function markdownBody(results, generatedAt) {
     const stale = results.filter((r) => r.status === 'stale');
+    const unpublished = results.filter((r) => r.status === 'unpublished');
     const inconsistent = results.filter((r) => r.status === 'inconsistent');
     const unknown = results.filter((r) => r.status === 'unknown');
     const undeclared = results.filter((r) => r.status === 'undeclared');
@@ -237,6 +311,19 @@ function markdownBody(results, generatedAt) {
                 '| Package | Declared here | Published on nuget.org |',
                 '|---|---|---|',
                 ...stale.map((r) => `| \`${r.id}\` | ${r.declared} | [${r.latest}](https://www.nuget.org/packages/${r.id}/${r.latest}) |`),
+            ].join('\n'),
+        );
+    }
+
+    if (unpublished.length > 0) {
+        sections.push(
+            [
+                '### Declared here, does not exist on nuget.org',
+                '',
+                'Not merely stale — this exact version has never been published, or was pulled. A typo, or a',
+                'release tag whose run failed before packing.',
+                '',
+                ...unpublished.map((r) => `- \`${r.id}\`: declares \`${r.declared}\`, nearest published version is \`${r.latest}\``),
             ].join('\n'),
         );
     }
@@ -286,13 +373,26 @@ async function main() {
 
     const results = await Promise.all(PACKAGES.map((pkg) => checkPackage(pkg, siteTs, packagesProps)));
 
+    for (const id of allDeclaredIds(siteTs, packagesProps)) {
+        if (!KNOWN_IDS.has(id)) {
+            results.push({
+                id,
+                status: 'undiscovered',
+                reason: `declared in this repository but not in this script's own PACKAGES list — add it`,
+            });
+        }
+    }
+
     console.log(humanReport(results));
 
-    const unparseable = results.filter((r) => r.status === 'unparseable');
-    if (unparseable.length > 0) {
+    // Both mean the same thing: this script's own assumptions about the repository's
+    // shape stopped holding — a version it cannot parse, a package it does not know
+    // to look for — rather than a finding about the packages themselves.
+    const scriptDefects = results.filter((r) => r.status === 'unparseable' || r.status === 'undiscovered');
+    if (scriptDefects.length > 0) {
         console.error('');
         console.error('This script could not verify its own assumptions about the repository:');
-        for (const r of unparseable) console.error(`  - ${r.reason}`);
+        for (const r of scriptDefects) console.error(`  - ${r.reason}`);
     }
 
     if (outPath !== null) {
@@ -300,14 +400,14 @@ async function main() {
         const summary = {
             generatedAt,
             packages: results,
-            anyStale: results.some((r) => r.status === 'stale' || r.status === 'inconsistent' || r.status === 'unknown'),
+            anyStale: results.some((r) => ['stale', 'unpublished', 'inconsistent', 'unknown'].includes(r.status)),
             markdownBody: markdownBody(results, generatedAt),
         };
         writeFileSync(outPath, `${JSON.stringify(summary, null, 2)}\n`);
         console.log(`\n  ${outPath}`);
     }
 
-    process.exit(unparseable.length > 0 ? 1 : 0);
+    process.exit(scriptDefects.length > 0 ? 1 : 0);
 }
 
 await main();
