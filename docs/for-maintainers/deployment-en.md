@@ -614,36 +614,41 @@ First look at what would go up, without publishing:
 pnpm wrangler deploy --dry-run
 ```
 
-Four lines come out, and the third one always causes alarm:
+What comes out names a script and one binding:
 
 ```
 ✨ Read N files from the assets directory /home/<you>/dev/justdummies.io/dist
-Total Upload: 0.34 KiB / gzip: 0.24 KiB
-No bindings found.
+Total Upload: 1.79 KiB / gzip: 0.79 KiB
+Your Worker has access to the following bindings:
+Binding                                    Resource
+env.MEASUREMENT (justdummies_measurement)  Analytics Engine Dataset
+
 --dry-run: exiting now.
 ```
 
 | Line | What it has to say |
 |---|---|
 | `Read N files` | `N` is counted in **hundreds**. **Do not compare it against a figure written here**: it changes with every playground change, and it is not the number of files uploaded — `--dry-run` does not apply `.assetsignore`, verified. A handful of files would mean `dist/` is incomplete. The path must start with `/home/`, not `/mnt/`. |
-| `Total Upload` | **under a kibibyte, and that is correct** — see below. |
-| `No bindings found.` | expected: this Worker has no KV, no D1, no R2, no variables. |
+| `Total Upload` | **a couple of kibibytes** — the collector, and nothing else. See below. |
+| the bindings table | expected, and expected to hold **exactly one line**: the Analytics Engine dataset the collector writes to. No KV, no D1, no R2, no variable. |
 | `--dry-run: exiting now.` | nothing was published. |
 
-> **`Total Upload` is not the size of your files.** It is the size of the Worker **script** — and
-> since this site has none (`wrangler.jsonc` deliberately carries no `main`), wrangler generates one
-> that does nothing. You can see it:
+> **`Total Upload` is not the size of your files.** It is the size of the Worker **script**, which
+> this site has exactly one of: the measurement collector, added deliberately and argued in
+> [ADR-0010](adr/0010-the-site-runs-one-worker-script-for-measurement-en.md). Your files are counted
+> separately, on the line above, and go up as *static assets* — free and unlimited.
 >
-> ```bash
-> pnpm wrangler deploy --dry-run --outdir /tmp/wdry && ls /tmp/wdry
-> ```
+> **This line used to read `0.34 KiB` and `No bindings found`**, because there was no `main` at all
+> and wrangler generated a `no-op-worker.js` to stand in for one. That is no longer what you should
+> see, and a guide still promising it would have you read a correct deployment as a failed safety
+> check.
 >
-> It writes `no-op-worker.js`: that is what those 0.34 KiB weigh. Your files are counted separately,
-> on the line above, and go up as *static assets* — free and unlimited.
->
-> A `Total Upload` in the hundreds of kibibytes would be the opposite signal: a script has crept into
-> the configuration, and requests would start consuming a quota. That is decision **A6**, and this
-> line is the only place it is visible from outside.
+> What the line is watched for has changed with it. It is no longer "any script at all is a
+> mistake"; it is that **this** script stays the only one and stays small. A `Total Upload` in the
+> tens or hundreds of kibibytes, or a second binding appearing under the first, means the Worker has
+> grown work it was confined not to do — and that confinement, `run_worker_first` naming a single
+> path, is the whole reason ADR-0010 could answer §12.3's objection. This line and step 10's third
+> check are the two places it is visible from outside.
 
 This check does **not** prove you are authenticated: `--dry-run` never contacts Cloudflare. Step 4's
 check is what does. Nor does it verify the *contents* of `dist/` — it counts files. `pnpm build` and
@@ -1164,6 +1169,26 @@ curl -s -o /dev/null -w '%{http_code}\n' https://justdummies.io/_event         #
 curl -s https://justdummies.io/does-not-exist | grep -c '<html'                # expect 1, never 0
 ```
 
+One more, and it is the one check 2 cannot stand in for:
+
+```bash
+# 2b — the row actually landed. The 204 above proves only that the request arrived:
+#      the collector answers 204 for a malformed body and for every validation
+#      rejection too, deliberately, so a payload that had drifted from the schema
+#      would look exactly like a success. This is what tells the two apart.
+curl -s "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/analytics_engine/sql" \
+  -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+  -d "SELECT count() AS rows
+      FROM justdummies_measurement
+      WHERE blob1 = 'deployment-check'
+        AND timestamp > now() - INTERVAL '10' MINUTE"
+                                                                               # expect rows >= 1
+```
+
+Give it a few seconds before asking: the write is queued rather than synchronous. A `rows` of zero
+after a 204 is the interesting failure — the request was accepted and the row was not written, which
+is precisely the case a status code can never report.
+
 Then open the site in a browser, copy an install command, and **watch the console**. §13.2 requires
 every change to the content policy to be validated by a real load rather than by review, and this is
 that load: a blocked beacon reports itself there and nowhere else. Nothing should be reported.
@@ -1183,7 +1208,7 @@ the ordinal as `double1`:
 ```bash
 curl -s "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/analytics_engine/sql" \
   -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-  -d "SELECT blob2 AS placement, blob3 AS variant, count() AS copies
+  -d "SELECT blob2 AS placement, blob3 AS variant, sum(_sample_interval) AS copies
       FROM justdummies_measurement
       WHERE blob1 = 'install-command-copied'
         AND timestamp > now() - INTERVAL '7' DAY
@@ -1191,9 +1216,17 @@ curl -s "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/
       ORDER BY copies DESC"
 ```
 
-The filter on `blob1` is not decoration: the collector accepts any well-formed event name, and the
-deployment check above deliberately sends a different one. Without that line every check ever run
-would count as somebody installing.
+Two details in that query are load-bearing rather than stylistic.
+
+**`sum(_sample_interval)`, not `count()`.** Analytics Engine samples a dataset once it gets busy, and
+`count()` then counts the rows it kept rather than the copies that happened — silently, and low.
+Each retained row carries the weight of those it stands for in `_sample_interval`, so summing that
+column is what gives a true total. At this site's volume nothing is sampled yet and the two agree,
+which is exactly why the wrong one would never be noticed until the figures mattered.
+
+**The filter on `blob1`.** The collector accepts any well-formed event name, and the deployment
+check above deliberately sends a different one. Without that line every check ever run would count
+as somebody installing.
 
 That query is the whole point of §15.2: it says which moment of the page sent someone to install,
 and by which door. Group by `placement` alone for the moment, by `variant` alone for the door.
