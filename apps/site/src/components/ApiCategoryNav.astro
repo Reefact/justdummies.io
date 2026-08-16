@@ -1,0 +1,332 @@
+---
+/**
+ * The /api section's own navigation: the seven categories plus the overview, and a search
+ * across every member the catalogue holds — the sidebar only ever lists categories, but the
+ * catalogue underneath it is complete (§10.5), and search is how a reader reaches a member
+ * without knowing which category it landed in.
+ *
+ * A native <details>/<summary> rather than a script-driven panel: it is an ordinary sticky
+ * sidebar on a wide screen once `summary` is hidden by the media query below, and a disclosure
+ * on a narrow one — collapse behaviour that works with no JavaScript of its own, in keeping
+ * with ADR-0004's rule that a control works before its script has a chance to arrive. `open`
+ * is the markup's own default, so a reader with no JS still gets the full sidebar rather than
+ * one with no way to ever expand it; the script right after the element narrows that default to
+ * collapsed on a phone-width screen, where the sidebar would otherwise push the page's own
+ * heading below a full category list and a search box. It runs synchronously immediately after
+ * the element lands in the DOM, so the collapse happens before first paint rather than after —
+ * the same reasoning behind `Base.astro`'s own reveal-arming script.
+ */
+import { pathForLocale } from '../i18n/routing';
+import { useTranslations, type Locale } from '../i18n/ui';
+import { allApiCategories, type ApiEntry } from '../apiCatalogue';
+
+interface Props {
+    locale: Locale;
+    /** The current category's slug, or '' for the overview page. */
+    activeSlug: string;
+}
+
+const { locale, activeSlug } = Astro.props;
+const t = useTranslations(locale);
+
+const categoryLabel: Record<string, string> = {
+    'entry-point': t('api.nav.entryPoint'),
+    primitives: t('api.nav.primitives'),
+    uris: t('api.nav.uris'),
+    collections: t('api.nav.collections'),
+    composition: t('api.nav.composition'),
+    reproducibility: t('api.nav.reproducibility'),
+    exceptions: t('api.nav.exceptions'),
+};
+
+function apiPath(slug: string): string {
+    return pathForLocale(slug === '' ? '/api' : `/api/${slug}`, locale);
+}
+
+interface SearchEntry {
+    label: string;
+    category: string;
+    href: string;
+}
+
+const searchIndex: SearchEntry[] = allApiCategories().flatMap((category) =>
+    category.entries.map(
+        (entry: ApiEntry): SearchEntry => ({
+            label: entry.name,
+            category: categoryLabel[category.slug] ?? category.slug,
+            href: `${apiPath(category.slug)}#${entry.id}`,
+        }),
+    ),
+);
+---
+
+<details class="api-nav" open>
+    <summary>
+        {t('api.nav.toggle')}
+        <svg class="chev" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="m4 6 4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+    </summary>
+    <div class="api-nav-body">
+        <div class="api-search">
+            <svg class="icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.3" />
+                <path d="m13 13-2.7-2.7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
+            </svg>
+            <input type="search" id="api-search-input" placeholder={t('api.search.placeholder')} aria-label={t('api.search.label')} autocomplete="off" />
+            <div class="api-search-results" id="api-search-results" hidden></div>
+        </div>
+        <ul class="api-nav-list">
+            <li>
+                <a href={apiPath('')} aria-current={activeSlug === '' ? 'page' : undefined}>{t('api.nav.overview')}</a>
+            </li>
+            {
+                Object.entries(categoryLabel).map(([slug, label]) => (
+                    <li>
+                        <a href={apiPath(slug)} aria-current={activeSlug === slug ? 'page' : undefined}>
+                            {label}
+                        </a>
+                    </li>
+                ))
+            }
+        </ul>
+    </div>
+</details>
+
+<script is:inline>
+    (function collapseOnNarrowScreens() {
+        const details = document.currentScript.previousElementSibling;
+
+        if (details instanceof HTMLDetailsElement && window.matchMedia('(max-width: 56rem)').matches) {
+            details.open = false;
+        }
+    })();
+</script>
+
+<script is:inline define:vars={{ searchIndex }}>
+    const input = document.getElementById('api-search-input');
+    const results = document.getElementById('api-search-results');
+
+    function escapeHtml(text) {
+        return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function render(query) {
+        if (!query) {
+            results.hidden = true;
+            results.innerHTML = '';
+
+            return;
+        }
+
+        const lower = query.toLowerCase();
+        const matches = searchIndex.filter((entry) => entry.label.toLowerCase().includes(lower)).slice(0, 24);
+
+        results.innerHTML =
+            matches.length === 0
+                ? `<p class="empty">${document.getElementById('api-search-input').dataset.empty ?? 'No match.'}</p>`
+                : matches
+                      .map(
+                          (entry) =>
+                              `<a href="${entry.href}"><span>${escapeHtml(entry.label)}</span><span class="cat">${escapeHtml(entry.category)}</span></a>`,
+                      )
+                      .join('');
+        results.hidden = false;
+    }
+
+    if (input && results) {
+        input.addEventListener('input', () => render(input.value.trim()));
+        input.addEventListener('focus', () => {
+            if (input.value.trim()) {
+                render(input.value.trim());
+            }
+        });
+        document.addEventListener('click', (event) => {
+            if (!(event.target instanceof Element) || !event.target.closest('.api-search')) {
+                results.hidden = true;
+            }
+        });
+        document.addEventListener('keydown', (event) => {
+            const tag = document.activeElement instanceof HTMLElement ? document.activeElement.tagName : '';
+
+            if (event.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA') {
+                event.preventDefault();
+                input.focus();
+            }
+
+            if (event.key === 'Escape' && document.activeElement === input) {
+                input.value = '';
+                results.hidden = true;
+                input.blur();
+            }
+        });
+    }
+</script>
+
+<style>
+    .api-nav {
+        border-right: 1px solid var(--jd-border);
+    }
+
+    .api-nav > summary {
+        display: none;
+    }
+
+    .api-nav-body {
+        position: sticky;
+        top: var(--jd-space-4);
+        padding: 0 var(--jd-space-4) var(--jd-space-8) 0;
+    }
+
+    .api-search {
+        position: relative;
+        margin-bottom: var(--jd-space-6);
+    }
+
+    .api-search .icon {
+        position: absolute;
+        left: 0.65rem;
+        top: 50%;
+        translate: 0 -50%;
+        width: 14px;
+        height: 14px;
+        color: var(--jd-text-muted);
+        pointer-events: none;
+    }
+
+    .api-search input {
+        width: 100%;
+        background: var(--jd-surface);
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-sm);
+        color: var(--jd-text-primary);
+        font: inherit;
+        font-size: var(--jd-text-sm);
+        padding: var(--jd-space-2) var(--jd-space-3) var(--jd-space-2) 2rem;
+    }
+
+    .api-search input::placeholder {
+        color: var(--jd-text-muted);
+    }
+
+    .api-search-results {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: calc(100% + 4px);
+        z-index: 20;
+        background: var(--jd-surface-raised);
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-sm);
+        box-shadow: var(--jd-shadow-raised);
+        max-height: 20rem;
+        overflow-y: auto;
+        padding: var(--jd-space-1);
+    }
+
+    .api-nav-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.125rem;
+    }
+
+    .api-nav-list a {
+        display: block;
+        padding: var(--jd-space-2) var(--jd-space-3);
+        border-left: 2px solid transparent;
+        border-radius: 0 var(--jd-radius-sm) var(--jd-radius-sm) 0;
+        color: var(--jd-text-muted);
+        font-size: var(--jd-text-sm);
+        text-decoration: none;
+    }
+
+    .api-nav-list a:hover {
+        color: var(--jd-text-primary);
+    }
+
+    .api-nav-list a[aria-current='page'] {
+        color: var(--jd-text-primary);
+        border-color: var(--jd-accent);
+        background: color-mix(in srgb, var(--jd-accent) 8%, transparent);
+        font-weight: 600;
+    }
+
+    @media (max-width: 56rem) {
+        .api-nav {
+            border-right: 0;
+            border-bottom: 1px solid var(--jd-border);
+            margin-bottom: var(--jd-space-6);
+        }
+
+        .api-nav > summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--jd-space-2);
+            padding: var(--jd-space-3) 0;
+            font-weight: 600;
+            cursor: pointer;
+            list-style: none;
+        }
+
+        .api-nav > summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .api-nav > summary .chev {
+            width: 14px;
+            height: 14px;
+            color: var(--jd-text-muted);
+            transition: transform var(--jd-duration-base) var(--jd-ease);
+        }
+
+        .api-nav[open] > summary .chev {
+            transform: rotate(180deg);
+        }
+
+        .api-nav-body {
+            position: static;
+            padding: 0 0 var(--jd-space-4);
+        }
+    }
+</style>
+
+<!--
+  Global, not scoped: everything under .api-search-results is written by the plain <script>
+  above via innerHTML, so it never carries the data-astro-cid attribute Astro's scoped styles
+  compile against — a scoped rule here would just silently never match.
+-->
+<style is:global>
+    .api-search-results a {
+        display: flex;
+        justify-content: space-between;
+        gap: var(--jd-space-2);
+        padding: var(--jd-space-2) var(--jd-space-2);
+        border-radius: var(--jd-radius-sm);
+        font-family: var(--jd-font-mono);
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-primary);
+        text-decoration: none;
+    }
+
+    .api-search-results a:hover {
+        background: var(--jd-surface);
+    }
+
+    .api-search-results .cat {
+        font-family: var(--jd-font-sans);
+        color: var(--jd-text-muted);
+        font-size: 0.75rem;
+        white-space: nowrap;
+    }
+
+    .api-search-results .empty {
+        margin: 0;
+        padding: var(--jd-space-2);
+        color: var(--jd-text-muted);
+        font-size: var(--jd-text-sm);
+    }
+</style>

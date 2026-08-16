@@ -1,0 +1,12 @@
+---
+import PrimitivesContent from '../../../components/api/PrimitivesContent.astro';
+import ApiPage from '../../../layouts/ApiPage.astro';
+import { useTranslations } from '../../../i18n/ui';
+import { site } from '../../../site';
+
+const t = useTranslations('fr');
+---
+
+<ApiPage title={`${t('api.primitives.heading')} — API — ${site.name}`} description={t('api.meta.description')} activeSlug="primitives">
+    <PrimitivesContent />
+</ApiPage>

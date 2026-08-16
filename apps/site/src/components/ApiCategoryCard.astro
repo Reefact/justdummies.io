@@ -1,0 +1,89 @@
+---
+/**
+ * One category tile on the /api overview — a heading, the same lede its own page opens with,
+ * and a sample of the real signatures inside it, so the card previews the catalogue rather
+ * than describing it from outside.
+ */
+import { pathForLocale } from '../i18n/routing';
+import type { Locale } from '../i18n/ui';
+import type { ApiCategory } from '../apiCatalogue';
+
+interface Props {
+    category: ApiCategory;
+    heading: string;
+    lede: string;
+    locale: Locale;
+}
+
+const { category, heading, lede, locale } = Astro.props;
+
+/** Three names, not three full signatures — enough to preview the shape without repeating the page underneath. */
+const sample: string = category.entries
+    .slice(0, 3)
+    .map((entry) => entry.name)
+    .join(' · ');
+---
+
+<a class="api-category-card" href={pathForLocale(`/api/${category.slug}`, locale)}>
+    <h2>{heading}</h2>
+    <p>{lede}</p>
+    {sample !== '' && <p class="sample">{sample}{category.entries.length > 3 && ' · …'}</p>}
+    <span class="arrow" aria-hidden="true">→</span>
+</a>
+
+<style>
+    .api-category-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: var(--jd-space-2);
+        background: var(--jd-surface);
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-lg);
+        padding: var(--jd-space-6);
+        color: var(--jd-text-primary);
+        text-decoration: none;
+        transition:
+            border-color var(--jd-duration-fast) var(--jd-ease),
+            background var(--jd-duration-fast) var(--jd-ease);
+    }
+
+    .api-category-card:hover {
+        border-color: var(--jd-accent);
+        background: var(--jd-surface-raised);
+    }
+
+    h2 {
+        font-size: var(--jd-text-lg);
+        line-height: var(--jd-line-tight);
+        margin: 0;
+        padding-right: var(--jd-space-6);
+    }
+
+    p {
+        margin: 0;
+        color: var(--jd-text-muted);
+        font-size: var(--jd-text-sm);
+    }
+
+    .sample {
+        font-family: var(--jd-font-mono);
+        color: var(--jd-generated);
+        font-size: 0.8125rem;
+    }
+
+    .arrow {
+        position: absolute;
+        top: var(--jd-space-6);
+        right: var(--jd-space-6);
+        color: var(--jd-text-muted);
+        transition:
+            transform var(--jd-duration-fast) var(--jd-ease),
+            color var(--jd-duration-fast) var(--jd-ease);
+    }
+
+    .api-category-card:hover .arrow {
+        color: var(--jd-accent);
+        transform: translateX(3px);
+    }
+</style>

@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Produces the catalogue the /api pages read, by reflecting on the published packages
+    rather than by anyone describing them from memory.
+
+    WHY REFLECTION, NOT A HAND-WRITTEN PAGE PER MEMBER. The library ships forty-nine public
+    types across two packages, documented in its own XML comments. Retyping that surface into
+    Markdown or Astro would drift from the day it was written — a signature changes, a
+    constraint is added, and the site keeps describing what the library used to be. This tool
+    removes the possibility rather than the temptation, the same way tools/sample-values does
+    for the values on the landing page.
+
+    WHY NOT A PROJECT REFERENCE. Directory.Packages.props explains why this repository is kept
+    separate from the library's: the site must document what a visitor can actually install,
+    never a source build. So this project takes a PackageReference like the playground does,
+    and reads the same .dll and .xml a `dotnet add package` would put on a visitor's machine.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>JustDummies.ApiCatalogue</RootNamespace>
+  </PropertyGroup>
+
+  <!--
+    GeneratePathProperty exposes each package's resolved folder as an MSBuild property
+    ($(PkgJustDummies), $(PkgJustDummies_Xunit) — NuGet's own naming: "Pkg" plus the package ID
+    with every non-alphanumeric character turned into an underscore). RuntimeHostConfigurationOption
+    below carries that path into the running program through its .runtimeconfig.json, which is
+    how XmlDocs finds the .xml sitting beside the .dll in the NuGet cache — the SDK copies a
+    referenced package's .dll next to this tool's own output but not that sibling file, so
+    Assembly.Location alone does not lead back to it.
+  -->
+  <ItemGroup>
+    <PackageReference Include="JustDummies" GeneratePathProperty="true" />
+    <PackageReference Include="JustDummies.Xunit" GeneratePathProperty="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="JustDummies.PackageRoot" Value="$(PkgJustDummies)" />
+    <RuntimeHostConfigurationOption Include="JustDummies.Xunit.PackageRoot" Value="$(PkgJustDummies_Xunit)" />
+  </ItemGroup>
+
+</Project>

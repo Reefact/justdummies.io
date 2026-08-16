@@ -8,8 +8,8 @@ set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-# Before the site is built, because the site imports what these produce. All four write
-# into apps/site/src/generated/, and all four are committed: what they hold only moves when
+# Before the site is built, because the site imports what these produce. All five write
+# into apps/site/src/generated/, and all five are committed: what they hold only moves when
 # something real moves, so the diff is worth reading rather than noise to skip.
 #
 # Two of them are checks as much as generators. The reproducibility step runs the third act's
@@ -27,6 +27,9 @@ echo "▸ Checking the third act still holds"
 
 echo "▸ Recording what the tool prints"
 "${root}/scripts/generate-tool-output.sh"
+
+echo "▸ Reflecting on the published packages for the API catalogue"
+"${root}/scripts/generate-api-catalogue.sh"
 
 # Also before the build, and the odd one out of the five: it is not committed, because
 # it changes on every build. It moved here from after the build the day /version had to

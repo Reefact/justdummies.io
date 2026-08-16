@@ -249,6 +249,70 @@ const en = {
     'privacy.updated': 'Last updated: August 15, 2026.',
 
     /**
+     * /api — the public surface of the JustDummies and JustDummies.Xunit packages, reflected
+     * from the published NuGet packages rather than written by hand (`apiCatalogue.ts`).
+     *
+     * The catalogue's own prose — every signature, every doc comment `apiCatalogue.ts` reads —
+     * stays in English in both locales: it comes from a package published outside this
+     * repository and reflects that package's own English identifiers, the same reasoning
+     * `about.origin`'s neighbour, the DummyException note, already applies to exception
+     * messages. Only the chrome around it — headings, labels, this whole block — is translated.
+     */
+    'api.meta.description': 'The public surface of JustDummies and JustDummies.Xunit: every generator, every constraint, reflected from the published packages.',
+    'api.english.note':
+        "The signatures and doc comments below stay in English on every page, in every locale: they are read off the published packages themselves, not written for this site.",
+
+    'api.nav.heading': 'Sections',
+    'api.nav.overview': 'Overview',
+    'api.nav.entryPoint': 'Entry point',
+    'api.nav.primitives': 'Primitive generators',
+    'api.nav.uris': 'URIs',
+    'api.nav.collections': 'Collections',
+    'api.nav.composition': 'Composition',
+    'api.nav.reproducibility': 'Seeds & reproducibility',
+    'api.nav.exceptions': 'Exceptions',
+    'api.nav.toggle': 'API sections',
+
+    'api.search.label': 'Search the API catalogue',
+    'api.search.placeholder': 'Search a member…',
+    'api.search.empty': 'No member matches.',
+
+    'api.index.heading': 'API',
+    'api.index.lede':
+        'A coherent API with no magic at runtime: one entry point, generators that compose through fluent methods, and a value produced only on the final call.',
+
+    'api.entryPoint.heading': 'Entry point',
+    'api.entryPoint.lede':
+        "One door in, and the contract every generator it produces satisfies — from the simplest primitive to a generator composed of several.",
+    'api.primitives.heading': 'Primitive generators',
+    'api.primitives.lede': 'The basic generators: one fluent constraint at a time, and nothing drawn until Generate is called.',
+    'api.uris.heading': 'URIs',
+    'api.uris.lede': 'Every URI family the library can draw, each narrowed to only the components that family actually has.',
+    'api.collections.heading': 'Collections',
+    'api.collections.lede': 'Arrays, lists, sequences, sets and dictionaries, each built over a generator for its elements.',
+    'api.composition.heading': 'Composition',
+    'api.composition.lede': 'Turning several generators into one — through a factory, a tuple, a closed set of choices, or an optional value.',
+    'api.reproducibility.heading': 'Seeds & reproducibility',
+    'api.reproducibility.lede':
+        'What makes a failure on an arbitrary value replayable exactly, instead of a mystery that looks different on every run.',
+    'api.exceptions.heading': 'Exceptions',
+    'api.exceptions.lede': 'The family the library throws on its own behalf, and which member appears for which kind of refusal.',
+
+    'api.field.extends': 'Extends',
+    'api.field.implements': 'Implements',
+    'api.field.entryPoint': 'Constructed via',
+    'api.field.properties': 'Properties',
+    'api.field.constructors': 'Constructors',
+    'api.field.methods': 'Methods',
+
+    'api.pagination.previous': 'Previous section',
+    'api.pagination.next': 'Next section',
+    'api.pagination.overview': 'Overview',
+
+    'api.seeAlso.heading': 'See also',
+    'api.seeAlso.playground': 'Playground — try it live',
+
+    /**
      * /why-justdummies — the comparative positioning page (§11). Axis labels and rating
      * words are deliberately short: they are table headers and cells, read many times
      * down a column, not sentences.
@@ -385,6 +449,7 @@ const en = {
     'footer.nav': 'Footer',
     'footer.about': 'About',
     'footer.privacy': 'Privacy',
+    'footer.api': 'API',
     'footer.releaseNotes': 'Release notes',
     'footer.repository': 'Source code',
 } as const;
@@ -564,6 +629,60 @@ const fr: Record<UiKey, string> = {
         "Comme ce site ne collecte aucune donnée qui vous identifie individuellement, il n'y a en pratique rien à corriger ou à effacer vous concernant. Pour toute question sur ce point, écrivez à privacy@reefact.net.",
     'privacy.updated': 'Dernière mise à jour : 15 août 2026.',
 
+    'api.meta.description': "La surface publique de JustDummies et JustDummies.Xunit : chaque générateur, chaque contrainte, reflétés depuis les paquets publiés.",
+    'api.english.note':
+        "Les signatures et les commentaires de documentation ci-dessous restent en anglais sur toutes les pages, dans toutes les locales : ils sont lus directement dans les paquets publiés, et non écrits pour ce site.",
+
+    'api.nav.heading': 'Sections',
+    'api.nav.overview': 'Aperçu',
+    'api.nav.entryPoint': "Point d'entrée",
+    'api.nav.primitives': 'Générateurs de primitives',
+    'api.nav.uris': 'URI',
+    'api.nav.collections': 'Collections',
+    'api.nav.composition': 'Composition',
+    'api.nav.reproducibility': 'Graines et reproductibilité',
+    'api.nav.exceptions': 'Exceptions',
+    'api.nav.toggle': "Sections de l'API",
+
+    'api.search.label': "Chercher dans le catalogue de l'API",
+    'api.search.placeholder': 'Chercher un membre…',
+    'api.search.empty': 'Aucun membre ne correspond.',
+
+    'api.index.heading': 'API',
+    'api.index.lede':
+        "Une API cohérente et sans magie à l'exécution : un point d'entrée, des générateurs qui se composent par méthode fluide, et une valeur produite seulement au dernier appel.",
+
+    'api.entryPoint.heading': "Point d'entrée",
+    'api.entryPoint.lede':
+        "Une seule porte d'entrée, et le contrat que respecte tout ce qu'elle produit — du générateur le plus simple au plus composé.",
+    'api.primitives.heading': 'Générateurs de primitives',
+    'api.primitives.lede': "Les générateurs de base : une contrainte fluide à la fois, et rien n'est tiré avant l'appel à Generate.",
+    'api.uris.heading': 'URI',
+    'api.uris.lede': "Toutes les familles d'URI que la bibliothèque sait tirer, chacune réduite aux seuls composants que cette famille possède réellement.",
+    'api.collections.heading': 'Collections',
+    'api.collections.lede': 'Tableaux, listes, séquences, ensembles et dictionnaires, chacun construit sur un générateur pour ses éléments.',
+    'api.composition.heading': 'Composition',
+    'api.composition.lede': 'Transformer plusieurs générateurs en un seul — par une fabrique, un tuple, un ensemble de choix fermé, ou une valeur optionnelle.',
+    'api.reproducibility.heading': 'Graines et reproductibilité',
+    'api.reproducibility.lede':
+        "Ce qui rend un échec sur une valeur arbitraire exactement rejouable, plutôt qu'un mystère qui change d'apparence à chaque exécution.",
+    'api.exceptions.heading': 'Exceptions',
+    'api.exceptions.lede': "La famille que la bibliothèque lève elle-même, et quel membre apparaît pour quelle nature de refus.",
+
+    'api.field.extends': 'Hérite de',
+    'api.field.implements': 'Implémente',
+    'api.field.entryPoint': 'Construit via',
+    'api.field.properties': 'Propriétés',
+    'api.field.constructors': 'Constructeurs',
+    'api.field.methods': 'Méthodes',
+
+    'api.pagination.previous': 'Section précédente',
+    'api.pagination.next': 'Section suivante',
+    'api.pagination.overview': 'Aperçu',
+
+    'api.seeAlso.heading': 'Voir aussi',
+    'api.seeAlso.playground': 'Playground — essayer en direct',
+
     'why.heading': 'Pourquoi JustDummies',
     'why.meta.description':
         "Comment JustDummies se compare à Bogus, AutoFixture et l'écriture à la main — y compris là où il perd.",
@@ -690,6 +809,7 @@ const fr: Record<UiKey, string> = {
     'footer.nav': 'Pied de page',
     'footer.about': 'À propos',
     'footer.privacy': 'Confidentialité',
+    'footer.api': 'API',
     'footer.releaseNotes': 'Notes de version',
     'footer.repository': 'Code source',
 };
