@@ -1,32 +1,51 @@
 #!/usr/bin/env bash
 # Say whether a change is one that only a rendered page can check.
 #
-# The browser suite is the slowest thing in the pipeline by a wide margin — a browser
-# to fetch and install, then a full Playwright run — so `build.yml` does not put it on
-# every pull request. What it put it on instead was nothing: `workflow_dispatch` and
-# release tags only, which meant a change to the layout of either application reached
-# main having never been rendered anywhere but a maintainer's machine. The parity
-# check between the site and the playground (tests/browser/chrome-parity.spec.ts) is
-# the case that made that untenable: it is an invariant across two applications, held
-# by numbers no file states, and nothing outside a browser can see it break.
+# The browser suite is the slowest thing in the pipeline by a wide margin — a browser to
+# fetch and install, then a full Playwright run — so `build.yml` does not put it on every
+# pull request. What it put it on instead was nothing: `workflow_dispatch` and release tags
+# only, which meant a change to the layout of either application reached main having never
+# been rendered anywhere but a maintainer's machine. The parity check between the site and
+# the playground (tests/browser/chrome-parity.spec.ts) is the case that made that
+# untenable: an invariant across two applications, held by numbers no file states, that
+# nothing outside a browser can see break. It broke, on main, and this pipeline was the
+# last to know.
 #
-# So this decides, per pull request, from what the change actually touches. It is a
-# script rather than a `paths:` block on the workflow's trigger because a `paths:`
-# filter gates the *whole* workflow — the build would be skipped too, and a pull
-# request with no checks at all is worse than a slow one — and a script rather than an
-# inline `if:` expression because the list below is the interesting part and wants
-# room to say why each entry is on it.
+# It is a script rather than a `paths:` block on the workflow's trigger because a `paths:`
+# filter gates the *whole* workflow — the build would be skipped too, and a pull request
+# with no checks at all is worse than a slow one.
+#
+# WHAT IS LISTED IS WHAT DOES NOT RENDER, AND THAT IS THE SECOND ATTEMPT.
+#
+# The first listed what does. It read well — one entry per thing a browser can see, each
+# saying why it was there — and it was wrong five times, every time in the same direction:
+# a change that alters what a page renders, matching nothing, skipping the suite, and
+# reporting green. i18n (a heading rewrapped by editing a French string), the top of
+# apps/site/src (site.ts owns links two specs assert), apps/site/public (404.png, whose
+# dimensions notfound.spec.ts measures), the catalogue packages the playground compiles
+# against, and the manifest that pins Playwright itself. Four of those five were found by
+# review rather than by this file, which is the part that settles it: the list could not be
+# kept true by the people writing it.
+#
+# So the question is inverted, because the two failures are not symmetrical. An allowlist
+# that misses something skips a check silently and passes. A denylist that misses something
+# runs a suite that had nothing to say, and costs two minutes. Only one of those is a
+# defect, and it is not the slow one.
+#
+# The measurement, over the last sixty commits on main: the allowlist skipped 8 of them,
+# this skips 6. Two commits of savings was what the enumeration was buying, against five
+# known holes and no way to count the rest. All six this skips are documentation, which is
+# what the exclusions below are.
 #
 # Usage:
 #   changes-need-a-browser.sh <base-ref>    # compares <base-ref> against HEAD
 #
-# `build.yml` passes HEAD^1 — on a pull request Actions checks out the merge commit,
-# whose first parent is the base — so the comparison needs no network and no history
-# beyond the two commits the checkout already has.
+# `build.yml` passes HEAD^1 — on a pull request Actions checks out the merge commit, whose
+# first parent is the base — so the comparison needs no network and no history beyond the
+# two commits the checkout already has.
 #
-# Prints its verdict, and writes `needed=true|false` to $GITHUB_OUTPUT when running
-# under Actions. Exit status is 0 either way: "no browser needed" is an answer, not a
-# failure.
+# Prints its verdict, and writes `needed=true|false` to $GITHUB_OUTPUT when running under
+# Actions. Exit status is 0 either way: "no browser needed" is an answer, not a failure.
 set -euo pipefail
 
 if [ "$#" -lt 1 ]; then
@@ -38,13 +57,11 @@ base="$1"
 
 # Answer "yes" to a question this cannot answer, and say so.
 #
-# The failure being avoided is silent and one-directional: a base that will not resolve
-# — a clone shallower than the caller expected, a pull request with no merge commit to
-# take a first parent from — makes every `git diff` empty, which reads exactly like
-# "nothing here renders differently". The suite would then be skipped on the changes it
-# exists for, and the run would be green. Rendering something that did not need it
-# costs two minutes; not rendering something that did is the whole defect this file was
-# written to prevent.
+# The failure being avoided is silent and one-directional: a base that will not resolve — a
+# clone shallower than the caller expected, a pull request with no merge commit to take a
+# first parent from — makes every `git diff` empty, which reads exactly like "nothing here
+# renders differently". The suite would then be skipped on the changes it exists for, and
+# the run would be green.
 if ! git rev-parse --verify --quiet "${base}^{commit}" > /dev/null; then
   echo "▸ Cannot resolve '${base}', so this cannot tell what changed — rendering it to be sure."
 
@@ -55,86 +72,50 @@ if ! git rev-parse --verify --quiet "${base}^{commit}" > /dev/null; then
   exit 0
 fi
 
-# What a browser can see and no on-disk check can.
+# What cannot reach a rendered page, and the whole of it.
 #
-#   apps/playground          the whole application: its markup, its stylesheet, its
-#                            scripts. It renders nothing until a WebAssembly runtime
-#                            has booted, so every claim about it is a browser claim.
-#   apps/site/src            the whole tree, not a set of subdirectories.
+#   docs                  the specification, the ADRs, the deployment guides. Read by
+#                         maintainers, built into nothing.
+#   *.md                  every markdown file in the repository is one of those, plus
+#                         README and CONTRIBUTING. Astro declares no content collection
+#                         here and `apps/site` holds no markdown at all, so there is no
+#                         path from any of them into a page. Re-check that the day a
+#                         collection appears — it would make this line false in one commit.
+#   .githooks             a maintainer's local commit hook.
+#   LICENSE               the file, not the footer line naming it.
+#   .github/workflows/commit-lint.yml   the other pipeline, which builds nothing.
 #
-#                            The obvious members are there — components carry the
-#                            furniture the parity check measures, layouts carry the two
-#                            measures the playground copies, styles carry the base.css
-#                            its app.css mirrors — and enumerating those was the first
-#                            draft. It was wrong twice over, in the same direction:
+# Everything else renders until proven otherwise, and proving otherwise means adding a line
+# here with the argument on it. The bar is deliberately higher than the old list's: this
+# file is now about what a check *cannot* see, so an entry that is merely probably inert
+# does not belong on it.
 #
-#                            i18n, because a label's width is a layout input here. 79c9ac4
-#                            fixed a heading that wrapped to two lines at 375px by dropping
-#                            a question mark from a French string, and touched nothing
-#                            else; §6.5 makes French the unfavourable case on purpose, and
-#                            the header row lays out from its right edge.
-#
-#                            and the modules sitting loose at the top of that tree —
-#                            site.ts among them, whose `siteRepository` is the footer link
-#                            content-pages.spec.ts asserts and the commit link
-#                            version-page.spec.ts asserts. A one-line edit there changes
-#                            rendered output and matched nothing.
-#
-#                            Two misses in one list is the list being drawn at the wrong
-#                            grain. The site's source tree is what the site renders from,
-#                            so the tree is the entry.
-#   packages/design-tokens   the one file both applications read. A token moves both.
-#   tests/browser            the suite itself: a check nobody ran is a check nobody
-#                            can trust, and that includes a new one.
-#   playwright.config.ts     how the suite is served and which browser runs it.
-#   scripts/check-in-browser.sh   how the suite is invoked at all.
-#   scripts/changes-need-a-browser.sh   this file. A pull request that narrows the list
-#                            below would otherwise match nothing, skip the suite, and
-#                            remove coverage in a run that reported green — the one
-#                            change most in need of the gate being the one change the
-#                            gate would not apply to itself.
-#   scripts/generate-headers.mjs  the Content-Security-Policy, which is enforced by
-#                            the browser and by nothing else in this pipeline.
-#   wrangler.jsonc           how every page the suite visits is served. The suite talks
-#                            to `wrangler dev`, not to a static server (ADR-0009), so
-#                            this file decides what answers a request at all — the 404
-#                            fallback the not-found checks rely on, the asset routing
-#                            the playground's cold links rely on.
-#   worker                   and the script that now sits in front of those requests.
-#   .github/workflows/build.yml   so a change to this gate is itself gated.
-#
-# The list is a judgement, and it will be wrong about something eventually — which is
-# why `workflow_dispatch` stays: a maintainer who wants a pull request rendered gets it
-# rendered, whatever this file thinks. Widen the list when a browser catches something
-# on main that it should have caught on the pull request, and say in the entry which
-# failure put it there, the way the i18n line above does.
-#
-# `git diff <base> HEAD` compares two trees directly and needs no history between
-# them, which is what lets this run in the shallow clone Actions checks out.
+# `git diff <base> HEAD` compares two trees directly and needs no history between them,
+# which is what lets this run in the shallow clone Actions checks out.
 matched="$(
-  git diff --name-only "${base}" HEAD -- \
-    apps/playground \
-    apps/site/src \
-    packages/design-tokens \
-    tests/browser \
-    playwright.config.ts \
-    scripts/check-in-browser.sh \
-    scripts/changes-need-a-browser.sh \
-    scripts/generate-headers.mjs \
-    wrangler.jsonc \
-    worker \
-    .github/workflows/build.yml
+  git diff --name-only "${base}" HEAD -- . \
+    ':(exclude)docs' \
+    ':(exclude)*.md' \
+    ':(exclude).githooks' \
+    ':(exclude)LICENSE' \
+    ':(exclude).github/workflows/commit-lint.yml'
 )"
 
 if [ -n "${matched}" ]; then
   needed=true
   echo "▸ This change has to be rendered. It touches:"
-  # Printed rather than counted: a run that says "yes" without saying why is a run
-  # somebody widens the list to silence.
-  echo "${matched}" | sed 's/^/    /'
+  # Printed rather than counted: a run that says "yes" without saying why is a run somebody
+  # widens the exclusions to silence. Capped, because "yes" is the common answer now and a
+  # large refactor would otherwise bury the rest of the log under its own file list.
+  echo "${matched}" | head -20 | sed 's/^/    /'
+  over="$(( $(echo "${matched}" | wc -l) - 20 ))"
+
+  if [ "${over}" -gt 0 ]; then
+    echo "    …and ${over} more"
+  fi
 else
   needed=false
-  echo "▸ Nothing here renders differently — the browser suite has nothing to add."
+  echo "▸ Documentation only — nothing here reaches a rendered page."
 fi
 
 if [ -n "${GITHUB_OUTPUT:-}" ]; then
