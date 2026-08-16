@@ -245,7 +245,7 @@
     /// whatever culture the pasted code happens to run under.</summary>
     private static string FormatArgumentLiteral(string typeKey, string raw) => typeKey switch {
         ArgumentParsing.TypeKeyString  => $"\"{EscapeForStringLiteral(raw)}\"",
-        ArgumentParsing.TypeKeyChar    => $"'{raw.Replace("\\", "\\\\").Replace("'", "\\'")}'",
+        ArgumentParsing.TypeKeyChar    => $"'{EscapeForCharLiteral(raw)}'",
         ArgumentParsing.TypeKeyInt32   => raw,
         // bool.Parse has no Parse(string, IFormatProvider) overload — the uniform Parse(...)
         // fallback below doesn't compile for it. A bare "true"/"false" literal is valid C#,
@@ -266,7 +266,30 @@
         _                              => $"{ClrTypeNameFor(typeKey)}.Parse(\"{EscapeForStringLiteral(raw)}\", System.Globalization.CultureInfo.InvariantCulture)",
     };
 
-    private static string EscapeForStringLiteral(string raw) => raw.Replace("\\", "\\\\").Replace("\"", "\\\"");
+    /// <summary>Escapes <paramref name="raw" /> for embedding in a regular (non-verbatim) C#
+    /// string literal. Beyond backslash and the enclosing quote, this must also escape every
+    /// character C# treats as a line terminator inside such a literal — CR, LF, NEL (U+0085),
+    /// LS (U+2028), PS (U+2029) — since the playground's own parsers accept these as ordinary
+    /// characters (e.g. in a <c>WithChars</c> character pool) but a physical line break between
+    /// the quotes does not compile.</summary>
+    private static string EscapeForStringLiteral(string raw) =>
+        string.Concat(raw.Select(c => EscapeForLiteral(c) ?? (c == '"' ? "\\\"" : c.ToString())));
+
+    private static string EscapeForCharLiteral(string raw) =>
+        string.Concat(raw.Select(c => EscapeForLiteral(c) ?? (c == '\'' ? "\\'" : c.ToString())));
+
+    /// <summary>The escape sequence for a character every C# string/char literal must escape
+    /// regardless of which quote encloses it, or <c>null</c> if <paramref name="c" /> needs no
+    /// such escaping (the caller still handles the enclosing quote character itself).</summary>
+    private static string? EscapeForLiteral(char c) => c switch {
+        '\\'     => "\\\\",
+        '\r'     => "\\r",
+        '\n'     => "\\n",
+        '\u0085' => "\\u0085",
+        '\u2028' => "\\u2028",
+        '\u2029' => "\\u2029",
+        _        => null,
+    };
 
     private static string ClrTypeNameFor(string typeKey) => typeKey switch {
         ArgumentParsing.TypeKeyBoolean        => "bool",
