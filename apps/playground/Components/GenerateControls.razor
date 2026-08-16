@@ -14,17 +14,24 @@
         @(HasResult ? PlaygroundStrings.T(LocaleState.Current, "playground.generateAgain") : PlaygroundStrings.T(LocaleState.Current, "playground.generate"))
     </button>
 
-    <button type="button" class="copy" disabled="@(!CanGenerate)" @onclick="HandleCopy">
-        @PlaygroundStrings.T(LocaleState.Current, "playground.copyCode")
-    </button>
+    @if (CanGenerate) {
+        <div class="code-row">
+            <code class="code-text">@CodeText</code>
+            <button type="button" class="copy" @onclick="HandleCopy">
+                @PlaygroundStrings.T(LocaleState.Current, "playground.copyCode")
+            </button>
+        </div>
+    }
 
     <span class="visually-hidden" role="status" aria-live="polite">@CopyStatusText</span>
 
-    @if (Refusal is not null) {
-        <output class="refusal">@Refusal</output>
-    } else if (HasResult) {
-        <output class="value">@DisplayValue(Value)</output>
-    }
+    <div class="result" role="status" aria-live="polite">
+        @if (Refusal is not null) {
+            <output class="refusal">@Refusal</output>
+        } else if (HasResult) {
+            <output class="value">@DisplayValue(Value)</output>
+        }
+    </div>
 </div>
 
 @code {

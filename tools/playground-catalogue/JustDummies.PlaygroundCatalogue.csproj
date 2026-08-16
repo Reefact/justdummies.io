@@ -15,24 +15,25 @@
 
   <ItemGroup>
     <!-- System.Text.Json ships in the net10.0 shared framework; no separate package needed.
-         GeneratePathProperty exposes $(PkgJustDummies), the package's NuGet cache folder, so the
-         XML doc file next to the assembly can be copied to output below — NuGet does not copy a
-         package's .xml doc file to a consuming project's output by default, only its .dll. -->
-    <PackageReference Include="JustDummies" GeneratePathProperty="true" />
+         NuGet does not copy a package's .xml doc file to a consuming project's output by
+         default, only its .dll — CopyJustDummiesXmlDoc below copies it from wherever the
+         resolved reference itself actually lives. -->
+    <PackageReference Include="JustDummies" />
   </ItemGroup>
 
   <!-- Makes JustDummies.xml resolvable next to JustDummies.dll at runtime (typeof(Any).Assembly.Location's
-       directory), the same way Program.cs expects to find it. Picks the doc file from the same TFM
-       folder NuGet actually resolved the assembly from (net8.0, for a net10.0 project) — the library
-       ships a second, narrower netstandard2.0 build whose doc file lists fewer members (it predates
-       System.Int128/Half/DateOnly), and copying that one instead would silently mismatch the
-       assembly actually loaded at runtime. -->
-  <Target Name="CopyJustDummiesXmlDoc" AfterTargets="Build">
-    <PropertyGroup>
-      <_JustDummiesXmlDocSource Condition="Exists('$(PkgJustDummies)\lib\net8.0\JustDummies.xml')">$(PkgJustDummies)\lib\net8.0\JustDummies.xml</_JustDummiesXmlDocSource>
-      <_JustDummiesXmlDocSource Condition="'$(_JustDummiesXmlDocSource)' == ''">$(PkgJustDummies)\lib\netstandard2.0\JustDummies.xml</_JustDummiesXmlDocSource>
-    </PropertyGroup>
-    <Copy SourceFiles="$(_JustDummiesXmlDocSource)" DestinationFolder="$(OutDir)" Condition="Exists('$(_JustDummiesXmlDocSource)')" />
+       directory), the same way Program.cs expects to find it. Reads the doc file from beside the
+       .dll NuGet actually resolved for this project's TFM (@(ReferencePath), populated by
+       ResolveAssemblyReferences before Build), rather than guessing a TFM folder name under the
+       package's NuGet cache — the library ships more than one target (net8.0, netstandard2.0,
+       and potentially others in a future release), and a hard-coded preference would silently
+       drift from whichever one NuGet actually picked. -->
+  <Target Name="CopyJustDummiesXmlDoc" AfterTargets="ResolveAssemblyReferences" BeforeTargets="Build">
+    <ItemGroup>
+      <_JustDummiesReference Include="@(ReferencePath)" Condition="'%(ReferencePath.NuGetPackageId)' == 'JustDummies'" />
+      <_JustDummiesXmlDoc Include="$([System.IO.Path]::ChangeExtension('%(_JustDummiesReference.Identity)', '.xml'))" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_JustDummiesXmlDoc)" DestinationFolder="$(OutDir)" Condition="Exists('%(_JustDummiesXmlDoc.Identity)')" />
   </Target>
 
   <ItemGroup>

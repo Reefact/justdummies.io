@@ -16,7 +16,8 @@
     <span class="any-prefix">Any.</span>
     @for (var i = 0; i < _links.Count; i++) {
         var index = i;
-        <ChainLink LinkIndex="index"
+        <ChainLink @ref="_linkRefs[index]"
+                   LinkIndex="index"
                    Prefix="@(index == 0 ? "" : ".")"
                    Options="@OptionsFor(index)"
                    State="_links[index]"
@@ -39,6 +40,9 @@
 @code {
 
     private readonly List<ChainLinkState> _links = new() { new ChainLinkState() };
+    private readonly Dictionary<int, ChainLink> _linkRefs = new();
+
+    private int? _focusLinkIndex;
 
     private object? _currentValue;
     private string _currentTypeKey = PlaygroundCatalogue.EntryPointReceiver;
@@ -109,7 +113,24 @@
     private void HandleDelete(int linkIndex) {
         _links.RemoveRange(linkIndex, _links.Count - linkIndex);
         _links.Add(new ChainLinkState());
+
+        // The button that was just clicked is about to leave the DOM along with the rest of
+        // the truncated chain; without this, focus falls back to <body> and a keyboard user
+        // has to renavigate the page from the top. OnAfterRenderAsync moves it once the fresh
+        // empty step this deletion always leaves behind (at the same index) has rendered.
+        _focusLinkIndex = linkIndex;
         Recompute();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        if (_focusLinkIndex is not { } index) {
+            return;
+        }
+
+        _focusLinkIndex = null;
+        if (_linkRefs.TryGetValue(index, out var link)) {
+            await link.FocusAsync();
+        }
     }
 
     private void HandleGenerate() {

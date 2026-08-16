@@ -159,7 +159,7 @@ test.describe('the playground', () => {
         const clipboard = await page.evaluate(() => navigator.clipboard.readText());
         expect(clipboard).toBe('Any.String().StartingWith("ORD-").Generate();');
 
-        await expect(page.locator('.generate-controls [role="status"]')).toHaveText(/copied/);
+        await expect(page.locator('.generate-controls .visually-hidden[role="status"]')).toHaveText(/copied/);
     });
 
     test('a full keyboard-only pass reaches the select, the delete button and the next select', async ({ page }) => {

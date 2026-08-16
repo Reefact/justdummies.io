@@ -715,15 +715,37 @@ h1:focus {
     outline-offset: 2px;
 }
 
-.generate-controls .value {
+.generate-controls .code-row {
+    display: flex;
+    align-items: center;
+    gap: var(--jd-space-3);
     flex-basis: 100%;
+    background: var(--jd-surface);
+    border: 1px solid var(--jd-border);
+    border-radius: var(--jd-radius-md);
+    padding: var(--jd-space-3) var(--jd-space-4);
+    overflow-x: auto;
+}
+
+.generate-controls .code-text {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--jd-font-mono);
+    font-size: var(--jd-text-sm);
+    white-space: pre;
+}
+
+.generate-controls .result {
+    flex-basis: 100%;
+}
+
+.generate-controls .value {
     font-family: var(--jd-font-mono);
     font-size: var(--jd-text-lg);
     color: var(--jd-generated);
 }
 
 .generate-controls .refusal {
-    flex-basis: 100%;
     color: var(--jd-error);
     font-family: var(--jd-font-sans);
     line-height: var(--jd-line-body);
