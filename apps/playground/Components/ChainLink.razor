@@ -44,7 +44,7 @@
                     aria-describedby="@(DescribesInput(index) ? ErrorId : null)"
                     aria-invalid="@(DescribesInput(index) ? "true" : null)"
                     value="@State.Argument(index)"
-                    @oninput="e => HandleArgumentChanged(index, parameter.TypeKey, e)" />
+                    @oninput="e => HandleArgumentChanged(index, e)" />
             }
             <span class="paren">)</span>
         </span>
@@ -127,17 +127,22 @@
         return chosen is null ? Task.CompletedTask : OnMethodChosen.InvokeAsync((LinkIndex, chosen));
     }
 
-    /// <summary>Truncates a free-form text argument to <see cref="ArgumentParsing.SandboxTextLengthHardCeiling" />
+    /// <summary>Truncates any argument's raw text to <see cref="ArgumentParsing.SandboxTextLengthHardCeiling" />
     /// before it ever reaches <see cref="ChainLinkState" /> — a pasted multi-megabyte value
     /// would otherwise be re-parsed, replayed through the library and re-embedded into
-    /// <c>CodeText</c> on every keystroke. This is deliberately a much higher ceiling than the
-    /// visible <see cref="ArgumentParsing.SandboxTextLengthLimit" /> that <see cref="ArgumentParsing.TryParse" />
-    /// itself enforces — truncating to that lower, visible limit here would mean every
-    /// over-limit paste always arrives at <c>TryParse</c> already exactly at the limit, so its
-    /// "too long" error could never actually fire.</summary>
-    private Task HandleArgumentChanged(int argumentIndex, string parameterTypeKey, ChangeEventArgs e) {
+    /// <c>CodeText</c> on every keystroke. Applied regardless of the parameter's own type, not
+    /// only <c>string</c>: every non-numeric type key (<c>Guid</c>, <c>Char</c>, the
+    /// date/time family) renders as a plain <c>type="text"</c> input too (see
+    /// <see cref="InputTypeFor" />) and is just as pasteable. A legitimate value of any of
+    /// those types is always far under this ceiling, so this never touches one. This is
+    /// deliberately a much higher ceiling than the visible <see cref="ArgumentParsing.SandboxTextLengthLimit" />
+    /// that <see cref="ArgumentParsing.TryParse" /> itself enforces — truncating to that lower,
+    /// visible limit here would mean every over-limit paste always arrives at
+    /// <c>TryParse</c> already exactly at the limit, so its "too long" error could never
+    /// actually fire.</summary>
+    private Task HandleArgumentChanged(int argumentIndex, ChangeEventArgs e) {
         var raw = e.Value as string ?? "";
-        if (parameterTypeKey == ArgumentParsing.TypeKeyString && raw.Length > ArgumentParsing.SandboxTextLengthHardCeiling) {
+        if (raw.Length > ArgumentParsing.SandboxTextLengthHardCeiling) {
             raw = raw[..ArgumentParsing.SandboxTextLengthHardCeiling];
         }
 

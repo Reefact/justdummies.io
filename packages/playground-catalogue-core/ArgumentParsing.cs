@@ -171,9 +171,12 @@ public static class ArgumentParsing {
                 // offset", so an input without one is rejected before that silent fill-in can
                 // make the same displayed chain mean a different instant depending on which
                 // time zone parsed it (the browser's now, or wherever copied code runs later).
+                // It fills in a missing date from today's date the same way, so an input like
+                // "14:30+02:00" is rejected too — otherwise the same chain would mean a
+                // different instant depending on which day it was entered or replayed on.
                 return TryParse(raw, KeyExpectsDateTimeOffset, (string s, out DateTimeOffset v) => {
                     v = default;
-                    return HasExplicitOffset(s) && DateTimeOffset.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.None, out v);
+                    return HasExplicitOffset(s) && HasExplicitDate(s) && DateTimeOffset.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.None, out v);
                 }, out value, out errorKey);
             case TypeKeyTimeOnly:
                 return TryParse(raw, KeyExpectsTime, (string s, out TimeOnly v) => TimeOnly.TryParse(s, CultureInfo.InvariantCulture, out v), out value, out errorKey);
@@ -222,6 +225,26 @@ public static class ArgumentParsing {
         }
 
         return trimmed[(signIndex + 1)..].All(c => c is (>= '0' and <= '9') or ':');
+    }
+
+    /// <summary>True if <paramref name="raw" /> contains an ISO 8601 date component
+    /// (<c>YYYY-MM-DD</c>) somewhere in it. Checked alongside <see cref="HasExplicitOffset" />
+    /// for <c>DateTimeOffset</c>: <see cref="DateTimeOffset.TryParse(string, IFormatProvider, DateTimeStyles, out DateTimeOffset)" />
+    /// fills in a missing date from today's date just as readily as it fills in a missing
+    /// offset from the host's local one, so a time-only input like "14:30+02:00" would
+    /// otherwise mean a different instant depending on which day it was entered or replayed
+    /// on.</summary>
+    private static bool HasExplicitDate(string raw) {
+        for (var i = 0; i + 10 <= raw.Length; i++) {
+            if (raw[i + 4] == '-' && raw[i + 7] == '-'
+                && char.IsAsciiDigit(raw[i]) && char.IsAsciiDigit(raw[i + 1]) && char.IsAsciiDigit(raw[i + 2]) && char.IsAsciiDigit(raw[i + 3])
+                && char.IsAsciiDigit(raw[i + 5]) && char.IsAsciiDigit(raw[i + 6])
+                && char.IsAsciiDigit(raw[i + 8]) && char.IsAsciiDigit(raw[i + 9])) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private delegate bool Parser<T>(string raw, out T value);
