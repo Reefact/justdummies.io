@@ -1098,9 +1098,16 @@ two: it asks the site rather than the account.
 
 ## Step 10 — Turn the measurement on
 
-**Why** — Until this step, the site measures nothing. The beacon is not rendered because it has no
-token, and the events have nowhere to land. Both halves live in the dashboard rather than in the
-repository, which is why building and deploying does not switch them on. What each half is for, and
+**Why** — The measurement is half on, and it is worth being exact about which half.
+
+The **events** of §15.2 have had a destination since the Worker was deployed in step 5: the binding
+is unconditional, the page posts to `/_event` whether or not a beacon exists, and the dataset creates
+itself on the first write. A visitor who copies a command is already recorded, and so is anyone
+testing the collector by hand — into the same dataset production will use.
+
+What is missing is the **audience** half. The beacon is not rendered, because it has no token to
+report to, and the token lives in the dashboard rather than in the repository — which is why building
+and deploying does not switch it on. What each half is for, and
 why there are two of them, is [ADR-0010](adr/0010-the-site-runs-one-worker-script-for-measurement-en.md).
 
 **Do**
@@ -1132,25 +1139,35 @@ The first two are cheap. The third is the one that matters.
 # 1 — the beacon is in the page
 curl -s https://justdummies.io/ | grep -c 'static.cloudflareinsights.com'      # expect 1
 
-# 2 — the collector accepts a well-formed event, and only that
+# 2 — the collector accepts a well-formed event, and only that.
+#     NOT an install-command-copied: this row is written to the same dataset as
+#     production, and a check that fabricates a copy of the hero's command puts a
+#     conversion nobody made into the figures — worst at low traffic, which is
+#     exactly when the figures are being read most closely. The reporting query
+#     below filters on the event name, so a check named apart is a check excluded.
 curl -s -o /dev/null -w '%{http_code}\n' -X POST https://justdummies.io/_event \
   -H 'content-type: application/json' \
-  -d '{"event":"install-command-copied","placement":"hero","variant":"dotnet-cli","locale":"en","ordinal":0}'
+  -d '{"event":"deployment-check","placement":"hero","variant":"dotnet-cli","locale":"en","ordinal":0}'
                                                                                # expect 204
 curl -s -o /dev/null -w '%{http_code}\n' https://justdummies.io/_event         # expect 405
 
-# 3 — the Worker is not on the path of anything else
-curl -s -o /dev/null -w '%{http_code}\n' https://justdummies.io/does-not-exist # expect 404
+# 3 — the Worker is not on the path of anything else. The status alone cannot say
+#     so: the collector answers 404 for a path that is not its own, exactly like the
+#     asset layer, so a widened run_worker_first would pass a status check. What
+#     separates them is the body — the asset layer serves the 404 *page*, and the
+#     Worker serves nothing at all.
+curl -s https://justdummies.io/does-not-exist | grep -c '<html'                # expect 1, never 0
 ```
 
 Then open the site in a browser, copy an install command, and **watch the console**. §13.2 requires
 every change to the content policy to be validated by a real load rather than by review, and this is
 that load: a blocked beacon reports itself there and nowhere else. Nothing should be reported.
 
-Check 3 is the one that proves the decision rather than the wiring. A 404 there means the request
-was answered by the asset layer without the Worker running — which is what keeps the script's quota
-off the site. If it ever answers something else, `run_worker_first` has been widened and ADR-0010's
-central claim no longer holds.
+Check 3 is the one that proves the decision rather than the wiring, and it reads the body precisely
+because the status does not prove anything: both paths end in a 404. A page coming back means the
+asset layer answered without the Worker running, which is what keeps the script's quota off the site.
+An empty body means the Worker answered, `run_worker_first` has been widened, and ADR-0010's central
+claim no longer holds.
 
 ### Reading what was recorded
 
@@ -1163,10 +1180,15 @@ curl -s "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/
   -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
   -d "SELECT blob2 AS placement, blob3 AS variant, count() AS copies
       FROM justdummies_measurement
-      WHERE timestamp > now() - INTERVAL '7' DAY
+      WHERE blob1 = 'install-command-copied'
+        AND timestamp > now() - INTERVAL '7' DAY
       GROUP BY placement, variant
       ORDER BY copies DESC"
 ```
+
+The filter on `blob1` is not decoration: the collector accepts any well-formed event name, and the
+deployment check above deliberately sends a different one. Without that line every check ever run
+would count as somebody installing.
 
 That query is the whole point of §15.2: it says which moment of the page sent someone to install,
 and by which door. Group by `placement` alone for the moment, by `variant` alone for the door.
