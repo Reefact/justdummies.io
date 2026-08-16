@@ -226,10 +226,17 @@
     /// still parse the same way once copied out) — a parameterless Parse() would instead use
     /// whatever culture the pasted code happens to run under.</summary>
     private static string FormatArgumentLiteral(string typeKey, string raw) => typeKey switch {
-        ArgumentParsing.TypeKeyString => $"\"{EscapeForStringLiteral(raw)}\"",
-        ArgumentParsing.TypeKeyChar   => $"'{raw.Replace("\\", "\\\\").Replace("'", "\\'")}'",
-        ArgumentParsing.TypeKeyInt32  => raw,
-        _                             => $"{ClrTypeNameFor(typeKey)}.Parse(\"{EscapeForStringLiteral(raw)}\", System.Globalization.CultureInfo.InvariantCulture)",
+        ArgumentParsing.TypeKeyString  => $"\"{EscapeForStringLiteral(raw)}\"",
+        ArgumentParsing.TypeKeyChar    => $"'{raw.Replace("\\", "\\\\").Replace("'", "\\'")}'",
+        ArgumentParsing.TypeKeyInt32   => raw,
+        // decimal.Parse(string, IFormatProvider) alone defaults to NumberStyles.Number, which
+        // excludes AllowExponent — unlike float/double/Half, whose 2-argument Parse already
+        // defaults to NumberStyles.Float. ArgumentParsing itself always parses with
+        // NumberStyles.Float, so a decimal typed in exponent notation (e.g. "1e2") would
+        // generate fine in the playground but throw FormatException in the copied code without
+        // this explicit style.
+        ArgumentParsing.TypeKeyDecimal => $"decimal.Parse(\"{EscapeForStringLiteral(raw)}\", System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture)",
+        _                              => $"{ClrTypeNameFor(typeKey)}.Parse(\"{EscapeForStringLiteral(raw)}\", System.Globalization.CultureInfo.InvariantCulture)",
     };
 
     private static string EscapeForStringLiteral(string raw) => raw.Replace("\\", "\\\\").Replace("\"", "\\\"");
