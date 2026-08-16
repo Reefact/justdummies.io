@@ -2,10 +2,19 @@
 @inject IJSRuntime JS
 
 @*
-    The strip every playground page carries above .page, mirroring the site's own Base.astro:
+    The strip every playground page carries above <main>, mirroring the site's own Base.astro:
     a way back to the site, on the left, and the language switch, on the right (§6.4 — the
     playground's own interface follows the site's i18n rules now, only the library's runtime
     messages stay in English).
+
+    THE SAME FOUR ITEMS AS THE SITE'S BAR, IN THE SAME ORDER, and that is the point rather than
+    an accident. This bar used to carry three — no "Playground" entry, on the reasoning that a
+    link to the page you are already on says nothing — and the cost of that reasoning was a
+    header whose items landed nowhere near the site's: the row is laid out from the right edge,
+    so dropping one entry moved "Pourquoi JustDummies" a link's width sideways and the two
+    halves of the product stopped agreeing above the fold. The site's own bar already links the
+    page it is on (its "Pourquoi JustDummies" entry does exactly that on /why-justdummies), so
+    carrying the entry here is the site's rule applied, not an exception invented for it.
 
     The brand link leaves this app rather than routing inside it — there is nowhere inside the
     playground that "JustDummies" would point to other than where the reader already is — so it
@@ -16,9 +25,16 @@
 <header class="site-header">
     <a class="brand" href="@SiteHomeHref">JustDummies</a>
 
-    <nav>
+    <nav class="site-nav" aria-label='@PlaygroundStrings.T(LocaleState.Current, "nav.primary")'>
         <a href="@WhyJustDummiesHref">@PlaygroundStrings.T(LocaleState.Current, "nav.why")</a>
+        <a href="@PlaygroundHref">@PlaygroundStrings.T(LocaleState.Current, "nav.playground")</a>
         <a href="@RepositoryUrl" target="_blank" rel="noopener noreferrer">@PlaygroundStrings.T(LocaleState.Current, "nav.github")</a>
+
+        @*
+            The language control is not a fourth destination and must not read as one — the same
+            rule, drawn the same way, as Base.astro's own divider.
+        *@
+        <span class="divider" aria-hidden="true"></span>
 
         <nav class="language-selector" aria-label='@PlaygroundStrings.T(LocaleState.Current, "language.label")'>
             <details open="@_open">
@@ -71,6 +87,13 @@
     private string SiteHomeHref => LocaleState.Current == Locale.Fr ? "/fr/" : "/";
 
     private string WhyJustDummiesHref => LocaleState.Current == Locale.Fr ? "/fr/why-justdummies/" : "/why-justdummies/";
+
+    /// <summary>
+    ///     The same address the site's own bar points at (<c>Base.astro</c>), spelled the same
+    ///     way: there is one playground route in every locale, so what carries the language is
+    ///     the <c>?lang=</c> the application reads at startup, not a locale-prefixed path.
+    /// </summary>
+    private string PlaygroundHref => $"/playground/?lang={PlaygroundStrings.Tag(LocaleState.Current)}";
 
     protected override async Task OnAfterRenderAsync(bool firstRender) {
         if (firstRender) {

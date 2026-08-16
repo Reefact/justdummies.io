@@ -10,6 +10,17 @@
     box-sizing: border-box;
 }
 
+/*
+ * A page reserves its scrollbar's width whether or not that scrollbar is drawn — the same rule,
+ * for the same reason, as the site's own base.css. It is not cosmetic here: the playground is a
+ * short page and /why-justdummies is a tall one, so without it the two documents are laid out
+ * in viewports fifteen pixels apart and every centred measure below lands seven and a half
+ * pixels off the page it is supposed to match.
+ */
+html {
+    scrollbar-gutter: stable;
+}
+
 body {
     margin: 0;
     background: var(--jd-background);
@@ -19,10 +30,61 @@ body {
     line-height: var(--jd-line-body);
 }
 
-.page {
+/*
+ * How a link is drawn, declared once — the same two rules the site's base.css opens with.
+ *
+ * Duplicated here because the two applications share no stylesheet, and absent here until the
+ * header had to match the site's: every link this file did not name individually was rendering
+ * in the user agent's own blue, which on --jd-background is barely a colour at all.
+ */
+a {
+    color: var(--jd-accent);
+    text-underline-offset: 0.2em;
+}
+
+a:focus-visible,
+button:focus-visible {
+    outline: 2px solid var(--jd-text-primary);
+    outline-offset: 2px;
+}
+
+/*
+ * The page's measure and the air around it — the site's `main` and `.shell` (Page.astro and
+ * base.css), to the number.
+ *
+ * WHY 72rem HERE AND 60rem ON THE HEADER. They are two different measures on the site too: the
+ * bar is set to 60rem and the column under it to 72rem, and a playground that folded them into
+ * one 60rem box — which is what `.page` used to be — put its every word 103 pixels right of
+ * where /why-justdummies puts the same word. The numbers are copied rather than reasoned about
+ * a second time; the day the site changes one, this changes with it.
+ */
+main {
+    padding-block: var(--jd-space-8) var(--jd-space-16);
+}
+
+.shell {
+    max-width: 72rem;
+    margin-inline: auto;
+    padding-inline: var(--jd-space-4);
+}
+
+/*
+ * The column the page's own words are set in, inside that shell — the same 60rem the site's
+ * comparative page gives its `.why` section, so a line breaks in the same place on both.
+ */
+.page-body {
     max-width: 60rem;
-    margin: 0 auto;
-    padding: var(--jd-space-12) var(--jd-space-4) var(--jd-space-16);
+}
+
+/*
+ * A short screen and a narrow one both give the top back, exactly as they do on the site
+ * (Page.astro). Two queries rather than one because they answer different facts: a phone is not
+ * a short screen, it is a narrow one.
+ */
+@media (max-width: 47.99rem), (max-height: 820px) {
+    main {
+        padding-block-start: var(--jd-space-4);
+    }
 }
 
 /*
@@ -37,7 +99,7 @@ body {
     justify-content: space-between;
     flex-wrap: wrap;
     gap: var(--jd-space-4);
-    max-width: 60rem;
+    max-width: 72rem;
     margin: 0 auto;
     padding: var(--jd-space-6) var(--jd-space-4);
     border-top: 1px solid var(--jd-border);
@@ -77,23 +139,24 @@ body {
     border: 0;
 }
 
-h1 {
-    font-size: var(--jd-text-xl);
-    line-height: var(--jd-line-tight);
-    margin: 0 0 var(--jd-space-4);
-}
-
-/* Blazor's router focuses the <h1> on navigation so a screen reader lands on the
-   new page's title, and a sighted keyboard user needs the same cue: it marks
+/* Blazor's router focuses the page's own title on navigation (App.razor's
+   `FocusOnNavigate Selector=".page-title"`) so a screen reader lands on what
+   actually changed, and a sighted keyboard user needs the same cue: it marks
    where navigation landed and where the next Tab stop starts. `:focus-visible`
    matches that programmatic focus in Chromium, so it can't be scoped to
    keyboard-only focus with `:not(:focus-visible)`. The browser's default ring —
    a thick box drawn tight against the text — reads as a layout bug rather than
    a navigation cue, so it's replaced with a thinner, offset one instead of
-   removed outright. The <h1> itself is now BrandHeading's, on every routed page
-   (see further down) — this rule moved with it rather than staying behind on
-   what used to be styled here as a bare h1 and is now .page-title. */
-h1:focus {
+   removed outright.
+
+   IT USED TO SAY `h1:focus`, AND ITS OWN COMMENT SAID IT HAD MOVED. It had not:
+   the selector stayed on the <h1> when the focus target became .page-title, so
+   the heading that is actually focused kept the default ring and drew a box the
+   full width of the measure around "Playground" — the one thing on that screen
+   that has no counterpart on the site it is supposed to match. Nothing carries
+   the ring on the <h1> any more: the only one on a routed page is the brand's,
+   which is never a focus target. */
+.page-title:focus {
     outline: 1px solid var(--jd-text-muted);
     outline-offset: 4px;
 }
@@ -164,9 +227,12 @@ h1:focus {
 }
 
 /* The pre-runtime shell. Styled from the same tokens so the boot state and the
-   booted page are the same page, not two designs. */
+   booted page are the same page, not two designs — which is why it takes the shell's
+   measure rather than one of its own: the word "Playground" would otherwise start at
+   one x before the runtime lands and at another after it, and a reader watching that
+   happen sees the page move for no reason it can name. */
 .boot {
-    max-width: 60rem;
+    max-width: 72rem;
     margin: 0 auto;
     padding: var(--jd-space-12) var(--jd-space-4);
     font-family: var(--jd-font-sans);
@@ -489,53 +555,66 @@ h1:focus {
     align-items: center;
     justify-content: space-between;
     gap: var(--jd-space-4);
+    max-width: 60rem;
+    margin: 0 auto;
     padding: var(--jd-space-4);
-    border-bottom: 1px solid var(--jd-border);
     font-family: var(--jd-font-sans);
+}
+
+/*
+ * FOUR THINGS HERE ARE COPIES, NOT CHOICES, and each of them was a visible disagreement with
+ * the site before it was copied. The measure and the centring: without them this bar ran the
+ * full width of the window and put "JustDummies" at x=16 against the site's x=248. The absent
+ * border: the site draws none, and the one that used to be here pushed everything below it a
+ * pixel down. The absent `font-size`: it was set on the header rather than on the nav, so the
+ * brand was rendered at the small size and the site's is not. The weight: 600, the site's, not
+ * the 700 that was here. Change one of them the day Base.astro changes it, and not before.
+ */
+.brand {
+    color: var(--jd-text-primary);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+/* The nav carries the small size, not the header — so the brand beside it keeps the body
+   size the site gives it. Its links take their colour and their underline from the `a`
+   rule above, exactly as the site's do: nothing here restates them. */
+.site-nav {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--jd-space-4);
     font-size: var(--jd-text-sm);
 }
 
-.site-header .brand {
-    font-weight: 700;
-    color: var(--jd-text-primary);
-    text-decoration: none;
+/* Tighter around the rule than between the links, so the rule reads as separating two
+   groups rather than as a third item with space of its own. */
+.site-nav > a {
+    margin-right: var(--jd-space-2);
 }
 
-.site-header .brand:hover {
-    color: var(--jd-accent);
+.divider {
+    width: 1px;
+    align-self: stretch;
+    min-height: 1rem;
+    background: var(--jd-border);
 }
 
-.site-header nav {
-    display: flex;
-    align-items: center;
-    gap: var(--jd-space-4);
-}
-
-.site-header nav > a {
-    color: var(--jd-text-muted);
-    text-decoration: none;
-}
-
-.site-header nav > a:hover {
-    color: var(--jd-text-primary);
-}
-
-/* Measured the same way Base.astro's own breakpoint is (in French, §6.5's "unfavourable
-   case"): this header carries one fewer link than the site's (no self-referential
-   "Playground" entry), so its own row fits down to a narrower 461 pixels of French rather
-   than the site header's 503 — a different number for a different bar, not the site's break
-   copied over. Below it, the brand, "Pourquoi JustDummies", "GitHub" and the language switch
-   no longer fit on one line, so this stacks rather than overflowing sideways. */
-@media (max-width: 30rem) {
+/* Base.astro's own breakpoint, and the same number rather than one measured again: this bar
+   now carries the same brand and the same four items as the site's, so the width at which they
+   stop fitting on one line is the site's width. It used to carry three items and break at
+   30rem, which meant the two headers stacked at different windows — one more way for them to
+   disagree. Re-measure them together — in French, §6.5's "unfavourable case" — the day a fifth
+   item joins either. */
+@media (max-width: 32rem) {
     .site-header {
         flex-direction: column;
         align-items: flex-start;
         gap: var(--jd-space-2);
     }
 
-    .site-header nav {
-        flex-wrap: wrap;
-        gap: var(--jd-space-3);
+    .site-nav {
+        gap: var(--jd-space-4);
     }
 }
 
@@ -543,6 +622,7 @@ h1:focus {
    Blazor itself, matching the shape (not the file) of the site's LanguageSelector.astro. */
 .language-selector {
     position: relative;
+    font-size: var(--jd-text-sm);
 }
 
 .language-selector summary {
@@ -634,24 +714,51 @@ h1:focus {
     color: var(--jd-text-muted);
 }
 
-/* The brand block: mark, product name as this app's one <h1>, and tagline — see
-   BrandHeading.razor for why the mark is sized rather than measured, unlike the site's. */
+/* The brand block: mark, product name as this app's one <h1>, and tagline — the same rules,
+   in the same order, as the site's BrandHeading.astro. The block owns its own bottom margin
+   so what follows starts at the same distance here as it does there. */
 .brand-heading {
     margin-bottom: var(--jd-space-4);
 }
 
 .brand-heading h1 {
-    display: flex;
-    align-items: center;
-    gap: 0.18em;
     font-size: var(--jd-text-2xl);
     line-height: var(--jd-line-tight);
     margin: 0;
 }
 
+/*
+ * A short screen gets a smaller name, and the room under it goes too — the site's rule, which
+ * this file was missing. Without it the two brands agreed at 900 pixels of window height and
+ * parted company at 800, where the site's heading drops to `--jd-text-xl` and this one
+ * did not.
+ */
+@media (max-height: 820px) {
+    .brand-heading h1 {
+        font-size: var(--jd-text-xl);
+    }
+
+    .brand-heading {
+        margin-bottom: var(--jd-space-2);
+    }
+}
+
+/*
+ * The fallback `js/brand-heading.js` replaces, and the closest CSS can state on its own:
+ * `1cap` is exactly the cap height, and a baseline-aligned image ends on the baseline. Top edge
+ * exact, bottom edge short by the descender.
+ *
+ * `margin-right` rather than a flex `gap`, because this is an inline image in the heading's own
+ * text flow now, exactly as it is on the site — a flex row centres the mark on the line box
+ * instead of hanging it off the cap line, and that alone put it two pixels off. Optical, not
+ * metric: the file carries 3 pixels of transparent margin down its left side and 2 down its
+ * right, out of 64, so a gap set to the eye reads narrower than the number says.
+ */
 .brand-heading .mark {
-    width: 1cap;
     height: 1cap;
+    width: auto;
+    vertical-align: baseline;
+    margin-right: 0.18em;
 }
 
 .brand-heading .tagline {
@@ -661,11 +768,13 @@ h1:focus {
 }
 
 /* The page's own title, one level below the brand's <h1> — Home.razor's "Playground",
-   NotFound.razor's "Not found" — where the old bare <h1> rule used to apply. */
+   NotFound.razor's "Not found". Sized and spaced as the site's own section heading is
+   (WhyJustDummiesContent.astro's h2), so "Playground" lands where "Pourquoi JustDummies"
+   lands and the first line of prose under it does too. */
 .page-title {
     font-size: var(--jd-text-xl);
     line-height: var(--jd-line-tight);
-    margin: 0 0 var(--jd-space-4);
+    margin: 0 0 var(--jd-space-6);
 }
 
 

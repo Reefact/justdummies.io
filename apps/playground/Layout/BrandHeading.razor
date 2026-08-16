@@ -1,16 +1,45 @@
 @inherits LocalizedComponent
+@inject IJSRuntime JS
 
 @*
     The playground's counterpart to the site's BrandHeading.astro: the mark, the product name
-    as this app's one <h1>, and the tagline — same copy, same tokens, so the two halves of the
-    product read as one. Simplified from the site's version in one place: no script measures
-    the mark against the heading's own cap height here, it is sized to look right at the sizes
-    this app actually renders — a fixed-image alignment where the original does a measured one.
+    as this app's one <h1>, and the tagline — same copy, same tokens, same geometry, so the two
+    halves of the product read as one.
+
+    THE MARK IS MEASURED HERE TOO, and it did not use to be. This component laid the heading out
+    as a flex row and sized the mark to `1cap`, which is a normal-looking lockup and the wrong
+    one: the site measures the `J` beside it and draws the mark from the cap line to the bottom
+    of that letter's tail, which comes out about a quarter larger. At the sizes this page
+    actually renders that was a 52-pixel mark on /why-justdummies against a 40-pixel one here,
+    sitting at a different height inside the same heading. So the markup is the site's markup —
+    an inline image in the heading's own text flow, aligned by `js/brand-heading.js`, which is
+    the site's script with the same fallback behind it (see the file, and BrandHeading.astro).
+
+    `data-brand-heading` is what that script finds the heading by, and it is the same attribute
+    the site's brand carries — so tests/browser/chrome-parity.spec.ts can measure one against
+    the other without either side knowing it is being compared.
 *@
 
 <div class="brand-heading">
-    <h1>
+    <h1 data-brand-heading>
         <img class="mark" src="/favicon-64.png" srcset="/favicon-64.png 2x, /favicon-128.png 4x" alt="" width="64" height="64" decoding="async" />JustDummies
     </h1>
     <p class="tagline">@PlaygroundStrings.T(LocaleState.Current, "brand.tagline")</p>
 </div>
+
+@code {
+
+    /// <summary>
+    ///     Aligns the mark against the heading it sits in, once the heading is in the document.
+    ///
+    ///     Only on the first render: the script installs its own resize and font listeners and
+    ///     re-measures from there, so a language switch — which redraws this component without
+    ///     changing a thing about the lockup — must not queue another interop call for it.
+    /// </summary>
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        if (firstRender) {
+            await JS.InvokeVoidAsync("jdBrandHeadingAlign");
+        }
+    }
+
+}
