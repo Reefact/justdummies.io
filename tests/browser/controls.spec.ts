@@ -59,12 +59,35 @@ test.describe('the fold', () => {
         // At the end of the open file, hand on the button — the state the report described.
         await button.scrollIntoViewIfNeeded();
 
-        const before: number = await button.evaluate((element: HTMLElement) => element.getBoundingClientRect().top);
+        /*
+         * READ, CLOSED AND READ AGAIN WITHOUT LEAVING THE PAGE, and that is what makes this
+         * check measure the fold rather than the harness.
+         *
+         * Split into three round trips — measure, `button.click()`, measure — it does not.
+         * Delivering a click is not only dispatching one: Playwright scrolls the element into
+         * view first, and here it does, by up to several hundred pixels, because the scene
+         * around the fold is still finishing its reveal when the first measurement is taken.
+         * `before` then describes a viewport the page has already left, and the difference
+         * that comes out is that scroll. Recorded over 24 throttled trials: the button read
+         * 324px down the viewport, the page scrolled 364px between the reading and the click,
+         * and the check reported a 348px drift on a fold that had moved the reader by nothing
+         * at all — the handler pinned the button to 672.5px and left it there, exactly, on
+         * every single trial. That is the intermittent red this check has been raising, most
+         * recently against release/2026-08-16T01-37-43Z: the measurement, not the fold.
+         *
+         * So both readings are taken either side of the click, in the page, in one go. The
+         * correction is synchronous — the handler scrolls before it returns — so the second
+         * reading is the settled one, and nothing gets between the two.
+         */
+        const drift: number = await button.evaluate((element: HTMLElement) => {
+            const before: number = element.getBoundingClientRect().top;
 
-        await button.click();
+            element.click();
+
+            return element.getBoundingClientRect().top - before;
+        });
+
         await expect(figure).toHaveAttribute('data-folded', '');
-
-        const after: number = await button.evaluate((element: HTMLElement) => element.getBoundingClientRect().top);
 
         /*
          * Closing takes about sixteen hundred pixels out of the document. Left alone, the
@@ -72,8 +95,7 @@ test.describe('the fold', () => {
          * fix, this button went from 337px down the viewport to -1304, and the reader landed
          * far below what they were reading. Two pixels of tolerance for sub-pixel layout.
          */
-        expect(Math.abs(after - before), `the button moved ${(after - before).toFixed(0)}px when the fold closed`)
-            .toBeLessThan(2);
+        expect(Math.abs(drift), `the button moved ${drift.toFixed(0)}px when the fold closed`).toBeLessThan(2);
     });
 
     test('names what each press will do', async ({ page }) => {
