@@ -165,8 +165,12 @@ public static class ArgumentParsing {
             return false;
         }
 
+        // Compared directly against both bounds rather than via T.Abs(parsed): the signed
+        // minimum of a capped type (e.g. Int32.MinValue) has no positive representation, so
+        // Abs(parsed) would itself throw OverflowException on exactly the input this check
+        // exists to catch.
         var parsed = (T)value!;
-        if (T.Abs(parsed) > T.CreateSaturating(SandboxMagnitudeLimit)) {
+        if (parsed > T.CreateSaturating(SandboxMagnitudeLimit) || parsed < T.CreateSaturating(-SandboxMagnitudeLimit)) {
             value    = null;
             errorKey = KeyExpectsWithinSandboxRange;
             return false;

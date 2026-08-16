@@ -18,7 +18,7 @@
         @PlaygroundStrings.T(LocaleState.Current, "playground.copyCode")
     </button>
 
-    <span class="visually-hidden" role="status" aria-live="polite">@(_hasCopied ? PlaygroundStrings.T(LocaleState.Current, "playground.copied") : "")</span>
+    <span class="visually-hidden" role="status" aria-live="polite">@CopyStatusText</span>
 
     @if (Refusal is not null) {
         <output class="refusal">@Refusal</output>
@@ -35,15 +35,35 @@
     [Parameter, EditorRequired] public string CodeText { get; set; } = "";
     [Parameter, EditorRequired] public EventCallback OnGenerate { get; set; }
 
-    private bool _hasCopied;
+    private enum CopyStatus { None, Copied, Failed }
+
+    private CopyStatus _copyStatus;
 
     private bool HasResult => Value is not null || Refusal is not null;
 
+    private string CopyStatusText => _copyStatus switch {
+        CopyStatus.Copied => PlaygroundStrings.T(LocaleState.Current, "playground.copied"),
+        CopyStatus.Failed => PlaygroundStrings.T(LocaleState.Current, "playground.copyFailed"),
+        _                  => "",
+    };
+
     private Task HandleGenerate() => OnGenerate.InvokeAsync();
 
+    /// <summary>Clears the live region before writing, so a repeated copy — success or
+    /// failure — is still a DOM change a screen reader announces, not a no-op update to text
+    /// that already reads the same. Also catches a rejected clipboard write (denied
+    /// permission, insecure context, ...): otherwise the awaited JS interop call throws and
+    /// the visitor sees Blazor's own error banner instead of a usable status.</summary>
     private async Task HandleCopy() {
-        await JS.InvokeVoidAsync("navigator.clipboard.writeText", CodeText);
-        _hasCopied = true;
+        _copyStatus = CopyStatus.None;
+        StateHasChanged();
+
+        try {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", CodeText);
+            _copyStatus = CopyStatus.Copied;
+        } catch (JSException) {
+            _copyStatus = CopyStatus.Failed;
+        }
     }
 
     /// <summary>A generated <c>string</c>/<c>char</c> can legitimately be empty or made only of
