@@ -1,4 +1,5 @@
 import { expect, test } from './support/harness';
+import type { BrowserContext, Page } from '@playwright/test';
 
 /**
  * The audience beacon never reaches Cloudflare from a browser check.
@@ -29,7 +30,11 @@ import { expect, test } from './support/harness';
  * intercept and nothing to assert. The runs where it matters are exactly the runs where it
  * is active: a release, on the artefact that is about to be published.
  */
-test('the audience beacon never reaches Cloudflare from a browser check', async ({ page }) => {
+/**
+ * Reads what came back for the beacon, whichever page asked. Shared because the guarantee has
+ * two routes into it and a check that covered one of them was the defect this file grew from.
+ */
+async function beaconBodies(page: Page): Promise<number[]> {
     const lengths: number[] = [];
 
     page.on('response', async (response) => {
@@ -53,7 +58,34 @@ test('the audience beacon never reaches Cloudflare from a browser check', async 
     // enforces that refusal.
     await expect.poll(() => lengths.length).toBeGreaterThan(0);
 
+    return lengths;
+}
+
+test('the audience beacon never reaches Cloudflare from the injected page', async ({ page }) => {
+    const lengths: number[] = await beaconBodies(page);
+
     expect(lengths, 'the beacon was answered by something other than the harness').toEqual(
         lengths.map(() => 0),
     );
+});
+
+/**
+ * The same guarantee by the other route.
+ *
+ * `weight.spec.ts` opens its own context to emulate a three-times screen, and a context built
+ * that way does not pass through the fixture that routes the injected one — so for a while the
+ * interception existed and that page went round it. The harness patches `newContext` to close
+ * that, and this is what says the patch is still there: it fails the moment somebody removes
+ * it, which reading `harness.ts` would not.
+ */
+test('nor from a context a check opened itself', async ({ browser }) => {
+    const context: BrowserContext = await browser.newContext({ deviceScaleFactor: 3 });
+
+    try {
+        const lengths: number[] = await beaconBodies(await context.newPage());
+
+        expect(lengths, 'a self-opened context reached the real beacon').toEqual(lengths.map(() => 0));
+    } finally {
+        await context.close();
+    }
 });
