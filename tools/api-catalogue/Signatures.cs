@@ -9,6 +9,8 @@ namespace JustDummies.ApiCatalogue;
 /// </summary>
 internal static class Signatures {
 
+    private static readonly System.Reflection.NullabilityInfoContext NullabilityContext = new();
+
     private static readonly Dictionary<string, string> AliasByClrName = new() {
         ["String"] = "string",
         ["Int32"] = "int",
@@ -76,8 +78,14 @@ internal static class Signatures {
         return Friendly(baseType);
     }
 
-    /// <summary>Every interface the type declares — <c>GetInterfaces()</c> already flattens inherited ones, which is what a reader wants: what can I pass this as.</summary>
-    public static string[] Implements(Type type) => type.GetInterfaces().Select(Friendly).ToArray();
+    /// <summary>
+    ///     Every publicly visible interface the type declares — <c>GetInterfaces()</c> already
+    ///     flattens inherited ones, which is what a reader wants: what can I pass this as. Filtered
+    ///     to <see cref="Type.IsVisible" />: an internal contract like <c>IHasRandomSource</c> is
+    ///     still returned by <c>GetInterfaces()</c>, but a package consumer cannot name it, so
+    ///     listing it here would document a cast nobody outside the library can write.
+    /// </summary>
+    public static string[] Implements(Type type) => type.GetInterfaces().Where(candidate => candidate.IsVisible).Select(Friendly).ToArray();
 
     public static string MethodSignature(MethodInfo method, string? staticContext = null) {
         string genericParameters = method.IsGenericMethodDefinition
@@ -91,15 +99,18 @@ internal static class Signatures {
             ", ",
             method.GetParameters().Select((parameter, index) => {
                 string thisPrefix = isExtensionMethod && index == 0 ? "this " : "";
+                // `params` is how OneOf/Except are actually called — Any.Boolean().OneOf(true, false),
+                // never with an array built by hand — and dropping it would document the wrong
+                // calling convention for every variadic member in the catalogue.
+                string paramsPrefix = parameter.IsDefined(typeof(ParamArrayAttribute), inherit: false) ? "params " : "";
 
-                return $"{thisPrefix}{Friendly(parameter.ParameterType)} {parameter.Name}";
+                return $"{thisPrefix}{paramsPrefix}{Friendly(parameter.ParameterType, NullabilityContext.Create(parameter))} {parameter.Name}";
             }));
         string call = $"{method.Name}{genericParameters}({parameters})";
         string constraints = method.IsGenericMethodDefinition ? ConstraintClauses(method.GetGenericArguments()) : "";
+        string returnType = Friendly(method.ReturnType, NullabilityContext.Create(method.ReturnParameter));
 
-        return staticContext is null
-            ? $"{Friendly(method.ReturnType)} {call}{constraints}"
-            : $"static {Friendly(method.ReturnType)} {staticContext}.{call}{constraints}";
+        return staticContext is null ? $"{returnType} {call}{constraints}" : $"static {returnType} {staticContext}.{call}{constraints}";
     }
 
     /// <summary>
@@ -147,7 +158,9 @@ internal static class Signatures {
     }
 
     public static string ConstructorSignature(ConstructorInfo constructor) {
-        string parameters = string.Join(", ", constructor.GetParameters().Select(parameter => $"{Friendly(parameter.ParameterType)} {parameter.Name}"));
+        string parameters = string.Join(
+            ", ",
+            constructor.GetParameters().Select(parameter => $"{Friendly(parameter.ParameterType, NullabilityContext.Create(parameter))} {parameter.Name}"));
 
         return $"{constructor.DeclaringType!.Name}({parameters})";
     }
@@ -156,11 +169,25 @@ internal static class Signatures {
         string accessors = (property.CanRead ? "get; " : "") + (property.CanWrite ? "set; " : "");
         string prefix = (property.GetMethod ?? property.SetMethod)!.IsStatic ? "static " : "";
 
-        return $"{prefix}{Friendly(property.PropertyType)} {property.Name} {{ {accessors}}}";
+        return $"{prefix}{Friendly(property.PropertyType, NullabilityContext.Create(property))} {property.Name} {{ {accessors}}}";
     }
 
     /// <summary>A type as a reader would write it in a signature — aliased primitives, <c>Nullable&lt;T&gt;</c> as <c>T?</c>, generics spelled out.</summary>
-    public static string Friendly(Type type) {
+    public static string Friendly(Type type) => Friendly(type, nullability: null);
+
+    /// <summary>
+    ///     <see cref="Friendly(Type)" />, widened by a nullability read a bare <see cref="Type" />
+    ///     cannot answer on its own. A reference type is only ever its own name at the CLR level —
+    ///     <c>T</c> versus <c>T?</c> is a compiler annotation recovered from
+    ///     <see cref="NullabilityInfoContext" /> instead — and that annotation can sit on a generic
+    ///     argument rather than on the type itself: <c>OrNull&lt;T&gt;</c> on a reference type
+    ///     returns <c>IAny&lt;T&gt;</c>, never null itself, whose own type argument is what may be
+    ///     null, so this recurses through <see cref="NullabilityInfo.GenericTypeArguments" /> in
+    ///     lockstep with <see cref="Type.GetGenericArguments" /> rather than only checking the
+    ///     outermost level. Value-type nullability (<c>Nullable&lt;T&gt;</c>) is already a real CLR
+    ///     distinction handled below on its own, so a value type is never suffixed here.
+    /// </summary>
+    private static string Friendly(Type type, System.Reflection.NullabilityInfo? nullability) {
         if (type.IsGenericParameter) {
             return type.Name;
         }
@@ -168,21 +195,27 @@ internal static class Signatures {
         Type? nullableUnderlying = Nullable.GetUnderlyingType(type);
 
         if (nullableUnderlying is not null) {
-            return $"{Friendly(nullableUnderlying)}?";
+            return $"{Friendly(nullableUnderlying, nullability)}?";
         }
 
         if (type.IsArray) {
-            return $"{Friendly(type.GetElementType()!)}[]";
+            return $"{Friendly(type.GetElementType()!, nullability?.ElementType)}[]";
         }
+
+        string suffix = !type.IsValueType && nullability?.ReadState == System.Reflection.NullabilityState.Nullable ? "?" : "";
 
         if (type.IsGenericType) {
             string bareName = type.Name[..type.Name.IndexOf('`')];
-            string arguments = string.Join(", ", type.GetGenericArguments().Select(Friendly));
+            Type[] typeArguments = type.GetGenericArguments();
+            System.Reflection.NullabilityInfo[]? argumentNullability = nullability?.GenericTypeArguments;
+            string arguments = string.Join(
+                ", ",
+                typeArguments.Select((argument, index) => Friendly(argument, argumentNullability is not null && index < argumentNullability.Length ? argumentNullability[index] : null)));
 
-            return $"{bareName}<{arguments}>";
+            return $"{bareName}<{arguments}>{suffix}";
         }
 
-        return AliasByClrName.GetValueOrDefault(type.Name, type.Name);
+        return AliasByClrName.GetValueOrDefault(type.Name, type.Name) + suffix;
     }
 
     /// <summary>A stable, readable identifier for anchors and search — <c>AnyDateTimeOffset</c> becomes <c>any-date-time-offset</c>.</summary>

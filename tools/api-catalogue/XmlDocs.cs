@@ -117,6 +117,14 @@ internal static class XmlDocs {
             return $"{marker}{type.GenericParameterPosition}";
         }
 
+        // Recurse before the generic-type branch below, or an open array like T[] falls through
+        // to type.FullName — null for a type built from an unbound generic parameter — and the
+        // lookup silently misses. OneOf(T[])/Except(T[]) had exactly this: a null summary in the
+        // committed catalogue where the non-generic overloads resolved fine.
+        if (type.IsArray) {
+            return $"{DocParameterType(type.GetElementType()!)}[]";
+        }
+
         if (type.IsGenericType) {
             string definition = type.GetGenericTypeDefinition().FullName!;
             string bareName = definition[..definition.IndexOf('`')];
