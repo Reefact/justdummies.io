@@ -30,9 +30,33 @@ jobs:
     name: Build and verify the artefact
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    outputs:
+      # Read by the browser job below, which cannot compute it for itself: it starts
+      # from a downloaded artefact rather than from a checkout of the change.
+      needs-a-browser: ${{ steps.rendering.outputs.needed }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          # Two, so the step below has something to compare against. On a pull request
+          # Actions checks out the merge commit, whose first parent is the base — one
+          # commit deeper is the whole cost of knowing what this change touches.
+          #
+          # NOT `fetch-depth: 0`, and not a fetch of the base by its SHA either. The
+          # full history is minutes of clone for one `git diff`, and this remote
+          # refuses `git fetch origin <sha>` outright ("couldn't find remote ref"),
+          # which would have failed every pull request rather than merely slowed it.
+          fetch-depth: 2
+
+      # Which pull requests the browser suite runs on, decided from what the change
+      # touches — see scripts/changes-need-a-browser.sh for the list and the reasoning.
+      #
+      # Only on a pull request. A push to main and a release tag have no "before" this
+      # question is about, and the job's own `if:` already answers for them.
+      - name: Decide whether a browser has to look at this change
+        id: rendering
+        if: github.event_name == 'pull_request'
+        run: ./scripts/changes-need-a-browser.sh HEAD^1
 
       # Before setup-node, so its pnpm cache has a pnpm to work with. The version
       # comes from package.json's packageManager field, so CI and a maintainer's
@@ -126,13 +150,27 @@ jobs:
   # Renders the artefact in a real browser. Split out from the build job because it is
   # by far the slowest part of the pipeline — fetching and installing a browser, then
   # running a full Playwright suite against it — and most pull requests do not touch
-  # anything it would catch. It runs on demand (workflow_dispatch, for a PR someone
-  # wants checked before merge) and automatically before every release, where it blocks
-  # the deploy: see the `needs` on that job below.
+  # anything it would catch.
+  #
+  # "Most" is not "none", and this used to be written as though it were: on demand and
+  # before a release, and on no pull request at all. What that cost is a change to the
+  # layout of either application reaching main having been rendered nowhere but a
+  # maintainer's machine — including the one check whose whole subject is a browser
+  # measurement, tests/browser/chrome-parity.spec.ts, which held an invariant across
+  # two applications that this pipeline had never once executed. So a pull request that
+  # touches something only a rendered page can check now runs it too; the build job
+  # decides which those are, and scripts/changes-need-a-browser.sh says why.
+  #
+  # The other two paths are unchanged: workflow_dispatch, for a pull request somebody
+  # wants rendered whatever the filter thinks, and every release, where it blocks the
+  # deploy — see the `needs` on that job below.
   browser-tests:
     name: Check the artefact in a browser
     needs: build
-    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/release/')
+    if: >-
+      github.event_name == 'workflow_dispatch'
+      || startsWith(github.ref, 'refs/tags/release/')
+      || needs.build.outputs.needs-a-browser == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
