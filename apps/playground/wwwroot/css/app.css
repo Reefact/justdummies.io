@@ -171,16 +171,24 @@ main {
     outline: none;
 }
 
-/* The page's opening paragraph, set to the same measure as the site's own prose
-   (WhyJustDummiesContent.astro's `p`): the column it sits in already carries the
-   60rem, so this states only the rhythm and lets `.page-body` state the width.
+/* The page's opening paragraph, drawn as the site draws the same paragraph —
+   WhyJustDummiesContent.astro's `.lede` for the type, its `p` rule for the measure.
 
-   IT USED TO CAP ITSELF AT 46rem, which was the last thing on this page still
-   stopping short of where /why-justdummies puts the same words — same left
-   edge, a line ending fourteen rem early. A measure declared twice is a measure
-   that drifts, and this one had. */
+   INHERITING THE BODY SIZE HERE WAS THE DEFECT, and letting the 60rem column state
+   the width was the other half of it. A lede is a lede on both halves: the site sets
+   it a step up from body text and stops it at 38rem — around seventy characters,
+   measured in French because French runs 15 to 20 % longer (§6.5) — while this rule
+   said nothing about either, so the same words came out a full step smaller and ran
+   the whole 60rem. Restated rather than inherited, because there is nothing in this
+   file's cascade that would have carried the site's decision across on its own.
+
+   The 60rem column is still the column; this only refuses to fill it, exactly as the
+   site's prose refuses to fill the 60rem shell it sits in. */
 .lede {
-    color: var(--jd-text-muted);
+    font-size: var(--jd-text-lg);
+    line-height: var(--jd-line-body);
+    color: var(--jd-text-primary);
+    max-width: 38rem;
     margin: 0 0 var(--jd-space-4);
 }
 
@@ -788,11 +796,16 @@ main {
 /* The page's own title, one level below the brand's <h1> — Home.razor's "Playground",
    NotFound.razor's "Not found". Sized and spaced as the site's own section heading is
    (WhyJustDummiesContent.astro's h2), so "Playground" lands where "Pourquoi JustDummies"
-   lands and the first line of prose under it does too. */
+   lands and the first line of prose under it does too.
+
+   THE GAP UNDER IT IS space-4, NOT space-6, and that is the site's number rather than a
+   choice made here: the heading's own box agreed with the site's all along, so the extra
+   half-rem was invisible on this element and showed up one element down, holding the
+   opening paragraph eight pixels below where the site starts the same words. */
 .page-title {
     font-size: var(--jd-text-xl);
     line-height: var(--jd-line-tight);
-    margin: 0 0 var(--jd-space-6);
+    margin: 0 0 var(--jd-space-4);
 }
 
 
