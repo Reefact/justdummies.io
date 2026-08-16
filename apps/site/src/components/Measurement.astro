@@ -1,0 +1,114 @@
+---
+/**
+ * What the site measures, in the two lanes §15 asks for (ADR-0010).
+ *
+ * LANE ONE is Cloudflare Web Analytics: how many people come, and whether pages
+ * load quickly (§15.1). It has no quota of any kind, so it is the half that cannot
+ * stop. It sets no cookie and identifies nobody.
+ *
+ * LANE TWO is the dimensioned event §15.2 asks for, sent to this site's own
+ * collector. It exists because lane one cannot carry it — Web Analytics has no
+ * custom-event API — and because "people copy the install command" is not the
+ * question the page was built to answer. "Which moment convinced them" is.
+ *
+ * THE TWO ARE INDEPENDENT ON PURPOSE. Lane two runs against a Worker with a daily
+ * allowance; lane one does not. If lane two ever went quiet, the audience figures
+ * keep arriving and the page keeps working, because nothing a visitor does depends
+ * on either.
+ *
+ * THE BEACON APPEARS ONLY WITH A TOKEN TO USE. Without one the tag would load a
+ * script that reports to nobody, which is ADR-0004's rule applied to something
+ * invisible: a preview build with no token measures nothing rather than measuring
+ * into the wrong account.
+ */
+
+/**
+ * PUBLIC_ because it genuinely is. The token is rendered into every page's HTML and
+ * is meant to be read; naming it as a secret would send the next maintainer to put
+ * it in a secret store, where it would be masked in build logs for no reason.
+ */
+const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
+---
+
+{
+    beaconToken && (
+        <script
+            is:inline
+            defer
+            src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon={JSON.stringify({ token: beaconToken })}
+        />
+    )
+}
+
+<script>
+    /**
+     * Forwards the copy event to the collector.
+     *
+     * IT LISTENS RATHER THAN BEING CALLED. `CopyableCommand` dispatches a DOM event
+     * and deliberately knows nothing about who is listening, so the component stays
+     * a component and this file is the only place that knows a collector exists.
+     * Removing this file removes the measurement and breaks nothing else.
+     *
+     * IT IS FIRE-AND-FORGET, and that is what keeps §15 from ever costing a visitor
+     * anything. `sendBeacon` hands the request to the browser and returns; there is
+     * no await, no retry, no queue that could grow, and no branch that reads the
+     * response — because by the time this runs, the command is already on the
+     * clipboard and the visitor is already gone.
+     */
+    const ENDPOINT = '/_event';
+
+    interface Copied {
+        placement?: string;
+        variant?: string;
+    }
+
+    /**
+     * The ordinal §15.3 permits as a secondary field, and nothing more than that.
+     *
+     * It is derived here rather than carried in the event, so that no component has
+     * to know its own position and no identifier can quietly become position-shaped.
+     * The collector stores it among the measured numbers rather than the grouping
+     * dimensions, which is where §15.3's prohibition actually lives: the page has
+     * gone from eleven scenes to fourteen once already, and an event keyed on
+     * position would have made the two periods incomparable.
+     *
+     * -1 when the block cannot be found, which reads as "unknown" rather than as
+     * "first" — the value a plain `findIndex` miss would otherwise be mistaken for.
+     */
+    function ordinalOf(placement: string): number {
+        const blocks: HTMLElement[] = Array.from(document.querySelectorAll<HTMLElement>('[data-install-tabs]'));
+
+        return blocks.findIndex((block: HTMLElement) =>
+            Array.from(block.querySelectorAll<HTMLElement>('[data-placement]')).some(
+                (marked: HTMLElement) => marked.dataset.placement === placement,
+            ),
+        );
+    }
+
+    document.addEventListener('jd:install-command-copied', (event: Event) => {
+        const detail: Copied = (event as CustomEvent<Copied>).detail ?? {};
+        const placement: string | undefined = detail.placement;
+        const variant: string | undefined = detail.variant;
+
+        if (placement === undefined || variant === undefined) {
+            return;
+        }
+
+        const body: string = JSON.stringify({
+            event: 'install-command-copied',
+            placement,
+            variant,
+            // The document's own language, which is the locale the reader chose. Two
+            // letters, never a region: what a dashboard needs to know is which half of
+            // the site convinced somebody, not where they were sitting.
+            locale: document.documentElement.lang,
+            ordinal: ordinalOf(placement),
+        });
+
+        // A Blob rather than a bare string, so the request carries a JSON content type
+        // and the collector can parse it without guessing. Same origin, so none of this
+        // involves CORS.
+        navigator.sendBeacon(ENDPOINT, new Blob([body], { type: 'application/json' }));
+    });
+</script>
