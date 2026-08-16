@@ -33,6 +33,7 @@
     Value="@_generatedValue"
     Refusal="@_refusal"
     CodeText="@CodeText"
+    DrawToken="_drawToken"
     OnGenerate="HandleGenerate" />
 
 <p class="version">@PlaygroundStrings.T(LocaleState.Current, "playground.generatedBy", LibraryVersion)</p>
@@ -49,6 +50,11 @@
     private object? _generatedValue;
     private string? _refusal;
     private bool _canGenerate;
+
+    /// <summary>Counts draws rather than describing them: two consecutive draws can produce the
+    /// very same text, and GenerateControls needs to tell them apart to announce the second one
+    /// (see the result region's own note there).</summary>
+    private int _drawToken;
 
     private string PageTitleText => $"{PlaygroundStrings.T(LocaleState.Current, "playground.title")} — JustDummies";
 
@@ -138,6 +144,8 @@
         if (!_canGenerate) {
             return;
         }
+
+        _drawToken++;
 
         var result = PlaygroundDispatch.Invoke($"{_currentTypeKey}::Generate#0", _currentValue, Array.Empty<string>());
         if (result.HasError) {
