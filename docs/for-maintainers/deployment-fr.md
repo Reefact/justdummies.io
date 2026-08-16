@@ -623,36 +623,41 @@ Regarde d'abord ce qui partirait, sans rien publier :
 pnpm wrangler deploy --dry-run
 ```
 
-Quatre lignes en sortent, et la troisième inquiète toujours :
+Ce qui en sort nomme un script et un binding :
 
 ```
 ✨ Read N files from the assets directory /home/<toi>/dev/justdummies.io/dist
-Total Upload: 0.34 KiB / gzip: 0.24 KiB
-No bindings found.
+Total Upload: 1.79 KiB / gzip: 0.79 KiB
+Your Worker has access to the following bindings:
+Binding                                    Resource
+env.MEASUREMENT (justdummies_measurement)  Analytics Engine Dataset
+
 --dry-run: exiting now.
 ```
 
 | Ligne | Ce qu'elle doit dire |
 |---|---|
 | `Read N files` | `N` se compte en **centaines**. **Ne le compare pas à un nombre écrit ici** : il change à chaque modification du playground, et ce n'est pas le nombre de fichiers téléversés — `--dry-run` n'applique pas `.assetsignore`, vérifié. Quelques fichiers seulement voudrait dire que `dist/` est incomplet. Le chemin doit commencer par `/home/`, pas par `/mnt/`. |
-| `Total Upload` | **moins d'un kibioctet, et c'est normal** — voir ci-dessous. |
-| `No bindings found.` | attendu : ce Worker n'a ni KV, ni D1, ni R2, ni variable. |
+| `Total Upload` | **quelques kibioctets** — le collecteur, et rien d'autre. Voir ci-dessous. |
+| le tableau des bindings | attendu, et attendu avec **exactement une ligne** : le jeu de données Analytics Engine où le collecteur écrit. Ni KV, ni D1, ni R2, ni variable. |
 | `--dry-run: exiting now.` | rien n'a été publié. |
 
-> **Le `Total Upload` n'est pas la taille de tes fichiers.** C'est celle du **script** Worker — et
-> comme ce site n'en a aucun (`wrangler.jsonc` est délibérément sans champ `main`), wrangler en
-> fabrique un qui ne fait rien. Tu peux le voir :
+> **Le `Total Upload` n'est pas la taille de tes fichiers.** C'est celle du **script** Worker, dont ce
+> site a exactement un exemplaire : le collecteur de mesure, ajouté délibérément et argumenté dans
+> [ADR-0010](adr/0010-le-site-execute-un-script-worker-pour-la-mesure-fr.md). Tes fichiers sont
+> comptés à part, sur la ligne du dessus, et partent comme *static assets* — gratuits et illimités.
 >
-> ```bash
-> pnpm wrangler deploy --dry-run --outdir /tmp/wdry && ls /tmp/wdry
-> ```
+> **Cette ligne affichait `0.34 KiB` et `No bindings found`**, parce qu'il n'y avait aucun `main` et
+> que wrangler fabriquait un `no-op-worker.js` pour en tenir lieu. Ce n'est plus ce que tu dois voir,
+> et un guide qui le promettrait encore te ferait lire un déploiement correct comme un contrôle de
+> sécurité en échec.
 >
-> Il écrit `no-op-worker.js` : voilà ce que pèsent ces 0,34 KiB. Tes fichiers sont comptés à part, sur
-> la ligne du dessus, et partent comme *static assets* — gratuits et illimités.
->
-> Un `Total Upload` en centaines de kibioctets serait le signal inverse : un script s'est glissé dans
-> la configuration, et les requêtes se mettraient à consommer un quota. C'est la décision **A6**, et
-> cette ligne est le seul endroit où on la voit de l'extérieur.
+> Ce qu'on surveille sur cette ligne a changé avec elle. Ce n'est plus « tout script est une erreur »
+> mais que **ce** script reste le seul et reste petit. Un `Total Upload` en dizaines ou centaines de
+> kibioctets, ou un second binding sous le premier, signifie que le Worker a pris du travail qu'il
+> était confiné à ne pas faire — et ce confinement, `run_worker_first` ne nommant qu'un seul chemin,
+> est toute la raison pour laquelle ADR-0010 a pu répondre à l'objection de §12.3. Cette ligne et le
+> troisième contrôle de l'étape 10 sont les deux endroits d'où on le voit de l'extérieur.
 
 Ce contrôle ne prouve **pas** que tu es authentifié : `--dry-run` ne contacte pas Cloudflare. C'est
 le contrôle de l'étape 4 qui le fait. Il ne vérifie pas non plus le *contenu* de `dist/` — il compte
@@ -1197,6 +1202,26 @@ curl -s -o /dev/null -w '%{http_code}\n' https://justdummies.io/_event         #
 curl -s https://justdummies.io/nexiste-pas | grep -c '<html'                   # attendu : 1, jamais 0
 ```
 
+Un dernier, et c'est celui que le contrôle 2 ne peut pas remplacer :
+
+```bash
+# 2b — la ligne a réellement atterri. Le 204 ci-dessus ne prouve que l'arrivée de la
+#      requête : le collecteur répond 204 pour un corps malformé et pour chaque rejet
+#      de validation aussi, délibérément, donc une charge utile qui aurait dérivé du
+#      schéma ressemblerait exactement à un succès. C'est ceci qui les distingue.
+curl -s "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/analytics_engine/sql" \
+  -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+  -d "SELECT count() AS rows
+      FROM justdummies_measurement
+      WHERE blob1 = 'deployment-check'
+        AND timestamp > now() - INTERVAL '10' MINUTE"
+                                                                               # attendu : rows >= 1
+```
+
+Laisser passer quelques secondes avant d'interroger : l'écriture est mise en file, pas synchrone. Un
+`rows` à zéro après un 204 est l'échec intéressant — la requête a été acceptée et la ligne n'a pas
+été écrite, ce qu'un code de statut ne peut par construction jamais signaler.
+
 Ouvrir ensuite le site dans un navigateur, copier une commande d'installation, et **regarder la
 console**. §13.2 exige que toute évolution de la politique de contenu soit validée par un chargement
 réel plutôt que par une revue, et c'est ce chargement-là : un beacon bloqué se signale là et nulle
@@ -1217,7 +1242,7 @@ variante et la locale, l'ordinal étant `double1` :
 ```bash
 curl -s "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/analytics_engine/sql" \
   -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-  -d "SELECT blob2 AS placement, blob3 AS variant, count() AS copies
+  -d "SELECT blob2 AS placement, blob3 AS variant, sum(_sample_interval) AS copies
       FROM justdummies_measurement
       WHERE blob1 = 'install-command-copied'
         AND timestamp > now() - INTERVAL '7' DAY
@@ -1225,9 +1250,18 @@ curl -s "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/
       ORDER BY copies DESC"
 ```
 
-Le filtre sur `blob1` n'est pas décoratif : le collecteur accepte n'importe quel nom d'événement bien
-formé, et le contrôle de déploiement ci-dessus en envoie délibérément un autre. Sans cette ligne,
-chaque contrôle jamais passé compterait comme une installation.
+Deux détails de cette requête sont porteurs et non stylistiques.
+
+**`sum(_sample_interval)`, pas `count()`.** Analytics Engine échantillonne un jeu de données dès
+qu'il devient chargé, et `count()` compte alors les lignes retenues plutôt que les copies qui ont eu
+lieu — silencieusement, et en dessous de la vérité. Chaque ligne retenue porte dans
+`_sample_interval` le poids de celles qu'elle représente : sommer cette colonne est ce qui donne un
+total juste. Au volume de ce site rien n'est encore échantillonné et les deux coïncident, ce qui est
+précisément pourquoi le mauvais choix ne se verrait pas avant que les chiffres comptent.
+
+**Le filtre sur `blob1`.** Le collecteur accepte n'importe quel nom d'événement bien formé, et le
+contrôle de déploiement ci-dessus en envoie délibérément un autre. Sans cette ligne, chaque contrôle
+jamais passé compterait comme une installation.
 
 Cette requête est tout l'objet de §15.2 : elle dit quel moment de la page a envoyé quelqu'un
 installer, et par quelle porte. Grouper sur `placement` seul pour le moment, sur `variant` seul pour
