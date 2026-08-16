@@ -136,7 +136,12 @@ const value: string = sampleValue('hero-expression');
         overflow-x: auto;
         font-family: var(--jd-font-mono);
         font-size: var(--jd-text-sm);
-        line-height: 1.5;
+        /* Matches .hero-widget .expression's line-height in the playground app's own
+           app.css: that widget needs the extra room to underline its editable fields, and
+           this static sample sits right next to it as the same expression before the
+           runtime loads — a tighter line-height here read as a size change the moment the
+           live widget replaced it. */
+        line-height: 2.1;
     }
 
     figcaption {
