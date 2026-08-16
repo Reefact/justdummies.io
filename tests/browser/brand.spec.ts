@@ -1,4 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from './support/harness';
+import type { Page } from '@playwright/test';
 
 /**
  * The brand is drawn in the same place on every page that carries it.

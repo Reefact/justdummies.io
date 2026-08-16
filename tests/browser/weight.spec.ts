@@ -1,4 +1,5 @@
-import { expect, test, type Response } from '@playwright/test';
+import { expect, test } from './support/harness';
+import type { Response } from '@playwright/test';
 
 import { PAGES } from './support/watch';
 

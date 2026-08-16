@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './support/harness';
 
 import { watch, type PageComplaints } from './support/watch';
 

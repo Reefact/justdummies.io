@@ -1,4 +1,5 @@
-import { expect, test, type Page, type Response } from '@playwright/test';
+import { expect, test } from './support/harness';
+import type { Page, Response } from '@playwright/test';
 
 /**
  * /about, /privacy and /why-justdummies answer, say what they are about, and carry the

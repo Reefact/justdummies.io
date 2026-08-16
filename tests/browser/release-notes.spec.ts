@@ -1,4 +1,5 @@
-import { expect, test, type Locator, type Page, type Response } from '@playwright/test';
+import { expect, test } from './support/harness';
+import type { Locator, Page, Response } from '@playwright/test';
 
 /**
  * /release-notes reads a snapshot of the library's own CHANGELOG.md files (see

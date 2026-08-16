@@ -1,4 +1,5 @@
-import { expect, test, type Page, type Response } from '@playwright/test';
+import { expect, test } from './support/harness';
+import type { Page, Response } from '@playwright/test';
 
 /**
  * /version says what the site is serving, and says the same thing the site serves.
