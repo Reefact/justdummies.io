@@ -1,6 +1,6 @@
-# ADR-0010 | Le site exécute un script Worker, et seulement pour la mesure
+# ADR-0012 | Le site exécute un script Worker, et seulement pour la mesure
 
-🌍 🇫🇷 Français (ce fichier) · 🇬🇧 [English](0010-the-site-runs-one-worker-script-for-measurement-en.md)
+🌍 🇫🇷 Français (ce fichier) · 🇬🇧 [English](0012-the-site-runs-one-worker-script-for-measurement-en.md)
 
 **Status:** Proposed
 **Proposed:** 2026-08-16

@@ -92,10 +92,10 @@ n'apparaissent **pas** en développement où l'élagage est désactivé, mais su
 publié.
 *Origine :* toi, 0.2. · *Vit dans :* la spécification §10.4, qui est le bon endroit
 pour le raisonnement mais pas pour la décision.
-**Résolu :** [ADR-0010](../for-maintainers/adr/0010-le-catalogue-du-playground-est-du-code-c-genere-pas-du-json-fr.md).
+**Résolu :** [ADR-0012](../for-maintainers/adr/0010-le-catalogue-du-playground-est-du-code-c-genere-pas-du-json-fr.md).
 
 **A6 — Aucun script serveur** — ⏳ *fiche écrite, en attente de ratification :*
-[ADR-0010](../for-maintainers/adr/0010-le-site-execute-un-script-worker-pour-la-mesure-fr.md).
+[ADR-0012](../for-maintainers/adr/0012-le-site-execute-un-script-worker-pour-la-mesure-fr.md).
 **Cette ligne quitte l'inventaire le jour où cet ADR est accepté**, conformément à la règle
 en tête de ce document. Elle y reste tant qu'il est `Proposed`, parce que ratifier est
 l'acte du mainteneur : si l'ADR était refusé, supprimer la ligne maintenant laisserait la
@@ -112,7 +112,7 @@ répond par une erreur au lieu d'un repli. C'est la différence entre un site qu
 dégrade et un site qui tombe.
 *Note :* cette décision survivrait à un changement d'hébergeur, contrairement à A1.
 C'est pourquoi ce sont deux fiches et non une.
-*Origine :* toi, 0.2. · *Vit dans :* ADR-0010, et `wrangler.jsonc` en commentaire.
+*Origine :* toi, 0.2. · *Vit dans :* ADR-0012, et `wrangler.jsonc` en commentaire.
 
 **A7 — L'intégration continue construit, l'hébergeur reçoit un artefact déjà bâti**
 *Alternative écartée :* le CI intégré de l'hébergeur, qui ne convient pas ici parce que

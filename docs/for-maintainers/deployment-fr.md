@@ -644,7 +644,7 @@ env.MEASUREMENT (justdummies_measurement)  Analytics Engine Dataset
 
 > **Le `Total Upload` n'est pas la taille de tes fichiers.** C'est celle du **script** Worker, dont ce
 > site a exactement un exemplaire : le collecteur de mesure, ajouté délibérément et argumenté dans
-> [ADR-0010](adr/0010-le-site-execute-un-script-worker-pour-la-mesure-fr.md). Tes fichiers sont
+> [ADR-0012](adr/0012-le-site-execute-un-script-worker-pour-la-mesure-fr.md). Tes fichiers sont
 > comptés à part, sur la ligne du dessus, et partent comme *static assets* — gratuits et illimités.
 >
 > **Cette ligne affichait `0.34 KiB` et `No bindings found`**, parce qu'il n'y avait aucun `main` et
@@ -656,7 +656,7 @@ env.MEASUREMENT (justdummies_measurement)  Analytics Engine Dataset
 > mais que **ce** script reste le seul et reste petit. Un `Total Upload` en dizaines ou centaines de
 > kibioctets, ou un second binding sous le premier, signifie que le Worker a pris du travail qu'il
 > était confiné à ne pas faire — et ce confinement, `run_worker_first` ne nommant qu'un seul chemin,
-> est toute la raison pour laquelle ADR-0010 a pu répondre à l'objection de §12.3. Cette ligne et le
+> est toute la raison pour laquelle ADR-0012 a pu répondre à l'objection de §12.3. Cette ligne et le
 > troisième contrôle de l'étape 10 sont les deux endroits d'où on le voit de l'extérieur.
 
 Ce contrôle ne prouve **pas** que tu es authentifié : `--dry-run` ne contacte pas Cloudflare. C'est
@@ -1143,7 +1143,7 @@ Ce qui manque est la moitié **audience**. Le beacon n'est pas rendu, faute de j
 rapporter, et le jeton vit dans le tableau de bord et non dans le dépôt — ce qui explique que
 construire et déployer ne l'allume pas. À quoi sert
 chaque moitié, et pourquoi il y en a deux, c'est
-[ADR-0010](adr/0010-le-site-execute-un-script-worker-pour-la-mesure-fr.md).
+[ADR-0012](adr/0012-le-site-execute-un-script-worker-pour-la-mesure-fr.md).
 
 **Faire**
 
@@ -1252,7 +1252,7 @@ Le contrôle 3 est celui qui éprouve la décision plutôt que le câblage, et i
 parce que le statut ne prouve rien : les deux chemins finissent en 404. Une page qui revient signifie
 que la couche d'assets a répondu sans que le Worker s'exécute, ce qui est exactement ce qui tient le
 quota du script à l'écart du site. Un corps vide signifie que le Worker a répondu, que
-`run_worker_first` a été élargi, et que la thèse centrale d'ADR-0010 ne tient plus.
+`run_worker_first` a été élargi, et que la thèse centrale d'ADR-0012 ne tient plus.
 
 ### Lire ce qui a été enregistré
 
@@ -1356,7 +1356,7 @@ de onze à quatorze scènes, et deux périodes mesurées par position ne seraien
 - **Qu'une requête de page n'invoque jamais le Worker.** Affirmé d'après la documentation
   Cloudflare et d'après `run_worker_first`, pas encore d'après ce déploiement. Cela relève de la
   liste de §12.5 tant que le contrôle 3 de l'étape 10 n'a pas été passé contre le site réel, car
-  la thèse centrale d'ADR-0010 repose dessus.
+  la thèse centrale d'ADR-0012 repose dessus.
 - **Les deux hôtes du beacon.** Que l'hôte du script et l'hôte de report soient les deux que la
   politique nomme est documenté, pas observé. La console du navigateur sur un chargement réel
   tranche.
