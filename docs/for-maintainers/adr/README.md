@@ -155,7 +155,7 @@ requests, issues, diagrams.
 | [ADR-0009](0009-the-browser-checks-are-driven-by-playwright-en.md) | The browser checks are driven by Playwright | Accepted |
 | [ADR-0010](0010-the-playground-catalogue-is-generated-c-source-not-json-en.md) | The playground catalogue is generated C# source, not JSON | Accepted |
 | [ADR-0011](0011-the-playground-references-the-catalogue-as-a-project-reference-en.md) | The playground references the catalogue as a project reference | Accepted |
-| [ADR-0012](0012-the-site-runs-one-worker-script-for-measurement-en.md) | The site runs one Worker script, and only for measurement | Proposed |
+| [ADR-0012](0012-the-site-runs-one-worker-script-for-measurement-en.md) | The site runs one Worker script, and only for measurement | Accepted |
 | [ADR-0013](0013-mirrored-library-content-is-pinned-to-a-release-tag-en.md) | Mirrored library content is pinned to a release tag | Proposed |
 
 **0008 is absent on purpose.** It named a record that was written, merged, then withdrawn: how a
