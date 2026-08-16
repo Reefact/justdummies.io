@@ -70,6 +70,20 @@ jobs:
       # headers, and asserts the artefact's shape — all through scripts/, the same
       # ones `pnpm build` runs locally.
       - name: Build the artefact
+        # The audience beacon is rendered at build time or not at all, so the token has
+        # to be here rather than at deploy time — the deploy job publishes the artefact
+        # this step produced, it does not build one.
+        #
+        # A `vars` and not a `secrets`, because it is not one: the token is rendered into
+        # every page of the site and is meant to be read. Filed as a secret it would be
+        # masked in these logs for no reason, and the next person would treat it as
+        # something to protect.
+        #
+        # Unset is a normal build: no beacon, and a policy that grants the analytics
+        # hosts nothing. generate-headers.mjs prints which of the two it produced, so a
+        # pipeline that quietly stopped measuring says so in this step's log.
+        env:
+          PUBLIC_CF_BEACON_TOKEN: ${{ vars.PUBLIC_CF_BEACON_TOKEN }}
         run: pnpm build
 
       # The build regenerates what the site displays. If the committed copies differ,
