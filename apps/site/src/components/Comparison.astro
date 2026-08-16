@@ -169,8 +169,17 @@ function ratingLabel(rating: Rating): string {
             {
                 families.map((family) => (
                     <tbody>
+                        {/*
+                          `rowgroup`, not `colgroup`. A family is a `<tbody>`, and this cell
+                          heads the criterion rows inside it — the rows, not the columns. The
+                          two scopes look interchangeable on a full-width banner row and are
+                          not: `colgroup` points at a `<colgroup>` this table does not have,
+                          so a screen reader either attaches the question to the wrong axis or
+                          to nothing at all, and the grouping the sighted reader can see is
+                          the one thing a listening reader would lose.
+                        */}
                         <tr class="family-row">
-                            <th scope="colgroup" colspan={tools.length + 1}>
+                            <th scope="rowgroup" colspan={tools.length + 1}>
                                 {t(family.headingKey)}
                             </th>
                         </tr>
