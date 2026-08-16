@@ -1,0 +1,93 @@
+---
+/**
+ * One answer to "what am I actually trying to get in this test?" (§11.8).
+ *
+ * The card leads with the need, in the reader's own voice, because that is the line they
+ * recognise themselves in — the tool's name is the answer, not the question. Then what its
+ * authors would say it is for, then what you actually get back, then the repository.
+ *
+ * JustDummies has a card here too. That is the fix for the oddest gap in the first version
+ * of this page: every alternative was described and the library the page is about was not.
+ * It carries no "choose it over JustDummies when", which is why that line lives in its own
+ * section rather than in this component — a card that had to branch on whether its most
+ * important sentence exists is a card that can render without it.
+ */
+import { localeFromPath } from '../i18n/routing';
+import { useTranslations } from '../i18n/ui';
+import type { Tool } from '../comparison';
+
+interface Props {
+    entry: Tool;
+}
+
+const { entry } = Astro.props;
+
+const t = useTranslations(localeFromPath(Astro.url.pathname));
+
+const name: string = entry.kind === 'manual' ? t(entry.nameKey) : entry.name;
+const repo: string | null = entry.kind === 'manual' ? null : entry.repo;
+---
+
+<article class="card" data-tool={entry.id} data-self={entry.kind === 'self' ? '' : undefined}>
+    <h4>{name}</h4>
+    <p class="need">{t(entry.needKey)}</p>
+    <p class="description">{t(entry.descriptionKey)}</p>
+    <p class="concretely">{t(entry.concretelyKey)}</p>
+
+    {
+        repo !== null && (
+            <a class="repo" href={repo} target="_blank" rel="noopener noreferrer">
+                {t('why.tool.repoLink')}
+                <span class="visually-hidden"> {t('state.newTab')}</span>
+            </a>
+        )
+    }
+</article>
+
+<style>
+    .card {
+        display: flex;
+        flex-direction: column;
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-md);
+        background: var(--jd-surface);
+        padding: var(--jd-space-4);
+    }
+
+    /* The one the page is about, marked by more than its position in the grid. */
+    .card[data-self] {
+        border-color: var(--jd-accent);
+    }
+
+    h4 {
+        font-size: var(--jd-text-sm);
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        color: var(--jd-text-muted);
+        margin: 0 0 var(--jd-space-2);
+    }
+
+    /* The need is what the reader scans for, so it is the largest thing in the card. */
+    .need {
+        font-size: var(--jd-text-lg);
+        line-height: var(--jd-line-tight);
+        margin: 0 0 var(--jd-space-3);
+        color: var(--jd-text-primary);
+    }
+
+    .description,
+    .concretely {
+        margin: 0 0 var(--jd-space-3);
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+    }
+
+    .repo {
+        font-size: var(--jd-text-sm);
+        margin-top: auto;
+        align-self: start;
+    }
+
+    /* .visually-hidden is declared once, globally, in base.css. */
+</style>

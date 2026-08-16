@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 
 using JustDummies.SnippetValidation.Domain;
@@ -57,6 +58,12 @@ public static class Program {
             // arbitrary, which is the one line the second act's test kept — so what these
             // four draws show is not a defect but the reason that line was there.
             ["intermittent-test"] = Repeat(static () => new AnyOrder().Generate().Status.ToString()),
+
+            // The positioning page. Both figures there make a claim about *what the reader
+            // does not have to write*, and a claim of that shape is only worth reading beside
+            // what came out — four draws, all different, all inside the rule stated above them.
+            ["why-order-reference"] = Repeat(static () => Why.OrderReference()),
+            ["why-quantity"]        = Repeat(static () => Why.Quantity().ToString(CultureInfo.InvariantCulture)),
         };
 
         // Scene two shows the domain refusing a careless value. What it refused with is

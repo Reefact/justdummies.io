@@ -188,6 +188,10 @@ La réponse à la troisième question du dernier public est **oui**, et le site 
 dire explicitement. C'est le principal levier d'adoption d'une bibliothèque de test :
 pouvoir l'essayer sur un fichier sans engager l'équipe.
 
+« En une minute » est une contrainte, pas une figure de style. Elle interdit que la page
+de positionnement ouvre sur l'appareil comparatif qu'elle construit : les trois questions
+sont répondues avant le premier critère, et §11.3 en tire l'ordre de la page.
+
 ---
 
 ## 5. Principes UX et éditoriaux
@@ -681,44 +685,153 @@ concurrent réel de la plupart des bibliothèques de données de test n'est pas 
 bibliothèque, c'est une constante codée en dur. Une comparaison qui l'ignore parle à
 côté de son lecteur.
 
-### 11.3 Axes
+### 11.3 La conclusion d'abord, la preuve ensuite
 
-Ordonnés du plus différenciant au moins différenciant : respect des invariants
-métier ; contraintes exprimées au point d'appel ; ce que le test décrit ;
-réutilisation métier ; données réalistes ; graphe d'objets complet ;
-reproductibilité ; détection à la compilation ; génération de code ; exploration de
-l'espace d'entrée.
+§4 demande à un développeur déjà équipé de répondre **en une minute** : est-ce que ça
+remplace ou est-ce que ça complète ? qu'est-ce que mon outil ne fait pas ? puis-je
+l'essayer sur un seul test ?
+
+La première version de cette page respectait le reste de §11 à la lettre et ne répondait
+à aucune des trois. Elle ouvrait sur une matrice de dix axes, et une matrice de dix axes
+ne se lit pas en une minute : elle demande d'abord d'apprendre dix critères, puis de les
+appliquer soi-même. Le lecteur devait reconstituer la conclusion à partir des preuves.
+
+Ce n'est pas un défaut de rédaction, c'est un ordre. **La page conclut, puis prouve.**
+
+Elle se lit à quatre profondeurs, et **aucune n'est le prérequis de la précédente** :
+
+| Profondeur | Ce que le lecteur en repart avec |
+|---|---|
+| **le problème** | ce que fait la bibliothèque et pourquoi elle existe, sans comparatif ni vocabulaire spécialisé |
+| **le besoin** | quatre situations de test, une par option, pour se reconnaître avant de comparer quoi que ce soit ; la coexistence ; l'essai sur un seul test |
+| **les critères** | chaque critère enseigné là où il sert, puis appliqué aux quatre options |
+| **la preuve** | les nuances, les limites, la matrice, les sources, la date, le droit de réponse |
+
+La richesse n'est pas retirée, elle est rangée. Une page courte qui suppose son
+vocabulaire acquis n'est pas plus claire qu'une page longue qui l'enseigne ; elle est
+seulement plus courte.
+
+### 11.4 Aucun critère n'est affiché sans être enseigné
+
+C'est la règle qui manquait à cette section, et c'est la plus importante après §11.1.
+
+« Invariants métier », « contraintes au point d'appel » : ces intitulés ont un sens
+précis. Avoir un sens précis n'est pas être compréhensible. Le lecteur visé connaît C# et
+les tests unitaires ; il ne pratique pas nécessairement le DDD, ni le design par contrat,
+ni le property-based testing, et il n'a aucune raison de connaître le modèle conceptuel
+de ce comparatif.
+
+Chaque axe porte donc, **en donnée et non en balisage** :
+
+- un **intitulé en langue courante**, lisible sans expertise préalable ;
+- la **question concrète** qu'il tranche, posée comme le lecteur se la poserait ;
+- une **explication courte**, une idée par phrase ;
+- le **terme technique**, quand il en existe un, en information secondaire ;
+- un **exemple**, facultatif, et seulement quand il apprend plus qu'une phrase de plus.
+
+Le terme technique vient après l'idée, jamais à sa place : « invariant métier » est le mot
+juste, ce n'est pas une explication.
+
+L'intitulé, la question et l'explication sont **visibles**. Ce qui approfondit peut être
+replié, à trois conditions : le mécanisme est natif, il s'ouvre au clavier, et il se voit
+sans survol. Il n'y a pas de survol sur mobile, et une information indispensable rangée
+dans une infobulle est une information absente.
+
+### 11.5 Axes, et l'ordre dans lequel ils arrivent
+
+Dix. Ce que cette section fixe, c'est ce que chacun compare ; leurs intitulés définitifs
+sont du contenu et vivent avec lui (§2) :
+
+les valeurs que le code appelant accepte ; la règle énoncée là où la valeur est demandée ;
+la distinction entre la valeur que l'assertion vérifie et celles qui l'entourent ; la
+recette écrite une seule fois ; les données réalistes ; les objets imbriqués remplis sans
+qu'on les décrive ; le rejeu exact de l'exécution qui a échoué ; ce que le compilateur
+signale avant l'exécution ; le code de préparation écrit par un outil ; la recherche de la
+valeur qui casse le code.
+
+**Ils sont regroupés sous les quatre questions que le lecteur se pose en arrivant**, et
+non classés « du plus différenciant au moins différenciant ». Cette première règle
+d'ordonnancement est révoquée, et le motif est le même que celui de §11.1.
+
+Classer par pouvoir différenciant revient à classer par notre propre marge. Appliquée,
+la règle mettait en tête trois axes qui disent une seule et même force sous trois angles —
+la valeur satisfait les règles du code appelant, la règle s'énonce là où la valeur est
+demandée, le test montre son sujet. JustDummies prenait la meilleure note aux trois, aucune
+autre option n'en prenait une seule, et un lecteur qui n'adhérait pas encore à la promesse
+en lisait trois d'affilée avant d'atteindre un critère qu'un autre outil pouvait gagner.
+Une comparaison qui commence par trois victoires cesse d'être lue comme une comparaison.
+
+Groupé par question, l'ordre est celui du lecteur, et **chaque famille contient au moins un
+critère que JustDummies ne gagne pas**. C'est une contrainte sur le regroupement, pas un
+arrangement des notes : aucune note ne bouge pour la satisfaire, et si un jour aucun
+regroupement honnête ne la satisfait plus, c'est le comparatif qui a un problème, pas la
+règle.
 
 Les axes que JustDummies ne gagne pas restent **à leur rang, sans euphémisme**. Leur
 présence est ce qui rend les autres crédibles.
 
-### 11.4 Vocabulaire des cellules
+Un axe où les quatre options répondent la même chose n'est pas un axe raté : il apprend au
+lecteur que sa question relève d'une autre famille d'outils. La page **nomme alors cette
+famille** au lieu de le laisser sans réponse.
 
-Trois valeurs, et **aucune croix** : *cœur de métier*, *possible* (au prix d'une
-configuration, expliquée), *hors périmètre*.
+### 11.6 Vocabulaire des cellules
 
-*Hors périmètre* n'est pas un défaut. JustDummies porte cette mention sur plusieurs
-axes, et c'est exactement le sens du mot « just » (§3.2). Le tableau doit rendre cette
-cohérence visible plutôt que la masquer.
+Trois valeurs, et **aucune croix** : l'outil est *conçu pour ça* ; c'est *possible, avec du
+travail*, et ce travail est nommé ; *ce n'est pas son rôle*.
+
+Les trois mots doivent se comprendre seuls, et une **légende les définit malgré tout**,
+une fois, avant leur première apparition. C'est ce qui a écarté la formulation
+précédente : « cœur de métier » désigne en français courant l'activité principale d'une
+entreprise, et se lisait à un mot de « invariants métier » dans le même tableau.
+
+Le troisième mot décrit un **périmètre, jamais une intention**. Une bibliothèque qui ne
+fait pas quelque chose ne l'a pas nécessairement décidé : ce peut être une demande encore
+ouverte chez elle. Écrire « délibérément non » lui prêterait une position que son propre
+dépôt contredit, ce que §11.10 interdit.
+
+*Ce n'est pas son rôle* n'est pas un défaut. JustDummies porte cette mention sur plusieurs
+axes, et c'est exactement le sens du mot « just » (§3.2). La page rend cette cohérence
+visible plutôt que de la masquer.
+
+Une cellule qui ne dit que sa valeur ne dit rien : **toute cellule autre que « conçu pour
+ça » porte une note**, qui nomme le travail à fournir ou la limite rencontrée. C'est une
+contrainte de type, pas une consigne de rédaction — une cellule muette ne compile pas.
 
 Le sens n'est jamais porté par la seule couleur.
 
-### 11.5 Deux modes d'affichage
+### 11.7 Trois rendus d'une même source
 
-Une matrice complète est illisible sur mobile et hostile sur desktop.
+- **Le rendu principal est la comparaison critère par critère.** Un bloc par critère : son
+  enseignement, puis la position des quatre options avec leurs notes. Il est identique à
+  toutes les largeurs, il ne défile jamais latéralement, et il ne demande aucun script.
+- **Le duel** réduit ces mêmes blocs à JustDummies et à l'outil que le visiteur désigne.
+  C'est sa question réelle, qui n'est jamais « comment se comparent quatre options » mais
+  « comment ça se compare à **la mienne** ». Le sélecteur est un contrôle de formulaire
+  natif, jamais un composant sur mesure au clavier approximatif, et le changement
+  d'affichage est **annoncé en texte** : une colonne qui disparaît n'informe pas celui qui
+  ne la voyait pas.
 
-- **Mode principal, le duel** : JustDummies et **une** bibliothèque choisie par le
-  visiteur. C'est sa question réelle, qui n'est jamais « comment se comparent six
-  bibliothèques » mais « comment ça se compare à **la mienne** ». Le sélecteur est un
-  contrôle de formulaire natif, jamais un composant sur mesure au clavier approximatif ;
-- **mode secondaire, la matrice**. Sur mobile, elle est **remplacée**, pas rétrécie :
-  une carte dépliable par bibliothèque, sans défilement horizontal, sans texte minuscule
-  ni police condensée.
+  Le duel n'est plus l'état par défaut. Il l'était tant que le rendu principal était un
+  tableau à cinq colonnes, illisible autrement ; le rendu par blocs se lit à toutes les
+  largeurs avec les quatre options affichées. Un script dont le premier geste est de retirer
+  deux des quatre options que la page vient de présenter, et d'en choisir une à la place du
+  lecteur, répond à une question qui n'a pas encore été posée. **La page scriptée ouvre donc
+  là où la page non scriptée s'arrête** : tout est affiché, et « les trois autres options »
+  est la première entrée du sélecteur, qui est aussi le chemin du retour.
+- **La matrice** est le rendu secondaire, d'un coup d'œil, pour qui veut tout voir en même
+  temps. Elle n'apporte que la mise en grille : chaque notation qu'elle affiche est déjà
+  lisible, avec son explication, dans le rendu principal. Elle n'est donc présentée que là
+  où une grille se lit ; en dessous elle est **remplacée** par ce rendu principal, jamais
+  rétrécie, jamais mise à défiler latéralement.
 
-### 11.6 La fiche par bibliothèque
+### 11.8 La fiche par outil
 
-Chacune dispose d'un bloc court : une phrase décrivant son objectif comme ses auteurs
-le formuleraient, un lien vers son dépôt officiel, et surtout :
+JustDummies compris — c'était l'oubli de la première version : la colonne constante de
+toutes les lignes était la seule chose de la page qui n'était jamais décrite.
+
+Chaque outil dispose d'un bloc court : une phrase décrivant son objectif comme ses auteurs
+le formuleraient, une phrase disant concrètement ce qu'on en obtient, un lien vers son
+dépôt officiel, et surtout :
 
 > **« Quand la choisir plutôt que JustDummies »** — obligatoire, jamais vide, jamais
 > ironique.
@@ -727,19 +840,44 @@ C'est la partie la plus importante de la page. Elle coûte quelques conversions 
 achète la crédibilité de tout le reste. Sans elle, le tableau est une publicité et sera
 lu comme telle.
 
-Une section **« quand ne pas utiliser JustDummies »** existe en propre, non enfouie.
+Une section **« quand ne pas utiliser JustDummies »** existe en propre, non enfouie. Elle
+énumère ses cas un par un, et n'est pas un paragraphe qui les enchaîne : c'est la section
+qu'un lecteur sceptique lit le plus attentivement, donc la dernière où entasser des idées.
 
-### 11.7 Coexistence
+Elle porte aussi ce qui n'est pas un cas d'usage mais un fait sur le projet : **JustDummies
+est écrit et maintenu par une seule personne.** C'est la première question d'un lead à qui
+l'on propose une dépendance sous chacun de ses tests, il l'apprendra de toute façon, et
+l'apprendre ailleurs lui fera relire tout le reste avec méfiance. Le dire ici coûte quelques
+conversions et achète la même chose que §11.8 : le droit d'être cru.
 
-À dire explicitement, parce que c'est le principal frein à l'essai : JustDummies
-n'exige aucune migration, s'introduit sur **un seul test**, coexiste avec l'outillage
-existant dans la même base de code, et ne demande de retirer rien.
+### 11.9 Coexistence
 
-### 11.8 Règles éditoriales et gouvernance
+À dire explicitement et **tôt**, parce que c'est le principal frein à l'essai :
+JustDummies n'exige aucune migration, s'introduit sur **un seul test**, coexiste avec
+l'outillage existant dans la même base de code, et n'oblige à rien retirer.
+
+Tôt ne veut pas dire en premier. La phrase répond à une objection, et une objection sans
+désir n'existe pas encore : la première version de la page ouvrait dessus, devant un
+lecteur qui n'avait pas encore appris de quoi on lui parlait. Le haut de page dit donc ce
+que fait la bibliothèque, puis répond en une ligne à chacune des trois questions de §4 —
+dont celle-ci. La section qui en fait une action, commande d'installation comprise, arrive
+après les raisons de ne pas l'utiliser : c'est là qu'elle convertit.
+
+### 11.10 Règles éditoriales et gouvernance
 
 - ton factuel, aucune formulation dépréciative, aucun superlatif comparatif ;
+- **une idée principale par phrase** : une phrase qui affirme, nuance, excepte, justifie et
+  conclut à la fois se découpe ;
+- **le concret avant l'abstrait** — la situation de test avant le nom théorique ;
+- **aucun métadiscours** : une phrase affichée aide à comprendre, à choisir ou à
+  approfondir ; elle ne commente jamais la façon dont ce comparatif a été construit ;
+- **aucun renvoi qu'un autre rendu peut casser** : une note ne dit ni « ci-dessus » ni
+  « ci-dessous », puisque le duel masque des colonnes ; et elle ne renvoie pas à la
+  narration de la page d'accueil, que son lecteur n'a peut-être pas lue ;
+- **rien de décoratif** : toute phrase affichée apporte une information ;
 - toute affirmation sur une bibliothèque tierce est **vérifiable dans sa documentation
-  officielle ou son dépôt, et datée** ;
+  officielle ou son dépôt, et datée** — et la page **montre ces sources** au lieu de les
+  garder dans un commentaire de code ;
 - les noms et la casse retenus par leurs auteurs sont respectés ;
 - une remarque sur l'activité d'un projet n'est admise que sous forme de fait daté et
   sourçable ;
@@ -750,9 +888,9 @@ existant dans la même base de code, et ne demande de retirer rien.
   offre publiquement un droit de réponse est lue tout autrement que celle qui ne le
   fait pas.
 
-Les données du tableau sont un fichier structuré validé par schéma (§2), pas du
-balisage. Le duel, la matrice et les cartes mobiles sont trois rendus d'une même
-source.
+Les données du comparatif sont un fichier structuré validé par schéma (§2), pas du
+balisage — l'enseignement de chaque axe compris. La comparaison critère par critère, le
+duel et la matrice sont trois rendus d'une même source.
 
 ---
 
@@ -1005,7 +1143,11 @@ cassé.
 | Budgets de taille et de délai | 13.3 | Mesuré à chaque build |
 | Accessibilité | 13.4 | Audit automatisé, dans chaque locale |
 | Liens internes et réciprocité des `hreflang` | 6.5 | Vérification de l'artefact |
-| Fraîcheur du comparatif | 11.8 | Avertissement de build au-delà du délai déclaré |
+| Fraîcheur du comparatif | 11.10 | Avertissement de build au-delà du délai déclaré |
+| Chaque axe porte son enseignement — question et explication | 11.4 | Échec de compilation : le type de l'axe les exige |
+| Toute cellule autre que « conçu pour ça » porte une note | 11.6 | Échec de compilation : le type de la cellule l'exige |
+| Les critères et leur enseignement restent lisibles sans script | 11.7 | Vérification du document, et test de navigateur sans script |
+| Aucune note ne renvoie à ce qu'un autre rendu masque | 11.10 | Vérification des chaînes, dans les deux locales |
 | Un emplacement de mesure indexé sur une position | 15.3 | Vérification de l'artefact, et refus du collecteur |
 | Une paire emplacement/variante qui désigne deux choses | 15.2 | Vérification de l'artefact |
 | Le beacon d'audience et la politique qui doit l'admettre | 15.1, 13.2 | Vérification de l'artefact, dans les deux sens |

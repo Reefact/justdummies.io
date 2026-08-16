@@ -10,5 +10,7 @@
   "order-reference-invariants": "public static OrderReference Create(string value) {\n    ArgumentException.ThrowIfNullOrWhiteSpace(value);\n\n    if (!value.StartsWith(\"ORD-\", StringComparison.Ordinal)) {\n        throw new ArgumentException(\"An order reference must start with ORD-.\", nameof(value));\n    }\n\n    if (value.Length > 20) {\n        throw new ArgumentException(\"An order reference cannot exceed 20 characters.\", nameof(value));\n    }\n\n    return new OrderReference(value);\n}",
   "replayed-test": "[Fact, Reproducible(Seed = -1808250554)]\npublic void A_pending_order_can_be_cancelled() {\n    Order order = new AnyOrder().Generate();\n\n    order.Cancel();\n\n    Assert.Equal(OrderStatus.Cancelled, order.Status);\n}",
   "scaffolded-arrangement": "Order order = Any.Order().WithStatus(OrderStatus.Pending).Generate();",
-  "wanted-test": "[Fact, Reproducible]\npublic void A_pending_order_can_be_cancelled() {\n    Order order = CreateAnyPendingOrder();   // one line, and this is the one we want\n\n    order.Cancel();\n\n    Assert.Equal(OrderStatus.Cancelled, order.Status);\n}"
+  "wanted-test": "[Fact, Reproducible]\npublic void A_pending_order_can_be_cancelled() {\n    Order order = CreateAnyPendingOrder();   // one line, and this is the one we want\n\n    order.Cancel();\n\n    Assert.Equal(OrderStatus.Cancelled, order.Status);\n}",
+  "why-order-reference": "string reference = Any.String()\n                      .NonEmpty()\n                      .WithMaxLength(20)\n                      .StartingWith(\"ORD-\")\n                      .Generate();",
+  "why-quantity": "int quantity = Any.Int32().Between(1, 100).Generate();"
 }
