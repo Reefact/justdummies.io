@@ -153,6 +153,7 @@ requests, issues, diagrams.
 | [ADR-0006](0006-the-first-act-follows-one-factory-en.md) | The first act follows one factory, not the library's surface | Accepted |
 | [ADR-0007](0007-the-third-act-answers-before-it-fails-en.md) | The third act answers before it shows a failure | Accepted |
 | [ADR-0009](0009-the-browser-checks-are-driven-by-playwright-en.md) | The browser checks are driven by Playwright | Accepted |
+| [ADR-0010](0010-the-site-runs-one-worker-script-for-measurement-en.md) | The site runs one Worker script, and only for measurement | Proposed |
 
 **0008 is absent on purpose.** It named a record that was written, merged, then withdrawn: how a
 scene is titled is an editorial principle, which this file sends to the specification rather than

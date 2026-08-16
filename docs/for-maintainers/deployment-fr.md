@@ -1123,6 +1123,92 @@ interroge le site, pas le compte.
 
 ---
 
+## Étape 10 — Allumer la mesure
+
+**Pourquoi** — Jusqu'à cette étape, le site ne mesure rien. Le beacon n'est pas rendu faute de
+jeton, et les événements n'ont nulle part où atterrir. Les deux moitiés vivent dans le tableau de
+bord et non dans le dépôt, ce qui explique que construire et déployer ne les allume pas. À quoi sert
+chaque moitié, et pourquoi il y en a deux, c'est
+[ADR-0010](adr/0010-le-site-execute-un-script-worker-pour-la-mesure-fr.md).
+
+**Faire**
+
+1. **Web Analytics** — dans le tableau de bord, *Web Analytics* → *Add a site* → `justdummies.io`.
+   Ouvrir *Manage site* et copier le **jeton** depuis l'extrait affiché. Ne coller l'extrait nulle
+   part : le site rend sa propre balise, et seul le jeton est utile.
+
+2. **Donner le jeton à l'intégration continue, comme variable et non comme secret.** Dans les
+   réglages du dépôt, ajouter `PUBLIC_CF_BEACON_TOKEN` sous *Variables*. Sa place est là parce qu'il
+   est réellement public — il est rendu dans chaque page du site et il est fait pour être lu. Rangé
+   comme secret, il serait masqué dans les journaux de build pour rien, et la personne suivante le
+   prendrait pour quelque chose à protéger.
+
+   Un build sans lui est un build normal : pas de beacon, pas de chiffres de fréquentation, et une
+   politique qui n'accorde rien aux hôtes d'analytique. `generate-headers.mjs` imprime laquelle des
+   deux il a produite, de sorte qu'un build qui a silencieusement cessé de mesurer se voit dans le
+   journal plutôt que trois semaines plus tard sur un tableau de bord vide.
+
+3. **Le jeu de données ne demande aucune étape de création.** Analytics Engine crée
+   `justdummies_measurement` à la première écriture. Le binding est déjà déclaré dans
+   `wrangler.jsonc`.
+
+4. Déployer, puis passer les contrôles ci-dessous.
+
+### ✅ Contrôle
+
+Les deux premiers sont peu coûteux. C'est le troisième qui compte.
+
+```bash
+# 1 — le beacon est dans la page
+curl -s https://justdummies.io/ | grep -c 'static.cloudflareinsights.com'      # attendu : 1
+
+# 2 — le collecteur accepte un événement bien formé, et seulement lui
+curl -s -o /dev/null -w '%{http_code}\n' -X POST https://justdummies.io/_event \
+  -H 'content-type: application/json' \
+  -d '{"event":"install-command-copied","placement":"hero","variant":"dotnet-cli","locale":"fr","ordinal":0}'
+                                                                               # attendu : 204
+curl -s -o /dev/null -w '%{http_code}\n' https://justdummies.io/_event         # attendu : 405
+
+# 3 — le Worker n'est sur le chemin de rien d'autre
+curl -s -o /dev/null -w '%{http_code}\n' https://justdummies.io/nexiste-pas    # attendu : 404
+```
+
+Ouvrir ensuite le site dans un navigateur, copier une commande d'installation, et **regarder la
+console**. §13.2 exige que toute évolution de la politique de contenu soit validée par un chargement
+réel plutôt que par une revue, et c'est ce chargement-là : un beacon bloqué se signale là et nulle
+part ailleurs. Rien ne doit être signalé.
+
+Le contrôle 3 est celui qui éprouve la décision plutôt que le câblage. Une 404 signifie que la
+requête a été traitée par la couche d'assets sans que le Worker s'exécute — ce qui est exactement ce
+qui tient le quota du script à l'écart du site. Si elle répond un jour autre chose,
+`run_worker_first` a été élargi et la thèse centrale d'ADR-0010 ne tient plus.
+
+### Lire ce qui a été enregistré
+
+Analytics Engine ne livre aucun tableau de bord. La donnée s'interroge via son API SQL, et les champs
+sont dans l'ordre où le collecteur les écrit — `blob1` le nom de l'événement, puis l'emplacement, la
+variante et la locale, l'ordinal étant `double1` :
+
+```bash
+curl -s "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/analytics_engine/sql" \
+  -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+  -d "SELECT blob2 AS placement, blob3 AS variant, count() AS copies
+      FROM justdummies_measurement
+      WHERE timestamp > now() - INTERVAL '7' DAY
+      GROUP BY placement, variant
+      ORDER BY copies DESC"
+```
+
+Cette requête est tout l'objet de §15.2 : elle dit quel moment de la page a envoyé quelqu'un
+installer, et par quelle porte. Grouper sur `placement` seul pour le moment, sur `variant` seul pour
+la porte.
+
+Ne pas grouper sur `double1`. C'est l'ordinal, il est là pour qu'un tableau de bord puisse afficher
+les scènes dans l'ordre de la page, et §15.3 l'interdit comme clé — la page est déjà passée une fois
+de onze à quatorze scènes, et deux périodes mesurées par position ne seraient pas comparables.
+
+---
+
 ## Récapitulatif des contrôles
 
 | # | Étape | Ce que ça prouve |
@@ -1140,6 +1226,7 @@ interroge le site, pas le compte.
 | 7 | le job **Deploy** + `deployments list` | La CI publie vraiment, avec les bons secrets. |
 | 8 | `HTTP/2 200` sur le domaine | DNS, TLS et rattachement du Worker en place. |
 | 9 | `deployments list` inchangé | Une preview ne touche pas la production. |
+| 10 | le beacon dans la page, puis `204`, `405`, `404` | La mesure est allumée, et le Worker est hors du chemin de tout le reste. |
 
 ---
 
@@ -1165,6 +1252,10 @@ interroge le site, pas le compte.
 | CI : `Authentication error` | Jeton absent, expiré, ou créé sur un autre compte. |
 | `curl: (6) Could not resolve host` | Zone pas encore **Active**, ou serveurs de noms inchangés chez le registrar. |
 | Le domaine sert encore l'ancien site | Même cause, ou cache DNS local. |
+| Aucun beacon dans la page, aucun chiffre de fréquentation | `PUBLIC_CF_BEACON_TOKEN` n'était pas défini quand l'artefact a été construit. Le journal de build dit laquelle des deux variantes il a produite. Il faut reconstruire : la balise est rendue au build, pas à la requête. |
+| La console signale une violation de politique nommant `cloudflareinsights` | `_headers` a été modifié à la main, ou une balise beacon a été ajoutée à un build fait sans le jeton. La politique est dérivée de l'artefact ; reconstruire plutôt que rustiner. |
+| `/_event` répond **404** | `run_worker_first` ne le nomme plus, ou le Worker n'a pas été déployé. `wrangler deploy` annonce le binding quand il l'est. |
+| Les événements répondent `204` mais le jeu de données est vide | Le nom interrogé n'est pas celui qui est lié. Le binding et le nom du jeu de données sont tous deux dans `wrangler.jsonc`. |
 
 ---
 
@@ -1177,3 +1268,10 @@ interroge le site, pas le compte.
 - **Les previews en CI.** Elles se font à la main aujourd'hui (étape 9). Les automatiser sur les
   pull requests demanderait de donner à une PR l'accès au jeton — pas une décision de
   configuration, une décision de sécurité.
+- **Qu'une requête de page n'invoque jamais le Worker.** Affirmé d'après la documentation
+  Cloudflare et d'après `run_worker_first`, pas encore d'après ce déploiement. Cela relève de la
+  liste de §12.5 tant que le contrôle 3 de l'étape 10 n'a pas été passé contre le site réel, car
+  la thèse centrale d'ADR-0010 repose dessus.
+- **Les deux hôtes du beacon.** Que l'hôte du script et l'hôte de report soient les deux que la
+  politique nomme est documenté, pas observé. La console du navigateur sur un chargement réel
+  tranche.
