@@ -1,0 +1,12 @@
+---
+import ApiIndexContent from '../../../components/api/ApiIndexContent.astro';
+import ApiPage from '../../../layouts/ApiPage.astro';
+import { useTranslations } from '../../../i18n/ui';
+import { site } from '../../../site';
+
+const t = useTranslations('fr');
+---
+
+<ApiPage title={`${t('api.index.heading')} — ${site.name}`} description={t('api.meta.description')} activeSlug="">
+    <ApiIndexContent />
+</ApiPage>

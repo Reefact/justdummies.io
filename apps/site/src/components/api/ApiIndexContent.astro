@@ -1,0 +1,103 @@
+---
+/**
+ * /api — the overview: one card per category, previewing the catalogue rather than diving
+ * straight into the largest one first.
+ */
+import ApiCategoryCard from '../ApiCategoryCard.astro';
+import { localeFromPath } from '../../i18n/routing';
+import { useTranslations, type Locale, type UiKey } from '../../i18n/ui';
+import { apiCategory } from '../../apiCatalogue';
+
+const locale: Locale = localeFromPath(Astro.url.pathname);
+const t = useTranslations(locale);
+
+const slugs = ['entry-point', 'primitives', 'uris', 'collections', 'composition', 'reproducibility', 'exceptions'] as const;
+---
+
+<h2>{t('api.index.heading')}</h2>
+<p class="lede">{t('api.index.lede')}</p>
+
+{locale === 'fr' && <p class="english-note">{t('api.english.note')}</p>}
+
+<div class="api-category-grid">
+    {
+        slugs.map((slug) => (
+            <ApiCategoryCard
+                category={apiCategory(slug)}
+                heading={t(`api.${slug === 'entry-point' ? 'entryPoint' : slug}.heading` as UiKey)}
+                lede={t(`api.${slug === 'entry-point' ? 'entryPoint' : slug}.lede` as UiKey)}
+                locale={locale}
+            />
+        ))
+    }
+</div>
+
+{/*
+  Docs and Changelog belong here too, and don't appear: neither page exists yet (§7.3), and a
+  route this page cannot yet reach is a link this page must not draw. Playground does exist —
+  the one real destination beyond the catalogue itself.
+*/}
+<div class="see-also">
+    <h3>{t('api.seeAlso.heading')}</h3>
+    <a class="see-also-link" href={`/playground/?lang=${locale}`}>{t('api.seeAlso.playground')}</a>
+</div>
+
+<style>
+    h2 {
+        font-size: var(--jd-text-2xl);
+        line-height: var(--jd-line-tight);
+        margin: 0;
+    }
+
+    .lede {
+        margin: var(--jd-space-3) 0 0;
+        max-width: 62ch;
+        color: var(--jd-text-muted);
+        font-size: var(--jd-text-lg);
+    }
+
+    .english-note {
+        margin: var(--jd-space-4) 0 0;
+        max-width: 62ch;
+        color: var(--jd-text-muted);
+        font-size: var(--jd-text-sm);
+        border-left: 2px solid var(--jd-generated);
+        padding-left: var(--jd-space-3);
+    }
+
+    .api-category-grid {
+        margin-top: var(--jd-space-8);
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+        gap: var(--jd-space-4);
+    }
+
+    .see-also {
+        margin-top: var(--jd-space-12);
+        padding-top: var(--jd-space-6);
+        border-top: 1px solid var(--jd-border);
+    }
+
+    .see-also h3 {
+        font-size: var(--jd-text-sm);
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--jd-accent);
+        margin: 0 0 var(--jd-space-3);
+    }
+
+    .see-also-link {
+        display: inline-block;
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-md);
+        padding: var(--jd-space-3) var(--jd-space-4);
+        color: var(--jd-text-primary);
+        text-decoration: none;
+        font-size: var(--jd-text-sm);
+    }
+
+    .see-also-link:hover {
+        border-color: var(--jd-accent);
+    }
+</style>

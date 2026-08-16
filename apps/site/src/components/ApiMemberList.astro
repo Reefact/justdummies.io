@@ -1,0 +1,108 @@
+---
+/**
+ * One group of members on an API entry's card — its properties, its constructors, its
+ * methods, or the static `Any` method(s) that construct it — rendered as a signature-and-doc
+ * table. Four call sites in `ApiEntryCard` share this rather than repeating the table markup,
+ * so the four groups can never drift into looking like different things.
+ */
+import { highlight } from '../highlight';
+import type { ApiMember } from '../apiCatalogue';
+
+interface Props {
+    heading: string;
+    members: readonly ApiMember[];
+}
+
+const { heading, members } = Astro.props;
+---
+
+{
+    members.length > 0 && (
+        <div class="api-member-list">
+            <h4>{heading}</h4>
+            <table class="facts">
+                <tbody>
+                    {members.map((member) => (
+                        <tr>
+                            <th scope="row">
+                                <code set:html={highlight(member.signature, 'csharp')} />
+                            </th>
+                            <td>{member.summary}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    )
+}
+
+<style>
+    .api-member-list {
+        margin-top: var(--jd-space-6);
+    }
+
+    h4 {
+        font-size: var(--jd-text-sm);
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--jd-text-muted);
+        margin: 0 0 var(--jd-space-3);
+    }
+
+    .facts {
+        width: 100%;
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-md);
+        border-collapse: separate;
+        border-spacing: 0;
+        background: var(--jd-surface);
+        text-align: left;
+    }
+
+    th,
+    td {
+        padding: var(--jd-space-3) var(--jd-space-4);
+        vertical-align: baseline;
+        font-size: var(--jd-text-sm);
+    }
+
+    tr + tr th,
+    tr + tr td {
+        border-top: 1px solid var(--jd-border);
+    }
+
+    th {
+        font-weight: 400;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    th code {
+        color: var(--jd-text-primary);
+    }
+
+    td {
+        color: var(--jd-text-muted);
+    }
+
+    @media (max-width: 40rem) {
+        .facts,
+        .facts tbody,
+        .facts tr,
+        .facts th,
+        .facts td {
+            display: block;
+            width: auto;
+        }
+
+        tr + tr th {
+            border-top: 1px solid var(--jd-border);
+        }
+
+        td {
+            border-top: 0;
+            padding-top: 0;
+        }
+    }
+</style>

@@ -1,0 +1,12 @@
+---
+import ReproducibilityContent from '../../../components/api/ReproducibilityContent.astro';
+import ApiPage from '../../../layouts/ApiPage.astro';
+import { useTranslations } from '../../../i18n/ui';
+import { site } from '../../../site';
+
+const t = useTranslations('fr');
+---
+
+<ApiPage title={`${t('api.reproducibility.heading')} — API — ${site.name}`} description={t('api.meta.description')} activeSlug="reproducibility">
+    <ReproducibilityContent />
+</ApiPage>

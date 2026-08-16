@@ -1,0 +1,37 @@
+---
+/**
+ * /api/composition — turning several generators into one, through a factory, a tuple, a
+ * closed set of choices, or an optional value.
+ */
+import ApiEntryCard from '../ApiEntryCard.astro';
+import ApiPagination from '../ApiPagination.astro';
+import { localeFromPath } from '../../i18n/routing';
+import { useTranslations, type Locale } from '../../i18n/ui';
+import { apiCategory } from '../../apiCatalogue';
+
+const locale: Locale = localeFromPath(Astro.url.pathname);
+const t = useTranslations(locale);
+const category = apiCategory('composition');
+---
+
+<h2>{t('api.composition.heading')}</h2>
+<p class="lede">{t('api.composition.lede')}</p>
+
+{category.entries.map((entry) => <ApiEntryCard entry={entry} locale={locale} />)}
+
+<ApiPagination currentSlug="composition" locale={locale} />
+
+<style>
+    h2 {
+        font-size: var(--jd-text-2xl);
+        line-height: var(--jd-line-tight);
+        margin: 0;
+    }
+
+    .lede {
+        margin: var(--jd-space-3) 0 0;
+        max-width: 62ch;
+        color: var(--jd-text-muted);
+        font-size: var(--jd-text-lg);
+    }
+</style>

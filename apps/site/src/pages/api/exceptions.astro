@@ -1,0 +1,12 @@
+---
+import ExceptionsContent from '../../components/api/ExceptionsContent.astro';
+import ApiPage from '../../layouts/ApiPage.astro';
+import { useTranslations } from '../../i18n/ui';
+import { site } from '../../site';
+
+const t = useTranslations('en');
+---
+
+<ApiPage title={`${t('api.exceptions.heading')} — API — ${site.name}`} description={t('api.meta.description')} activeSlug="exceptions">
+    <ExceptionsContent />
+</ApiPage>

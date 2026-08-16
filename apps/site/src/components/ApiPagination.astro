@@ -1,0 +1,106 @@
+---
+/**
+ * Previous/next between the seven category pages, in the order `apiCatalogue.ts` already
+ * holds them in — the same order the sidebar lists them, so paging through in sequence and
+ * reading down the sidebar never disagree about what comes next.
+ */
+import { pathForLocale } from '../i18n/routing';
+import { useTranslations, type Locale } from '../i18n/ui';
+import { allApiCategories } from '../apiCatalogue';
+
+interface Props {
+    currentSlug: string;
+    locale: Locale;
+}
+
+const { currentSlug, locale } = Astro.props;
+const t = useTranslations(locale);
+
+const categoryLabel: Record<string, string> = {
+    'entry-point': t('api.nav.entryPoint'),
+    primitives: t('api.nav.primitives'),
+    uris: t('api.nav.uris'),
+    collections: t('api.nav.collections'),
+    composition: t('api.nav.composition'),
+    reproducibility: t('api.nav.reproducibility'),
+    exceptions: t('api.nav.exceptions'),
+};
+
+const slugs: string[] = allApiCategories().map((category) => category.slug);
+const index: number = slugs.indexOf(currentSlug);
+
+const previousSlug: string | null = index > 0 ? slugs[index - 1]! : null;
+const nextSlug: string | null = index >= 0 && index < slugs.length - 1 ? slugs[index + 1]! : null;
+
+function apiPath(slug: string | null): string {
+    return pathForLocale(slug === null ? '/api' : `/api/${slug}`, locale);
+}
+---
+
+<nav class="api-pagination" aria-label={t('api.nav.heading')}>
+    <a class="prev" href={apiPath(previousSlug)}>
+        <span class="label">← {t('api.pagination.previous')}</span>
+        <span class="title">{previousSlug === null ? t('api.pagination.overview') : categoryLabel[previousSlug]}</span>
+    </a>
+    {
+        nextSlug !== null && (
+            <a class="next" href={apiPath(nextSlug)}>
+                <span class="label">{t('api.pagination.next')} →</span>
+                <span class="title">{categoryLabel[nextSlug]}</span>
+            </a>
+        )
+    }
+</nav>
+
+<style>
+    .api-pagination {
+        display: flex;
+        gap: var(--jd-space-4);
+        margin-top: var(--jd-space-4);
+        padding-top: var(--jd-space-6);
+        border-top: 1px solid var(--jd-border);
+    }
+
+    .api-pagination a {
+        flex: 1;
+        min-width: 0;
+        padding: var(--jd-space-4);
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-md);
+        text-decoration: none;
+        color: var(--jd-text-primary);
+        transition: border-color var(--jd-duration-fast) var(--jd-ease);
+    }
+
+    .api-pagination a:hover {
+        border-color: var(--jd-accent);
+    }
+
+    .next {
+        text-align: right;
+        margin-left: auto;
+    }
+
+    .label {
+        display: block;
+        font-size: 0.75rem;
+        color: var(--jd-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: var(--jd-space-1);
+    }
+
+    .title {
+        font-weight: 600;
+    }
+
+    @media (max-width: 30rem) {
+        .api-pagination {
+            flex-direction: column;
+        }
+
+        .next {
+            text-align: left;
+        }
+    }
+</style>

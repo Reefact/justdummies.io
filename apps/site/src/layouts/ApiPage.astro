@@ -1,0 +1,63 @@
+---
+/**
+ * The shell every /api page shares: the brand heading every page carries, then a sidebar and
+ * a content column wide enough for a signature and its parameter table to sit side by side —
+ * `Page.astro`'s 72rem prose measure is right for the narrative pages it was built for and too
+ * narrow for a reference page, so this is a sibling layout on `Base` rather than a mode of
+ * `Page` itself. It still carries `BrandHeading`, because the h1 it renders is what makes this
+ * page belong to the same site — that heading level is not this layout's to reassign.
+ */
+import BrandHeading from '../components/BrandHeading.astro';
+import ApiCategoryNav from '../components/ApiCategoryNav.astro';
+import { localeFromPath } from '../i18n/routing';
+import type { Locale } from '../i18n/ui';
+import Base from './Base.astro';
+
+interface Props {
+    title: string;
+    description: string;
+    /** The current category's slug, or '' for the overview page — passed straight to `ApiCategoryNav`. */
+    activeSlug: string;
+}
+
+const { title, description, activeSlug } = Astro.props;
+const locale: Locale = localeFromPath(Astro.url.pathname);
+---
+
+<Base title={title} description={description}>
+    <div class="api-shell">
+        <BrandHeading />
+        <div class="api-layout">
+            <ApiCategoryNav locale={locale} activeSlug={activeSlug} />
+            <main class="api-main">
+                <slot />
+            </main>
+        </div>
+    </div>
+</Base>
+
+<style>
+    .api-shell {
+        max-width: 88rem;
+        margin-inline: auto;
+        padding: var(--jd-space-8) var(--jd-space-4) var(--jd-space-16);
+    }
+
+    .api-layout {
+        display: grid;
+        grid-template-columns: 16rem minmax(0, 1fr);
+        gap: var(--jd-space-8);
+        margin-top: var(--jd-space-8);
+    }
+
+    .api-main {
+        min-width: 0;
+    }
+
+    @media (max-width: 56rem) {
+        .api-layout {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+    }
+</style>

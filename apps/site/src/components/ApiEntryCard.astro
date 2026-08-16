@@ -1,0 +1,138 @@
+---
+/**
+ * One catalogue entry, rendered in full: its signature, its doc comment, what it extends and
+ * implements, how it is constructed, and the members it declares. Every field comes from
+ * `apiCatalogue.ts`, which comes from reflection — this component never receives anything a
+ * page wrote by hand.
+ */
+import { highlight } from '../highlight';
+import { useTranslations, type Locale } from '../i18n/ui';
+import type { ApiEntry } from '../apiCatalogue';
+import ApiMemberList from './ApiMemberList.astro';
+
+interface Props {
+    entry: ApiEntry;
+    locale: Locale;
+}
+
+const { entry, locale } = Astro.props;
+const t = useTranslations(locale);
+
+/**
+ * `ReproducibleAttribute` is how reflection names it; `[Reproducible]` is how a reader
+ * actually writes it. The distinction matters for exactly one entry today, so it is a
+ * suffix check rather than a `kind` the generator would have to carry for a single case.
+ */
+const displayName: string = entry.name.endsWith('Attribute') ? `[${entry.name.slice(0, -'Attribute'.length)}]` : entry.name;
+---
+
+<section class="api-entry" id={entry.id}>
+    <p class="kind">{entry.kind}</p>
+    <h3>{displayName}</h3>
+    {entry.summary !== null && <p class="summary">{entry.summary}</p>}
+
+    <div class="code">
+        <code set:html={highlight(entry.signature, 'csharp')} />
+    </div>
+
+    {
+        (entry.extends !== null || entry.implements.length > 0) && (
+            <dl class="relations">
+                {entry.extends !== null && (
+                    <>
+                        <dt>{t('api.field.extends')}</dt>
+                        <dd>
+                            <code set:html={highlight(entry.extends, 'csharp')} />
+                        </dd>
+                    </>
+                )}
+                {entry.implements.length > 0 && (
+                    <>
+                        <dt>{t('api.field.implements')}</dt>
+                        <dd>
+                            <code set:html={highlight(entry.implements.join(', '), 'csharp')} />
+                        </dd>
+                    </>
+                )}
+            </dl>
+        )
+    }
+
+    {entry.entryPoints !== null && <ApiMemberList heading={t('api.field.entryPoint')} members={entry.entryPoints} />}
+    <ApiMemberList heading={t('api.field.constructors')} members={entry.constructors} />
+    <ApiMemberList heading={t('api.field.properties')} members={entry.properties} />
+    <ApiMemberList heading={t('api.field.methods')} members={entry.methods} />
+</section>
+
+<style>
+    .api-entry {
+        padding: var(--jd-space-12) 0;
+        border-bottom: 1px solid var(--jd-border);
+    }
+
+    .api-entry:first-of-type {
+        padding-top: 0;
+    }
+
+    .api-entry:last-of-type {
+        border-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .kind {
+        font-size: var(--jd-text-sm);
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--jd-accent);
+        margin: 0 0 var(--jd-space-2);
+    }
+
+    h3 {
+        font-family: var(--jd-font-mono);
+        font-size: var(--jd-text-xl);
+        line-height: var(--jd-line-tight);
+        margin: 0;
+    }
+
+    .summary {
+        margin: var(--jd-space-3) 0 0;
+        max-width: 62ch;
+        color: var(--jd-text-muted);
+    }
+
+    .code {
+        margin-top: var(--jd-space-4);
+        background: var(--jd-surface);
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-md);
+        padding: var(--jd-space-4);
+        overflow-x: auto;
+    }
+
+    .code code {
+        font-size: var(--jd-text-sm);
+    }
+
+    .relations {
+        margin: var(--jd-space-4) 0 0;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        column-gap: var(--jd-space-3);
+        row-gap: var(--jd-space-1);
+        font-size: var(--jd-text-sm);
+    }
+
+    .relations dt {
+        color: var(--jd-text-muted);
+    }
+
+    .relations dd {
+        margin: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .relations code {
+        font-size: inherit;
+    }
+</style>

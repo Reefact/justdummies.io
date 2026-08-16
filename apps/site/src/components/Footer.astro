@@ -31,6 +31,7 @@ const year: number = new Date(version.built).getFullYear();
 <footer class="site-footer">
     <nav class="footer-nav" aria-label={t('footer.nav')}>
         <a href={pathForLocale('/about', locale)}>{t('footer.about')}</a>
+        <a href={pathForLocale('/api', locale)}>{t('footer.api')}</a>
         <a href={pathForLocale('/release-notes', locale)}>{t('footer.releaseNotes')}</a>
         <a href={pathForLocale('/privacy', locale)}>{t('footer.privacy')}</a>
         <a href={site.siteRepository} target="_blank" rel="noopener noreferrer">
