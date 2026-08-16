@@ -264,7 +264,13 @@ const sections: ReadonlyArray<{ id: string; key: UiKey }> = [
         <p>{t('why.tryIt.body')}</p>
 
         <p class="install-label">{t('why.tryIt.install')}</p>
-        <CopyableCommand command={site.library.installCommand} placement="why-try-one-test" variant="library install" />
+        {/*
+          `dotnet-cli` is the variant `InstallTabs` already gives this exact command, and
+          reusing it is the point of §15.2's two dimensions: the placement says which moment
+          convinced the reader, the variant says which door they took. The same door under a
+          second name would split one number in two and answer neither question.
+        */}
+        <CopyableCommand command={site.library.installCommand} placement="why-try-one-test" variant="dotnet-cli" />
     </section>
 
     <section id="sources" aria-labelledby="why-sources-heading">
