@@ -1125,9 +1125,18 @@ interroge le site, pas le compte.
 
 ## Étape 10 — Allumer la mesure
 
-**Pourquoi** — Jusqu'à cette étape, le site ne mesure rien. Le beacon n'est pas rendu faute de
-jeton, et les événements n'ont nulle part où atterrir. Les deux moitiés vivent dans le tableau de
-bord et non dans le dépôt, ce qui explique que construire et déployer ne les allume pas. À quoi sert
+**Pourquoi** — La mesure est à moitié allumée, et il vaut la peine d'être exact sur laquelle des
+deux moitiés.
+
+Les **événements** de §15.2 ont une destination depuis que le Worker a été déployé à l'étape 5 : le
+binding est inconditionnel, la page émet vers `/_event` qu'un beacon existe ou non, et le jeu de
+données se crée à la première écriture. Un visiteur qui copie une commande est déjà enregistré, et
+quiconque teste le collecteur à la main l'est aussi — dans le jeu de données que la production
+utilisera.
+
+Ce qui manque est la moitié **audience**. Le beacon n'est pas rendu, faute de jeton vers qui
+rapporter, et le jeton vit dans le tableau de bord et non dans le dépôt — ce qui explique que
+construire et déployer ne l'allume pas. À quoi sert
 chaque moitié, et pourquoi il y en a deux, c'est
 [ADR-0010](adr/0010-le-site-execute-un-script-worker-pour-la-mesure-fr.md).
 
@@ -1162,15 +1171,25 @@ Les deux premiers sont peu coûteux. C'est le troisième qui compte.
 # 1 — le beacon est dans la page
 curl -s https://justdummies.io/ | grep -c 'static.cloudflareinsights.com'      # attendu : 1
 
-# 2 — le collecteur accepte un événement bien formé, et seulement lui
+# 2 — le collecteur accepte un événement bien formé, et seulement lui.
+#     PAS un install-command-copied : cette ligne est écrite dans le même jeu de
+#     données que la production, et un contrôle qui fabrique une copie de la
+#     commande du hero met dans les chiffres une conversion que personne n'a faite
+#     — pire à faible trafic, c'est-à-dire précisément quand on les lit de près.
+#     La requête plus bas filtre sur le nom de l'événement : un contrôle nommé à
+#     part est un contrôle exclu.
 curl -s -o /dev/null -w '%{http_code}\n' -X POST https://justdummies.io/_event \
   -H 'content-type: application/json' \
-  -d '{"event":"install-command-copied","placement":"hero","variant":"dotnet-cli","locale":"fr","ordinal":0}'
+  -d '{"event":"deployment-check","placement":"hero","variant":"dotnet-cli","locale":"fr","ordinal":0}'
                                                                                # attendu : 204
 curl -s -o /dev/null -w '%{http_code}\n' https://justdummies.io/_event         # attendu : 405
 
-# 3 — le Worker n'est sur le chemin de rien d'autre
-curl -s -o /dev/null -w '%{http_code}\n' https://justdummies.io/nexiste-pas    # attendu : 404
+# 3 — le Worker n'est sur le chemin de rien d'autre. Le statut seul ne peut pas le
+#     dire : le collecteur répond 404 pour un chemin qui n'est pas le sien,
+#     exactement comme la couche d'assets, donc un run_worker_first élargi
+#     passerait un contrôle de statut. Ce qui les sépare est le corps — la couche
+#     d'assets sert la *page* 404, le Worker ne sert rien du tout.
+curl -s https://justdummies.io/nexiste-pas | grep -c '<html'                   # attendu : 1, jamais 0
 ```
 
 Ouvrir ensuite le site dans un navigateur, copier une commande d'installation, et **regarder la
@@ -1178,10 +1197,11 @@ console**. §13.2 exige que toute évolution de la politique de contenu soit val
 réel plutôt que par une revue, et c'est ce chargement-là : un beacon bloqué se signale là et nulle
 part ailleurs. Rien ne doit être signalé.
 
-Le contrôle 3 est celui qui éprouve la décision plutôt que le câblage. Une 404 signifie que la
-requête a été traitée par la couche d'assets sans que le Worker s'exécute — ce qui est exactement ce
-qui tient le quota du script à l'écart du site. Si elle répond un jour autre chose,
-`run_worker_first` a été élargi et la thèse centrale d'ADR-0010 ne tient plus.
+Le contrôle 3 est celui qui éprouve la décision plutôt que le câblage, et il lit le corps justement
+parce que le statut ne prouve rien : les deux chemins finissent en 404. Une page qui revient signifie
+que la couche d'assets a répondu sans que le Worker s'exécute, ce qui est exactement ce qui tient le
+quota du script à l'écart du site. Un corps vide signifie que le Worker a répondu, que
+`run_worker_first` a été élargi, et que la thèse centrale d'ADR-0010 ne tient plus.
 
 ### Lire ce qui a été enregistré
 
@@ -1194,10 +1214,15 @@ curl -s "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/
   -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
   -d "SELECT blob2 AS placement, blob3 AS variant, count() AS copies
       FROM justdummies_measurement
-      WHERE timestamp > now() - INTERVAL '7' DAY
+      WHERE blob1 = 'install-command-copied'
+        AND timestamp > now() - INTERVAL '7' DAY
       GROUP BY placement, variant
       ORDER BY copies DESC"
 ```
+
+Le filtre sur `blob1` n'est pas décoratif : le collecteur accepte n'importe quel nom d'événement bien
+formé, et le contrôle de déploiement ci-dessus en envoie délibérément un autre. Sans cette ligne,
+chaque contrôle jamais passé compterait comme une installation.
 
 Cette requête est tout l'objet de §15.2 : elle dit quel moment de la page a envoyé quelqu'un
 installer, et par quelle porte. Grouper sur `placement` seul pour le moment, sur `variant` seul pour
