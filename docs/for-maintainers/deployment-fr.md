@@ -666,9 +666,17 @@ des fichiers. C'est `pnpm build` et ses assertions qui le vérifient, à l'étap
 **Avant de publier, active Analytics Engine sur le compte.** C'est un réglage de compte, à faire une
 fois, et rien de ce qui précède ne peut te dire qu'il manque : `--dry-run` ne contacte pas
 Cloudflare, et la table des bindings qu'il imprime est lue dans `wrangler.jsonc` plutôt que
-confrontée au compte. Tableau de bord → *Workers & Pages* → *Analytics Engine*. Le palier dans
-lequel ce site est conçu pour tenir est celui
-d'[ADR-0012](adr/0012-le-site-execute-un-script-worker-pour-la-mesure-fr.md).
+confrontée au compte. Tableau de bord → *Storage & databases* → *Analytics Engine* → **Enable**. Il
+est rangé sous le stockage et non sous les Workers, ce qui n'est pas là qu'on le cherche ; `Ctrl-K`
+et son nom est le chemin le plus court. Le palier dans lequel ce site est conçu pour tenir est celui
+d'[ADR-0012](adr/0012-le-site-execute-un-script-worker-pour-la-mesure-fr.md), et la page ne demande
+rien de plus que ce bouton — ni plan, ni carte.
+
+L'activation ouvre une boîte *Create Blank Dataset*. **La fermer.** `justdummies_measurement` se
+crée à la première écriture du collecteur, et le binding qui le nomme est déjà dans
+`wrangler.jsonc` ; un jeu de données saisi à la main est un endroit de plus où le nom peut diverger
+de celui où le Worker écrit, et un collecteur qui écrit dans un jeu de données que personne
+n'interroge ressemble exactement à un collecteur qui marche.
 
 L'oublier coûte un déploiement, et l'échec arrive tard et trompeur :
 

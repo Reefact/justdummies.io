@@ -657,8 +657,16 @@ its assertions do that, back in step 1.
 **Before publishing, enable Analytics Engine on the account.** It is a one-off account setting, and
 nothing you have run so far can tell you it is missing: `--dry-run` never contacts Cloudflare, and
 the bindings table it prints is read out of `wrangler.jsonc` rather than checked against the account.
-Dashboard → *Workers & Pages* → *Analytics Engine*. The allowance this site is designed to live
-inside is [ADR-0012](adr/0012-the-site-runs-one-worker-script-for-measurement-en.md)'s.
+Dashboard → *Storage & databases* → *Analytics Engine* → **Enable**. It sits under storage rather
+than under Workers, which is not where you would look for it; `Ctrl-K` and its name is the shorter
+route. The allowance this site is designed to live inside is
+[ADR-0012](adr/0012-the-site-runs-one-worker-script-for-measurement-en.md)'s, and the page asks for
+nothing beyond the one button — no plan, no card.
+
+Enabling opens a *Create Blank Dataset* dialogue. **Close it.** `justdummies_measurement` creates
+itself on the collector's first write, and the binding that names it is already in `wrangler.jsonc`;
+a dataset typed in by hand is one more place for the name to diverge from the one the Worker writes
+to, and a collector writing to a dataset nobody queries looks exactly like a collector that works.
 
 Skipping it costs a deployment, and the failure is late and misleading:
 
