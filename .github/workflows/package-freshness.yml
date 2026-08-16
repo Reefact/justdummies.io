@@ -1,0 +1,104 @@
+name: package-freshness
+
+# ADR-0013's Follow-up Actions: a check that reads this repository's declared package
+# versions, compares them against nuget.org, and reports every one that has drifted —
+# never by failing a build, always by opening or updating an issue. §11.8 draws the
+# same line for the comparison table's own freshness, and the reasoning is the same
+# here: an external fact moving is a warning, not a reason to block this site's own
+# publish.
+#
+# Deliberately its own workflow, not a job inside build.yml. build.yml runs on every
+# pull request; a network call to nuget.org on every PR would make an unrelated change
+# fail for a reason that has nothing to do with it the day nuget.org is briefly
+# unreachable. This workflow runs on a schedule and again whenever this site is
+# released — the two moments named in the ADR — plus on demand.
+#
+# scripts/check-package-freshness.mjs does the actual comparison and writes a JSON
+# summary; this file only reads that summary and decides what to do with GitHub's
+# issue tracker. The pipeline runs the same script a maintainer runs by hand — see
+# CONTRIBUTING.md — never a re-implementation of the comparison in YAML.
+
+on:
+  schedule:
+    # 08:00 UTC every Monday. Weekly, not daily: the packages this checks release on
+    # their own trains at their own pace, and a check that fires more often than its
+    # subject changes only adds noise without adding information.
+    - cron: '0 8 * * 1'
+  push:
+    tags: ['release/*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  # The one workflow in this repository that needs write access to anything other
+  # than Cloudflare, and it is scoped to issues alone — this job never touches
+  # `contents`, `pull-requests`, or any other permission a compromised dependency
+  # could use to do more than file a report.
+  issues: write
+
+concurrency:
+  group: package-freshness
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Compare declared versions against the registry
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      # The script has no dependency on anything in node_modules — only Node's own
+      # fs/path/url and the global fetch — so this is the only setup step it needs.
+      - name: Install Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: .nvmrc
+
+      # Never fails this job over what it finds — see the script's own header. A
+      # non-zero exit here means the script's assumptions about the repository's own
+      # shape broke (a version string it cannot parse, a source file it cannot read),
+      # which is worth a red run rather than a silent report.
+      - name: Check declared package versions against the registry
+        run: node scripts/check-package-freshness.mjs --out freshness-report.json
+
+      - name: Open, update, or close the tracking issue
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ ! -f freshness-report.json ]; then
+            echo "::error title=No report written::check-package-freshness.mjs exited before writing freshness-report.json."
+            exit 1
+          fi
+
+          any_stale="$(jq -r '.anyStale' freshness-report.json)"
+          existing="$(gh issue list --label package-freshness --state open --json number --jq '.[0].number // empty')"
+
+          if [ "${any_stale}" = "true" ]; then
+            jq -r '.markdownBody' freshness-report.json > freshness-body.md
+
+            if [ -n "${existing}" ]; then
+              gh issue edit "${existing}" --body-file freshness-body.md
+              echo "::notice title=Freshness issue updated::#${existing}"
+            else
+              # Idempotent: creating a label that already exists with --force updates
+              # it in place rather than failing, so a repeat run never needs to check
+              # first.
+              gh label create package-freshness --color fbca04 \
+                --description "A declared package version has drifted from what's published, or the repository disagrees with itself about one" \
+                --force
+              gh issue create --title "Declared package versions have drifted" \
+                --label package-freshness --body-file freshness-body.md
+              echo "::notice title=Freshness issue opened::see the run's own log for the number"
+            fi
+          elif [ -n "${existing}" ]; then
+            # Self-healing: once every declared version agrees with the registry
+            # again, the issue that tracked the gap has nothing left to track.
+            gh issue close "${existing}" --reason completed \
+              --comment "Every declared package version now matches nuget.org (or has no declared version to compare). Closing — this reopens or recreates itself the next time something drifts."
+            echo "::notice title=Freshness issue closed::#${existing}, nothing stale anymore"
+          else
+            echo "Nothing stale, nothing to report."
+          fi

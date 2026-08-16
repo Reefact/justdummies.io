@@ -201,22 +201,24 @@ first implementation did, which is how a decision turns into an accident.
 
 ## Follow-up Actions
 
-* **What fails when this decision is broken:** a check that reads the versions the snapshot records,
-  compares them against the registry, and reports every train that has moved. It runs on a schedule
-  and again when this site is released, and it **opens or updates an issue** rather than failing the
-  publish — per ADR-0001 and §11.8 above. A warning inside a green pipeline is read by nobody, and
-  the failure this guards against is precisely one nobody noticed.
-* **That check does not exist yet, and this record is not ratifiable until it does.**
-  [`CONTRIBUTING.md`](../../../CONTRIBUTING.md#a-decision-comes-with-something-that-fails-when-it-is-broken)
-  requires the thing that fails to exist before the work lands, so this record stays `Proposed` and
-  the specification's §16 carries **no row** for the rule — that table is the list of wishes turned
-  into controls, and a rule with nothing behind it rests on attention until the check is written.
-  Naming the gap is the point: an unwritten check listed as a control is the exact pretence §16's
-  closing sentence refuses.
-* It is break-tested before it lands, per
-  [`CONTRIBUTING.md`](../../../CONTRIBUTING.md#a-decision-comes-with-something-that-fails-when-it-is-broken).
-  The first run has a known expected result: the CLI gap measured in Context exists today, so a check
-  that reports nothing is wrong.
+* **What fails when this decision is broken:** `scripts/check-package-freshness.mjs`, run by
+  `.github/workflows/package-freshness.yml` on a schedule and again when this site is released. It
+  compares the versions this repository declares (`site.ts`, `Directory.Packages.props`) against
+  nuget.org and **opens or updates an issue** rather than failing the publish — per ADR-0001 and
+  §11.8 above. A warning inside a green pipeline is read by nobody, and the failure this guards
+  against is precisely one nobody noticed. It does not yet read a mirrored-content snapshot, because
+  none exists — it compares the site's own declared versions directly, which is the same fact for
+  every package this repository mirrors nothing about today, and it is the piece a snapshot's own
+  freshness check would extend rather than replace.
+* **The check exists now, and this record's `Proposed` status is a ratification decision, not a
+  missing piece.** It was break-tested before landing, per
+  [`CONTRIBUTING.md`](../../../CONTRIBUTING.md#a-decision-comes-with-something-that-fails-when-it-is-broken):
+  run against the working tree as it stood, it reported `JustDummies.Cli` declared at `1.0.0-beta.1`
+  against nuget.org's `1.1.0-beta.1` — the exact gap measured in Context, found automatically rather
+  than by hand. A deliberate mismatch between `site.ts` and `Directory.Packages.props` was reported as
+  `inconsistent`, and a version string the script's own regexes could not locate was the one case that
+  exits non-zero, all three restored afterward. The specification's §16 carries a row for the rule
+  again, now pointing at a real mechanism.
 * `/release-notes` mirrors `main` and predates this record. Moving it onto this footing is work this
   decision makes necessary, not a separate decision.
 * Which tag anchors a snapshot spanning four trains is settled where the mechanism is documented, not

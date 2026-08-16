@@ -8,8 +8,12 @@
  *
  * KNOWN DUPLICATION: `library.version` also exists in Directory.Packages.props,
  * which is what the playground actually restores. They are two package managers
- * and neither can read the other, so the two must be raised together until a
- * build step compares them. Until that step exists, this comment is the guard.
+ * and neither can read the other, so the two must be raised together — and
+ * `scripts/check-package-freshness.mjs` is the build step that compares them, per
+ * ADR-0013's Follow-up Actions. It reports a disagreement; it does not fail this
+ * build over one, the same way it does not fail over a version lagging nuget.org.
+ * This comment stays as the fact a reader raising a version reads first — the
+ * script is what raising it without its counterpart now gets caught by.
  */
 export const site = {
     /**
