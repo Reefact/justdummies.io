@@ -60,26 +60,39 @@ fi
 #   apps/playground          the whole application: its markup, its stylesheet, its
 #                            scripts. It renders nothing until a WebAssembly runtime
 #                            has booted, so every claim about it is a browser claim.
-#   apps/site/src/components the header, the brand, the footer, the language control,
-#                            the hero that frames the playground — the furniture the
-#                            parity check measures on both sides.
-#   apps/site/src/layouts    Base.astro and Page.astro: the bar's measure and the
-#                            page's, the two numbers the playground copies.
-#   apps/site/src/pages      a page can lose a component, or gain one, without any
-#                            component changing.
-#   apps/site/src/styles     base.css, which the playground's app.css mirrors.
-#   apps/site/src/i18n       the labels, which is not the obvious entry and is on this
-#                            list because of a real one: 79c9ac4 fixed a heading that
-#                            wrapped to two lines at 375px by dropping a question mark
-#                            from a French string, and touched nothing else. §6.5 makes
-#                            French the unfavourable case on purpose, and the header
-#                            row is laid out from its right edge, so a label's width is
-#                            a layout input here whatever it looks like in the diff.
+#   apps/site/src            the whole tree, not a set of subdirectories.
+#
+#                            The obvious members are there — components carry the
+#                            furniture the parity check measures, layouts carry the two
+#                            measures the playground copies, styles carry the base.css
+#                            its app.css mirrors — and enumerating those was the first
+#                            draft. It was wrong twice over, in the same direction:
+#
+#                            i18n, because a label's width is a layout input here. 79c9ac4
+#                            fixed a heading that wrapped to two lines at 375px by dropping
+#                            a question mark from a French string, and touched nothing
+#                            else; §6.5 makes French the unfavourable case on purpose, and
+#                            the header row lays out from its right edge.
+#
+#                            and the modules sitting loose at the top of that tree —
+#                            site.ts among them, whose `siteRepository` is the footer link
+#                            content-pages.spec.ts asserts and the commit link
+#                            version-page.spec.ts asserts. A one-line edit there changes
+#                            rendered output and matched nothing.
+#
+#                            Two misses in one list is the list being drawn at the wrong
+#                            grain. The site's source tree is what the site renders from,
+#                            so the tree is the entry.
 #   packages/design-tokens   the one file both applications read. A token moves both.
 #   tests/browser            the suite itself: a check nobody ran is a check nobody
 #                            can trust, and that includes a new one.
 #   playwright.config.ts     how the suite is served and which browser runs it.
 #   scripts/check-in-browser.sh   how the suite is invoked at all.
+#   scripts/changes-need-a-browser.sh   this file. A pull request that narrows the list
+#                            below would otherwise match nothing, skip the suite, and
+#                            remove coverage in a run that reported green — the one
+#                            change most in need of the gate being the one change the
+#                            gate would not apply to itself.
 #   scripts/generate-headers.mjs  the Content-Security-Policy, which is enforced by
 #                            the browser and by nothing else in this pipeline.
 #   wrangler.jsonc           how every page the suite visits is served. The suite talks
@@ -101,15 +114,12 @@ fi
 matched="$(
   git diff --name-only "${base}" HEAD -- \
     apps/playground \
-    apps/site/src/components \
-    apps/site/src/layouts \
-    apps/site/src/pages \
-    apps/site/src/styles \
-    apps/site/src/i18n \
+    apps/site/src \
     packages/design-tokens \
     tests/browser \
     playwright.config.ts \
     scripts/check-in-browser.sh \
+    scripts/changes-need-a-browser.sh \
     scripts/generate-headers.mjs \
     wrangler.jsonc \
     worker \
