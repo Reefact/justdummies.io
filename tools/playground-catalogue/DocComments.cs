@@ -75,8 +75,10 @@ public static class DocComments {
         }
 
         var withoutPrefix = cref.Length > 2 && cref[1] == ':' ? cref[2..] : cref;
-        var lastSeparator = withoutPrefix.LastIndexOfAny(['.', '(']);
-        return lastSeparator < 0 ? withoutPrefix : withoutPrefix[(lastSeparator + 1)..];
+        var parameterList = withoutPrefix.IndexOf('(');
+        var withoutParameters = parameterList < 0 ? withoutPrefix : withoutPrefix[..parameterList];
+        var lastSeparator = withoutParameters.LastIndexOf('.');
+        return lastSeparator < 0 ? withoutParameters : withoutParameters[(lastSeparator + 1)..];
     }
 
 }

@@ -196,15 +196,19 @@
     /// produces code that actually compiles rather than the raw text an input held. Only
     /// <c>string</c> (quoted), <c>char</c> (quoted) and <c>int</c> (a bare literal is already
     /// valid C#) get special forms; every other supported type is emitted as
-    /// <c>TypeName.Parse("raw")</c> rather than as a bare literal, since several of them (Guid,
-    /// the date/time family, decimal, float, Half, Int128/UInt128, large unsigned values) have
-    /// no bare-literal form, or one that needs a type-specific suffix — Parse is correct and
-    /// uniform for all of them at once.</summary>
+    /// <c>TypeName.Parse("raw", CultureInfo.InvariantCulture)</c> rather than as a bare literal,
+    /// since several of them (Guid, the date/time family, decimal, float, Half,
+    /// Int128/UInt128, large unsigned values) have no bare-literal form, or one that needs a
+    /// type-specific suffix — Parse is correct and uniform for all of them at once. The
+    /// explicit invariant-culture argument matters because ArgumentParsing itself always
+    /// parses in that same culture (specification-adjacent: what the playground accepted must
+    /// still parse the same way once copied out) — a parameterless Parse() would instead use
+    /// whatever culture the pasted code happens to run under.</summary>
     private static string FormatArgumentLiteral(string typeKey, string raw) => typeKey switch {
         ArgumentParsing.TypeKeyString => $"\"{EscapeForStringLiteral(raw)}\"",
         ArgumentParsing.TypeKeyChar   => $"'{raw.Replace("\\", "\\\\").Replace("'", "\\'")}'",
         ArgumentParsing.TypeKeyInt32  => raw,
-        _                             => $"{ClrTypeNameFor(typeKey)}.Parse(\"{EscapeForStringLiteral(raw)}\")",
+        _                             => $"{ClrTypeNameFor(typeKey)}.Parse(\"{EscapeForStringLiteral(raw)}\", System.Globalization.CultureInfo.InvariantCulture)",
     };
 
     private static string EscapeForStringLiteral(string raw) => raw.Replace("\\", "\\\\").Replace("\"", "\\\"");
