@@ -329,12 +329,18 @@ const en = {
 
     'why.note.autofixture.invariants':
         "Generation throws until a Customization or an ISpecimenBuilder is written to satisfy the constructor's guard clauses.",
+    'why.note.autofixture.callSite':
+        'Only through Build<T>().With(x => x.Prop, value) — pinning an exact value or a hand-written generator lambda inline, not a declarative business constraint.',
     'why.note.autofixture.reuse': 'An ICustomization packages a set of rules once, for reuse across tests.',
 
     'why.note.manual.invariants':
         'Valid only because a person chose a value they knew to be valid — nothing checks that it stayed that way.',
+    'why.note.manual.testIntent':
+        'Only for the one value the test is actually about; used for the parameters around it too, it becomes exactly the boilerplate Act I opens on.',
     'why.note.manual.realism': 'As realistic as whoever is typing bothers to make it, by hand, every time.',
     'why.note.manual.graph': "Every nested object is constructed by hand — the arrangement Act I opens on.",
+    'why.note.manual.compileTime':
+        'The compiler accepts any value of the right type — an overlong string, say — and only the domain constructor catches it, at run time.',
 
     'why.notFor.heading': 'When not to use JustDummies',
     'why.notFor.body':
@@ -629,12 +635,18 @@ const fr: Record<UiKey, string> = {
 
     'why.note.autofixture.invariants':
         "La génération échoue tant qu'une Customization ou un ISpecimenBuilder n'est pas écrit pour satisfaire les clauses de garde du constructeur.",
+    'why.note.autofixture.callSite':
+        "Seulement via Build<T>().With(x => x.Prop, value) — épingler une valeur exacte ou une lambda génératrice écrite à la main, pas une contrainte métier déclarative.",
     'why.note.autofixture.reuse': "Une ICustomization regroupe un ensemble de règles une fois, pour les réutiliser entre les tests.",
 
     'why.note.manual.invariants':
         "Valide seulement parce qu'une personne a choisi une valeur qu'elle savait valide — rien ne vérifie qu'elle l'est restée.",
+    'why.note.manual.testIntent':
+        "Seulement pour la valeur dont le test parle vraiment ; utilisée aussi pour les paramètres autour, elle redevient exactement le boilerplate sur lequel s'ouvre l'acte I.",
     'why.note.manual.realism': "Aussi réaliste que ce que la personne qui tape prend la peine d'écrire, à la main, à chaque fois.",
     'why.note.manual.graph': "Chaque objet imbriqué est construit à la main — l'arrange sur lequel s'ouvre l'acte I.",
+    'why.note.manual.compileTime':
+        "Le compilateur accepte toute valeur du bon type — une chaîne trop longue, par exemple — et seul le constructeur du domaine l'attrape, à l'exécution.",
 
     'why.notFor.heading': 'Quand ne pas utiliser JustDummies',
     'why.notFor.body':
