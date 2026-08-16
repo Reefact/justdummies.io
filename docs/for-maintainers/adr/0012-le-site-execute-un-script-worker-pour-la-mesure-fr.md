@@ -2,8 +2,9 @@
 
 🌍 🇫🇷 Français (ce fichier) · 🇬🇧 [English](0012-the-site-runs-one-worker-script-for-measurement-en.md)
 
-**Status:** Proposed
+**Status:** Accepted
 **Proposed:** 2026-08-16
+**Accepted:** 2026-08-16
 **Decision Makers:** Reefact
 
 ## Contexte

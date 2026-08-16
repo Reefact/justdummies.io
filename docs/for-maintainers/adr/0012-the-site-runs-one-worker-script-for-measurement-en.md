@@ -2,8 +2,9 @@
 
 🌍 🇬🇧 English (this file) · 🇫🇷 [Français](0012-le-site-execute-un-script-worker-pour-la-mesure-fr.md)
 
-**Status:** Proposed
+**Status:** Accepted
 **Proposed:** 2026-08-16
+**Accepted:** 2026-08-16
 **Decision Makers:** Reefact
 
 ## Context
