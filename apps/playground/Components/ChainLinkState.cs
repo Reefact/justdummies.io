@@ -12,6 +12,11 @@ public sealed class ChainLinkState {
     /// refusal at this step, or null while the step ran cleanly.</summary>
     public string? Error { get; set; }
 
+    /// <summary>Which argument <see cref="Error" /> is about, when it names one specific
+    /// argument (a parse failure) rather than the whole call (a library refusal) — lets the UI
+    /// point a screen reader at just the offending input instead of every input in the step.</summary>
+    public int? ErrorArgumentIndex { get; set; }
+
     private readonly List<string> _arguments = new();
 
     public void ChooseMethod(MemberDescriptor chosen) {

@@ -46,7 +46,7 @@ public static class DispatchEmitter {
             var castType  = ClrTypeName(entry.Method.GetParameters()[i].ParameterType);
 
             sb.AppendLine($"            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse(\"{Escape(parameter.TypeKey)}\", rawArguments[{i}], out var {argVar}, out var {errVar}))");
-            sb.AppendLine($"                return new ChainResult(receiver, \"{Escape(entry.ReceiverTypeKey)}\", {errVar}, null);");
+            sb.AppendLine($"                return new ChainResult(receiver, \"{Escape(entry.ReceiverTypeKey)}\", {errVar}, null, {i});");
             argNames.Add($"({castType}){argVar}!");
         }
 

@@ -100,6 +100,11 @@ public sealed class CatalogueWalker {
                 }
 
                 var isTerminalGenerate = method.Name == "Generate" && method.GetParameters().Length == 0;
+                var docId = DocIdOf(method);
+
+                if (TryApplyManualExclusion(docId, receiverType.Name, method, manuallyExcluded)) {
+                    continue;
+                }
 
                 if (isTerminalGenerate) {
                     var terminalEntry = ToEntry(method, receiverKey, receiverType, isTerminal: true);
@@ -108,12 +113,6 @@ public sealed class CatalogueWalker {
                     }
 
                     members.Add(terminalEntry);
-                    continue;
-                }
-
-                var docId = DocIdOf(method);
-
-                if (TryApplyManualExclusion(docId, receiverType.Name, method, manuallyExcluded)) {
                     continue;
                 }
 

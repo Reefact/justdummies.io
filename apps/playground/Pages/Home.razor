@@ -161,7 +161,8 @@
         var     stopped   = false;
 
         foreach (var link in _links) {
-            link.Error = null;
+            link.Error             = null;
+            link.ErrorArgumentIndex = null;
 
             if (link.Chosen is null || stopped) {
                 continue;
@@ -172,8 +173,9 @@
             typeKey  = result.TypeKey;
 
             if (result.HasError) {
-                link.Error = ResolveError(result);
-                stopped    = true;
+                link.Error             = ResolveError(result);
+                link.ErrorArgumentIndex = result.ArgumentErrorIndex;
+                stopped                = true;
             }
         }
 

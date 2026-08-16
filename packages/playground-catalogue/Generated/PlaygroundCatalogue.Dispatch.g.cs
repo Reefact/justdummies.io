@@ -147,7 +147,7 @@ public static partial class PlaygroundDispatch {
         },
         ["Any::StringMatching#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.String", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "Any", argErrorKey0, null);
+                return new ChainResult(receiver, "Any", argErrorKey0, null, 0);
             try {
                 var produced = global::JustDummies.Any.StringMatching((System.String)arg0!);
                 return new ChainResult(produced, "AnyPattern", null, null);
@@ -213,7 +213,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyBoolean::DifferentFrom#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Boolean", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyBoolean", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyBoolean", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyBoolean)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.Boolean)arg0!);
@@ -251,9 +251,9 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyByte::Between#2"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Byte", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyByte", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyByte", argErrorKey0, null, 0);
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Byte", rawArguments[1], out var arg1, out var argErrorKey1))
-                return new ChainResult(receiver, "AnyByte", argErrorKey1, null);
+                return new ChainResult(receiver, "AnyByte", argErrorKey1, null, 1);
             var typed = (global::JustDummies.AnyByte)receiver!;
             try {
                 var produced = typed.Between((System.Byte)arg0!, (System.Byte)arg1!);
@@ -264,7 +264,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyByte::DifferentFrom#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Byte", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyByte", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyByte", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyByte)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.Byte)arg0!);
@@ -284,7 +284,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyByte::GreaterThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Byte", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyByte", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyByte", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyByte)receiver!;
             try {
                 var produced = typed.GreaterThan((System.Byte)arg0!);
@@ -295,7 +295,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyByte::GreaterThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Byte", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyByte", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyByte", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyByte)receiver!;
             try {
                 var produced = typed.GreaterThanOrEqualTo((System.Byte)arg0!);
@@ -306,7 +306,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyByte::LessThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Byte", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyByte", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyByte", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyByte)receiver!;
             try {
                 var produced = typed.LessThan((System.Byte)arg0!);
@@ -317,7 +317,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyByte::LessThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Byte", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyByte", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyByte", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyByte)receiver!;
             try {
                 var produced = typed.LessThanOrEqualTo((System.Byte)arg0!);
@@ -328,7 +328,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyByte::MultipleOf#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Byte", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyByte", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyByte", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyByte)receiver!;
             try {
                 var produced = typed.MultipleOf((System.Byte)arg0!);
@@ -375,7 +375,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyChar::DifferentFrom#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Char", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyChar", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyChar", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyChar)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.Char)arg0!);
@@ -422,7 +422,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDateOnly::After#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.DateOnly", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDateOnly", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDateOnly", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDateOnly)receiver!;
             try {
                 var produced = typed.After((System.DateOnly)arg0!);
@@ -433,7 +433,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDateOnly::AfterOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.DateOnly", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDateOnly", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDateOnly", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDateOnly)receiver!;
             try {
                 var produced = typed.AfterOrEqualTo((System.DateOnly)arg0!);
@@ -444,7 +444,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDateOnly::Before#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.DateOnly", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDateOnly", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDateOnly", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDateOnly)receiver!;
             try {
                 var produced = typed.Before((System.DateOnly)arg0!);
@@ -455,7 +455,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDateOnly::BeforeOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.DateOnly", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDateOnly", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDateOnly", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDateOnly)receiver!;
             try {
                 var produced = typed.BeforeOrEqualTo((System.DateOnly)arg0!);
@@ -466,9 +466,9 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDateOnly::Between#2"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.DateOnly", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDateOnly", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDateOnly", argErrorKey0, null, 0);
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.DateOnly", rawArguments[1], out var arg1, out var argErrorKey1))
-                return new ChainResult(receiver, "AnyDateOnly", argErrorKey1, null);
+                return new ChainResult(receiver, "AnyDateOnly", argErrorKey1, null, 1);
             var typed = (global::JustDummies.AnyDateOnly)receiver!;
             try {
                 var produced = typed.Between((System.DateOnly)arg0!, (System.DateOnly)arg1!);
@@ -479,7 +479,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDateOnly::DifferentFrom#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.DateOnly", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDateOnly", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDateOnly", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDateOnly)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.DateOnly)arg0!);
@@ -499,7 +499,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDateTime::After#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.DateTime", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDateTime", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDateTime", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDateTime)receiver!;
             try {
                 var produced = typed.After((System.DateTime)arg0!);
@@ -510,7 +510,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDateTime::AfterOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.DateTime", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDateTime", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDateTime", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDateTime)receiver!;
             try {
                 var produced = typed.AfterOrEqualTo((System.DateTime)arg0!);
@@ -521,7 +521,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDateTime::Before#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.DateTime", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDateTime", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDateTime", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDateTime)receiver!;
             try {
                 var produced = typed.Before((System.DateTime)arg0!);
@@ -532,7 +532,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDateTime::BeforeOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.DateTime", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDateTime", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDateTime", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDateTime)receiver!;
             try {
                 var produced = typed.BeforeOrEqualTo((System.DateTime)arg0!);
@@ -543,9 +543,9 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDateTime::Between#2"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.DateTime", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDateTime", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDateTime", argErrorKey0, null, 0);
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.DateTime", rawArguments[1], out var arg1, out var argErrorKey1))
-                return new ChainResult(receiver, "AnyDateTime", argErrorKey1, null);
+                return new ChainResult(receiver, "AnyDateTime", argErrorKey1, null, 1);
             var typed = (global::JustDummies.AnyDateTime)receiver!;
             try {
                 var produced = typed.Between((System.DateTime)arg0!, (System.DateTime)arg1!);
@@ -556,7 +556,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDateTime::DifferentFrom#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.DateTime", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDateTime", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDateTime", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDateTime)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.DateTime)arg0!);
@@ -576,7 +576,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDateTime::WithGranularity#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.TimeSpan", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDateTime", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDateTime", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDateTime)receiver!;
             try {
                 var produced = typed.WithGranularity((System.TimeSpan)arg0!);
@@ -587,7 +587,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDateTimeOffset::After#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.DateTimeOffset", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDateTimeOffset", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDateTimeOffset", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDateTimeOffset)receiver!;
             try {
                 var produced = typed.After((System.DateTimeOffset)arg0!);
@@ -598,7 +598,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDateTimeOffset::AfterOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.DateTimeOffset", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDateTimeOffset", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDateTimeOffset", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDateTimeOffset)receiver!;
             try {
                 var produced = typed.AfterOrEqualTo((System.DateTimeOffset)arg0!);
@@ -609,7 +609,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDateTimeOffset::Before#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.DateTimeOffset", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDateTimeOffset", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDateTimeOffset", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDateTimeOffset)receiver!;
             try {
                 var produced = typed.Before((System.DateTimeOffset)arg0!);
@@ -620,7 +620,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDateTimeOffset::BeforeOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.DateTimeOffset", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDateTimeOffset", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDateTimeOffset", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDateTimeOffset)receiver!;
             try {
                 var produced = typed.BeforeOrEqualTo((System.DateTimeOffset)arg0!);
@@ -631,9 +631,9 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDateTimeOffset::Between#2"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.DateTimeOffset", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDateTimeOffset", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDateTimeOffset", argErrorKey0, null, 0);
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.DateTimeOffset", rawArguments[1], out var arg1, out var argErrorKey1))
-                return new ChainResult(receiver, "AnyDateTimeOffset", argErrorKey1, null);
+                return new ChainResult(receiver, "AnyDateTimeOffset", argErrorKey1, null, 1);
             var typed = (global::JustDummies.AnyDateTimeOffset)receiver!;
             try {
                 var produced = typed.Between((System.DateTimeOffset)arg0!, (System.DateTimeOffset)arg1!);
@@ -644,7 +644,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDateTimeOffset::DifferentFrom#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.DateTimeOffset", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDateTimeOffset", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDateTimeOffset", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDateTimeOffset)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.DateTimeOffset)arg0!);
@@ -664,7 +664,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDateTimeOffset::WithGranularity#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.TimeSpan", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDateTimeOffset", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDateTimeOffset", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDateTimeOffset)receiver!;
             try {
                 var produced = typed.WithGranularity((System.TimeSpan)arg0!);
@@ -675,7 +675,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDateTimeOffset::WithOffset#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.TimeSpan", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDateTimeOffset", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDateTimeOffset", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDateTimeOffset)receiver!;
             try {
                 var produced = typed.WithOffset((System.TimeSpan)arg0!);
@@ -686,9 +686,9 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDateTimeOffset::WithOffsetBetween#2"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.TimeSpan", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDateTimeOffset", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDateTimeOffset", argErrorKey0, null, 0);
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.TimeSpan", rawArguments[1], out var arg1, out var argErrorKey1))
-                return new ChainResult(receiver, "AnyDateTimeOffset", argErrorKey1, null);
+                return new ChainResult(receiver, "AnyDateTimeOffset", argErrorKey1, null, 1);
             var typed = (global::JustDummies.AnyDateTimeOffset)receiver!;
             try {
                 var produced = typed.WithOffsetBetween((System.TimeSpan)arg0!, (System.TimeSpan)arg1!);
@@ -699,9 +699,9 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDecimal::Between#2"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Decimal", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDecimal", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDecimal", argErrorKey0, null, 0);
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Decimal", rawArguments[1], out var arg1, out var argErrorKey1))
-                return new ChainResult(receiver, "AnyDecimal", argErrorKey1, null);
+                return new ChainResult(receiver, "AnyDecimal", argErrorKey1, null, 1);
             var typed = (global::JustDummies.AnyDecimal)receiver!;
             try {
                 var produced = typed.Between((System.Decimal)arg0!, (System.Decimal)arg1!);
@@ -712,7 +712,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDecimal::DifferentFrom#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Decimal", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDecimal", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDecimal", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDecimal)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.Decimal)arg0!);
@@ -732,7 +732,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDecimal::GreaterThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Decimal", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDecimal", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDecimal", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDecimal)receiver!;
             try {
                 var produced = typed.GreaterThan((System.Decimal)arg0!);
@@ -743,7 +743,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDecimal::GreaterThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Decimal", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDecimal", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDecimal", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDecimal)receiver!;
             try {
                 var produced = typed.GreaterThanOrEqualTo((System.Decimal)arg0!);
@@ -754,7 +754,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDecimal::LessThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Decimal", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDecimal", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDecimal", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDecimal)receiver!;
             try {
                 var produced = typed.LessThan((System.Decimal)arg0!);
@@ -765,7 +765,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDecimal::LessThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Decimal", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDecimal", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDecimal", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDecimal)receiver!;
             try {
                 var produced = typed.LessThanOrEqualTo((System.Decimal)arg0!);
@@ -803,7 +803,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDecimal::WithScale#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int32", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDecimal", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDecimal", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDecimal)receiver!;
             try {
                 var produced = typed.WithScale((System.Int32)arg0!);
@@ -823,9 +823,9 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDouble::Between#2"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Double", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDouble", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDouble", argErrorKey0, null, 0);
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Double", rawArguments[1], out var arg1, out var argErrorKey1))
-                return new ChainResult(receiver, "AnyDouble", argErrorKey1, null);
+                return new ChainResult(receiver, "AnyDouble", argErrorKey1, null, 1);
             var typed = (global::JustDummies.AnyDouble)receiver!;
             try {
                 var produced = typed.Between((System.Double)arg0!, (System.Double)arg1!);
@@ -836,7 +836,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDouble::DifferentFrom#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Double", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDouble", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDouble", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDouble)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.Double)arg0!);
@@ -856,7 +856,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDouble::GreaterThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Double", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDouble", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDouble", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDouble)receiver!;
             try {
                 var produced = typed.GreaterThan((System.Double)arg0!);
@@ -867,7 +867,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDouble::GreaterThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Double", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDouble", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDouble", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDouble)receiver!;
             try {
                 var produced = typed.GreaterThanOrEqualTo((System.Double)arg0!);
@@ -878,7 +878,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDouble::LessThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Double", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDouble", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDouble", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDouble)receiver!;
             try {
                 var produced = typed.LessThan((System.Double)arg0!);
@@ -889,7 +889,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyDouble::LessThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Double", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyDouble", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyDouble", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyDouble)receiver!;
             try {
                 var produced = typed.LessThanOrEqualTo((System.Double)arg0!);
@@ -945,7 +945,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyFtpUri::WithHost#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.String", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyFtpUri", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyFtpUri", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyFtpUri)receiver!;
             try {
                 var produced = typed.WithHost((System.String)arg0!);
@@ -956,7 +956,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyFtpUri::WithPathSegments#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int32", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyFtpUri", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyFtpUri", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyFtpUri)receiver!;
             try {
                 var produced = typed.WithPathSegments((System.Int32)arg0!);
@@ -976,7 +976,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyFtpUri::WithPort#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int32", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyFtpUri", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyFtpUri", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyFtpUri)receiver!;
             try {
                 var produced = typed.WithPort((System.Int32)arg0!);
@@ -996,7 +996,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyFtpUri::WithUserInfo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.String", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyFtpUri", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyFtpUri", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyFtpUri)receiver!;
             try {
                 var produced = typed.WithUserInfo((System.String)arg0!);
@@ -1007,9 +1007,9 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyFtpUri::WithUserInfo#2"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.String", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyFtpUri", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyFtpUri", argErrorKey0, null, 0);
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.String", rawArguments[1], out var arg1, out var argErrorKey1))
-                return new ChainResult(receiver, "AnyFtpUri", argErrorKey1, null);
+                return new ChainResult(receiver, "AnyFtpUri", argErrorKey1, null, 1);
             var typed = (global::JustDummies.AnyFtpUri)receiver!;
             try {
                 var produced = typed.WithUserInfo((System.String)arg0!, (System.String)arg1!);
@@ -1029,7 +1029,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyGuid::DifferentFrom#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Guid", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyGuid", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyGuid", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyGuid)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.Guid)arg0!);
@@ -1067,9 +1067,9 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyHalf::Between#2"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Half", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyHalf", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyHalf", argErrorKey0, null, 0);
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Half", rawArguments[1], out var arg1, out var argErrorKey1))
-                return new ChainResult(receiver, "AnyHalf", argErrorKey1, null);
+                return new ChainResult(receiver, "AnyHalf", argErrorKey1, null, 1);
             var typed = (global::JustDummies.AnyHalf)receiver!;
             try {
                 var produced = typed.Between((System.Half)arg0!, (System.Half)arg1!);
@@ -1080,7 +1080,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyHalf::DifferentFrom#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Half", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyHalf", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyHalf", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyHalf)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.Half)arg0!);
@@ -1100,7 +1100,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyHalf::GreaterThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Half", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyHalf", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyHalf", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyHalf)receiver!;
             try {
                 var produced = typed.GreaterThan((System.Half)arg0!);
@@ -1111,7 +1111,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyHalf::GreaterThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Half", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyHalf", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyHalf", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyHalf)receiver!;
             try {
                 var produced = typed.GreaterThanOrEqualTo((System.Half)arg0!);
@@ -1122,7 +1122,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyHalf::LessThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Half", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyHalf", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyHalf", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyHalf)receiver!;
             try {
                 var produced = typed.LessThan((System.Half)arg0!);
@@ -1133,7 +1133,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyHalf::LessThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Half", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyHalf", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyHalf", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyHalf)receiver!;
             try {
                 var produced = typed.LessThanOrEqualTo((System.Half)arg0!);
@@ -1180,9 +1180,9 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt128::Between#2"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int128", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt128", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt128", argErrorKey0, null, 0);
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int128", rawArguments[1], out var arg1, out var argErrorKey1))
-                return new ChainResult(receiver, "AnyInt128", argErrorKey1, null);
+                return new ChainResult(receiver, "AnyInt128", argErrorKey1, null, 1);
             var typed = (global::JustDummies.AnyInt128)receiver!;
             try {
                 var produced = typed.Between((System.Int128)arg0!, (System.Int128)arg1!);
@@ -1193,7 +1193,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt128::DifferentFrom#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int128", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt128", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt128", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyInt128)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.Int128)arg0!);
@@ -1213,7 +1213,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt128::GreaterThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int128", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt128", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt128", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyInt128)receiver!;
             try {
                 var produced = typed.GreaterThan((System.Int128)arg0!);
@@ -1224,7 +1224,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt128::GreaterThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int128", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt128", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt128", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyInt128)receiver!;
             try {
                 var produced = typed.GreaterThanOrEqualTo((System.Int128)arg0!);
@@ -1235,7 +1235,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt128::LessThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int128", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt128", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt128", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyInt128)receiver!;
             try {
                 var produced = typed.LessThan((System.Int128)arg0!);
@@ -1246,7 +1246,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt128::LessThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int128", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt128", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt128", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyInt128)receiver!;
             try {
                 var produced = typed.LessThanOrEqualTo((System.Int128)arg0!);
@@ -1257,7 +1257,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt128::MultipleOf#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int128", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt128", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt128", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyInt128)receiver!;
             try {
                 var produced = typed.MultipleOf((System.Int128)arg0!);
@@ -1304,9 +1304,9 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt16::Between#2"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int16", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt16", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt16", argErrorKey0, null, 0);
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int16", rawArguments[1], out var arg1, out var argErrorKey1))
-                return new ChainResult(receiver, "AnyInt16", argErrorKey1, null);
+                return new ChainResult(receiver, "AnyInt16", argErrorKey1, null, 1);
             var typed = (global::JustDummies.AnyInt16)receiver!;
             try {
                 var produced = typed.Between((System.Int16)arg0!, (System.Int16)arg1!);
@@ -1317,7 +1317,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt16::DifferentFrom#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int16", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt16", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt16", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyInt16)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.Int16)arg0!);
@@ -1337,7 +1337,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt16::GreaterThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int16", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt16", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt16", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyInt16)receiver!;
             try {
                 var produced = typed.GreaterThan((System.Int16)arg0!);
@@ -1348,7 +1348,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt16::GreaterThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int16", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt16", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt16", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyInt16)receiver!;
             try {
                 var produced = typed.GreaterThanOrEqualTo((System.Int16)arg0!);
@@ -1359,7 +1359,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt16::LessThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int16", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt16", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt16", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyInt16)receiver!;
             try {
                 var produced = typed.LessThan((System.Int16)arg0!);
@@ -1370,7 +1370,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt16::LessThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int16", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt16", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt16", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyInt16)receiver!;
             try {
                 var produced = typed.LessThanOrEqualTo((System.Int16)arg0!);
@@ -1381,7 +1381,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt16::MultipleOf#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int16", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt16", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt16", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyInt16)receiver!;
             try {
                 var produced = typed.MultipleOf((System.Int16)arg0!);
@@ -1428,9 +1428,9 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt32::Between#2"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int32", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt32", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt32", argErrorKey0, null, 0);
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int32", rawArguments[1], out var arg1, out var argErrorKey1))
-                return new ChainResult(receiver, "AnyInt32", argErrorKey1, null);
+                return new ChainResult(receiver, "AnyInt32", argErrorKey1, null, 1);
             var typed = (global::JustDummies.AnyInt32)receiver!;
             try {
                 var produced = typed.Between((System.Int32)arg0!, (System.Int32)arg1!);
@@ -1441,7 +1441,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt32::DifferentFrom#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int32", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt32", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt32", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyInt32)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.Int32)arg0!);
@@ -1461,7 +1461,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt32::GreaterThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int32", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt32", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt32", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyInt32)receiver!;
             try {
                 var produced = typed.GreaterThan((System.Int32)arg0!);
@@ -1472,7 +1472,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt32::GreaterThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int32", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt32", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt32", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyInt32)receiver!;
             try {
                 var produced = typed.GreaterThanOrEqualTo((System.Int32)arg0!);
@@ -1483,7 +1483,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt32::LessThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int32", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt32", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt32", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyInt32)receiver!;
             try {
                 var produced = typed.LessThan((System.Int32)arg0!);
@@ -1494,7 +1494,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt32::LessThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int32", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt32", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt32", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyInt32)receiver!;
             try {
                 var produced = typed.LessThanOrEqualTo((System.Int32)arg0!);
@@ -1505,7 +1505,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt32::MultipleOf#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int32", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt32", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt32", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyInt32)receiver!;
             try {
                 var produced = typed.MultipleOf((System.Int32)arg0!);
@@ -1552,9 +1552,9 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt64::Between#2"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int64", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt64", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt64", argErrorKey0, null, 0);
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int64", rawArguments[1], out var arg1, out var argErrorKey1))
-                return new ChainResult(receiver, "AnyInt64", argErrorKey1, null);
+                return new ChainResult(receiver, "AnyInt64", argErrorKey1, null, 1);
             var typed = (global::JustDummies.AnyInt64)receiver!;
             try {
                 var produced = typed.Between((System.Int64)arg0!, (System.Int64)arg1!);
@@ -1565,7 +1565,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt64::DifferentFrom#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int64", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt64", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt64", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyInt64)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.Int64)arg0!);
@@ -1585,7 +1585,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt64::GreaterThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int64", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt64", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt64", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyInt64)receiver!;
             try {
                 var produced = typed.GreaterThan((System.Int64)arg0!);
@@ -1596,7 +1596,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt64::GreaterThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int64", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt64", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt64", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyInt64)receiver!;
             try {
                 var produced = typed.GreaterThanOrEqualTo((System.Int64)arg0!);
@@ -1607,7 +1607,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt64::LessThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int64", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt64", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt64", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyInt64)receiver!;
             try {
                 var produced = typed.LessThan((System.Int64)arg0!);
@@ -1618,7 +1618,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt64::LessThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int64", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt64", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt64", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyInt64)receiver!;
             try {
                 var produced = typed.LessThanOrEqualTo((System.Int64)arg0!);
@@ -1629,7 +1629,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyInt64::MultipleOf#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int64", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyInt64", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyInt64", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyInt64)receiver!;
             try {
                 var produced = typed.MultipleOf((System.Int64)arg0!);
@@ -1685,7 +1685,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyMailtoUri::WithDomain#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.String", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyMailtoUri", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyMailtoUri", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyMailtoUri)receiver!;
             try {
                 var produced = typed.WithDomain((System.String)arg0!);
@@ -1705,7 +1705,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyMailtoUri::WithLocalPart#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.String", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyMailtoUri", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyMailtoUri", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyMailtoUri)receiver!;
             try {
                 var produced = typed.WithLocalPart((System.String)arg0!);
@@ -1716,7 +1716,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyPattern::DifferentFrom#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.String", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyPattern", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyPattern", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyPattern)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.String)arg0!);
@@ -1763,7 +1763,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyRelativeUri::WithPathSegments#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int32", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyRelativeUri", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyRelativeUri", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyRelativeUri)receiver!;
             try {
                 var produced = typed.WithPathSegments((System.Int32)arg0!);
@@ -1783,9 +1783,9 @@ public static partial class PlaygroundDispatch {
         },
         ["AnySByte::Between#2"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.SByte", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnySByte", argErrorKey0, null);
+                return new ChainResult(receiver, "AnySByte", argErrorKey0, null, 0);
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.SByte", rawArguments[1], out var arg1, out var argErrorKey1))
-                return new ChainResult(receiver, "AnySByte", argErrorKey1, null);
+                return new ChainResult(receiver, "AnySByte", argErrorKey1, null, 1);
             var typed = (global::JustDummies.AnySByte)receiver!;
             try {
                 var produced = typed.Between((System.SByte)arg0!, (System.SByte)arg1!);
@@ -1796,7 +1796,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnySByte::DifferentFrom#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.SByte", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnySByte", argErrorKey0, null);
+                return new ChainResult(receiver, "AnySByte", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnySByte)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.SByte)arg0!);
@@ -1816,7 +1816,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnySByte::GreaterThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.SByte", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnySByte", argErrorKey0, null);
+                return new ChainResult(receiver, "AnySByte", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnySByte)receiver!;
             try {
                 var produced = typed.GreaterThan((System.SByte)arg0!);
@@ -1827,7 +1827,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnySByte::GreaterThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.SByte", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnySByte", argErrorKey0, null);
+                return new ChainResult(receiver, "AnySByte", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnySByte)receiver!;
             try {
                 var produced = typed.GreaterThanOrEqualTo((System.SByte)arg0!);
@@ -1838,7 +1838,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnySByte::LessThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.SByte", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnySByte", argErrorKey0, null);
+                return new ChainResult(receiver, "AnySByte", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnySByte)receiver!;
             try {
                 var produced = typed.LessThan((System.SByte)arg0!);
@@ -1849,7 +1849,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnySByte::LessThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.SByte", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnySByte", argErrorKey0, null);
+                return new ChainResult(receiver, "AnySByte", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnySByte)receiver!;
             try {
                 var produced = typed.LessThanOrEqualTo((System.SByte)arg0!);
@@ -1860,7 +1860,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnySByte::MultipleOf#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.SByte", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnySByte", argErrorKey0, null);
+                return new ChainResult(receiver, "AnySByte", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnySByte)receiver!;
             try {
                 var produced = typed.MultipleOf((System.SByte)arg0!);
@@ -1907,9 +1907,9 @@ public static partial class PlaygroundDispatch {
         },
         ["AnySingle::Between#2"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Single", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnySingle", argErrorKey0, null);
+                return new ChainResult(receiver, "AnySingle", argErrorKey0, null, 0);
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Single", rawArguments[1], out var arg1, out var argErrorKey1))
-                return new ChainResult(receiver, "AnySingle", argErrorKey1, null);
+                return new ChainResult(receiver, "AnySingle", argErrorKey1, null, 1);
             var typed = (global::JustDummies.AnySingle)receiver!;
             try {
                 var produced = typed.Between((System.Single)arg0!, (System.Single)arg1!);
@@ -1920,7 +1920,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnySingle::DifferentFrom#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Single", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnySingle", argErrorKey0, null);
+                return new ChainResult(receiver, "AnySingle", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnySingle)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.Single)arg0!);
@@ -1940,7 +1940,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnySingle::GreaterThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Single", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnySingle", argErrorKey0, null);
+                return new ChainResult(receiver, "AnySingle", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnySingle)receiver!;
             try {
                 var produced = typed.GreaterThan((System.Single)arg0!);
@@ -1951,7 +1951,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnySingle::GreaterThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Single", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnySingle", argErrorKey0, null);
+                return new ChainResult(receiver, "AnySingle", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnySingle)receiver!;
             try {
                 var produced = typed.GreaterThanOrEqualTo((System.Single)arg0!);
@@ -1962,7 +1962,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnySingle::LessThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Single", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnySingle", argErrorKey0, null);
+                return new ChainResult(receiver, "AnySingle", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnySingle)receiver!;
             try {
                 var produced = typed.LessThan((System.Single)arg0!);
@@ -1973,7 +1973,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnySingle::LessThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Single", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnySingle", argErrorKey0, null);
+                return new ChainResult(receiver, "AnySingle", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnySingle)receiver!;
             try {
                 var produced = typed.LessThanOrEqualTo((System.Single)arg0!);
@@ -2038,7 +2038,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyString::Containing#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.String", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyString", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyString", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyString)receiver!;
             try {
                 var produced = typed.Containing((System.String)arg0!);
@@ -2049,7 +2049,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyString::DifferentFrom#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.String", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyString", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyString", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyString)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.String)arg0!);
@@ -2060,7 +2060,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyString::EndingWith#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.String", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyString", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyString", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyString)receiver!;
             try {
                 var produced = typed.EndingWith((System.String)arg0!);
@@ -2107,7 +2107,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyString::StartingWith#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.String", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyString", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyString", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyString)receiver!;
             try {
                 var produced = typed.StartingWith((System.String)arg0!);
@@ -2127,7 +2127,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyString::WithChars#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.String", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyString", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyString", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyString)receiver!;
             try {
                 var produced = typed.WithChars((System.String)arg0!);
@@ -2138,7 +2138,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyString::WithLength#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int32", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyString", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyString", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyString)receiver!;
             try {
                 var produced = typed.WithLength((System.Int32)arg0!);
@@ -2149,9 +2149,9 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyString::WithLengthBetween#2"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int32", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyString", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyString", argErrorKey0, null, 0);
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int32", rawArguments[1], out var arg1, out var argErrorKey1))
-                return new ChainResult(receiver, "AnyString", argErrorKey1, null);
+                return new ChainResult(receiver, "AnyString", argErrorKey1, null, 1);
             var typed = (global::JustDummies.AnyString)receiver!;
             try {
                 var produced = typed.WithLengthBetween((System.Int32)arg0!, (System.Int32)arg1!);
@@ -2162,7 +2162,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyString::WithMaxLength#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int32", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyString", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyString", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyString)receiver!;
             try {
                 var produced = typed.WithMaxLength((System.Int32)arg0!);
@@ -2173,7 +2173,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyString::WithMinLength#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int32", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyString", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyString", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyString)receiver!;
             try {
                 var produced = typed.WithMinLength((System.Int32)arg0!);
@@ -2184,7 +2184,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyTimeOnly::After#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.TimeOnly", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyTimeOnly", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyTimeOnly", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyTimeOnly)receiver!;
             try {
                 var produced = typed.After((System.TimeOnly)arg0!);
@@ -2195,7 +2195,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyTimeOnly::AfterOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.TimeOnly", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyTimeOnly", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyTimeOnly", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyTimeOnly)receiver!;
             try {
                 var produced = typed.AfterOrEqualTo((System.TimeOnly)arg0!);
@@ -2206,7 +2206,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyTimeOnly::Before#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.TimeOnly", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyTimeOnly", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyTimeOnly", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyTimeOnly)receiver!;
             try {
                 var produced = typed.Before((System.TimeOnly)arg0!);
@@ -2217,7 +2217,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyTimeOnly::BeforeOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.TimeOnly", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyTimeOnly", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyTimeOnly", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyTimeOnly)receiver!;
             try {
                 var produced = typed.BeforeOrEqualTo((System.TimeOnly)arg0!);
@@ -2228,9 +2228,9 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyTimeOnly::Between#2"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.TimeOnly", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyTimeOnly", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyTimeOnly", argErrorKey0, null, 0);
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.TimeOnly", rawArguments[1], out var arg1, out var argErrorKey1))
-                return new ChainResult(receiver, "AnyTimeOnly", argErrorKey1, null);
+                return new ChainResult(receiver, "AnyTimeOnly", argErrorKey1, null, 1);
             var typed = (global::JustDummies.AnyTimeOnly)receiver!;
             try {
                 var produced = typed.Between((System.TimeOnly)arg0!, (System.TimeOnly)arg1!);
@@ -2241,7 +2241,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyTimeOnly::DifferentFrom#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.TimeOnly", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyTimeOnly", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyTimeOnly", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyTimeOnly)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.TimeOnly)arg0!);
@@ -2261,7 +2261,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyTimeOnly::WithGranularity#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.TimeSpan", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyTimeOnly", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyTimeOnly", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyTimeOnly)receiver!;
             try {
                 var produced = typed.WithGranularity((System.TimeSpan)arg0!);
@@ -2272,9 +2272,9 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyTimeSpan::Between#2"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.TimeSpan", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyTimeSpan", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyTimeSpan", argErrorKey0, null, 0);
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.TimeSpan", rawArguments[1], out var arg1, out var argErrorKey1))
-                return new ChainResult(receiver, "AnyTimeSpan", argErrorKey1, null);
+                return new ChainResult(receiver, "AnyTimeSpan", argErrorKey1, null, 1);
             var typed = (global::JustDummies.AnyTimeSpan)receiver!;
             try {
                 var produced = typed.Between((System.TimeSpan)arg0!, (System.TimeSpan)arg1!);
@@ -2285,7 +2285,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyTimeSpan::DifferentFrom#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.TimeSpan", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyTimeSpan", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyTimeSpan", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyTimeSpan)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.TimeSpan)arg0!);
@@ -2305,7 +2305,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyTimeSpan::GreaterThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.TimeSpan", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyTimeSpan", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyTimeSpan", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyTimeSpan)receiver!;
             try {
                 var produced = typed.GreaterThan((System.TimeSpan)arg0!);
@@ -2316,7 +2316,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyTimeSpan::GreaterThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.TimeSpan", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyTimeSpan", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyTimeSpan", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyTimeSpan)receiver!;
             try {
                 var produced = typed.GreaterThanOrEqualTo((System.TimeSpan)arg0!);
@@ -2327,7 +2327,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyTimeSpan::LessThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.TimeSpan", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyTimeSpan", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyTimeSpan", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyTimeSpan)receiver!;
             try {
                 var produced = typed.LessThan((System.TimeSpan)arg0!);
@@ -2338,7 +2338,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyTimeSpan::LessThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.TimeSpan", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyTimeSpan", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyTimeSpan", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyTimeSpan)receiver!;
             try {
                 var produced = typed.LessThanOrEqualTo((System.TimeSpan)arg0!);
@@ -2376,7 +2376,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyTimeSpan::WithGranularity#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.TimeSpan", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyTimeSpan", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyTimeSpan", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyTimeSpan)receiver!;
             try {
                 var produced = typed.WithGranularity((System.TimeSpan)arg0!);
@@ -2396,9 +2396,9 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt128::Between#2"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt128", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt128", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt128", argErrorKey0, null, 0);
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt128", rawArguments[1], out var arg1, out var argErrorKey1))
-                return new ChainResult(receiver, "AnyUInt128", argErrorKey1, null);
+                return new ChainResult(receiver, "AnyUInt128", argErrorKey1, null, 1);
             var typed = (global::JustDummies.AnyUInt128)receiver!;
             try {
                 var produced = typed.Between((System.UInt128)arg0!, (System.UInt128)arg1!);
@@ -2409,7 +2409,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt128::DifferentFrom#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt128", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt128", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt128", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyUInt128)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.UInt128)arg0!);
@@ -2429,7 +2429,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt128::GreaterThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt128", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt128", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt128", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyUInt128)receiver!;
             try {
                 var produced = typed.GreaterThan((System.UInt128)arg0!);
@@ -2440,7 +2440,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt128::GreaterThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt128", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt128", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt128", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyUInt128)receiver!;
             try {
                 var produced = typed.GreaterThanOrEqualTo((System.UInt128)arg0!);
@@ -2451,7 +2451,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt128::LessThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt128", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt128", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt128", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyUInt128)receiver!;
             try {
                 var produced = typed.LessThan((System.UInt128)arg0!);
@@ -2462,7 +2462,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt128::LessThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt128", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt128", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt128", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyUInt128)receiver!;
             try {
                 var produced = typed.LessThanOrEqualTo((System.UInt128)arg0!);
@@ -2473,7 +2473,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt128::MultipleOf#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt128", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt128", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt128", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyUInt128)receiver!;
             try {
                 var produced = typed.MultipleOf((System.UInt128)arg0!);
@@ -2502,9 +2502,9 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt16::Between#2"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt16", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt16", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt16", argErrorKey0, null, 0);
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt16", rawArguments[1], out var arg1, out var argErrorKey1))
-                return new ChainResult(receiver, "AnyUInt16", argErrorKey1, null);
+                return new ChainResult(receiver, "AnyUInt16", argErrorKey1, null, 1);
             var typed = (global::JustDummies.AnyUInt16)receiver!;
             try {
                 var produced = typed.Between((System.UInt16)arg0!, (System.UInt16)arg1!);
@@ -2515,7 +2515,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt16::DifferentFrom#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt16", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt16", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt16", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyUInt16)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.UInt16)arg0!);
@@ -2535,7 +2535,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt16::GreaterThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt16", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt16", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt16", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyUInt16)receiver!;
             try {
                 var produced = typed.GreaterThan((System.UInt16)arg0!);
@@ -2546,7 +2546,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt16::GreaterThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt16", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt16", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt16", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyUInt16)receiver!;
             try {
                 var produced = typed.GreaterThanOrEqualTo((System.UInt16)arg0!);
@@ -2557,7 +2557,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt16::LessThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt16", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt16", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt16", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyUInt16)receiver!;
             try {
                 var produced = typed.LessThan((System.UInt16)arg0!);
@@ -2568,7 +2568,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt16::LessThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt16", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt16", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt16", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyUInt16)receiver!;
             try {
                 var produced = typed.LessThanOrEqualTo((System.UInt16)arg0!);
@@ -2579,7 +2579,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt16::MultipleOf#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt16", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt16", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt16", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyUInt16)receiver!;
             try {
                 var produced = typed.MultipleOf((System.UInt16)arg0!);
@@ -2608,9 +2608,9 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt32::Between#2"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt32", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt32", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt32", argErrorKey0, null, 0);
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt32", rawArguments[1], out var arg1, out var argErrorKey1))
-                return new ChainResult(receiver, "AnyUInt32", argErrorKey1, null);
+                return new ChainResult(receiver, "AnyUInt32", argErrorKey1, null, 1);
             var typed = (global::JustDummies.AnyUInt32)receiver!;
             try {
                 var produced = typed.Between((System.UInt32)arg0!, (System.UInt32)arg1!);
@@ -2621,7 +2621,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt32::DifferentFrom#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt32", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt32", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt32", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyUInt32)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.UInt32)arg0!);
@@ -2641,7 +2641,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt32::GreaterThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt32", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt32", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt32", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyUInt32)receiver!;
             try {
                 var produced = typed.GreaterThan((System.UInt32)arg0!);
@@ -2652,7 +2652,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt32::GreaterThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt32", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt32", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt32", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyUInt32)receiver!;
             try {
                 var produced = typed.GreaterThanOrEqualTo((System.UInt32)arg0!);
@@ -2663,7 +2663,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt32::LessThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt32", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt32", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt32", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyUInt32)receiver!;
             try {
                 var produced = typed.LessThan((System.UInt32)arg0!);
@@ -2674,7 +2674,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt32::LessThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt32", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt32", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt32", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyUInt32)receiver!;
             try {
                 var produced = typed.LessThanOrEqualTo((System.UInt32)arg0!);
@@ -2685,7 +2685,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt32::MultipleOf#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt32", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt32", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt32", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyUInt32)receiver!;
             try {
                 var produced = typed.MultipleOf((System.UInt32)arg0!);
@@ -2714,9 +2714,9 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt64::Between#2"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt64", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt64", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt64", argErrorKey0, null, 0);
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt64", rawArguments[1], out var arg1, out var argErrorKey1))
-                return new ChainResult(receiver, "AnyUInt64", argErrorKey1, null);
+                return new ChainResult(receiver, "AnyUInt64", argErrorKey1, null, 1);
             var typed = (global::JustDummies.AnyUInt64)receiver!;
             try {
                 var produced = typed.Between((System.UInt64)arg0!, (System.UInt64)arg1!);
@@ -2727,7 +2727,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt64::DifferentFrom#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt64", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt64", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt64", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyUInt64)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.UInt64)arg0!);
@@ -2747,7 +2747,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt64::GreaterThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt64", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt64", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt64", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyUInt64)receiver!;
             try {
                 var produced = typed.GreaterThan((System.UInt64)arg0!);
@@ -2758,7 +2758,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt64::GreaterThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt64", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt64", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt64", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyUInt64)receiver!;
             try {
                 var produced = typed.GreaterThanOrEqualTo((System.UInt64)arg0!);
@@ -2769,7 +2769,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt64::LessThan#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt64", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt64", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt64", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyUInt64)receiver!;
             try {
                 var produced = typed.LessThan((System.UInt64)arg0!);
@@ -2780,7 +2780,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt64::LessThanOrEqualTo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt64", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt64", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt64", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyUInt64)receiver!;
             try {
                 var produced = typed.LessThanOrEqualTo((System.UInt64)arg0!);
@@ -2791,7 +2791,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyUInt64::MultipleOf#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt64", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyUInt64", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyUInt64", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyUInt64)receiver!;
             try {
                 var produced = typed.MultipleOf((System.UInt64)arg0!);
@@ -2901,7 +2901,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyWebSocketUri::WithHost#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.String", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyWebSocketUri", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyWebSocketUri", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyWebSocketUri)receiver!;
             try {
                 var produced = typed.WithHost((System.String)arg0!);
@@ -2912,7 +2912,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyWebSocketUri::WithPathSegments#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int32", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyWebSocketUri", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyWebSocketUri", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyWebSocketUri)receiver!;
             try {
                 var produced = typed.WithPathSegments((System.Int32)arg0!);
@@ -2932,7 +2932,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyWebSocketUri::WithPort#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int32", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyWebSocketUri", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyWebSocketUri", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyWebSocketUri)receiver!;
             try {
                 var produced = typed.WithPort((System.Int32)arg0!);
@@ -2997,7 +2997,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyWebUri::WithHost#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.String", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyWebUri", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyWebUri", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyWebUri)receiver!;
             try {
                 var produced = typed.WithHost((System.String)arg0!);
@@ -3008,7 +3008,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyWebUri::WithPathSegments#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int32", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyWebUri", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyWebUri", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyWebUri)receiver!;
             try {
                 var produced = typed.WithPathSegments((System.Int32)arg0!);
@@ -3028,7 +3028,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyWebUri::WithPort#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int32", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyWebUri", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyWebUri", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyWebUri)receiver!;
             try {
                 var produced = typed.WithPort((System.Int32)arg0!);
@@ -3057,7 +3057,7 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyWebUri::WithUserInfo#1"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.String", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyWebUri", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyWebUri", argErrorKey0, null, 0);
             var typed = (global::JustDummies.AnyWebUri)receiver!;
             try {
                 var produced = typed.WithUserInfo((System.String)arg0!);
@@ -3068,9 +3068,9 @@ public static partial class PlaygroundDispatch {
         },
         ["AnyWebUri::WithUserInfo#2"] = (receiver, rawArguments) => {
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.String", rawArguments[0], out var arg0, out var argErrorKey0))
-                return new ChainResult(receiver, "AnyWebUri", argErrorKey0, null);
+                return new ChainResult(receiver, "AnyWebUri", argErrorKey0, null, 0);
             if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.String", rawArguments[1], out var arg1, out var argErrorKey1))
-                return new ChainResult(receiver, "AnyWebUri", argErrorKey1, null);
+                return new ChainResult(receiver, "AnyWebUri", argErrorKey1, null, 1);
             var typed = (global::JustDummies.AnyWebUri)receiver!;
             try {
                 var produced = typed.WithUserInfo((System.String)arg0!, (System.String)arg1!);
