@@ -297,13 +297,11 @@ fi
 # Three assertions per locale, and each one alone passes while the page is broken. The
 # first is that all ten criteria reached the document — a criterion silently dropped by a
 # refactor is a comparison the reader cannot audit. The second is ADR-0004 on the duel
-# control. The third used to require that at least one criterion family ship open with its
-# verdicts visible, back when the family accordion was the only thing on the page that could
-# say anything without a click. A maintainer review moved the always-open matrix ahead of
-# the accordion and closed all four families by default — the matrix is what now guarantees
-# a reader who scrolls this far and clicks nothing still sees the whole comparison, so what
-# this checks is that guarantee: the matrix is never itself gated behind a `<details>`, and
-# every verdict it should hold reached the page.
+# control. The third is that the always-open matrix carries the whole comparison, gated
+# behind no `<details>`, so a reader who scrolls this far and clicks nothing still sees
+# every verdict — the family accordion below it stays a second, deeper copy (one family
+# open by default, so it still says something on the narrow widths where the matrix itself
+# is CSS-hidden), not the only place a rating can be read.
 for locale in "" "/fr"; do
   why="${dist}${locale}/why-justdummies/index.html"
 
@@ -337,12 +335,18 @@ if (/<details class="matrix"/.test(page)) {
     wrong.push("the matrix is wrapped in a <details> — it must ship permanently open, not collapsible");
 }
 
-// Ten criteria times four tools, once in the matrix and once more in the criterion cards
-// beneath it — so 80 is the number that says both copies of the comparison are complete,
-// not just one of the two.
-const ratedCells = (page.match(/data-rating="(?:core|possible|out-of-scope)"/g) ?? []).length;
-if (ratedCells < 80) {
-    wrong.push(`only ${ratedCells} rated cell(s) found, fewer than the 80 the matrix and the criterion cards together should carry`);
+// Ten criteria times four tools, once in the matrix `<td>` cells and once more in the
+// criterion card `<li>` verdicts beneath it — 40 of each. Counted separately and by tag,
+// not as one combined `data-rating="..."` count: a `<td>` cell wraps a <RatingIcon> that
+// carries its own `data-rating` on an inner `<span>`, so a single un-scoped count matches
+// the matrix twice and would still clear 80 even with every criterion card `<li>` deleted.
+const matrixCells = (page.match(/<td\b[^>]*\sdata-rating="(?:core|possible|out-of-scope)"/g) ?? []).length;
+const verdictItems = (page.match(/<li\b[^>]*\sdata-rating="(?:core|possible|out-of-scope)"/g) ?? []).length;
+if (matrixCells < 40) {
+    wrong.push(`only ${matrixCells} rated matrix cell(s) found, fewer than the 40 the matrix should carry`);
+}
+if (verdictItems < 40) {
+    wrong.push(`only ${verdictItems} rated criterion verdict(s) found, fewer than the 40 the criterion cards should carry`);
 }
 
 process.stdout.write(wrong.join("; "));

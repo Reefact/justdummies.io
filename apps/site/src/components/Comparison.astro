@@ -87,10 +87,11 @@ function ratingLabel(rating: Rating): string {
         <p class="matrix-intro">{t('why.matrix.intro')}</p>
         {/*
           §5 of the why-justdummies rewrite: the three words a rating can take, defined once,
-          compactly, right where a reader meets them for the first time (§11.6). The full
-          sentence — what used to fill a boxed <dl> above the matrix — is still here, just a
-          hover away rather than sitting on the page unprompted: `tooltip` overrides the
-          plain word `title` would otherwise show.
+          compactly, right where a reader meets them for the first time (§11.6). `tooltip`
+          gives a mouse user the full sentence on hover — a bonus, not the only way in: a
+          `title` reaches neither a touch reader nor a keyboard one (the span it sits on
+          takes no focus), so the same three sentences are also one native, closed-by-default
+          <details> below — a tap or an Enter key away, never only a hover.
         */}
         <ul class="matrix-legend" aria-label={t('why.legend.heading')}>
             {
@@ -106,6 +107,19 @@ function ratingLabel(rating: Rating): string {
                 ))
             }
         </ul>
+        <details class="legend-definitions">
+            <summary>{t('why.legend.definitionsLabel')}</summary>
+            <dl>
+                {
+                    ratings.map((rating) => (
+                        <div class="legend-definition-row">
+                            <dt>{t(rating.labelKey)}</dt>
+                            <dd>{t(rating.legendKey)}</dd>
+                        </div>
+                    ))
+                }
+            </dl>
+        </details>
         <table>
             <caption>{t('why.table.caption')}</caption>
             <thead>
@@ -169,10 +183,13 @@ function ratingLabel(rating: Rating): string {
 
     {/*
       §4bis of the why-justdummies rewrite: native <details>/<summary>, in keeping with
-      ADR-0004 — no JS required to read every family. All four ship closed: the matrix above
-      already said everything once, so nothing here is the reader's only way to learn it —
-      opening one is for whoever wants the explanation and the worked example behind a
-      number they just read.
+      ADR-0004 — no JS required to read every family. The first ships open, the other three
+      closed. On a wide screen that is belt-and-braces — the matrix above already says
+      everything with nothing collapsed — but below 48rem the matrix itself is replaced by
+      these blocks entirely (see `.matrix`'s own media query), and closing every family
+      there would leave a reader who scrolls this far and taps nothing with an empty screen.
+      One family stays open so that guarantee holds at every width, not only where the
+      matrix can carry it alone.
 
       A shared `name` makes the four mutually exclusive — natively, in every evergreen
       browser (Chrome 120, Firefox 122, Safari 17.4): opening one closes whichever else was
@@ -188,7 +205,7 @@ function ratingLabel(rating: Rating): string {
     */}
     {
         families.map((family) => (
-            <details class="family" name="compare-family">
+            <details class="family" name="compare-family" open={family.id === 'accepted'}>
                 <summary><h4>{t(family.headingKey)}</h4></summary>
 
                 {family.axes.map((id) => {
@@ -561,10 +578,44 @@ function ratingLabel(rating: Rating): string {
         flex-wrap: wrap;
         gap: var(--jd-space-1) var(--jd-space-4);
         list-style: none;
-        margin: 0 0 var(--jd-space-4);
+        margin: 0 0 var(--jd-space-2);
         padding: var(--jd-space-2) var(--jd-space-3);
         border: 1px solid var(--jd-border);
         border-radius: var(--jd-radius-sm);
+        color: var(--jd-text-muted);
+    }
+
+    /* The keyboard/touch route to the same three sentences `title` already gives a mouse
+       user on hover — closed by default so it costs nothing until asked for. */
+    .legend-definitions {
+        margin: 0 0 var(--jd-space-4);
+        font-size: var(--jd-text-sm);
+    }
+
+    .legend-definitions summary {
+        font-weight: 400;
+        color: var(--jd-text-muted);
+    }
+
+    .legend-definitions dl {
+        margin: var(--jd-space-2) 0 0;
+    }
+
+    .legend-definition-row {
+        display: flex;
+        gap: var(--jd-space-2);
+        padding: var(--jd-space-1) 0;
+    }
+
+    .legend-definition-row dt {
+        flex: none;
+        width: 9rem;
+        font-weight: 600;
+        color: var(--jd-text-primary);
+    }
+
+    .legend-definition-row dd {
+        margin: 0;
         color: var(--jd-text-muted);
     }
 

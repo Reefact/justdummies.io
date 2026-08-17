@@ -393,6 +393,7 @@ const en = {
         'The tool does not do this. Sometimes its authors decided against it, sometimes nobody has built it yet — the note says which.',
     'why.legend.order':
         'The criteria are grouped under the four questions you arrive with, not ranked by how well JustDummies answers them. On several of them JustDummies is the one that does not try, which is the word just in its name doing its job.',
+    'why.legend.definitionsLabel': 'What each answer means',
 
     'why.rating.core': 'Built for this',
     'why.rating.possible': 'Possible, with work',
@@ -477,7 +478,7 @@ const en = {
 
     'why.matrix.summary': 'The full comparison table',
     'why.matrix.intro':
-        'The same answers as above, without their notes. Each criterion links back to the block that explains it.',
+        'Every answer at a glance, without the notes behind them. Each criterion links down to the block that explains it.',
     'why.table.caption': 'Four ways to get a test value, criterion by criterion.',
     'why.table.axisHeader': 'Criterion',
 
@@ -962,6 +963,8 @@ const fr: Record<UiKey, string> = {
     'why.legend.order':
         "Les critères sont regroupés sous les quatre questions qu'on se pose en arrivant, et non classés selon ce que JustDummies y répond. Sur plusieurs d'entre eux, JustDummies est celui qui n'essaie pas : c'est le mot « just » de son nom qui fait son travail.",
 
+    'why.legend.definitionsLabel': 'Ce que veut dire chaque réponse',
+
     'why.rating.core': 'Conçu pour ça',
     'why.rating.possible': 'Possible, avec du travail',
     'why.rating.outOfScope': "Ce n'est pas son rôle",
@@ -1047,7 +1050,7 @@ const fr: Record<UiKey, string> = {
 
     'why.matrix.summary': 'Tableau comparatif complet',
     'why.matrix.intro':
-        "Les mêmes réponses que ci-dessus, sans leurs notes. Chaque critère renvoie au bloc qui l'explique.",
+        "Toutes les réponses en un coup d'œil, sans leurs notes. Chaque critère renvoie au bloc qui l'explique plus bas.",
     'why.table.caption': "Quatre façons d'obtenir une valeur de test, critère par critère.",
     'why.table.axisHeader': 'Critère',
 
