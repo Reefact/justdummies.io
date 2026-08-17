@@ -19,8 +19,9 @@ The playground is what they open next. Until this record it presented the same p
 idea in an unrelated shape: a stacked column of bordered `<select>` controls, one per step, each
 with its documentation as a paragraph of prose underneath, and — below the column — a separate strip
 printing the chain the controls added up to as a single line of C#, with a copy button at its right.
-The chain was therefore on screen twice, once as controls and once as text, and neither of the two
-was the card the landing page had just shown.
+The chain was therefore on screen twice, once as controls and once as text; the controls were what
+the visitor worked in, the text was the only form that compiled, and neither was the card the
+landing page had just shown.
 
 The two surfaces were also drawn from unrelated rules. The site sets prose narrow and lets a figure
 take the whole shell — its own landing page caps its subtitle well short of the measure and lets the
@@ -57,10 +58,18 @@ one thing §9.8's card was built to buy — the sense that the landing page and 
 it are one thing — and it costs it at the exact moment the visitor has decided to look further. The
 card is what the two surfaces have to share, and sharing it is what this decision is.
 
-Once the builder is a card, the strip below it has nothing left to do. That strip existed because
-the chain was not readable anywhere else; a block that reads as C# **is** that reading, and printing
-it a second time asks the visitor to check two renderings against each other for no gain. Its copy
-button keeps its job and moves onto the card it copies, which is also where a reader looks for one.
+Once the builder is a card, the strip below it stops being a second rendering of the same thing and
+becomes a zone of the card with a job of its own. The block holds the chain the way it is built —
+arguments in fields, summaries in comments, wrapped over as many lines as that takes. The bar under
+it holds the same chain as the one line that compiles, with no comments and every argument
+re-emitted as a real C# literal. Those are two different strings on purpose, and the visitor needs
+both: one to work in, one to take away.
+
+That division decides where the copy control goes, and the answer is not the corner of the block. A
+control whose whole promise is *you get exactly what you see* must be attached to the thing that
+shows it; on the block it was attached to the one thing showing something else. On the bar the
+promise is literal, and it is made literal by construction rather than by care — the bar and the
+clipboard are drawn from one list of runs, so they cannot say different things.
 
 Drawing a chosen step as code rather than as a control is what makes the block readable, and it is
 affordable because of a fact already true: choosing a different method discarded the rest of the
@@ -100,10 +109,11 @@ on the page it is on, which two different documents in two different runtimes de
 The smallest change available, and the only one that alters no interaction at all: the strip below
 the builder could have been given the card's border, ground and result bar and left there.
 
-Rejected because it treats the symptom. The strip would look like the landing page's card while the
-form above it — the thing the visitor actually uses — would not, and the chain would still be on
-screen twice. The visitor would read the same chain in two shapes, of which the prettier one is the
-one they cannot touch.
+Rejected because it dresses the wrong half. The strip would take the landing page's card while the
+column above it — the surface the visitor actually works in — would stay a stack of form controls,
+so the shape they recognise would be the one they cannot touch and the shape they use would be the
+one that matches nothing. Two renderings of a chain are not the problem, and the decision taken here
+keeps two of them on purpose; which of the two is the card is the problem.
 
 ### Keep an editable combo on every chosen step, styled as code
 
@@ -141,21 +151,27 @@ at both pages side by side.
 
 ### Positive
 
-* The chain is on screen once, in the shape the visitor already met on the landing page.
+* The chain is on screen in the shape the visitor already met on the landing page, and the line
+  they can paste is printed under it rather than assembled out of sight.
 * Everything inside the two cards is equal because it is declared once, not because two files
   currently agree.
 * The documentation sits where a reader of C# looks for it, without a hover and without competing
   with the code for the reader's attention.
-* The copy control is on the thing it copies.
+* The copy control is on the thing it copies, and the two cannot drift apart.
 
 ### Negative
 
 * Changing a chosen step's method takes two gestures rather than one.
-* The block is taller than the bare chain: every chosen step carries its summary as a comment.
-* The card and the clipboard do not agree character for character. Several argument types have no
-  bare literal in C#, and the compilable form is a parse call several times longer than the value
-  inside it — so the card shows the value between quotes and the clipboard carries the code. Both
-  are honest about the same chain; neither is a rendering of the other.
+* The block is taller than the bare chain: every chosen step carries its summary as a trailing
+  comment, which runs on from the step where it fits and takes a line of its own where it does not.
+* The card has three zones where the landing page's has two. They stay the same card — everything
+  the two share is declared once — but the playground's is the taller of them by a bar.
+* The chain is on screen in two forms, the block's and the bar's, and they differ character for
+  character. Several argument types have no bare literal in C#, so the block shows the typed value
+  between quotes while the line that compiles carries a parse call several times longer. This is
+  the cost of the block being editable and the bar being copyable at once; what makes it bearable
+  is that both are visible, side by side, rather than one being a hidden reinterpretation of the
+  other.
 
 ### Risks
 

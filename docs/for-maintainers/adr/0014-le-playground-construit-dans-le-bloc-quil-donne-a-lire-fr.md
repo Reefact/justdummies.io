@@ -20,7 +20,8 @@ du même produit sous une forme sans rapport : une colonne de `<select>` encadr�
 chacun suivi de sa documentation en paragraphe de prose, et — sous la colonne — un bandeau distinct
 imprimant en une seule ligne de C# la chaîne à laquelle ces contrôles aboutissaient, un bouton de
 copie à sa droite. La chaîne était donc à l'écran deux fois, une fois en contrôles et une fois en
-texte, et aucune des deux n'était le bloc que la page d'accueil venait de montrer.
+texte ; les contrôles étaient ce dans quoi le visiteur travaillait, le texte la seule forme qui
+compilait, et aucune des deux n'était le bloc que la page d'accueil venait de montrer.
 
 Les deux surfaces étaient par ailleurs dessinées selon des règles sans rapport. Le site donne à la
 prose une mesure courte et laisse une figure prendre toute la largeur — sa propre page d'accueil
@@ -62,11 +63,20 @@ d'accueil et l'application derrière elle sont une même chose — et le lui co�
 le visiteur a décidé d'aller voir plus loin. Le bloc est ce que les deux surfaces doivent partager,
 et le partager, c'est cette décision.
 
-Une fois le builder devenu un bloc, le bandeau en dessous n'a plus rien à faire. Il existait parce
-que la chaîne n'était lisible nulle part ailleurs ; un bloc qui se lit comme du C# **est** cette
-lecture, et l'imprimer une seconde fois demande au visiteur de vérifier deux rendus l'un contre
-l'autre sans rien y gagner. Son bouton de copie garde son rôle et se déplace sur le bloc qu'il
-copie, ce qui est aussi là où un lecteur en cherche un.
+Une fois le builder devenu un bloc, le bandeau en dessous cesse d'être un second rendu de la même
+chose et devient une zone de la carte avec un rôle propre. Le bloc porte la chaîne telle qu'elle se
+construit — arguments en champs, résumés en commentaires, répartie sur autant de lignes qu'il faut.
+Le bandeau en dessous porte la même chaîne sous la forme de l'unique ligne qui compile, sans
+commentaires et avec chaque argument réémis en littéral C# véritable. Ce sont deux chaînes de
+caractères différentes, délibérément, et le visiteur a besoin des deux : l'une pour travailler,
+l'autre pour emporter.
+
+Cette répartition décide où va le contrôle de copie, et la réponse n'est pas le coin du bloc. Un
+contrôle dont toute la promesse est *vous obtenez exactement ce que vous voyez* doit être posé sur
+ce qui le montre ; sur le bloc, il était posé sur la seule chose qui montrait autre chose. Sur le
+bandeau la promesse est littérale, et elle l'est par construction plutôt que par soin — le bandeau
+et le presse-papiers sont dessinés depuis une même liste de fragments, ils ne peuvent donc pas dire
+deux choses différentes.
 
 Dessiner une étape choisie comme du code plutôt que comme un contrôle est ce qui rend le bloc
 lisible, et c'est abordable en raison d'un fait déjà vrai : choisir une autre méthode écartait de
@@ -109,10 +119,12 @@ la page où il est, que deux documents distincts dans deux runtimes distincts d�
 Le plus petit changement disponible, et le seul qui ne modifie aucune interaction : le bandeau sous
 le builder aurait pu recevoir le cadre, le fond et le bandeau de résultat du bloc, et rester là.
 
-Rejetée parce qu'elle traite le symptôme. Le bandeau ressemblerait au bloc de la page d'accueil
-tandis que le formulaire au-dessus — ce dont le visiteur se sert réellement — n'y ressemblerait pas,
-et la chaîne serait toujours deux fois à l'écran. Le visiteur lirait la même chaîne sous deux
-formes, dont la plus soignée est celle qu'il ne peut pas toucher.
+Rejetée parce qu'elle habille la mauvaise moitié. Le bandeau prendrait le bloc de la page d'accueil
+tandis que la colonne au-dessus — la surface dans laquelle le visiteur travaille réellement —
+resterait une pile de contrôles de formulaire : la forme qu'il reconnaît serait celle qu'il ne peut
+pas toucher, et celle dont il se sert ne ressemblerait à rien. Deux rendus d'une chaîne ne sont pas
+le problème, et la décision prise ici en conserve deux délibérément ; lequel des deux est le bloc,
+voilà le problème.
 
 ### Garder une combo éditable sur chaque étape choisie, habillée en code
 
@@ -151,23 +163,29 @@ que quelqu'un regarde les deux pages côte à côte.
 
 ### Positives
 
-* La chaîne est à l'écran une seule fois, sous la forme que le visiteur a déjà rencontrée sur la
-  page d'accueil.
+* La chaîne est à l'écran sous la forme que le visiteur a déjà rencontrée sur la page d'accueil, et
+  la ligne qu'il peut coller est imprimée en dessous plutôt qu'assemblée hors de sa vue.
 * Tout ce qui est à l'intérieur des deux blocs est égal parce que c'est déclaré une fois, et non
   parce que deux fichiers concordent pour l'instant.
 * La documentation se trouve là où un lecteur de C# la cherche, sans survol et sans disputer au code
   l'attention du lecteur.
-* Le contrôle de copie est posé sur ce qu'il copie.
+* Le contrôle de copie est posé sur ce qu'il copie, et les deux ne peuvent pas diverger.
 
 ### Négatives
 
 * Changer la méthode d'une étape choisie demande deux gestes au lieu d'un.
-* Le bloc est plus haut que la chaîne seule : chaque étape choisie porte son résumé en commentaire.
-* Le bloc et le presse-papiers ne concordent pas caractère pour caractère. Plusieurs types
-  d'argument n'ont aucun littéral nu en C#, et la forme compilable est un appel d'analyse plusieurs
-  fois plus long que la valeur qu'il contient — le bloc montre donc la valeur entre guillemets et le
-  presse-papiers porte le code. Les deux sont honnêtes sur la même chaîne ; aucun n'est un rendu de
-  l'autre.
+* Le bloc est plus haut que la chaîne seule : chaque étape choisie porte son résumé en commentaire
+  de fin de ligne, qui se poursuit sur la ligne de l'étape là où il tient et prend une ligne propre
+  là où il ne tient pas.
+* La carte a trois zones là où celle de la page d'accueil en a deux. Elles restent la même carte —
+  tout ce que les deux partagent est déclaré une fois — mais celle du playground est plus haute
+  d'un bandeau.
+* La chaîne est à l'écran sous deux formes, celle du bloc et celle du bandeau, qui diffèrent
+  caractère pour caractère. Plusieurs types d'argument n'ont aucun littéral nu en C# : le bloc
+  montre donc la valeur saisie entre guillemets tandis que la ligne qui compile porte un appel
+  d'analyse plusieurs fois plus long. C'est le prix d'un bloc éditable et d'un bandeau copiable à
+  la fois ; ce qui le rend supportable est que les deux sont visibles, côte à côte, plutôt que
+  l'un une réinterprétation cachée de l'autre.
 
 ### Risques
 
