@@ -565,33 +565,12 @@ const en = {
     'why.notFor.realism.label': 'The data has to look real.',
     'why.notFor.realism.body':
         'A demo, a screenshot, a database somebody will browse. Reach for a fake-data generator. A valid value is not a believable one.',
-    'why.notFor.noRules.label': 'Nothing about the value has to be true.',
-    'why.notFor.noRules.body':
-        'If your types accept anything of the right type, there is no rule to declare, and declaring one is ceremony. A library that hands back any object of the right shape asks less of you.',
     'why.notFor.exploration.label': 'You want the test to go looking for a counter-example.',
     'why.notFor.exploration.body':
         'Running one assertion over hundreds of generated inputs, then shrinking a failure to its smallest case, is property-based testing. JustDummies draws one value per run, and it is not that tool.',
     'why.notFor.secrets.label': 'You need a password, a token or a key.',
     'why.notFor.secrets.body':
         'The generators produce test values, not secrets. Nothing drawn here is fit to be used as a credential, in a test or anywhere else.',
-    /**
-     * KNOWN DUPLICATION, bounded: this says out loud what `site.library.version` already
-     * says in a version string. The component renders it only while that version carries a
-     * pre-release suffix, so the paragraph leaves the page on the day a stable one ships
-     * rather than staying true-until-somebody-notices.
-     */
-    'why.notFor.preRelease.label': 'You need an API that has stopped moving.',
-    'why.notFor.preRelease.body':
-        'Every package is still a pre-release, so installing means passing --prerelease, and it means a surface that can still change under a test suite you have already written.',
-    /**
-     * The paragraph §11.1 is bought with. A page that asks a team to put a dependency under
-     * every test they write and does not mention who maintains it has left out the first
-     * question a lead asks — and a reader who finds it out elsewhere stops believing the
-     * rest. It is a fact about this project, not a comparison, so it names nobody else.
-     */
-    'why.notFor.solo.label': "It is one person's project.",
-    'why.notFor.solo.body':
-        'JustDummies is written and maintained by one developer. Bogus and AutoFixture each have years of contributors behind them. For something that would sit under every test you write, that is worth weighing, and it does not get better by being left out.',
 
     'why.tryIt.heading': 'Try it',
     'why.tryIt.body':
@@ -1134,21 +1113,12 @@ const fr: Record<UiKey, string> = {
     'why.notFor.realism.label': 'Les données doivent être vraisemblables.',
     'why.notFor.realism.body':
         "Une démo, une capture d'écran, une base que quelqu'un va parcourir. Prenez un générateur de fausses données. Une valeur valide n'est pas une valeur crédible.",
-    'why.notFor.noRules.label': 'Aucune règle ne pèse sur la valeur.',
-    'why.notFor.noRules.body':
-        "Si vos types acceptent n'importe quelle valeur du bon type, il n'y a aucune règle à déclarer, et en déclarer une devient une formalité. Une bibliothèque qui rend n'importe quel objet du type voulu vous en demande moins.",
     'why.notFor.exploration.label': "Vous voulez que le test parte chercher un contre-exemple.",
     'why.notFor.exploration.body':
         "Exécuter une même assertion sur des centaines d'entrées générées, puis réduire un échec à son plus petit cas, c'est du property-based testing. JustDummies tire une valeur par exécution, et ce n'est pas cet outil-là.",
     'why.notFor.secrets.label': "Vous avez besoin d'un mot de passe, d'un jeton ou d'une clé.",
     'why.notFor.secrets.body':
         "Les générateurs produisent des valeurs de test, pas des secrets. Rien de ce qui est tiré ici n'est propre à servir d'élément d'authentification, dans un test comme ailleurs.",
-    'why.notFor.preRelease.label': "Vous avez besoin d'une API qui a cessé de bouger.",
-    'why.notFor.preRelease.body':
-        "Tous les paquets sont encore en préversion : il faut passer --prerelease pour les installer, et la surface peut encore changer sous une suite de tests déjà écrite.",
-    'why.notFor.solo.label': "C'est le projet d'une seule personne.",
-    'why.notFor.solo.body':
-        "JustDummies est écrit et maintenu par un seul développeur. Bogus et AutoFixture ont chacun des années de contributeurs derrière eux. Pour une bibliothèque qui se retrouverait sous chacun de vos tests, cela se pèse, et le passer sous silence n'y changerait rien.",
 
     'why.tryIt.heading': 'Essayez-le',
     'why.tryIt.body':

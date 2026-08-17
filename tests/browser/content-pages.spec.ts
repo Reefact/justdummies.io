@@ -118,12 +118,12 @@ for (const path of ['/about', '/privacy', '/why-justdummies']) {
  * frozen is structure — the criteria are taught, the ratings are defined, the honest
  * sections exist, and nothing essential waits for a script.
  */
-const WHY_PAGES: ReadonlyArray<{ path: string; possible: string; solo: RegExp }> = [
-    { path: '/why-justdummies', possible: 'Possible, with work', solo: /one developer/ },
-    { path: '/fr/why-justdummies', possible: 'Possible, avec du travail', solo: /un seul développeur/ },
+const WHY_PAGES: ReadonlyArray<{ path: string; possible: string }> = [
+    { path: '/why-justdummies', possible: 'Possible, with work' },
+    { path: '/fr/why-justdummies', possible: 'Possible, avec du travail' },
 ];
 
-for (const { path, possible, solo } of WHY_PAGES) {
+for (const { path, possible } of WHY_PAGES) {
 
     test(`${path} teaches every criterion it compares on`, async ({ page }) => {
         await page.goto(path);
@@ -162,10 +162,7 @@ for (const { path, possible, solo } of WHY_PAGES) {
 
         // §11.8 — its own section, not buried, and enumerated case by case.
         await expect(page.locator('#not-for .not-for-item').first()).toBeVisible();
-        expect(await page.locator('#not-for .not-for-item').count()).toBeGreaterThanOrEqual(4);
-
-        // The admission the section is bought with: one person maintains this.
-        await expect(page.locator('#not-for')).toContainText(solo);
+        expect(await page.locator('#not-for .not-for-item').count()).toBe(3);
     });
 
     test(`${path} shows what was checked, when, and how to say it is wrong`, async ({ page }) => {

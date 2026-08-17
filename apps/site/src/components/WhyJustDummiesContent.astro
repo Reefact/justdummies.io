@@ -101,28 +101,13 @@ const reportUrl =
     `&body=${encodeURIComponent(reportBody)}`;
 
 /**
- * The one "not for" case that is a state rather than a property, so it is read off the
- * state rather than asserted in prose (§2, §14.1). A version with no pre-release suffix
- * takes the paragraph off the page on the day it ships, instead of leaving a sentence that
- * was true when somebody typed it.
- */
-const isPreRelease: boolean = site.library.version.includes('-');
-
-/**
  * §7 of the why-justdummies rewrite: a case is a label and a body, rendered as one icon
- * list item rather than six near-identical `<div class="case">` blocks. The pre-release
- * case folds in here rather than branching in the template, so `isPreRelease` still governs
- * whether it exists at all (§2, §14.1) without a second conditional at the render site.
+ * list item rather than six near-identical `<div class="case">` blocks.
  */
 const notForCases: ReadonlyArray<{ labelKey: UiKey; bodyKey: UiKey }> = [
     { labelKey: 'why.notFor.realism.label', bodyKey: 'why.notFor.realism.body' },
-    { labelKey: 'why.notFor.noRules.label', bodyKey: 'why.notFor.noRules.body' },
     { labelKey: 'why.notFor.exploration.label', bodyKey: 'why.notFor.exploration.body' },
     { labelKey: 'why.notFor.secrets.label', bodyKey: 'why.notFor.secrets.body' },
-    ...(isPreRelease
-        ? [{ labelKey: 'why.notFor.preRelease.label' as UiKey, bodyKey: 'why.notFor.preRelease.body' as UiKey }]
-        : []),
-    { labelKey: 'why.notFor.solo.label', bodyKey: 'why.notFor.solo.body' },
 ];
 
 /**
