@@ -1,4 +1,4 @@
-import { expect, test } from './support/harness';
+import { ANALYTICS_TAG_MARKER, expect, test } from './support/harness';
 import type { Response } from '@playwright/test';
 
 import { PAGES, watch, type PageComplaints } from './support/watch';
@@ -65,7 +65,7 @@ test.describe('the content-security-policy', () => {
 
         const html: string = await page.content();
 
-        test.skip(!html.includes('www.googletagmanager.com'), 'this artefact was built without the analytics tag');
+        test.skip(!html.includes(ANALYTICS_TAG_MARKER), 'this artefact was built without the analytics tag');
 
         await page.evaluate(async () => {
             await fetch('https://region1.google-analytics.com/g/collect', { method: 'POST' }).catch(() => undefined);

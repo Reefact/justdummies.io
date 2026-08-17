@@ -84,6 +84,15 @@ const privacyPath = pathForLocale('/privacy/', locale);
         background: var(--jd-surface-raised);
         border-top: 1px solid var(--jd-border);
         box-shadow: var(--jd-shadow-raised);
+        /* Anchored to the bottom and out of flow, so a banner taller than the viewport
+           would grow off the TOP of the screen — and the document cannot be scrolled to
+           reach it, because the banner is not in the document's flow. That happens at high
+           zoom and on short landscape viewports, and what it hides is the disclosure and
+           the privacy link: the two things a visitor needs before answering. Capping the
+           height and letting the banner scroll itself keeps them reachable.
+           dvh rather than vh so a mobile browser's retracting toolbar is accounted for. */
+        max-height: 100dvh;
+        overflow-y: auto;
     }
 
     .consent-text {

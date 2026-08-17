@@ -36,12 +36,27 @@ tools/           Repository tooling (the commit-message linter)
 
 ```bash
 pnpm install
+
+# The analytics lane is governed by two variables, and the build expects both. Nothing is
+# measured with the state `disabled`, and the id is never contacted — but it still has to
+# be a well-formed one, because an id that has gone missing while the measurement is off is
+# a broken memory, and finding out on the day it is switched back on is finding out too
+# late. Use the placeholder below unless you are building for the real property.
+export PUBLIC_GA_MEASUREMENT_STATE=disabled
+export PUBLIC_GA_MEASUREMENT_ID=G-0000000000
+
 pnpm build
 ```
 
 That runs the whole pipeline: it builds the site into `dist/`, publishes the playground, copies it
 to `dist/playground/`, and verifies the artefact's shape. The halves can also be built separately
 with `pnpm build:site` and `pnpm build:playground`.
+
+With `PUBLIC_GA_MEASUREMENT_STATE=disabled` the artefact carries no analytics tag, no consent
+banner, and a content policy that grants Google nothing — `grep -r googletagmanager dist/` returns
+nothing at all. That is the state to build in unless you are deploying. The reasoning is
+[ADR-0014](docs/for-maintainers/adr/0014-the-journey-is-measured-in-a-third-lane-gated-on-consent-en.md);
+turning it on is step 11 of the [deployment guide](docs/for-maintainers/deployment-en.md).
 
 `dist/` is the deployment — the directory uploaded to Cloudflare Workers, exactly as built.
 

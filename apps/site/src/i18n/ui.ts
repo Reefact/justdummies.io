@@ -245,7 +245,7 @@ const en = {
         "It's published by REEFACT, a single-member SARL registered under SIREN number 804 026 482, headquartered at 134 rue de Chevilly, 94240 L'Haÿ-les-Roses, France, represented by its manager Sylvain Aurat.",
     'privacy.consent.label': 'Google Analytics, if you allow it.',
     'privacy.consent.body':
-        "To understand how this page is actually read — which moment convinces someone, where people stop — the site can use Google Analytics. It is off until you accept it, and if you never do, nothing about you reaches Google. If you accept, it stores a cookie holding a random identifier, so that two visits from the same browser count as one reader rather than two, and Google becomes a second processor alongside Cloudflare, with the transfers outside the European Union that this implies. It is configured never to feed advertising, and what it collects about you is erased fourteen months after your last visit. You can change your mind at any time, here:",
+        "To understand how this page is actually read — which moment convinces someone, where people stop — the site can use Google Analytics. It is off until you accept it, and if you never do, nothing about you reaches Google. If you accept, it stores a cookie holding a random identifier, so that two visits from the same browser count as one reader rather than two, and Google becomes a second processor alongside Cloudflare, with the transfers outside the European Union that this implies. What it records is how you move through the page: the scenes you reach, the install command you copy, the tool you compare us against — and, on the API pages, the words you type into the search box, because what readers look for and fail to find is the most useful thing this site can learn. It is configured never to feed advertising, and what it collects about you is erased fourteen months after your last visit. You can change your mind at any time, here:",
     'privacy.consent.change': 'Change your choice',
     'privacy.rights.label': 'Your rights.',
     'privacy.rights.body':
@@ -260,7 +260,7 @@ const en = {
      */
     'consent.heading': 'How this page is read.',
     'consent.body':
-        "The site would like to use Google Analytics to see which parts of this page actually help and where readers stop. That stores a cookie and sends your visit to Google. Refusing changes nothing about what you can read here, and the rest of the site's measurement — which sets no cookie and recognises nobody — runs either way.",
+        "The site would like to use Google Analytics to see which parts of this page actually help and where readers stop. That stores a cookie, sends your visit to Google, and on the API pages includes what you type into the search box. Refusing changes nothing about what you can read here, and the rest of the site's measurement — which sets no cookie and recognises nobody — runs either way.",
     'consent.accept': 'Accept',
     'consent.refuse': 'Refuse',
     'consent.more': 'What is measured',
@@ -818,7 +818,7 @@ const fr: Record<UiKey, string> = {
         "Il est édité par REEFACT, SARL unipersonnelle immatriculée sous le numéro SIREN 804 026 482, dont le siège est situé 134 rue de Chevilly, 94240 L'Haÿ-les-Roses, représentée par son gérant Sylvain Aurat.",
     'privacy.consent.label': "Google Analytics, si vous l'autorisez.",
     'privacy.consent.body':
-        "Pour comprendre comment cette page est réellement lue — quel moment convainc, où l'on s'arrête —, le site peut utiliser Google Analytics. Il est éteint tant que vous ne l'avez pas accepté, et si vous ne l'acceptez jamais, rien vous concernant n'arrive chez Google. Si vous l'acceptez, il dépose un cookie contenant un identifiant aléatoire, afin que deux visites depuis le même navigateur comptent pour un lecteur et non pour deux, et Google devient un second sous-traitant aux côtés de Cloudflare, avec les transferts hors de l'Union européenne que cela implique. Il est configuré pour ne jamais alimenter la publicité, et ce qu'il collecte à votre sujet est effacé quatorze mois après votre dernière visite. Vous pouvez changer d'avis à tout moment, ici :",
+        "Pour comprendre comment cette page est réellement lue — quel moment convainc, où l'on s'arrête —, le site peut utiliser Google Analytics. Il est éteint tant que vous ne l'avez pas accepté, et si vous ne l'acceptez jamais, rien vous concernant n'arrive chez Google. Si vous l'acceptez, il dépose un cookie contenant un identifiant aléatoire, afin que deux visites depuis le même navigateur comptent pour un lecteur et non pour deux, et Google devient un second sous-traitant aux côtés de Cloudflare, avec les transferts hors de l'Union européenne que cela implique. Ce qu'il enregistre, c'est votre progression dans la page : les scènes que vous atteignez, la commande d'installation que vous copiez, l'outil auquel vous nous comparez — et, sur les pages d'API, les mots que vous tapez dans le champ de recherche, parce que ce que les lecteurs cherchent sans le trouver est la chose la plus utile que ce site puisse apprendre. Il est configuré pour ne jamais alimenter la publicité, et ce qu'il collecte à votre sujet est effacé quatorze mois après votre dernière visite. Vous pouvez changer d'avis à tout moment, ici :",
     'privacy.consent.change': 'Modifier votre choix',
     'privacy.rights.label': 'Vos droits.',
     'privacy.rights.body':
@@ -827,7 +827,7 @@ const fr: Record<UiKey, string> = {
 
     'consent.heading': 'Comment cette page est lue.',
     'consent.body':
-        "Le site aimerait utiliser Google Analytics pour voir quelles parties de cette page servent vraiment et où les lecteurs s'arrêtent. Cela dépose un cookie et envoie votre visite à Google. Refuser ne change rien à ce que vous pouvez lire ici, et le reste de la mesure du site — qui ne dépose aucun cookie et ne reconnaît personne — fonctionne dans les deux cas.",
+        "Le site aimerait utiliser Google Analytics pour voir quelles parties de cette page servent vraiment et où les lecteurs s'arrêtent. Cela dépose un cookie, envoie votre visite à Google, et inclut sur les pages d'API ce que vous tapez dans le champ de recherche. Refuser ne change rien à ce que vous pouvez lire ici, et le reste de la mesure du site — qui ne dépose aucun cookie et ne reconnaît personne — fonctionne dans les deux cas.",
     'consent.accept': 'Accepter',
     'consent.refuse': 'Refuser',
     'consent.more': 'Ce qui est mesuré',

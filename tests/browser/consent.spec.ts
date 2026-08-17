@@ -1,4 +1,4 @@
-import { expect, test } from './support/harness';
+import { ANALYTICS_TAG_MARKER, expect, isAnalyticsHost, isAnalyticsTagHost, test } from './support/harness';
 import type { Page, Request, Response } from '@playwright/test';
 
 /**
@@ -23,7 +23,7 @@ function googleRequests(page: Page): string[] {
     const seen: string[] = [];
 
     page.on('request', (request: Request) => {
-        if (new URL(request.url()).hostname.includes('google')) {
+        if (isAnalyticsHost(new URL(request.url()).hostname)) {
             seen.push(request.url());
         }
     });
@@ -35,7 +35,7 @@ function googleRequests(page: Page): string[] {
 async function skipWithoutTag(page: Page): Promise<void> {
     const html: string = await page.content();
 
-    test.skip(!html.includes('www.googletagmanager.com'), 'this artefact was built without the analytics tag');
+    test.skip(!html.includes(ANALYTICS_TAG_MARKER), 'this artefact was built without the analytics tag');
 }
 
 test.describe('with the question unanswered', () => {
@@ -92,7 +92,7 @@ test.describe('with the question unanswered', () => {
         const lengths: number[] = [];
 
         page.on('response', async (response: Response) => {
-            if (!response.url().includes('googletagmanager.com')) {
+            if (!isAnalyticsTagHost(new URL(response.url()).hostname)) {
                 return;
             }
             // A body that cannot be read is not a body of length zero. -1 fails the
@@ -198,6 +198,42 @@ test.describe('once the visitor has accepted', () => {
                 'no scene was reported by name',
             )
             .toContain('the-seed');
+    });
+});
+
+/**
+ * Withdrawal has to reach Google, not merely stop the site talking to it.
+ *
+ * A visitor who withdraws has already accepted, so Google's script is loaded and holds a
+ * granted `analytics_storage`. Silencing `track` alone would leave the tag measuring from a
+ * consent that had just been taken back — which the privacy page says stops the collection.
+ * The revocation is asserted where it is observable: in the queue the tag reads.
+ */
+test.describe('when a visitor takes consent back', () => {
+    test.use({ consent: 'granted' });
+
+    test('refusing revokes the signal Google was given', async ({ page }) => {
+        await page.goto('/privacy/');
+        await skipWithoutTag(page);
+
+        await page.locator('[data-consent-reopen]').click();
+        await page.locator('[data-consent-refuse]').click();
+        await expect(page.locator('[data-consent]')).toBeHidden();
+
+        const denials: unknown[] = await page.evaluate(() => {
+            const queue: unknown[] = (window as unknown as { dataLayer?: unknown[] }).dataLayer ?? [];
+
+            return queue
+                .map((entry: unknown) => Array.from(entry as ArrayLike<unknown>))
+                .filter(
+                    (entry: unknown[]) =>
+                        entry[0] === 'consent' &&
+                        entry[1] === 'update' &&
+                        (entry[2] as { analytics_storage?: string }).analytics_storage === 'denied',
+                );
+        });
+
+        expect(denials.length, 'the tag was never told the consent was withdrawn').toBeGreaterThan(0);
     });
 });
 

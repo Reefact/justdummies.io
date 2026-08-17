@@ -43,9 +43,12 @@ own language — the locale the reader chose — and not the browser's, which GA
 deliberately: lane two counts every copy, lane three explains the path to it, and the two are read
 together rather than one instead of the other.
 
-`view_search_results` carries text a visitor typed. It is the only event here that does, it is
-described on the privacy page, and it is GA4's own recommended name — which is what puts it in the
-site-search report rather than among custom events nobody opens.
+`view_search_results` carries text a visitor typed. It is the only event here that does, which is why
+it is named twice before anyone can consent to it: on the banner itself, and in the privacy page's
+analytics section. Disclosing it on the banner rather than only behind the link is deliberate —
+consent to something a visitor has to follow a link to discover is not informed consent. The event
+keeps GA4's own recommended name, which is what puts it in the site-search report rather than among
+custom events nobody opens.
 
 ## What has to be registered in the GA4 console
 

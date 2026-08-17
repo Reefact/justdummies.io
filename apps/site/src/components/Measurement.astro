@@ -250,6 +250,27 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
         tag.jdAnalyticsStart();
     }
 
+    /**
+     * Withdrawal, and it has to do two things rather than one.
+     *
+     * Stopping `track` is not enough: by the time somebody withdraws they may already
+     * have accepted, which means Google's own script is loaded and holds a granted
+     * `analytics_storage`. Left alone it would go on measuring for the rest of the page
+     * from a consent the visitor has just taken back — so the signal is revoked as well,
+     * and the tag is told in the only language it listens to.
+     *
+     * There is no symmetric `jdAnalyticsStop`: the script cannot be unloaded, and
+     * pretending otherwise would be the more comfortable lie. What can be done is done
+     * here, and the rest is the reload the next page brings.
+     */
+    function stop(): void {
+        reporting = false;
+
+        if (tag.gtag !== undefined) {
+            tag.gtag('consent', 'update', { analytics_storage: 'denied' });
+        }
+    }
+
     function track(name: string, parameters: Record<string, unknown>): void {
         // Gated on the answer rather than on the tag's presence, so that an event
         // fired between a refusal and the next page load cannot queue up waiting for
@@ -293,6 +314,8 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
 
         if (choice === 'granted') {
             start();
+        } else {
+            stop();
         }
     }
 
@@ -346,6 +369,30 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
         return name === undefined ? -1 : scenes.findIndex((scene: HTMLElement) => scene.dataset.scene === name);
     }
 
+    /**
+     * Whether the scene still straddles the middle of the viewport, asked at the moment
+     * the dwell expires.
+     *
+     * MEASURED RATHER THAN REMEMBERED, and the difference is the whole check. `Scene.astro`
+     * reports arrivals only, and its `data-current` is sticky — it is cleared when another
+     * scene takes over and at no other time. So a reader who reaches the last scene and
+     * scrolls on into the footer leaves nothing behind that says they left: the attribute
+     * stays set, no further arrival cancels the timer, and a dwell that never happened
+     * would be reported as a read. Asking the geometry sidesteps both.
+     */
+    function holdsTheBand(name: string): boolean {
+        const scene: HTMLElement | undefined = scenes.find((candidate: HTMLElement) => candidate.dataset.scene === name);
+
+        if (scene === undefined) {
+            return false;
+        }
+
+        const box: DOMRect = scene.getBoundingClientRect();
+        const middle: number = window.innerHeight / 2;
+
+        return box.top <= middle && box.bottom >= middle;
+    }
+
     document.addEventListener('jd:scene-entered', (event: Event) => {
         const detail: SceneEntered = (event as CustomEvent<SceneEntered>).detail ?? {};
         const scene: string | undefined = detail.scene;
@@ -358,6 +405,10 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
         // arm the eleventh, not report the first ten a second late.
         window.clearTimeout(dwelling);
         dwelling = window.setTimeout(() => {
+            if (!holdsTheBand(scene)) {
+                return;
+            }
+
             seenScenes.add(scene);
             track('scene_view', { scene_name: scene, act: detail.act ?? '', scene_ordinal: sceneOrdinal(scene) });
 
@@ -376,13 +427,17 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
             return;
         }
 
+        // Found by walking the marked elements rather than by building a selector out of
+        // the event's own payload: this listener is fed by a DOM event, and a DOM event is
+        // something any script on the page can dispatch.
+        const marked: HTMLElement | undefined = Array.from(
+            document.querySelectorAll<HTMLElement>('[data-placement]'),
+        ).find((candidate: HTMLElement) => candidate.dataset.placement === detail.placement);
+
         track('install_command_copied', {
             placement: detail.placement,
             variant: detail.variant,
-            scene_ordinal: sceneOrdinal(
-                document.querySelector<HTMLElement>(`[data-placement="${detail.placement}"]`)?.closest<HTMLElement>('[data-scene]')
-                    ?.dataset.scene,
-            ),
+            scene_ordinal: sceneOrdinal(marked?.closest<HTMLElement>('[data-scene]')?.dataset.scene),
         });
     });
 
@@ -395,7 +450,11 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
      * day any of this becomes conditional.
      */
     document.addEventListener('click', (event: Event) => {
-        const target: HTMLElement | null = event.target instanceof HTMLElement ? event.target : null;
+        // `Element` and not `HTMLElement`: the NuGet links carry an inline arrow, and a
+        // click landing on the SVG or on its path has an `SVGElement` target. Narrowing to
+        // HTMLElement returned early on exactly the clicks that follow the link, so the
+        // event was missing for the visitors most decided about following it.
+        const target: Element | null = event.target instanceof Element ? event.target : null;
 
         if (target === null) {
             return;
@@ -415,26 +474,22 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
             return;
         }
 
-        const tab: HTMLElement | null = target.closest<HTMLElement>('[data-tab]');
-
-        if (tab !== null) {
-            const block: HTMLElement | null = tab.closest<HTMLElement>('[data-install-tabs]');
-
-            if (block !== null) {
-                track('install_variant_switched', {
-                    placement: block.querySelector<HTMLElement>('[data-placement]')?.dataset.placement ?? '',
-                    variant: tab.dataset.tab ?? '',
-                });
-            }
-
-            return;
-        }
-
         if (target.closest('[data-hero-run]') !== null) {
             // The strongest signal on the page: this is the click that agrees to
             // download a megabyte and a half to try the library in the browser.
             track('playground_started', {});
         }
+    });
+
+    // Emitted by the tab widget from its own state transition, so keyboard switches count
+    // and re-selecting the current tab does not.
+    document.addEventListener('jd:install-variant-switched', (event: Event) => {
+        const detail: Copied = (event as CustomEvent<Copied>).detail ?? {};
+
+        track('install_variant_switched', {
+            placement: detail.placement ?? '',
+            variant: detail.variant ?? '',
+        });
     });
 
     document.querySelector<HTMLSelectElement>('[data-compare-select]')?.addEventListener('change', (event: Event) => {

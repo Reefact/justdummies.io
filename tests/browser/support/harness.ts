@@ -87,6 +87,31 @@ async function refuseMeasurement(context: BrowserContext): Promise<void> {
     );
 }
 
+/**
+ * Whether a hostname is the analytics tag's own, exactly.
+ *
+ * Exported because the specs need the same answer and reaching for `url.includes('…')`
+ * there would be a different, looser question — one that a host merely *containing* the
+ * string would pass. Asked once, correctly, in the one place that already had to get it
+ * right for the routing above.
+ */
+export function isAnalyticsTagHost(hostname: string): boolean {
+    return ANALYTICS_TAG_HOSTS.includes(hostname);
+}
+
+/** Whether a hostname belongs to Google's analytics at all — the tag or its collectors. */
+export function isAnalyticsHost(hostname: string): boolean {
+    return stubFor(hostname) !== undefined && !BEACON_HOSTS.includes(hostname);
+}
+
+/**
+ * What marks a document as carrying the tag: the tag's own attribute, never its host.
+ * A page is free to mention `googletagmanager.com` in prose one day — a privacy page
+ * listing subprocessors would — and a check keyed on the host would then read that
+ * paragraph as a tag. `generate-headers.mjs` derives the policy the same way.
+ */
+export const ANALYTICS_TAG_MARKER = 'data-jd-analytics';
+
 /** Where the site remembers the visitor's answer. Mirrors `Measurement.astro`. */
 const CONSENT_KEY = 'jd:analytics-consent';
 
