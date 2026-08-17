@@ -337,10 +337,9 @@ const en = {
 
     'why.toc.label': 'On this page',
 
-    'why.problem.heading': 'The problem it solves',
-    'why.problem.body':
-        'A test that builds an object from several arguments does not always say which one it is actually checking — so the reader is left guessing what matters.',
-    'why.problem.homeLink': 'See the full example, step by step, on the home page',
+    'why.transition.body':
+        'Not every value in a test carries the scenario. The ones that do not still have to respect the rules of the domain — that is the part JustDummies takes care of.',
+    'why.transition.homeLink': 'See the full example, step by step.',
 
     'why.choose.heading': 'Which of these do you need?',
     'why.choose.lede':
@@ -883,10 +882,9 @@ const fr: Record<UiKey, string> = {
 
     'why.toc.label': 'Sur cette page',
 
-    'why.problem.heading': "Le problème qu'il résout",
-    'why.problem.body':
-        "Un test qui construit un objet à partir de plusieurs arguments ne dit pas toujours lequel il vérifie vraiment — au lecteur de deviner ce qui compte.",
-    'why.problem.homeLink': "Voir l'exemple complet, étape par étape, sur la page d'accueil",
+    'why.transition.body':
+        "Dans un test, toutes les valeurs ne portent pas le scénario. Celles qui ne le portent pas doivent quand même respecter les règles du domaine — c'est cette partie-là que JustDummies prend en charge.",
+    'why.transition.homeLink': "Voir l'exemple complet, étape par étape.",
 
     'why.choose.heading': 'Lequel de ces besoins est le vôtre ?',
     'why.choose.lede':
