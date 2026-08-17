@@ -178,8 +178,24 @@
     ///     Deliberately not <see cref="_canGenerate" />: that one is false for both kinds of
     ///     failure, because both stop a value being drawn. Only one of them stops a line being
     ///     written.
+    ///
+    ///     AND DELIBERATELY NOT READ OFF THE STEPS' OWN ERRORS EITHER, which is what it did first
+    ///     and what made it wrong. <see cref="ReplayChain" /> halts at the first step that fails
+    ///     and clears every later step's error without recomputing it, so a step chosen *after* a
+    ///     library refusal carries no error no matter what its arguments hold — and its arguments
+    ///     are empty the moment it is chosen. Reading writability off those cleared errors
+    ///     reported a writable line while <see cref="CodeSegments" /> was emitting
+    ///     <c>WithMaxLength()</c>, an argument list with nothing in it, under a bar saying the
+    ///     line compiles. Asked directly of every argument instead, the answer no longer depends
+    ///     on how far the replay got.
     /// </summary>
-    private bool IsWritableAsCode => !_links.Any(l => l.Error is not null && !l.ErrorIsLibraryRefusal);
+    private bool IsWritableAsCode =>
+        _links.Where(l => l.Chosen is not null)
+              .All(link => Enumerable.Range(0, link.Chosen!.Parameters.Count)
+                                     .All(i => ArgumentParsing.TryParse(link.Chosen.Parameters[i].TypeKey,
+                                                                       link.Argument(i),
+                                                                       out _,
+                                                                       out _)));
 
     /// <summary>
     ///     The version of the library actually loaded, read from the assembly rather than written
@@ -514,10 +530,17 @@
         ArgumentParsing.TypeKeySingle  => "float",
         ArgumentParsing.TypeKeyDouble  => "double",
         ArgumentParsing.TypeKeyDecimal => "decimal",
-        // Everything else keeps its own name, unqualified: Guid, DateOnly, TimeSpan, Uri and
-        // whatever the catalogue gains next all live in namespaces a C# file imports implicitly,
-        // so the short name is what a reader would type.
-        _ => typeKey[(typeKey.LastIndexOf('.') + 1)..],
+        // Everything else keeps the namespace it came with — System.Guid, System.DateOnly,
+        // System.Uri — rather than the short name.
+        //
+        // THE SHORT NAME WAS A BET ON THE READER'S PROJECT, and one this file does not make
+        // anywhere else: FormatArgumentLiteral already emits System.Guid.Parse(...) and
+        // System.Globalization.CultureInfo.InvariantCulture rather than trusting an ambient
+        // using, for exactly this reason. Implicit usings are on by default and off in plenty of
+        // real projects; a bar that promises a line which compiles cannot also require the reader
+        // to have kept a default they may have turned off. The keywords above need no namespace
+        // at all, which is why they stay bare.
+        _ => typeKey,
         };
     }
 
