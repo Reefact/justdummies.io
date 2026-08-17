@@ -296,10 +296,15 @@ fi
 #
 # Three assertions per locale, and each one alone passes while the page is broken. The
 # first is that all ten criteria reached the document — a criterion silently dropped by a
-# refactor is a comparison the reader cannot audit. The second is ADR-0004 on the one
-# control this page has. The third is the rule that the first version of this page broke
-# on a phone: the teaching and the verdicts are never behind a disclosure widget, so a
-# reader meets them without opening anything.
+# refactor is a comparison the reader cannot audit. The second is ADR-0004 on the duel
+# control. The third used to require that no verdict ever sit inside a `<details>` at all;
+# the why-justdummies rewrite deliberately wraps each of the four criterion families in a
+# native `<details>`/`<summary>` accordion, one open by default and three collapsed, to cut
+# the density a reader meets on first scroll (still no script: opening one is a plain
+# click). What the page may still not do is open on nothing — a reader who scrolls this far
+# without clicking anything has to land on at least one family whose verdicts are already
+# there to read, or the comparison says nothing until it is opened, which is the original
+# defect this check exists to catch.
 for locale in "" "/fr"; do
   why="${dist}${locale}/why-justdummies/index.html"
 
@@ -321,23 +326,33 @@ for locale in "" "/fr"; do
     fail "${why#"${dist}"/} ships the comparison control visible — without scripting it filters nothing"
   fi
 
-  # A `<details>` may hold the matrix, the guard clauses or the language menu. It may not
-  # hold a verdict: `class="rating"` inside one would mean the reader has to open something
-  # before the comparison says anything, which is the defect the card view had on a phone.
-  behind_disclosure="$(node -e '
+  # Scoped to `class="family"` specifically — not `class="matrix"`, which has always been
+  # allowed to sit closed, and not any `<details>` incidentally containing a class name
+  # that merely starts with "rating" (RatingIcon's own `.rating-icon`), which an earlier,
+  # looser version of this check mistook for a verdict. A verdict is matched by the exact
+  # class the criterion cards render, `class="rating"`, nothing else.
+  family_disclosure="$(node -e '
 const { readFileSync } = require("node:fs");
 const page = readFileSync(process.argv[1], "utf8");
-let found = 0;
-for (const block of page.matchAll(/<details[\s\S]*?<\/details>/g)) {
-    if (/class="rating/.test(block[0])) { found += 1; }
+const wrong = [];
+let openWithVerdicts = 0;
+for (const block of page.matchAll(/<details\b([^>]*)>[\s\S]*?<\/details>/g)) {
+    const [whole, attrs] = block;
+    if (!/class="[^"]*\bfamily\b[^"]*"/.test(attrs)) { continue; }
+    const hasVerdict = /class="rating"/.test(whole);
+    const isOpen = /\bopen\b/.test(attrs);
+    if (hasVerdict && isOpen) { openWithVerdicts += 1; }
 }
-process.stdout.write(String(found));
+if (openWithVerdicts < 1) {
+    wrong.push("no criterion family ships open with its verdicts visible — the comparison says nothing until a reader clicks something");
+}
+process.stdout.write(wrong.join("; "));
 ' "${why}")"
 
-  if [ "${behind_disclosure}" -eq 0 ]; then
-    pass "and no verdict waits behind a disclosure widget${locale:+ (${locale#/})}"
+  if [ -z "${family_disclosure}" ]; then
+    pass "and at least one family ships open, with its verdicts already on the page${locale:+ (${locale#/})}"
   else
-    fail "${why#"${dist}"/} hides ${behind_disclosure} verdict(s) inside a <details> — the comparison says nothing until it is opened"
+    fail "${why#"${dist}"/}: ${family_disclosure}"
   fi
 done
 
