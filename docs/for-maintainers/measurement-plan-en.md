@@ -70,7 +70,10 @@ the same separation by writing the ordinal among its doubles and never among its
 * **Enhanced measurement: page views on browser history events must be OFF.** The landing page
   intercepts every in-page anchor click and pushes history state, so left on, each chevron click
   reports a page view. Nothing in this repository can detect it — see ADR-0014's Risks.
-* Google Signals off, advertising personalisation off.
+* Advertising personalisation off. **Google Signals stays off, which on a new property means leaving
+  it alone rather than switching it off** — it ships disabled and offers to be enabled. Since June
+  2026 it governs only demographic enrichment, not the flow to Google Ads, and it withholds figures
+  behind sampling thresholds at low traffic.
 * **Retention: 14 months for event data, 14 months for user data, and "reset on new activity" left
   on.** That makes it a sliding window — a visitor's data is erased fourteen months after their
   *last* visit rather than after collection — which is what the privacy page states, in those words.

@@ -1337,7 +1337,15 @@ inflates every figure on the page you most want to read. No check in this reposi
 there is no tag parameter for it, and the browser suite answers the tag with an empty script. It is
 named in ADR-0014's Risks for exactly that reason.
 
-While there: Google Signals **off** and advertising personalisation **off**.
+**Google Signals: nothing to switch off, and nothing to switch on.** It is off by default on a new
+property and appears as an invitation to enable it rather than as a toggle already set — so do not go
+looking for a control to turn off, and do not accept the invitation. Since 15 June 2026 it no longer
+governs the flow to Google Ads (`ad_storage` does, and the tag denies it permanently); all it does now
+is enrich demographic reporting from signed-in Google users. That buys nothing here — the age and
+gender of readers will change no editorial decision — and it introduces sampling thresholds that
+withhold figures at low traffic, which is exactly where this property starts.
+
+Advertising personalisation: **off**.
 
 Retention lives under *Collect and modify data* → *Data retention*, and there are two dropdowns, not
 one: **event data** defaults to 2 months and must be raised to **14 months**; **user data** is
