@@ -78,6 +78,31 @@ function ratingLabel(rating: Rating): string {
     </div>
 
     {/*
+      §11.6 wants every rating word defined before a reader meets it, not after — so this
+      keyboard/touch-reachable <details> comes before the matrix, not after it. It has to
+      sit *outside* `.matrix` either way: that div is `display: none` below 48rem (its own
+      media query, further down), and a definitions block nested inside it would inherit
+      that hiding — the mistake an earlier version of this made, catching only the reader
+      who never needed a keyboard route in the first place. The compact legend inside the
+      matrix still repeats the same three words next to their icon, `title`-hoverable for a
+      mouse user who has already read the definition here; this is the one copy that has
+      to come first.
+    */}
+    <details class="legend-definitions">
+        <summary>{t('why.legend.definitionsLabel')}</summary>
+        <dl>
+            {
+                ratings.map((rating) => (
+                    <div class="legend-definition-row">
+                        <dt>{t(rating.labelKey)}</dt>
+                        <dd>{t(rating.legendKey)}</dd>
+                    </div>
+                ))
+            }
+        </dl>
+    </details>
+
+    {/*
       The grid comes first now: the one thing on this page that says everything — all forty
       verdicts — before a reader has clicked anything at all. Never a <details>, by
       editorial decision: unlike the criterion families below, this table is not collapsed.
@@ -85,19 +110,6 @@ function ratingLabel(rating: Rating): string {
     <div class="matrix">
         <h4 id="why-matrix-heading">{t('why.matrix.summary')}</h4>
         <p class="matrix-intro">{t('why.matrix.intro')}</p>
-        {/*
-          §5 of the why-justdummies rewrite: the three words a rating can take, defined once,
-          compactly, right where a reader meets them for the first time (§11.6). `tooltip`
-          gives a mouse user the full sentence on hover — a bonus, not the only way in: a
-          `title` reaches neither a touch reader nor a keyboard one (the span it sits on
-          takes no focus), so the same three sentences are also one native, closed-by-default
-          <details> — a tap or an Enter key away, never only a hover. That <details> sits
-          *outside* this div, not in it: `.matrix` itself is `display: none` below 48rem
-          (its own media query, further down), and a definitions block nested inside it
-          would inherit that hiding — reachable by mouse hover on a desktop that never
-          needed the keyboard/touch route in the first place, and gone exactly where it
-          was needed.
-        */}
         <ul class="matrix-legend" aria-label={t('why.legend.heading')}>
             {
                 ratings.map((rating) => (
@@ -170,20 +182,6 @@ function ratingLabel(rating: Rating): string {
             }
         </table>
     </div>
-
-    <details class="legend-definitions">
-        <summary>{t('why.legend.definitionsLabel')}</summary>
-        <dl>
-            {
-                ratings.map((rating) => (
-                    <div class="legend-definition-row">
-                        <dt>{t(rating.labelKey)}</dt>
-                        <dd>{t(rating.legendKey)}</dd>
-                    </div>
-                ))
-            }
-        </dl>
-    </details>
 
     <p class="order">{t('why.legend.order')}</p>
 
