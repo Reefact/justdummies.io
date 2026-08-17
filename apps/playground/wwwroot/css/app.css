@@ -261,12 +261,8 @@ main {
    document instead — the div that holds this iframe — which meant that border wrapped
    the "Generate"/version row below the card too, a row the static example never draws a
    box around (its equivalent, .invite, sits free underneath .sample). Moved here so only
-   the card is boxed, same as the page it is matching.
-
-   `position: relative` is the playground's copy button hanging off the top-right corner
-   (further down); the hero has no such button and is unaffected by it. */
+   the card is boxed, same as the page it is matching. */
 .code-widget .card {
-    position: relative;
     background: var(--jd-surface);
     border: 1px solid var(--jd-border);
     border-radius: var(--jd-radius-md);
@@ -973,10 +969,23 @@ main {
  * and would be wrong at every width but the one it was split for. This takes the first.
  */
 .chain-link .doc {
-    flex-basis: 100%;
+    /*
+     * ON THE STEP'S OWN LINE, running on from its delete control — where a trailing comment
+     * goes in C#, and where it stops costing the chain a line of its own. It had a row to
+     * itself first, which doubled the height of every chosen step and pushed the chain that
+     * much further from the shape the landing page shows.
+     *
+     * `flex: 1 1 24ch` is what makes that conditional rather than absolute: it runs on while
+     * a readable width of it fits beside the call, and drops to a line of its own when the call
+     * is long enough that it would not — on a phone, that is most of them. `min-width: 0` is what
+     * lets it shrink at all; without it a flex item refuses to go below its longest word and
+     * the line overflows the card instead of wrapping inside it.
+     */
+    flex: 1 1 24ch;
+    min-width: 0;
     display: flex;
     gap: 1ch;
-    margin: 0;
+    margin: 0 0 0 var(--jd-space-2);
     line-height: var(--jd-line-body);
 }
 
@@ -1102,51 +1111,65 @@ main {
 }
 
 /*
- * COPY, ON THE CARD (specification §10.2's "copy the complete code").
+ * THE CODE BAR — the middle zone of the playground's card, between the block the chain is
+ * built in and the bar its value comes back in.
  *
- * It used to be a button beside a second copy of the chain, printed as one line under the
- * builder — a strip that existed only because the builder itself was not readable as code.
- * The card above is that reading now, so the strip is gone and its button moved onto the
- * card it copies.
+ * TWO BARS RATHER THAN ONE, and they answer two different questions. The block above holds
+ * the chain the way it is built: arguments in fields, summaries in comments, wrapped over as
+ * many lines as that takes. This bar holds the same chain as the single line that compiles —
+ * no comments, every argument re-emitted as a real C# literal (Home.razor's
+ * FormatArgumentLiteral), which is a different string and deliberately so. The bar below
+ * holds what running it produced.
  *
- * WHAT IT PUTS ON THE CLIPBOARD IS NOT WHAT THE CARD SHOWS, and that is deliberate: the
- * card shows the chain the way a reader wants it, wrapped over lines with its arguments in
- * editable fields, while the clipboard gets the single line that actually compiles — every
- * argument re-emitted as a C# literal, `Guid.Parse(...)` and all (Home.razor's
- * FormatArgumentLiteral). The card is the reading; this is the code.
+ * WHICH IS WHY THE COPY BUTTON IS HERE. It hung off the block's top-right corner before, so
+ * the one control promising "you get exactly what you see" was attached to the one thing
+ * showing something else. On this bar the promise is literal, and Home.razor's CodeSegments
+ * makes it so by construction: this bar draws the runs and the clipboard gets them joined.
  *
- * ICON-ONLY, for a reason that is about translation rather than taste: it is positioned over
- * the code, and "Copier le code" is half again the width of "Copy code" (§6.5). A box whose
- * width moves with the locale would have to be dodged by the expression's own padding in
- * every locale separately. A square dodges once. The label it drops is on `aria-label`.
+ * Drawn from the same three declarations as the result bar under it — the divider, the raised
+ * ground, the padding — because they are two zones of one card, not a zone and a decoration.
  */
+.playground-widget .code-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--jd-space-3);
+    padding: var(--jd-space-3) var(--jd-space-4);
+    border-top: 1px solid var(--jd-border);
+    background: var(--jd-surface-raised);
+}
+
+/* One line, and it stays one line: this is the copyable form, and a copyable form that
+   wrapped would read as several statements. It scrolls in its own box rather than widening
+   the card — `min-width: 0` is what allows that, since a flex item will not shrink below its
+   content without it and the overflow would land on the card instead. */
+.playground-widget .code-text {
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    white-space: pre;
+}
+
+/* Never disabled — it is not drawn at all until there is a chain to copy (ADR-0004). The
+   label is carried rather than dropped for an icon: there is room for it on a bar of its own,
+   and it is no longer positioned over code that a longer translation could collide with. */
 .playground-widget .copy {
-    position: absolute;
-    top: var(--jd-space-2);
-    right: var(--jd-space-2);
+    flex: none;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    width: 2rem;
-    height: 2rem;
+    gap: var(--jd-space-2);
+    font: inherit;
+    font-family: var(--jd-font-sans);
     color: var(--jd-text-muted);
-    background: var(--jd-surface-raised);
+    background: var(--jd-surface);
     border: 1px solid var(--jd-border);
     border-radius: var(--jd-radius-sm);
+    padding: var(--jd-space-1) var(--jd-space-3);
     cursor: pointer;
 }
 
-.playground-widget .copy:hover:not(:disabled) {
+.playground-widget .copy:hover {
     color: var(--jd-text-primary);
     border-color: var(--jd-accent);
-}
-
-/* Nothing to copy: an empty chain formats to "Any.Generate();", which is not a call the
-   library has. Offered and refused is worse than offered and absent from a control whose
-   whole promise is that what it hands over compiles. */
-.playground-widget .copy:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
 }
 
 .playground-widget .copy:focus-visible {
@@ -1155,6 +1178,7 @@ main {
 }
 
 .playground-widget .copy svg {
+    flex: none;
     stroke: currentColor;
     stroke-width: 1.5;
     stroke-linecap: round;
@@ -1167,11 +1191,4 @@ main {
 .playground-widget .copy[data-copied] {
     color: var(--jd-success);
     border-color: var(--jd-success);
-}
-
-/* The room the button needs, taken out of the expression rather than out of the first line
-   of code: `overflow: hidden` on the card would clip a line that ran under it, and a line
-   of code disappearing under a button is worse than a card with a wide right margin. */
-.playground-widget .expression {
-    padding-right: calc(var(--jd-space-4) + 2rem);
 }

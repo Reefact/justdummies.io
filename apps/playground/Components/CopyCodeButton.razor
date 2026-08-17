@@ -3,41 +3,39 @@
 @using JustDummies.Playground.Localization
 
 @*
-    "Copy the complete code" (specification §10.2), as a control on the card rather than beside
-    a second printing of the chain.
+    "Copy the complete code" (specification §10.2), sitting on the bar that prints the very line
+    it copies.
 
-    IT USED TO NEED THAT SECOND PRINTING. The builder was a column of <select>s, so the only
-    place the chain existed as code was a strip under it — `Any.Int32().Between(1, 2).Generate();`
-    with this button at its right — and the strip was really the reason the button had somewhere
-    to live. The card reads as code now, so the strip is gone and the button moved onto what it
-    copies.
+    WHERE IT IS NOT: on the code block above that bar. It hung off the block's top-right corner
+    for a while, and that was the wrong corner — the block shows the chain the way it is built,
+    wrapped over lines with its arguments in fields and its documentation in comments, while this
+    hands over the one line that compiles. A control whose whole promise is "you get exactly what
+    you see" must not be attached to the one thing showing something else. Home.razor's CodeSegments
+    is what makes that promise literal: the bar draws the runs, this copies them concatenated.
 
-    WHAT IT COPIES IS NOT WHAT THE CARD SHOWS. The card shows the chain wrapped over lines with
-    its arguments in editable fields; the clipboard gets the one line that compiles, every
-    argument re-emitted as a real C# literal by Home.razor's FormatArgumentLiteral. Both are
-    honest about the same chain — one is for reading, one is for pasting.
+    Never disabled, because it is never offered when there is nothing to copy — the bar it lives on
+    is not drawn at all until the chain has a step in it (ADR-0004: a control appears only when it
+    can act).
 
-    §13.4 asks copy buttons for accessible feedback, and there are two halves of it here: the
-    live region below, and the glyph swapping to a tick for anyone who is watching rather than
-    listening.
+    §13.4 asks copy buttons for accessible feedback, and there are two halves of it here: the live
+    region below, and the glyph swapping to a tick for anyone who is watching rather than listening.
 *@
 
 <button type="button"
         class="copy"
-        disabled="@(!Enabled)"
         data-copied="@(_copyStatus == CopyStatus.Copied ? "" : null)"
-        aria-label="@PlaygroundStrings.T(LocaleState.Current, "playground.copyCode")"
         @onclick="HandleCopy">
     @if (_copyStatus == CopyStatus.Copied) {
-        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false">
+        <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true" focusable="false">
             <path d="M3 8.5 6.5 12 13 4.5" />
         </svg>
     } else {
-        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false">
+        <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true" focusable="false">
             <rect x="5.75" y="5.75" width="8.5" height="8.5" rx="1.5" />
             <path d="M11 3.75V3.25A1.5 1.5 0 0 0 9.5 1.75h-6A1.5 1.5 0 0 0 2 3.25v6a1.5 1.5 0 0 0 1.5 1.5H4" />
         </svg>
     }
+    <span>@PlaygroundStrings.T(LocaleState.Current, "playground.copyCode")</span>
 </button>
 
 <span class="visually-hidden" role="status" aria-live="polite">@CopyStatusText</span>
@@ -45,11 +43,6 @@
 @code {
 
     [Parameter, EditorRequired] public string CodeText { get; set; } = "";
-
-    /// <summary>False while the chain has no chosen step: <c>CodeText</c> is then
-    /// <c>"Any.Generate();"</c>, which is not a call the library has, and a button whose whole
-    /// promise is that what it hands over compiles should not hand that over.</summary>
-    [Parameter, EditorRequired] public bool Enabled { get; set; }
 
     private enum CopyStatus { None, Copied, Failed }
 
