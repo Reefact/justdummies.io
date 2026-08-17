@@ -82,6 +82,7 @@ assert_prose "the third act opens on what the reader gets, not on the mechanism"
 # Comments are stripped before the scan, deliberately: the note above this one uses the
 # very words it forbids, and a check that cannot tell prose from the reasoning about prose
 # would either fail on itself or be weakened until it failed on nothing.
+# shellcheck disable=SC2016  # literal JS source in single quotes, not shell interpolation
 selfcontained="$(node -e '
 const { readFileSync } = require("node:fs");
 
@@ -144,6 +145,7 @@ fi
 # reader has no use for it there, and it now arrives inside the file the tool writes — where
 # it removes work they have just done by hand. Nothing about that is visible in prose, and
 # putting it back is the change a well-meant editorial pass makes.
+# shellcheck disable=SC2016  # literal JS source in single quotes, not shell interpolation
 deferred="$(node -e '
 const { readFileSync } = require("node:fs");
 const dir = process.argv[1];
@@ -179,6 +181,7 @@ fi
 # the third act asks, put in front of the reader before they ask it, and the second is what
 # keeps it from being decoration — an attribute on the hand-written literals of the first
 # act would say the library was already at work when it was not.
+# shellcheck disable=SC2016  # literal JS source in single quotes, not shell interpolation
 drawn="$(node -e '
 const { readFileSync } = require("node:fs");
 const snippets = JSON.parse(readFileSync(`${process.argv[1]}/snippets.json`, "utf8"));
@@ -210,6 +213,7 @@ fi
 # measurement to redo — either way a decision, not an accident.
 readonly WIDEST=130
 
+# shellcheck disable=SC2016  # literal JS source in single quotes, not shell interpolation
 widest="$(node -e '
 const { readFileSync } = require("node:fs");
 const dir = process.argv[1];
@@ -242,6 +246,7 @@ fi
 # of a scene three below it. Under its own heading there is nothing left to pair — and
 # that is a property of the document, checkable here rather than in a browser.
 if [ -d "${dist}" ]; then
+  # shellcheck disable=SC2016  # literal JS source in single quotes, not shell interpolation
   orphans="$(node -e '
 const { readFileSync, readdirSync } = require("node:fs");
 const { join } = require("node:path");
@@ -281,6 +286,7 @@ process.stdout.write(bad.join(", "));
   # decision itself on the built page: in the third act the attribute comes first, and the
   # scene where a test goes red comes after it. Moving the red back to the front is exactly
   # the change this record was written to stop, and it would pass every prose check above.
+  # shellcheck disable=SC2016  # literal JS source in single quotes, not shell interpolation
   ordering="$(node -e '
 const { readFileSync, readdirSync } = require("node:fs");
 const { join } = require("node:path");
@@ -322,6 +328,7 @@ process.stdout.write(bad.join(", "));
   # Read off the measurement attributes rather than off position, so the check survives the
   # block moving. The first exit ships the adapter — the reader has been drawing values for
   # a whole act by then — and does not ship the tool, which has not appeared at all.
+  # shellcheck disable=SC2016  # literal JS source in single quotes, not shell interpolation
   offer="$(node -e '
 const { readFileSync } = require("node:fs");
 const page = readFileSync(process.argv[1], "utf8");

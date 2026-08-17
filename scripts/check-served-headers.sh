@@ -138,6 +138,7 @@ done
 # --- a specific rule must add to the general one, not replace it -----------------
 # If they replaced each other, every fingerprinted asset would lose the policy while
 # gaining its cache lifetime, and nothing on disk would look wrong.
+# shellcheck disable=SC2015  # the `|| true` only keeps a failed cd/find from tripping `set -e`; the pipeline's stdout is what matters here
 astro_asset="$(cd "${root}/dist" && find _astro -name '*.js' | sed -n 1p || true)"
 if [ -n "${astro_asset}" ] && present "/${astro_asset}" "the merging of its rules"; then
   policy="$(header_of "/${astro_asset}" "content-security-policy")"
@@ -194,6 +195,7 @@ fi
 # This is what decides whether the pre-compressed twins the publish emits are worth
 # uploading. If the runtime compresses, they are dead weight; if it does not,
 # removing them would ship a multi-megabyte runtime uncompressed.
+# shellcheck disable=SC2015  # the `|| true` only keeps a failed cd/find from tripping `set -e`; the pipeline's stdout is what matters here
 wasm="$(cd "${root}/dist" && find playground/_framework -name 'dotnet.native.*.wasm' | sed -n 1p || true)"
 if [ -n "${wasm}" ] && present "/${wasm}" "its compression"; then
   encoding="$(curl -sSI --max-time 30 -H 'Accept-Encoding: br, gzip' "${base}/${wasm}" | grep -i '^content-encoding:' | sed 's/^[^:]*: *//' | tr -d '\r' | sed -n 1p || true)"
