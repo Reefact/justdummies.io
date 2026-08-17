@@ -889,10 +889,10 @@ qu'un lecteur sceptique lit le plus attentivement, donc la dernière où entasse
 La première version portait aussi ce qu'elle présentait comme un fait sur le projet :
 **« JustDummies est écrit et maintenu par une seule personne. »** Ce n'est plus le cas.
 Un fait ne convainc que s'il pointe un risque réel, et le nombre de mainteneurs n'en
-est pas un en soi : NFluent, une bibliothèque largement adoptée, est elle aussi l'œuvre
-d'un seul développeur, sans que cela ait jamais entamé la confiance qu'on lui porte.
-Écrire la phrase revenait à se décrédibiliser soi-même sur un critère qui ne mesure
-rien — l'inverse de ce que demande §11.1.
+est pas un en soi : rien dans cette phrase ne dit au lecteur si le projet est bien
+maintenu, seulement combien de personnes s'en chargent, deux choses que rien ne relie.
+L'écrire revenait à se décrédibiliser soi-même sur un critère qui ne mesure rien —
+l'inverse de ce que demande §11.1.
 
 ### 11.9 Coexistence
 
