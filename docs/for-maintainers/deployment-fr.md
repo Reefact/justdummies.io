@@ -1378,7 +1378,16 @@ gonfle silencieusement tous les chiffres de la page que l'on veut justement lire
 dépôt ne peut le détecter : aucun paramètre de balise ne le règle, et la suite navigateur répond à la
 balise par un script vide. C'est nommé dans les Risques d'ADR-0014 pour exactement cette raison.
 
-Tant qu'on y est : Google Signals **désactivé** et personnalisation publicitaire **désactivée**.
+**Google Signals : rien à désactiver, et rien à activer.** Il est éteint par défaut sur une propriété
+neuve et se présente comme une invitation à l'activer, non comme un interrupteur déjà mis — donc ne
+pas partir en quête d'un contrôle à éteindre, et ne pas accepter l'invitation. Depuis le 15 juin 2026
+il ne gouverne plus la remontée vers Google Ads (c'est `ad_storage`, que la balise refuse en
+permanence) ; il ne fait plus qu'enrichir les rapports démographiques à partir des utilisateurs Google
+connectés. Cela n'achète rien ici — l'âge et le genre des lecteurs ne changeront aucune décision
+éditoriale — et cela introduit des seuils d'échantillonnage qui masquent les chiffres à faible trafic,
+ce qui est exactement la situation de départ de cette propriété.
+
+Personnalisation publicitaire : **désactivée**.
 
 La rétention vit sous *Collecte et modification des données* → *Conservation des données*, et il y a
 deux menus déroulants, pas un : les **données d'événement** sont à 2 mois par défaut et doivent

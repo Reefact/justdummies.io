@@ -75,7 +75,10 @@ Regrouper par `scene_name` ; ne lire `scene_ordinal` que pour trier un tableau.
   page principale intercepte chaque clic sur une ancre interne et pousse un état d'historique ;
   laissé actif, chaque clic de chevron rapporte une page vue. Rien dans ce dépôt ne peut le détecter
   — voir les Risques d'ADR-0014.
-* Google Signals désactivé, personnalisation publicitaire désactivée.
+* Personnalisation publicitaire désactivée. **Google Signals reste éteint, ce qui sur une propriété
+  neuve veut dire le laisser tranquille et non le désactiver** — il est livré inactif et propose de
+  l'activer. Depuis juin 2026 il ne gouverne plus que l'enrichissement démographique, pas la remontée
+  vers Google Ads, et il masque les chiffres derrière des seuils d'échantillonnage à faible trafic.
 * **Rétention : 14 mois pour les données d'événement, 14 mois pour les données utilisateur, et
   « réinitialiser lors d'une nouvelle activité » laissé actif.** C'est donc une fenêtre glissante —
   les données d'un visiteur sont effacées quatorze mois après sa *dernière* visite et non après la
