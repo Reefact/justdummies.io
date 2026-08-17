@@ -116,7 +116,15 @@ let carriesBeacon = false;
  * that render nothing — and the policy would then be read from a file no document
  * loads. `GoogleAnalytics.astro` explains the choice, and verify-output.sh fails the
  * build if a chunk ever names a Google host again.
+ *
+ * IT LOOKS FOR THE TAG'S OWN ATTRIBUTE, NOT FOR THE HOST. The attribute appears on the
+ * tag and nowhere else, whereas the host is a string a page could one day mention in
+ * prose — a privacy page naming its subprocessors, say — and a policy widened by a
+ * paragraph would be a policy wider than its artefact. verify-output.sh checks the host
+ * itself, so the two derive the same answer from two different witnesses.
  */
+const ANALYTICS_TAG_MARKER = 'data-jd-analytics';
+
 let carriesAnalytics = false;
 
 for (const document of htmlDocuments(dist)) {
@@ -130,7 +138,7 @@ for (const document of htmlDocuments(dist)) {
         carriesBeacon = true;
     }
 
-    if (html.includes('www.googletagmanager.com')) {
+    if (html.includes(ANALYTICS_TAG_MARKER)) {
         carriesAnalytics = true;
     }
 }

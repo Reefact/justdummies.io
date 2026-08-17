@@ -47,7 +47,10 @@ assis.
 mène, et les deux se lisent ensemble plutôt que l'une à la place de l'autre.
 
 `view_search_results` porte du texte saisi par un visiteur. C'est le seul événement ici dans ce cas,
-il est décrit sur la page vie privée, et c'est le nom recommandé par GA4 — ce qui est ce qui le place
+et c'est pourquoi il est nommé deux fois avant qu'on puisse y consentir : sur le bandeau lui-même, et
+dans la section analytique de la page vie privée. Le dire sur le bandeau plutôt que seulement derrière
+le lien est délibéré — un consentement à quelque chose qu'il faut suivre un lien pour découvrir n'est
+pas un consentement éclairé. L'événement garde le nom recommandé par GA4, ce qui est ce qui le place
 dans le rapport de recherche interne plutôt que parmi des événements personnalisés que personne
 n'ouvre.
 

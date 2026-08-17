@@ -268,7 +268,18 @@ const labelId: string = `${placement}-install-label`;
             continue;
         }
 
+        /**
+         * Which tab is selected. Starts at 0 because the stacked form already shows the
+         * first panel, so the call that builds the widget selects what was on screen —
+         * and is therefore not a switch.
+         */
+        let current = 0;
+
         function select(index: number, moveFocus: boolean): void {
+            const changed: boolean = index !== current;
+
+            current = index;
+
             tabs.forEach((tab: HTMLButtonElement, position: number) => {
                 const selected: boolean = position === index;
 
@@ -280,6 +291,27 @@ const labelId: string = `${placement}-install-label`;
 
             if (moveFocus) {
                 tabs[index].focus();
+            }
+
+            /*
+             * Said out loud from the state transition itself, and only when the state
+             * really moved. This component does not know that anything is listening —
+             * the same arrangement `CopyableCommand` has with the collector.
+             *
+             * Watching clicks from outside would be wrong twice over: ArrowLeft, ArrowRight,
+             * Home and End switch panels through this function without ever producing a
+             * click, so every keyboard switch would go unreported; and clicking the tab that
+             * is already selected would report a switch that did not happen.
+             */
+            if (changed) {
+                document.dispatchEvent(
+                    new CustomEvent('jd:install-variant-switched', {
+                        detail: {
+                            placement: block.querySelector<HTMLElement>('[data-placement]')?.dataset.placement,
+                            variant: tabs[index].dataset.tab,
+                        },
+                    }),
+                );
             }
         }
 
