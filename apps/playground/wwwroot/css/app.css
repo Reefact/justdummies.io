@@ -373,6 +373,14 @@ main {
     border-bottom: 1px dashed currentColor;
     padding: 0 var(--jd-space-1);
     min-width: 3ch;
+    /* NEVER WIDER THAN THE CARD, whatever the ladder below asks for. A Guid is 36 characters, so
+       FieldWidth reaches for the 40ch rung — around 300px, more than a 375px phone has left once
+       the card's padding, the step's indent and `.DifferentFrom(` have taken their share. The card
+       clips (`overflow: hidden`, for its rounded corners), so the overflow was not scrolled but
+       cut: the end of the field, and with it the caret, went off the edge and stayed there while
+       the visitor typed. Capped, the field stops at the card and wraps onto a line of its own —
+       an <input> is an atomic box that cannot break, but it can move. */
+    max-width: 100%;
 }
 
 /* The static example prints "12" as plain text, with nothing either side of it — the
@@ -928,7 +936,11 @@ main {
 /* A chosen step, written as the code it is. The method name takes the member colour the
    site's highlighter gives `.StartingWith` in its own snippets; the parentheses and commas
    take .tok-punctuation. Nothing here is a control any more except the argument fields. */
+/* `min-width: 0` is the other half of the input cap above: a flex item refuses by default to
+   shrink below its content, so without this the call would hold the card open at the width of its
+   widest field and the cap would never bind. */
 .chain-link .call {
+    min-width: 0;
     color: var(--jd-text-primary);
 }
 

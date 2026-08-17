@@ -35,43 +35,37 @@
     }
 
     @*
-        ONE WRAPPER FOR ALL THREE STATES — not yet chosen, chosen and still focused, settled —
-        and it is here for two things neither of which is tidiness.
+        THE SELECT AND THE CALL ARE NEVER BOTH DRAWN. A closed `<select>` already displays the
+        whole signature of the option it holds — `Between(minimum, maximum)` — so rendering the
+        call beside it printed the signature twice: `Between(minimum, maximum)(minimum, maximum)`,
+        and `String()()` for a method with no arguments at all. That is what the card looked like
+        for the whole of the ordinary focused state, which is not a state a visitor should have to
+        read past.
 
-        THE ARGUMENTS EXIST BEFORE THE SELECT LETS GO. They used to be rendered only in the
-        settled branch, so at the instant Tab was pressed they were not in the document: the
-        browser picked the next focusable from the DOM as it stood, which was the delete control,
-        and the settling render then inserted the arguments *before* it. Forward tabbing skipped
-        every argument of every parameterized method, for good — nothing further along the tab
-        order ever led back to them. Rendered alongside the select instead, they are where Tab
-        expects them, and the visitor's first stop after choosing `Between` is its `minimum`.
-
-        AND THE SELECT KEEPS ITS PLACE ACROSS THE CHOICE. This wrapper is drawn even for a step
-        with nothing in it yet, so the `<select>` stays the same element in the same parent when a
-        method is picked. Moved into a wrapper that only appeared once something was chosen, it
-        would have been torn down and rebuilt on the first arrow press — losing the focus that
-        ShowSelect exists to preserve, and taking the arrow-browsing with it.
+        THE TAB ORDER IS HELD BY HandleKeyDown INSTEAD, which is where it belongs: the arguments
+        do not exist while the select is up, so a forward Tab out of it settles the step and puts
+        focus on the first argument once the render that creates it has run. Keeping the arguments
+        mounted alongside the select was the other way to hold it, and it is the one that printed
+        the signature twice.
     *@
-    <span class="call">@if (ShowSelect) {
-            <select @ref="_select"
-                    @onchange="HandleMethodChosen"
-                    @onfocusin="() => _editing = true"
-                    @onfocusout="() => _editing = false"
-                    value="@(State.Chosen?.Key ?? "")"
-                    aria-label="@SelectLabel"
-                    aria-describedby="@(DescribesSelect ? ErrorId : null)"
-                    aria-invalid="@(DescribesSelect ? "true" : null)">
-                <option value="" disabled selected="@(State.Chosen is null)">@PlaygroundStrings.T(LocaleState.Current, "playground.chooseMethod")</option>
-                @foreach (var option in Options) {
-                    <option value="@option.Key" selected="@(State.Chosen?.Key == option.Key)">@DisplayName(option)</option>
-                }
-            </select>
-        } else if (State.Chosen is { } settled) {
-            <span class="tok-member">@settled.MethodName</span>
-        }@if (State.Chosen is { } called) {
-            <span class="tok-punctuation">(</span>@for (var i = 0; i < called.Parameters.Count; i++) {
+    @if (ShowSelect) {
+        <select @ref="_select"
+                @onchange="HandleMethodChosen"
+                @onfocusin="() => _editing = true"
+                @onfocusout="() => _editing = false"
+                value="@(State.Chosen?.Key ?? "")"
+                aria-label="@SelectLabel"
+                aria-describedby="@(DescribesSelect ? ErrorId : null)"
+                aria-invalid="@(DescribesSelect ? "true" : null)">
+            <option value="" disabled selected="@(State.Chosen is null)">@PlaygroundStrings.T(LocaleState.Current, "playground.chooseMethod")</option>
+            @foreach (var option in Options) {
+                <option value="@option.Key" selected="@(State.Chosen?.Key == option.Key)">@DisplayName(option)</option>
+            }
+        </select>
+    } else if (State.Chosen is { } settled) {
+        <span class="call"><span class="tok-member">@settled.MethodName</span><span class="tok-punctuation">(</span>@for (var i = 0; i < settled.Parameters.Count; i++) {
                 var index     = i;
-                var parameter = called.Parameters[i];
+                var parameter = settled.Parameters[i];
                 var quote     = QuoteFor(parameter.TypeKey);
 
                 @if (index > 0) {
@@ -80,13 +74,13 @@
                 @if (quote is not null) {
                     <span class="tok-string">@quote</span>
                 }
-                <input
+                <input @ref="_argumentRefs[index]"
                     type="@InputTypeFor(parameter.TypeKey)"
                     step="@StepFor(parameter.TypeKey)"
                     class="@TokenClassFor(parameter.TypeKey)"
                     data-width="@FieldWidth(State.Argument(index), parameter.Name)"
                     placeholder="@parameter.Name"
-                    aria-label="@($"{called.MethodName} {parameter.Name}")"
+                    aria-label="@($"{settled.MethodName} {parameter.Name}")"
                     aria-describedby="@(DescribesInput(index) ? ErrorId : null)"
                     aria-invalid="@(DescribesInput(index) ? "true" : null)"
                     value="@State.Argument(index)"
@@ -94,8 +88,8 @@
                 @if (quote is not null) {
                     <span class="tok-string">@quote</span>
                 }
-            }<span class="tok-punctuation">)</span>
-        }</span>
+            }<span class="tok-punctuation">)</span></span>
+    }
 
     @if (State.Chosen is { } chosen) {
         @*
@@ -178,6 +172,15 @@
     /// see <see cref="ShowSelect" />, which is the only thing it is for.</summary>
     private bool _editing;
 
+    /// <summary>The step's argument inputs, so the one at index 0 can be focused after a Tab out
+    /// of the select — see <see cref="HandleKeyDown" />. Keyed rather than a single field because
+    /// the capture happens inside the render loop.</summary>
+    private readonly Dictionary<int, ElementReference> _argumentRefs = new();
+
+    /// <summary>Set by a forward Tab out of a chosen select, cleared by the render that acts on
+    /// it. Never set by a click, which is the whole point — see <see cref="HandleKeyDown" />.</summary>
+    private bool _claimFirstArgument;
+
     /// <summary>Whether the flag's message is open. Closed by default, and forced closed again
     /// the moment there is nothing to say (<see cref="OnParametersSet" />) — otherwise a step
     /// whose argument was just fixed would keep an empty callout open under it, and a component
@@ -229,13 +232,54 @@
     private bool DescribesSelect => HasError && State.Chosen is { Parameters.Count: 0 };
     private string SelectLabel => PlaygroundStrings.T(LocaleState.Current, "playground.selectAria", LinkIndex + 1);
 
-    /// <summary>Escape closes the flag's message, from anywhere in the step — the button that
-    /// opened it, an argument field beside it, the select. A disclosure that can only be closed
-    /// by finding the control that opened it is one a keyboard user has to walk backwards to
-    /// dismiss.</summary>
+    /// <summary>
+    ///     Escape closes the flag's message, from anywhere in the step — the button that opened
+    ///     it, an argument field beside it, the select. A disclosure that can only be closed by
+    ///     finding the control that opened it is one a keyboard user has to walk backwards to
+    ///     dismiss.
+    ///
+    ///     AND TAB OUT OF A CHOSEN SELECT HANDS FOCUS TO THE FIRST ARGUMENT. The arguments do not
+    ///     exist while the select is up — it displays the whole signature already, and drawing
+    ///     them beside it printed that signature twice — so at the moment Tab is pressed the
+    ///     browser has nothing of the step's own left to move to and sends focus past it to the
+    ///     delete control. The settling render then inserts the arguments *before* that control,
+    ///     where forward tabbing can no longer reach them. Settling here instead, and claiming
+    ///     focus once the render has run (<see cref="OnAfterRenderAsync" />), puts the visitor
+    ///     where Tab was taking them.
+    ///
+    ///     GUARDED ON THE KEY RATHER THAN DONE ON EVERY SETTLE, which is the difference between
+    ///     this and stealing focus: <c>focusout</c> fires for a click somewhere else exactly as it
+    ///     does for Tab, and Blazor's <see cref="FocusEventArgs" /> carries no
+    ///     <c>relatedTarget</c> to tell the two apart. A keydown does — so a visitor who clicked
+    ///     away keeps the focus they clicked on. Shift+Tab is left alone for the same reason: it
+    ///     is going the other way, and there is nothing of this step's behind the select.
+    /// </summary>
     private void HandleKeyDown(KeyboardEventArgs e) {
         if (e.Key == "Escape") {
             _errorOpen = false;
+
+            return;
+        }
+
+        if (e.Key == "Tab" && !e.ShiftKey && ShowSelect && State.Chosen is { Parameters.Count: > 0 }) {
+            _editing            = false;
+            _claimFirstArgument = true;
+        }
+    }
+
+    /// <summary>Takes the focus Tab was carrying out of the select and puts it on the argument
+    /// that has just been rendered — see <see cref="HandleKeyDown" />. The browser has already
+    /// moved focus past the step by the time this runs, which is why this moves it back rather
+    /// than merely allowing it.</summary>
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        if (!_claimFirstArgument) {
+            return;
+        }
+
+        _claimFirstArgument = false;
+
+        if (_argumentRefs.TryGetValue(0, out var first)) {
+            await first.FocusAsync();
         }
     }
 
