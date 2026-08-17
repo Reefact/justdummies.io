@@ -10,7 +10,8 @@
  *
  * Every section below answers to a rule rather than to a taste:
  *
- *   #problem   §11.3's first depth — the page says what the library does before comparing it
+ *   (none)     §11.3's first depth — a one-line transition, not a section, says what the
+ *              library does before comparing it
  *   #choose    §11.3's second depth, §11.8 — a card per option, JustDummies included
  *   #compare   §11.4, §11.7 — the criteria, taught, then answered
  *   #instead   §11.8 — "when to choose it over JustDummies", never empty, never ironic
@@ -120,7 +121,6 @@ const cited: readonly CitedLibrary[] = tools.filter((entry: Tool): entry is Cite
 
 /** Named once here so the nav and the headings cannot drift apart. */
 const sections: ReadonlyArray<{ id: string; key: UiKey }> = [
-    { id: 'problem', key: 'why.problem.heading' },
     { id: 'choose', key: 'why.choose.heading' },
     { id: 'compare', key: 'why.compare.heading' },
     { id: 'instead', key: 'why.instead.heading' },
@@ -135,6 +135,11 @@ const sections: ReadonlyArray<{ id: string; key: UiKey }> = [
 
     <p class="lede">{t('why.lede')}</p>
 
+    <p class="transition">
+        {t('why.transition.body')}{' '}
+        <a class="transition-link" href={pathForLocale('/', locale)}>{t('why.transition.homeLink')}</a>
+    </p>
+
     <nav class="toc" aria-label={t('why.toc.label')}>
         <span class="toc-label">{t('why.toc.label')}</span>
         <ul>
@@ -145,16 +150,6 @@ const sections: ReadonlyArray<{ id: string; key: UiKey }> = [
             ))}
         </ul>
     </nav>
-
-    <section id="problem" aria-labelledby="why-problem-heading">
-        <h3 id="why-problem-heading">{t('why.problem.heading')}</h3>
-
-        <p>{t('why.problem.body')}</p>
-
-        <p class="home-link">
-            <a href={pathForLocale('/', locale)}>{t('why.problem.homeLink')}</a>
-        </p>
-    </section>
 
     <section id="choose" aria-labelledby="why-choose-heading">
         <h3 id="why-choose-heading">{t('why.choose.heading')}</h3>
@@ -409,11 +404,24 @@ const sections: ReadonlyArray<{ id: string; key: UiKey }> = [
         color: var(--jd-accent);
     }
 
-    /* --- the problem ------------------------------------------------------------------ */
+    /* --- what it solves, in passing ---------------------------------------------------
+       A one-line bridge between the lede and the table of contents, not a section: no
+       heading, no top border, no toc entry. The link stays visually secondary — muted at
+       rest, like the toc links above it — so it reads as a pointer to more detail rather
+       than as this paragraph's own call to action. */
 
-    .home-link {
-        margin: 0;
-        font-size: var(--jd-text-sm);
+    .transition {
+        max-width: none;
+        margin-bottom: var(--jd-space-2);
+    }
+
+    .transition-link {
+        color: var(--jd-text-muted);
+    }
+
+    .transition-link:hover,
+    .transition-link:focus-visible {
+        color: var(--jd-accent);
     }
 
     /* --- the four needs --------------------------------------------------------------- */
