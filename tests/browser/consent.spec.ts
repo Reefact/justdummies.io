@@ -224,6 +224,44 @@ test.describe('once the visitor has accepted', () => {
 });
 
 /**
+ * A grant reaches every open tab through `storage`, and starting all of them at the same
+ * instant would fire a page_view from documents nobody was reading — the opposite of an
+ * accurate journey. Exercised at startup rather than across two real tabs: the moment
+ * `applyDecision()` reads a stored grant is deterministic on load, where a genuine
+ * cross-tab `storage` event is not, and it is the same function either way.
+ */
+test.describe('when a tab is not the one being looked at', () => {
+    test.use({ consent: 'granted' });
+
+    test('a hidden tab defers starting until it becomes visible', async ({ page }) => {
+        await page.addInitScript(() => {
+            Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
+        });
+
+        await page.goto('/');
+        await skipWithoutTag(page);
+
+        const startedWhileHidden: boolean = await page.evaluate(
+            () => (window as unknown as { jdAnalyticsStarted?: boolean }).jdAnalyticsStarted === true,
+        );
+
+        expect(startedWhileHidden, 'a background tab started analytics before anyone looked at it').toBe(false);
+
+        await page.evaluate(() => {
+            Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
+            document.dispatchEvent(new Event('visibilitychange'));
+        });
+
+        await expect
+            .poll(
+                () => page.evaluate(() => (window as unknown as { jdAnalyticsStarted?: boolean }).jdAnalyticsStarted === true),
+                'the tab never started after becoming visible',
+            )
+            .toBe(true);
+    });
+});
+
+/**
  * An answer that storage would not keep, kept anyway for the page that gave it.
  *
  * A browser that throws on `setItem` — private mode with storage blocked outright, a quota
@@ -435,6 +473,31 @@ test.describe('when a search is cut short by leaving', () => {
         });
 
         expect(terms, 'a search abandoned by leaving reported nothing').toContain('Uri');
+    });
+
+    /**
+     * Escape clears the box through a plain `.value` write, which fires no `input` event
+     * of its own — the signal this file's settle timer is armed by, and the only one
+     * `Measurement.astro` listens for to know a pending term was withdrawn.
+     */
+    test('a search cancelled with Escape is not reported', async ({ page }) => {
+        await page.goto('/api/');
+        await skipWithoutTag(page);
+
+        await page.locator('#api-search-input').fill('Uri');
+        await page.locator('#api-search-input').press('Escape');
+        await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
+
+        const terms: unknown[] = await page.evaluate(() => {
+            const queue: unknown[] = (window as unknown as { dataLayer?: unknown[] }).dataLayer ?? [];
+
+            return queue
+                .map((entry: unknown) => Array.from(entry as ArrayLike<unknown>))
+                .filter((entry: unknown[]) => entry[0] === 'event' && entry[1] === 'view_search_results')
+                .map((entry: unknown[]) => (entry[2] as { search_term?: string }).search_term);
+        });
+
+        expect(terms, 'a search cancelled with Escape was reported anyway').toEqual([]);
     });
 });
 

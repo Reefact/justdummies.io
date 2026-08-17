@@ -207,6 +207,12 @@ const searchIndex: SearchEntry[] = allApiCategories().flatMap((category) =>
 
             if (event.key === 'Escape' && document.activeElement === input) {
                 input.value = '';
+                // A programmatic `.value` write fires no `input` event on its own, and
+                // Measurement.astro listens for exactly that to know a pending search was
+                // cancelled. Without this, a search typed and then escaped within the
+                // settle delay still reports the term the visitor just told the page to
+                // forget.
+                input.dispatchEvent(new Event('input', { bubbles: true }));
                 results.hidden = true;
                 input.blur();
             }
