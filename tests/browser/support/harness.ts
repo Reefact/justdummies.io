@@ -67,16 +67,20 @@ async function refuseMeasurement(context: BrowserContext): Promise<void> {
  *
  * WHAT THIS COSTS, stated rather than buried: the browser suite no longer proves that the
  * runtime serves these files correctly. `scripts/check-served-headers.sh` is what does, on
- * every build — the WebAssembly comes back as itself rather than as `text/html` and the host
- * really compresses it, and every `icudt*.dat` arrives at the length the artefact holds.
+ * every build — it asks the host for **every** file under `_framework`, all sixty-seven, and
+ * compares each served length against the artefact.
  *
- * That second half was **not** true when this route was written, and the comment claimed it
- * was: nothing asked the host for a `.dat` at all, so a host excluding or rewriting the
- * globalisation data would have left every check green and the deployed playground unable to
- * start. Codex caught the gap on the pull request. It is closed there rather than here,
- * because a served response is what had to be measured — but the lesson belongs next to the
- * route that caused it: taking a file off the served path is only free once something else
- * asks the host for it.
+ * It did not, when this route was written, and the comment claimed it did. It asked for one
+ * `dotnet.native.*.wasm`; then, once that was caught, for that and the three ICU files. Both
+ * were samples, and Codex showed twice over that a sample is no cover here — a rule swallowing
+ * `_framework`, or one assembly missing, passes a check that looks at its neighbours. The
+ * lesson belongs beside the route that caused it rather than only in the script that carries
+ * it: **taking a file off the served path is free only once something else asks the host for
+ * it, and asking about its neighbour is not asking about it.**
+ *
+ * That script reads no list from this file, deliberately. A superset that cannot drift beats a
+ * list two files have to keep in step, so whatever this route grows to cover is covered there
+ * already.
  *
  * WHAT IS DELIBERATELY LEFT ALONE. Only `.wasm` and `.dat` are served from disk — inert
  * binaries, and 99% of the bytes. `blazor.boot.json` and the loader scripts still come from
