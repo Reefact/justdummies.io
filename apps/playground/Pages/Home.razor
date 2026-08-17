@@ -73,11 +73,24 @@
 
             Only once there is a chain: an empty one formats to "Any.Generate();", which is not a
             call the library has, and a bar showing it would be inviting the visitor to copy it.
+
+            AND ONLY WHILE THERE IS A LINE TO PRINT. An argument this playground could not parse
+            has no literal form, so the line cannot be written at all — what would stand where the
+            argument goes is a hole, `Between(, )`, and a bar promising "this is the code" while
+            showing that is the bar breaking its own promise on the most common state a chain
+            passes through. It says so instead, and the button beside it goes quiet.
         *@
         @if (HasChosenStep) {
             <div class="code-bar">
-                <code class="code-text">@foreach (var segment in CodeSegments) {<span class="@segment.TokenClass">@segment.Text</span>}</code>
-                <CopyCodeButton CodeText="@CodeText" />
+                @if (IsWritableAsCode) {
+                    <code class="code-text">@foreach (var segment in CodeSegments) {<span class="@segment.TokenClass">@segment.Text</span>}</code>
+                } else {
+                    @* Before the button in reading order, not after it: a disabled control is out
+                       of the tab order, so the only thing that explains it to a screen reader is
+                       what sits next to it — and "next to it" is only useful if it comes first. *@
+                    <p class="not-compilable">@PlaygroundStrings.T(LocaleState.Current, "playground.notCompilable")</p>
+                }
+                <CopyCodeButton CodeText="@CodeText" Enabled="IsWritableAsCode" />
             </div>
         }
 
@@ -145,6 +158,28 @@
     private bool HasChosenStep => _links.Any(l => l.Chosen is not null);
 
     private bool HasResult => _generatedValue is not null || _refusal is not null;
+
+    /// <summary>
+    ///     Whether the chain can be written down as C# at all — which is a narrower question than
+    ///     whether it works, and the two must not be folded together.
+    ///
+    ///     AN ARGUMENT THIS PLAYGROUND COULD NOT PARSE has no literal form, so there is nothing to
+    ///     put where it goes and the line genuinely cannot be produced. That is what this is false
+    ///     for, and it covers the state every chain passes through while it is being filled in: a
+    ///     freshly chosen step has empty arguments, and an empty argument does not parse.
+    ///
+    ///     A REFUSAL THE LIBRARY RAISED IS NOT THAT. <c>Any.String().StartingWith("ORD-")
+    ///     .WithLength(2).Generate()</c> compiles perfectly; it throws when it runs, which is the
+    ///     demonstration §9.9 exists to protect. Blanking the line there would hide the very code
+    ///     whose refusal the bar below is displaying, and would call it uncompilable, which is not
+    ///     true. So the line keeps printing, the copy button keeps working, and a reader who
+    ///     pastes it reproduces the refusal — which is the point.
+    ///
+    ///     Deliberately not <see cref="_canGenerate" />: that one is false for both kinds of
+    ///     failure, because both stop a value being drawn. Only one of them stops a line being
+    ///     written.
+    /// </summary>
+    private bool IsWritableAsCode => !_links.Any(l => l.Error is not null && !l.ErrorIsLibraryRefusal);
 
     /// <summary>
     ///     The version of the library actually loaded, read from the assembly rather than written

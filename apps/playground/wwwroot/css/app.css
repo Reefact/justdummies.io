@@ -1154,9 +1154,18 @@ main {
     white-space: pre;
 }
 
-/* Never disabled — it is not drawn at all until there is a chain to copy (ADR-0004). The
-   label is carried rather than dropped for an icon: there is room for it on a bar of its own,
-   and it is no longer positioned over code that a longer translation could collide with. */
+/* What stands where the line would, while an argument has no literal form to stand in for it.
+   In the error colour and the sans face: it is the page talking about the code, not code. */
+.playground-widget .not-compilable {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    color: var(--jd-error);
+    font-family: var(--jd-font-sans);
+}
+
+/* The label is carried rather than dropped for an icon: there is room for it on a bar of its
+   own, and it is no longer positioned over code that a longer translation could collide with. */
 .playground-widget .copy {
     flex: none;
     display: inline-flex;
@@ -1172,9 +1181,16 @@ main {
     cursor: pointer;
 }
 
-.playground-widget .copy:hover {
+.playground-widget .copy:hover:not(:disabled) {
     color: var(--jd-text-primary);
     border-color: var(--jd-accent);
+}
+
+/* Dimmed rather than gone, and the sentence beside it says why — the same treatment the
+   Generate button under the card already gets for the same kind of reason. */
+.playground-widget .copy:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .playground-widget .copy:focus-visible {

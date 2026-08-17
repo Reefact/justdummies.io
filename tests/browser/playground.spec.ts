@@ -333,6 +333,60 @@ test.describe('the playground', () => {
     });
 
     /**
+     * The bar promises "this is the code", so it must not print a line with a hole in it. An
+     * argument this playground could not parse has no literal form — what would stand in its place
+     * is `Between(, )` — so the line is replaced by the reason and the copy button goes quiet.
+     *
+     * A library refusal is deliberately NOT that: `WithLength(2)` after `StartingWith("ORD-")`
+     * compiles perfectly and throws when it runs, which is the demonstration §9.9 protects. The
+     * line keeps printing there, and a reader who pastes it reproduces the refusal.
+     */
+    test('says so, and will not hand over a line, while an argument has no literal form', async ({ page }) => {
+        await page.goto('/playground/');
+
+        const bar = page.locator('.playground-widget .code-bar');
+        const copy = page.getByRole('button', { name: 'Copy code' });
+
+        await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'Int32()' });
+        await expect(bar.locator('.code-text')).toBeVisible();
+        await expect(copy).toBeEnabled();
+
+        // Chosen a second ago, so its arguments are empty — and an empty argument is one this
+        // playground cannot write down.
+        await page.locator('.chain-link').nth(1).locator('select').selectOption({ label: 'Between(minimum, maximum)' });
+
+        await expect(bar.locator('.not-compilable')).toBeVisible();
+        await expect(bar.locator('.code-text')).toHaveCount(0);
+        await expect(copy).toBeDisabled();
+
+        await page.locator('.chain-link').nth(1).locator('input').first().fill('1');
+        await page.locator('.chain-link').nth(1).locator('input').nth(1).fill('10');
+
+        await expect(bar.locator('.code-text')).toHaveText('int anyValue = Any.Int32().Between(1, 10).Generate();');
+        await expect(bar.locator('.not-compilable')).toHaveCount(0);
+        await expect(copy).toBeEnabled();
+    });
+
+    test('keeps printing a line the library refuses, because that line compiles', async ({ page }) => {
+        await page.goto('/playground/');
+
+        await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'String()' });
+        await page.locator('.chain-link').nth(1).locator('select').selectOption({ label: 'StartingWith(prefix)' });
+        await page.locator('.chain-link').nth(1).locator('input').fill('ORD-');
+        await page.locator('.chain-link').nth(2).locator('select').selectOption({ label: 'WithLength(length)' });
+        await page.locator('.chain-link').nth(2).locator('input').fill('2');
+
+        // The refusal is in the bar below, and the code that provokes it is still on screen and
+        // still copyable — blanking it would hide the very line the refusal is about.
+        await expect(page.locator('.playground-widget .result-bar .refusal')).toBeVisible();
+        await expect(page.locator('.playground-widget .code-bar .code-text')).toHaveText(
+            'string anyValue = Any.String().StartingWith("ORD-").WithLength(2).Generate();',
+        );
+        await expect(page.locator('.playground-widget .code-bar .not-compilable')).toHaveCount(0);
+        await expect(page.getByRole('button', { name: 'Copy code' })).toBeEnabled();
+    });
+
+    /**
      * The declared type follows the chain rather than the entry point's name, and it is a C#
      * keyword where the language has one. `var` is the fallback for a receiver the catalogue does
      * not describe a Generate() for — it compiles, which is the whole reason it is the fallback —

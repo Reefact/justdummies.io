@@ -81,6 +81,11 @@ public static class PlaygroundStrings {
         // What the result bar reads before anything has been drawn — a state the landing
         // page's hero never has, since its chain is compiled in and drawn on arrival.
         ["playground.notDrawnYet"]   = "no value drawn yet",
+        // What the code bar reads instead of the chain, while an argument is one this playground
+        // could not parse. Says what is wrong with the line rather than what to do about it: the
+        // step that caused it already carries a flag saying which argument, and repeating that
+        // here would be a second copy of a message that is one glance away.
+        ["playground.notCompilable"]  = "Code does not compile",
         ["playground.copyCode"]      = "Copy code",
         ["playground.copied"]        = "copied to clipboard",
         ["playground.copyFailed"]    = "Could not copy. Select the code and copy it manually.",
@@ -165,6 +170,7 @@ public static class PlaygroundStrings {
         ["playground.generate"]      = new("Générer", "Generate"),
         ["playground.generateAgain"] = new("Générer à nouveau", "Generate again"),
         ["playground.notDrawnYet"]   = new("aucune valeur tirée pour l'instant", "no value drawn yet"),
+        ["playground.notCompilable"]  = new("Code non compilable", "Code does not compile"),
         ["playground.copyCode"]      = new("Copier le code", "Copy code"),
         ["playground.copied"]        = new("copié dans le presse-papiers", "copied to clipboard"),
         ["playground.copyFailed"]    = new("Copie impossible. Sélectionnez le code et copiez-le à la main.", "Could not copy. Select the code and copy it manually."),
