@@ -1337,7 +1337,13 @@ inflates every figure on the page you most want to read. No check in this reposi
 there is no tag parameter for it, and the browser suite answers the tag with an empty script. It is
 named in ADR-0014's Risks for exactly that reason.
 
-While there: Google Signals **off**, advertising personalisation **off**, data retention **14 months**.
+While there: Google Signals **off** and advertising personalisation **off**.
+
+Retention lives under *Collect and modify data* → *Data retention*, and there are two dropdowns, not
+one: **event data** defaults to 2 months and must be raised to **14 months**; **user data** is
+already 14. Leave **reset on new activity** on — retention is then a sliding window, erasing a
+visitor's data fourteen months after their *last* visit, which is exactly what the privacy page
+says. The two have to be changed together or one of them starts lying.
 
 **3. Register the custom definitions.** *Admin* → *Custom definitions*. Event-scoped dimensions:
 `placement`, `variant`, `scene_name`, `act`, `content_locale`, `competitor`, `link_url`. One custom

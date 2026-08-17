@@ -1378,8 +1378,14 @@ gonfle silencieusement tous les chiffres de la page que l'on veut justement lire
 dépôt ne peut le détecter : aucun paramètre de balise ne le règle, et la suite navigateur répond à la
 balise par un script vide. C'est nommé dans les Risques d'ADR-0014 pour exactement cette raison.
 
-Tant qu'on y est : Google Signals **désactivé**, personnalisation publicitaire **désactivée**,
-rétention **14 mois**.
+Tant qu'on y est : Google Signals **désactivé** et personnalisation publicitaire **désactivée**.
+
+La rétention vit sous *Collecte et modification des données* → *Conservation des données*, et il y a
+deux menus déroulants, pas un : les **données d'événement** sont à 2 mois par défaut et doivent
+passer à **14 mois** ; les **données utilisateur** y sont déjà. Laisser **« réinitialiser lors d'une
+nouvelle activité »** actif — la rétention est alors une fenêtre glissante, effaçant les données d'un
+visiteur quatorze mois après sa *dernière* visite, ce que la page vie privée dit exactement. Les deux
+se changent ensemble, sans quoi l'une des deux se met à mentir.
 
 **3. Déclarer les définitions personnalisées.** *Admin* → *Définitions personnalisées*. Dimensions à
 portée événement : `placement`, `variant`, `scene_name`, `act`, `content_locale`, `competitor`,
