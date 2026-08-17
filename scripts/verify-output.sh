@@ -21,8 +21,11 @@ pass() {
 
 echo "▸ Verifying ${dist}"
 
+# shellcheck disable=SC2015  # pass/fail only echo, so the else-branch reading never runs on a true left side
 [ -f "${dist}/index.html" ] && pass "the site has an entry point" || fail "dist/index.html is missing"
+# shellcheck disable=SC2015  # pass/fail only echo, so the else-branch reading never runs on a true left side
 [ -f "${dist}/playground/index.html" ] && pass "the playground has an entry point" || fail "dist/playground/index.html is missing"
+# shellcheck disable=SC2015  # pass/fail only echo, so the else-branch reading never runs on a true left side
 [ -d "${dist}/playground/_framework" ] && pass "the .NET runtime is present" || fail "dist/playground/_framework is missing"
 
 # The catalogue bridge (§10.4) has to actually ship, not just compile locally: catches
@@ -51,8 +54,11 @@ else
   fail "no Brotli assets under _framework — the payload will be served uncompressed"
 fi
 
+# shellcheck disable=SC2015  # pass/fail only echo, so the else-branch reading never runs on a true left side
 [ -f "${dist}/_redirects" ] && pass "the redirect rules were copied" || fail "dist/_redirects is missing"
+# shellcheck disable=SC2015  # pass/fail only echo, so the else-branch reading never runs on a true left side
 [ -f "${dist}/_headers" ] && pass "the response headers were generated" || fail "dist/_headers is missing"
+# shellcheck disable=SC2015  # pass/fail only echo, so the else-branch reading never runs on a true left side
 [ -f "${dist}/.assetsignore" ] && pass "the upload exclusions were copied" || fail "dist/.assetsignore is missing"
 
 # The stamp that lets anyone ask the deployment what it is. Three ways it can be
@@ -260,7 +266,9 @@ fi
 # not_found_handling is set to "404-page" in wrangler.jsonc, and it serves the
 # nearest 404.html. Without the files, the setting points at nothing and a
 # mistyped URL gets the host's default page rather than the site's.
+# shellcheck disable=SC2015  # pass/fail only echo, so the else-branch reading never runs on a true left side
 [ -f "${dist}/404.html" ] && pass "the English 404 page exists" || fail "dist/404.html is missing, and wrangler.jsonc asks for it"
+# shellcheck disable=SC2015  # pass/fail only echo, so the else-branch reading never runs on a true left side
 [ -f "${dist}/fr/404.html" ] && pass "the French 404 page exists" || fail "dist/fr/404.html is missing, so a mistyped French URL answers in English"
 
 # The tallest figure on the page folds, and the button that unfolds it is attached by the
@@ -408,6 +416,7 @@ fi
 #
 # One node pass rather than a grep, because both attributes have to come off the same
 # tag and their order in the markup is the author's, not a guarantee.
+# shellcheck disable=SC2046  # deliberate: each HTML path becomes its own argv entry for node's process.argv.slice(1)
 measurement="$(node -e '
   const { readFileSync } = require("node:fs");
   for (const page of process.argv.slice(1)) {
