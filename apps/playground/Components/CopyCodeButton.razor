@@ -59,12 +59,25 @@
     private CopyStatus _copyStatus;
     private string?    _lastCopiedCodeText;
 
-    /// <summary>The chain the visitor last copied can change under them — an edited argument or a
-    /// newly chosen method both rewrite <see cref="CodeText" /> without the button being touched.
-    /// Without this, the tick and the "copied to clipboard" announcement would outlive the
-    /// clipboard contents they are about.</summary>
+    /// <summary>
+    ///     The tick and the announcement beside it say "what you are looking at is on your
+    ///     clipboard". Two things can make that stop being true without the button being touched,
+    ///     and both clear it.
+    ///
+    ///     THE CHAIN CHANGED UNDER THEM — an edited argument, a newly chosen method — so the
+    ///     clipboard now holds a line the card no longer shows.
+    ///
+    ///     OR THERE IS NO LONGER A LINE AT ALL, which is not the same thing and is not implied by
+    ///     the first. <c>FormatArgumentLiteral</c> writes an unparsable boolean as <c>false</c>,
+    ///     the very characters a valid <c>false</c> produces, so emptying that field leaves
+    ///     <see cref="CodeText" /> identical while <see cref="Enabled" /> goes false: text-only
+    ///     comparison saw no change and kept the tick, and the button sat disabled wearing a
+    ///     success mark with the live region announcing a copy beside a bar reading "Code does
+    ///     not compile". Every status goes here, not just the successful one — a stale "could not
+    ///     copy" next to the same bar reads no better.
+    /// </summary>
     protected override void OnParametersSet() {
-        if (_copyStatus == CopyStatus.Copied && CodeText != _lastCopiedCodeText) {
+        if (!Enabled || (_copyStatus == CopyStatus.Copied && CodeText != _lastCopiedCodeText)) {
             _copyStatus = CopyStatus.None;
         }
     }
