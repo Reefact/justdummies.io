@@ -220,43 +220,70 @@ fi
 # rather than left implied. A host that excluded or rewrote these files would otherwise leave
 # every check green and the deployed playground unable to start.
 #
-# EVERY ICU file, not one of them. The artefact carries three — EFIGS, CJK and no-CJK — and
-# which one a boot fetches depends on the locale it starts in. A check that took the first the
-# filesystem offered would be checking a file no boot might ask for, and would go on passing
-# while the one that matters was gone.
+# --- every framework file arrives as the artefact holds it -----------------------
+# EVERY file, not a sample, and that is the whole point of the loop.
+#
+# WHY THIS EXISTS AT ALL. `tests/browser/support/harness.ts` hands the browser the runtime's
+# binaries from `dist/` rather than fetching them, because `wrangler dev`'s proxy dies
+# streaming them. That took thirty boots a run off the served path, and this file is what
+# replaces them. It was written asking for one `dotnet.native.*.wasm`, then for the three ICU
+# files as well, and both times the answer was a sample — which Codex twice showed was not
+# enough: a rule swallowing `_framework`, or one assembly missing, passes a check that looks
+# at its neighbours.
+#
+# So this asks for all of them, and it does not read the harness's list of extensions. If it
+# did, the two would drift the first time one changed. Whatever the harness routes is a subset
+# of what is measured here, by construction.
 #
 # WHAT IS MEASURED, and what deliberately is not. The served length against the file on disk.
 # That catches the host answering with something else — a 404 page, or `_framework` rewritten
-# to HTML by a rule — because neither weighs what the artefact weighs. It cannot catch a
-# truncated artefact, and is not meant to: both sides read the same bytes, so the comparison
-# is only ever about what happens between them. `verify-output.sh` is what reads the artefact.
+# to HTML by a rule, compressed or not — because none of them weigh what the artefact weighs.
+# It cannot catch a truncated artefact, and is not meant to: both sides read the same bytes,
+# so the comparison is only ever about what happens between them. `verify-output.sh` is what
+# reads the artefact.
 #
-# NOT the content type. Measured on a healthy artefact these files come back with **no
+# NOT the content type. Measured on a healthy artefact the `.dat` files come back with **no
 # `Content-Type` at all** — Cloudflare has no MIME mapping for `.dat`, where it does give the
 # `.wasm` `application/wasm`. That is not a defect: Blazor reads ICU data as bytes and never
-# consults the type. The first version of this check asserted a type was present and went red
+# consults the type. An earlier version of this check asserted a type was present and went red
 # on a build that works, which would have taught the next reader to distrust the check rather
 # than the build.
+#
+# One line out for the lot, and the name only when one disagrees: sixty-seven passing lines
+# would bury the eight checks above them.
 # shellcheck disable=SC2015  # the `|| true` only keeps a failed cd/find from tripping `set -e`; the pipeline's stdout is what matters here
-icu_files="$(cd "${root}/dist" && find playground/_framework -name 'icudt*.dat' | sort || true)"
+framework="$(cd "${root}/dist" && find playground/_framework -type f ! -name '*.br' ! -name '*.gz' | sort || true)"
 
-if [ -z "${icu_files}" ]; then
-  fail "the artefact carries no globalisation data — the playground cannot start without it"
+if [ -z "${framework}" ]; then
+  fail "the artefact carries no playground runtime — there is nothing for the playground to boot"
 else
-  while IFS= read -r icu; do
-    present "/${icu}" "its length" || continue
+  checked=0
+  bytes=0
+  wrong=0
 
-    on_disk="$(wc -c < "${root}/dist/${icu}" | tr -d ' ')"
-    served="$(curl -sS -o /dev/null -w '%{size_download}' --max-time 30 "${base}/${icu}" || echo 0)"
+  while IFS= read -r file; do
+    on_disk="$(wc -c < "${root}/dist/${file}" | tr -d ' ')"
+    served="$(curl -sS -o /dev/null -w '%{http_code} %{size_download}' --max-time 30 "${base}/${file}" || echo '000 0')"
+    code="${served% *}"
+    size="${served#* }"
 
-    if [ "${served}" = "${on_disk}" ]; then
-      pass "${icu##*/} is served whole (${served} bytes)"
+    if [ "${code}" != "200" ]; then
+      fail "${file} answers ${code} — excluded from the upload, or rewritten"
+      wrong=$((wrong + 1))
+    elif [ "${size}" != "${on_disk}" ]; then
+      fail "${file} is served as ${size} bytes against ${on_disk} in the artefact — rewritten"
+      wrong=$((wrong + 1))
     else
-      fail "${icu##*/} is served as ${served} bytes against ${on_disk} in the artefact — excluded or rewritten"
+      checked=$((checked + 1))
+      bytes=$((bytes + size))
     fi
   done <<EOF
-${icu_files}
+${framework}
 EOF
+
+  if [ "${wrong}" -eq 0 ]; then
+    pass "all ${checked} playground runtime files are served whole ($((bytes / 1024)) KiB)"
+  fi
 fi
 
 if [ "${failures}" -ne 0 ]; then

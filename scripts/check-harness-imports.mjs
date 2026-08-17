@@ -122,11 +122,39 @@ function loadsRunner(node) {
     }
 
     /* `export … from '@playwright/test'` — re-exporting the runner hands it to a check that
-     * would then import it from a neighbour and pass this guard on both sides. */
+     * would then import it from a neighbour and pass this guard on both sides.
+     *
+     * Which specifiers, not merely which module. An earlier version flagged the whole
+     * declaration and so would have refused `export type { Page } from …` and
+     * `export { expect } from …`, neither of which can hand anyone a runner. Nothing in the
+     * suite writes either today, which is exactly why it was worth fixing before something
+     * did: a guard that goes red on harmless code is one somebody switches off. */
     if (ts.isExportDeclaration(node) && node.moduleSpecifier !== undefined) {
-        return ts.isStringLiteral(node.moduleSpecifier) && node.moduleSpecifier.text === RUNNER
-            ? 're-exports the module'
-            : null;
+        if (!ts.isStringLiteral(node.moduleSpecifier) || node.moduleSpecifier.text !== RUNNER || node.isTypeOnly) {
+            return null;
+        }
+
+        const clause = node.exportClause;
+
+        /* `export * from …` carries everything, `test` included. */
+        if (clause === undefined) {
+            return 're-exports the whole module';
+        }
+
+        /* `export * as pw from …` hands over an object with `test` on it. */
+        if (ts.isNamespaceExport(clause)) {
+            return `re-exports the module as ${clause.name.text}`;
+        }
+
+        for (const element of clause.elements) {
+            const exported = (element.propertyName ?? element.name).text;
+
+            if (exported === 'test' && !element.isTypeOnly) {
+                return element.propertyName === undefined ? 're-exports test' : `re-exports test as ${element.name.text}`;
+            }
+        }
+
+        return null;
     }
 
     /* `import runner = require('@playwright/test')`. */
@@ -163,20 +191,89 @@ function loadsRunner(node) {
     return dynamic ? 'import() of a specifier this check cannot read' : 'require() of a specifier this check cannot read';
 }
 
+/**
+ * Where a check may take `test` from: the harness, and nowhere else.
+ *
+ * THE RULE ABOVE IS NOT ENOUGH ON ITS OWN, and Codex is what showed why. It reads the modules
+ * under `tests/browser`, so a helper filed outside — `tests/shared-runner.ts`, say — is never
+ * opened, while Playwright loads it as an ordinary dependency and a check imports `test` from
+ * it. Following each check's imports would close that, and would then have to follow the
+ * imports of what it found, through re-exports, and a dynamic one would still slip past.
+ *
+ * This closes it from the other end and needs no resolution at all. A check may bind `test`
+ * from exactly one specifier, and every other source is refused whatever it does internally —
+ * Playwright, a helper next door, a helper three directories up, a package. The rule the error
+ * message already stated is now the rule that is enforced.
+ */
+const HARNESS_SPECIFIER = /^(\.\/|\.\.\/)+support\/harness(\.[cm]?[jt]s)?$/;
+
+/** Playwright's own default `testMatch`: the files it registers tests from. */
+const IS_CHECK = /\.(spec|test)\.[cm]?[jt]sx?$/;
+
+/** A binding of `test` from anywhere that is not the harness, or null. */
+function bindsTestElsewhere(node) {
+    if (!ts.isImportDeclaration(node) || !ts.isStringLiteral(node.moduleSpecifier)) {
+        return null;
+    }
+
+    const from = node.moduleSpecifier.text;
+
+    if (from === RUNNER || HARNESS_SPECIFIER.test(from)) {
+        return null;
+    }
+
+    const clause = node.importClause;
+
+    if (clause === undefined || clause.isTypeOnly) {
+        return null;
+    }
+
+    const named = clause.namedBindings;
+
+    if (named === undefined || ts.isNamespaceImport(named)) {
+        return null;
+    }
+
+    for (const element of named.elements) {
+        const imported = (element.propertyName ?? element.name).text;
+
+        if (imported === 'test' && !element.isTypeOnly) {
+            return `binds test from '${from}' rather than the harness`;
+        }
+    }
+
+    return null;
+}
+
 const strays = [];
 
 for await (const file of modules(SUITE)) {
     const source = ts.createSourceFile(file, await readFile(file, 'utf8'), ts.ScriptTarget.Latest, true);
+    const isCheck = IS_CHECK.test(file);
+
+    const note = (node, how) => {
+        const { line } = source.getLineAndCharacterOfPosition(node.getStart(source));
+
+        strays.push(`  ${relative(ROOT, file)}:${line + 1}  ${how}`);
+    };
 
     /* The whole tree, not just the top-level statements: a dynamic import is an expression and
      * can sit anywhere one can — inside a `test()` body, a helper, a conditional. */
     const visit = (node) => {
-        const how = loadsRunner(node);
+        const loads = loadsRunner(node);
 
-        if (how !== null) {
-            const { line } = source.getLineAndCharacterOfPosition(node.getStart(source));
+        if (loads !== null) {
+            note(node, loads);
+        }
 
-            strays.push(`  ${relative(ROOT, file)}:${line + 1}  ${how}`);
+        /* The second rule applies to the files Playwright registers tests from. A helper may
+         * pass `test` around; a check has to have taken it from the harness. */
+        if (isCheck) {
+            const elsewhere = bindsTestElsewhere(node);
+
+            if (elsewhere !== null) {
+                note(node, elsewhere);
+            }
         }
 
         ts.forEachChild(node, visit);
