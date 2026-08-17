@@ -66,10 +66,17 @@ async function refuseMeasurement(context: BrowserContext): Promise<void> {
  * survives that one — the fatal path is the proxy's, and there is no flag that removes it.
  *
  * WHAT THIS COSTS, stated rather than buried: the browser suite no longer proves that the
- * runtime serves these files correctly. That is checked, on every build, by
- * `scripts/check-served-headers.sh` — which asserts the WebAssembly comes back as itself
- * rather than as `text/html`, and that the host really compresses it. This route removes a
- * duplicate, not a check.
+ * runtime serves these files correctly. `scripts/check-served-headers.sh` is what does, on
+ * every build — the WebAssembly comes back as itself rather than as `text/html` and the host
+ * really compresses it, and every `icudt*.dat` arrives at the length the artefact holds.
+ *
+ * That second half was **not** true when this route was written, and the comment claimed it
+ * was: nothing asked the host for a `.dat` at all, so a host excluding or rewriting the
+ * globalisation data would have left every check green and the deployed playground unable to
+ * start. Codex caught the gap on the pull request. It is closed there rather than here,
+ * because a served response is what had to be measured — but the lesson belongs next to the
+ * route that caused it: taking a file off the served path is only free once something else
+ * asks the host for it.
  *
  * WHAT IS DELIBERATELY LEFT ALONE. Only `.wasm` and `.dat` are served from disk — inert
  * binaries, and 99% of the bytes. `blazor.boot.json` and the loader scripts still come from
