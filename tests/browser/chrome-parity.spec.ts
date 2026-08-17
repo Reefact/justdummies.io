@@ -1,4 +1,6 @@
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+
+import { expect, test } from './support/harness';
 
 /**
  * The site and the playground draw the same page furniture in the same place.

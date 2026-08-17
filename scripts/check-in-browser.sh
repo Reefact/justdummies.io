@@ -53,6 +53,28 @@ if [ -n "${sleeps}" ]; then
   exit 1
 fi
 
+# Every spec takes its `test` from the harness, and the failure of not doing so is silent.
+#
+# tests/browser/support/harness.ts holds two things no spec should have to remember: it keeps
+# the run off the measurement hosts, so a release does not post a burst of synthetic page
+# views into the real audience figures, and it hands the browser the .NET runtime from disk,
+# so the dev server is never asked to stream the hundred and fifty megabytes that kill it.
+#
+# A spec importing straight from '@playwright/test' silently opts out of both. Neither
+# failure shows up as a red check: the first shows up weeks later as visits nobody made, the
+# second as an unrelated check reporting ERR_CONNECTION_REFUSED. chrome-parity.spec.ts did
+# exactly this, and both consequences were live.
+#
+# Types are fine — `import type { Page }` imports no runner.
+strays="$(grep -rnE "^import .*from '@playwright/test'" "${root}/tests/browser"/*.spec.ts | grep -vE "^[^:]+:[0-9]+:import type " || true)"
+
+if [ -n "${strays}" ]; then
+  echo "check-in-browser: a check takes its test runner from Playwright rather than the harness." >&2
+  printf '%s\n' "${strays}" | sed 's|^'"${root}"'/|  |' >&2
+  echo "  Import { expect, test } from './support/harness' instead." >&2
+  exit 1
+fi
+
 # A browser this machine already has, when it has one, so a container that ships Chromium
 # does not download a second copy. CI leaves it unset and uses the one it installed.
 if [ -z "${CHROMIUM_PATH:-}" ] && [ -x /opt/pw-browsers/chromium ]; then
