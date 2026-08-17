@@ -135,7 +135,7 @@ for (const { path, possible, solo } of WHY_PAGES) {
         await expect(page.locator('.criterion .explanation')).toHaveCount(10);
 
         // §11.5 — grouped under the reader's four questions, not ranked by our own margin.
-        await expect(page.locator('.family > h4')).toHaveCount(4);
+        await expect(page.locator('.family > summary')).toHaveCount(4);
 
         // §11.6 — the three answers are defined on the page, before their first use.
         await expect(page.locator('.legend dd')).toHaveCount(3);
@@ -150,7 +150,7 @@ for (const { path, possible, solo } of WHY_PAGES) {
         await page.goto(path);
 
         // §11.8 — "when to choose it over JustDummies", one per competitor, never empty.
-        const instead = page.locator('#instead .instead');
+        const instead = page.locator('#instead .instead-card');
 
         await expect(instead).toHaveCount(3);
 
@@ -159,8 +159,8 @@ for (const { path, possible, solo } of WHY_PAGES) {
         }
 
         // §11.8 — its own section, not buried, and enumerated case by case.
-        await expect(page.locator('#not-for .case').first()).toBeVisible();
-        expect(await page.locator('#not-for .case').count()).toBeGreaterThanOrEqual(4);
+        await expect(page.locator('#not-for .not-for-item').first()).toBeVisible();
+        expect(await page.locator('#not-for .not-for-item').count()).toBeGreaterThanOrEqual(4);
 
         // The admission the section is bought with: one person maintains this.
         await expect(page.locator('#not-for')).toContainText(solo);
@@ -184,6 +184,13 @@ for (const { path, possible, solo } of WHY_PAGES) {
  * ADR-0004 on this page: the `<select>` that narrows the comparison is absent until its
  * script can act, and what it enhances — all four options, every rating, every note — is
  * already there. A reader without scripting loses a convenience, never an answer.
+ *
+ * §4bis wraps each of the four criterion families in a native `<details>`, open by default
+ * on only the first — a *script-free* default, not a script-gated one, so the bar this test
+ * holds is different from the select's: not "is it visible right now" but "is it reachable
+ * with nothing but a click". Every criterion exists in the markup regardless, the legend is
+ * never behind a click at all, and clicking every `<summary>` — itself a native, no-script
+ * action — reaches every question and every verdict.
  */
 test('/why-justdummies is whole, and offers no dead control, without scripting', async ({ browser }) => {
     const context = await browser.newContext({ javaScriptEnabled: false });
@@ -193,10 +200,21 @@ test('/why-justdummies is whole, and offers no dead control, without scripting',
 
     await expect(page.locator('[data-duel-controls]:visible')).toHaveCount(0);
 
-    // The teaching is not behind the script, and neither is a single verdict.
+    // Nothing is missing, whether or not its family happens to be open.
+    await expect(page.locator('.criterion')).toHaveCount(10);
+    await expect(page.locator('.legend dd:visible')).toHaveCount(3);
+
+    // `:not([open])` rather than every summary — the first family already opens by
+    // default, and clicking an open `<details>`'s own summary toggles it shut again.
+    // `.first()` in a loop rather than `.all()`: the locator's own match set shrinks as
+    // each click opens one more `<details>`, so a snapshot of indices goes stale mid-loop.
+    const closedFamilies = page.locator('details.family:not([open]) > summary');
+    while ((await closedFamilies.count()) > 0) {
+        await closedFamilies.first().click();
+    }
+
     await expect(page.locator('.criterion .question:visible')).toHaveCount(10);
     await expect(page.locator('.criterion .verdicts > li:visible')).toHaveCount(40);
-    await expect(page.locator('.legend dd:visible')).toHaveCount(3);
 
     await context.close();
 });
@@ -242,6 +260,17 @@ test('/why-justdummies narrows to one alternative, and back to all of them', asy
 
 test('/why-justdummies keeps JustDummies on screen in every mode', async ({ page }) => {
     await page.goto('/why-justdummies');
+
+    // Open every family first — §4bis collapses three of the four by default, which is an
+    // orthogonal, script-free accordion state and not the thing this test is about. Without
+    // this, a criterion sitting in a still-closed family would read as "hidden by the duel"
+    // when nothing about the duel touched it. `.first()` in a loop rather than `.all()`: the
+    // locator's own match set shrinks as each click opens one more `<details>`, so a
+    // snapshot of indices goes stale mid-loop.
+    const closedFamilies = page.locator('details.family:not([open]) > summary');
+    while ((await closedFamilies.count()) > 0) {
+        await closedFamilies.first().click();
+    }
 
     await page.locator('[data-compare-select]').selectOption('bogus');
 
