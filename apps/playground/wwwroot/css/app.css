@@ -172,23 +172,18 @@ main {
 }
 
 /* The page's opening paragraph, drawn as the site draws the same paragraph —
-   WhyJustDummiesContent.astro's `.lede` for the type, its `p` rule for the measure.
+   WhyJustDummiesContent.astro's `.lede` for both the type and, now, the measure.
 
-   INHERITING THE BODY SIZE HERE WAS THE DEFECT, and letting the 60rem column state
-   the width was the other half of it. A lede is a lede on both halves: the site sets
-   it a step up from body text and stops it at 38rem — around seventy characters,
-   measured in French because French runs 15 to 20 % longer (§6.5) — while this rule
-   said nothing about either, so the same words came out a full step smaller and ran
-   the whole 60rem. Restated rather than inherited, because there is nothing in this
-   file's cascade that would have carried the site's decision across on its own.
-
-   The 60rem column is still the column; this only refuses to fill it, exactly as the
-   site's prose refuses to fill the 60rem shell it sits in. */
+   FULL WIDTH BY THE SAME EDITORIAL DECISION THE SITE MADE: the lede is meant to read
+   as one confident line across the column, not folded to the narrower prose measure
+   below it. It used to stop at 38rem to match the site's own `.lede`, which capped
+   itself there at the time — this rule still restates rather than inherits, because
+   there is nothing in this file's cascade that would carry the site's decision across
+   on its own, and that stays true whichever way the site's own number moves. */
 .lede {
     font-size: var(--jd-text-lg);
     line-height: var(--jd-line-body);
     color: var(--jd-text-primary);
-    max-width: 38rem;
     margin: 0 0 var(--jd-space-4);
 }
 

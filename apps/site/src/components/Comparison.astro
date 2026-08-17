@@ -89,11 +89,15 @@ function ratingLabel(rating: Rating): string {
     </div>
 
     {/*
-      §4bis of the why-justdummies rewrite: native <details>/<summary>, the same mechanism
-      the matrix already uses below — no JS required to read every family, in keeping with
-      ADR-0004. Only the first family opens by default, so the comparison's strongest
-      section is not buried, while the other three start collapsed to cut the density a
-      reader meets on first scroll.
+      §4bis of the why-justdummies rewrite: native <details>/<summary>, in keeping with
+      ADR-0004 — no JS required to read every family. Only the first family opens by
+      default, so the comparison's strongest section is not buried, while the other three
+      start collapsed to cut the density a reader meets on first scroll.
+
+      A shared `name` makes the four mutually exclusive — natively, in every evergreen
+      browser (Chrome 120, Firefox 122, Safari 17.4): opening one closes whichever else was
+      open, with no script deciding it. That trades a taller page for a shorter one, never
+      both open at once competing for the same attention.
 
       The heading lives *inside* the summary rather than being replaced by it: a bare
       <summary> operates the disclosure but drops the family's name from the heading
@@ -104,7 +108,7 @@ function ratingLabel(rating: Rating): string {
     */}
     {
         families.map((family) => (
-            <details class="family" open={family.id === 'accepted'}>
+            <details class="family" name="compare-family" open={family.id === 'accepted'}>
                 <summary><h4>{t(family.headingKey)}</h4></summary>
 
                 {family.axes.map((id) => {
@@ -163,9 +167,12 @@ function ratingLabel(rating: Rating): string {
       columns it is *replaced* by those blocks rather than shrunk or set scrolling sideways
       (§11.7) — which is why it carries no note, and why nothing here is the only copy of
       anything.
+
+      A plain section, not a <details>: unlike the criterion families above, this table is
+      never collapsed by editorial decision — it stays a heading, not a disclosure control.
     */}
-    <details class="matrix">
-        <summary>{t('why.matrix.summary')}</summary>
+    <div class="matrix">
+        <h4 id="why-matrix-heading">{t('why.matrix.summary')}</h4>
         <p class="matrix-intro">{t('why.matrix.intro')}</p>
         {/*
           §5 of the why-justdummies rewrite: the legend higher up the page is easy to have
@@ -238,7 +245,7 @@ function ratingLabel(rating: Rating): string {
                 ))
             }
         </table>
-    </details>
+    </div>
 </div>
 
 <script>
@@ -290,6 +297,38 @@ function ratingLabel(rating: Rating): string {
 
         apply();
         controls.hidden = false;
+    }
+
+    /**
+     * Keeps the summary the reader just clicked in the same place on screen once a sibling
+     * family closes underneath it.
+     *
+     * The four families share `name="compare-family"` (see the markup), which makes the
+     * browser close whichever one was open the moment another is clicked open — entirely
+     * natively, with no script required for the exclusivity itself. What no browser
+     * compensates for on its own is the *position* that leaves the reader in: measured
+     * directly, opening a family below a taller open one moves the clicked summary by the
+     * height of whatever just collapsed, occasionally off the top of the screen entirely.
+     *
+     * The fix reads the clicked summary's own position before the click's default action
+     * runs — confirmed by measurement to fire before the native toggle, not after — and
+     * again once the browser has reflowed, then scrolls by the difference. A reader without
+     * scripting still gets a fully working, exclusive accordion; this only steadies the view
+     * for one that has it.
+     */
+    for (const summary of document.querySelectorAll<HTMLElement>('details.family > summary')) {
+        summary.addEventListener('click', () => {
+            const before: number = summary.getBoundingClientRect().top;
+
+            requestAnimationFrame(() => {
+                const after: number = summary.getBoundingClientRect().top;
+                const delta: number = after - before;
+
+                if (delta !== 0) {
+                    window.scrollBy(0, delta);
+                }
+            });
+        });
     }
 </script>
 
@@ -415,16 +454,14 @@ function ratingLabel(rating: Rating): string {
         margin: var(--jd-space-8) 0 0;
     }
 
-    /* The family's own heading doubles as the disclosure control — the same idiom the
-       matrix below already uses, rather than a second, JS-driven toggle beside a static
-       heading (ADR-0004). */
-    /* The border lives on the summary — the disclosure control, spanning the full measure —
-       while the heading nested inside it stays inline text, carrying only what an <h4>
-       needs to (§4bis, and the a11y note above the markup): the disclosure's own
-       `list-item` box is what still draws the native marker. */
+    /* The family's own heading doubles as the disclosure control, rather than a second,
+       JS-driven toggle beside a static heading (ADR-0004). The accent underline moved to
+       the page's own `h3` sections — a family is one level down from a section, and
+       marking it the same way flattened that hierarchy instead of showing it. A plain,
+       muted rule is what is left to separate the heading from the criteria under it. */
     .family summary {
         padding-bottom: var(--jd-space-2);
-        border-bottom: 2px solid var(--jd-accent);
+        border-bottom: 1px solid var(--jd-border);
         max-width: 38rem;
     }
 
@@ -624,6 +661,20 @@ function ratingLabel(rating: Rating): string {
     tbody th {
         font-weight: 400;
         width: 30%;
+    }
+
+    /* Still a real link back to the criterion's own block — worth more once the accordion
+       above only ever holds one family open at a time — but styled as table text rather
+       than as ten accent-coloured, underlined words down the column, which read as noise
+       before they read as navigation. */
+    tbody th a {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    tbody th a:hover,
+    tbody th a:focus-visible {
+        text-decoration: underline;
     }
 
     /* The family's own question, repeated inside the grid so a row is never read without

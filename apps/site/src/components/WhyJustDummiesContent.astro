@@ -335,10 +335,16 @@ const sections: ReadonlyArray<{ id: string; key: UiKey }> = [
         margin: 0 0 var(--jd-space-4);
     }
 
+    /* The accent underline marks a *section* — this page's own top-level divisions — and
+       nothing smaller: a sub-heading carrying the same mark would compete with the
+       structure it sits inside, which is what the family headings in Comparison.astro used
+       to do before this moved here. */
     h3 {
         font-size: var(--jd-text-lg);
         line-height: var(--jd-line-tight);
         margin: 0 0 var(--jd-space-3);
+        padding-bottom: var(--jd-space-2);
+        border-bottom: 2px solid var(--jd-accent);
     }
 
     h4 {
@@ -359,7 +365,10 @@ const sections: ReadonlyArray<{ id: string; key: UiKey }> = [
         max-width: 38rem;
     }
 
+    /* Full width by editorial decision — the one paragraph on the page meant to be read
+       as a single confident line, not folded to the 38rem prose measure below it. */
     .lede {
+        max-width: none;
         font-size: var(--jd-text-lg);
         line-height: var(--jd-line-body);
         color: var(--jd-text-primary);

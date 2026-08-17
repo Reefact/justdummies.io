@@ -8,10 +8,20 @@
  * carry the rating word and the note that qualifies it — an icon there would only restate
  * what the prose just explained.
  *
+ * ONE COLOUR FOR ALL THREE, NOT ONE PER RATING. An earlier version took the accent for
+ * "core" — the same orange this site's own links and focus rings already use to mean
+ * "interactive" or "important", and elsewhere it means "caution". A reader's first read of
+ * an accent-coloured icon in a comparison table is "warning", which is backwards for the
+ * one rating that means the tool is built for the job. The shape (check, wrench, dash) is
+ * what tells the three ratings apart — the same rule §11.6 already states for the site's
+ * words ("never a checkmark or a cross… the sign is never colour alone"), now honoured for
+ * the icon too rather than only for the text next to it.
+ *
  * The glyph is always `aria-hidden`, and the word is always present next to it, whether
  * visible (the micro-legend) or `.visually-hidden` (a table cell, where the word would
  * otherwise repeat forty times down the column). An icon never stands in for text a screen
- * reader cannot read.
+ * reader cannot read. `title` adds a native, script-free tooltip on hover for a sighted
+ * mouse user — a supplement to that text, not a replacement for it.
  */
 import type { Rating } from '../comparison';
 
@@ -25,7 +35,7 @@ interface Props {
 const { rating, label, hideLabel = true } = Astro.props;
 ---
 
-<span class="rating-icon" data-rating={rating}>
+<span class="rating-icon" data-rating={rating} title={label}>
     {
         rating === 'core' && (
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
@@ -74,17 +84,8 @@ const { rating, label, hideLabel = true } = Astro.props;
         font-size: var(--jd-text-sm);
     }
 
-    /* §4quinquies: the check takes the site's accent, never plain "good" green — the other
-       two ratings are not failures, so nothing here reads as red. */
-    .rating-icon[data-rating='core'] {
-        color: var(--jd-accent);
-    }
-
-    .rating-icon[data-rating='possible'] {
+    /* One colour, all three ratings — see the note above the markup for why. */
+    .rating-icon {
         color: var(--jd-text-primary);
-    }
-
-    .rating-icon[data-rating='out-of-scope'] {
-        color: var(--jd-text-muted);
     }
 </style>
