@@ -2,12 +2,17 @@
 /**
  * What this site measures about a visitor, and what it doesn't (§15).
  *
- * Six sections, each an `<h3>`/`<p>` pair rather than a bold lead phrase inside a
+ * Each section is an `<h3>`/`<p>` pair rather than a bold lead phrase inside a
  * paragraph — `ui.ts` never carries markup, and a real heading serves §13.4's
  * hierarchy requirement better than a bolded run of text would.
+ *
+ * One of them is conditional: the analytics section, and the control that withdraws
+ * consent to it, appear only on builds that carry the tag. A page describing a
+ * measurement the artefact does not perform would be worse than saying nothing.
  */
 import { localeFromPath } from '../i18n/routing';
 import { useTranslations } from '../i18n/ui';
+import { googleAnalyticsId } from '../measurement';
 
 const t = useTranslations(localeFromPath(Astro.url.pathname));
 ---
@@ -23,6 +28,18 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
         <h3>{t('privacy.analytics.label')}</h3>
         <p>{t('privacy.analytics.body')}</p>
     </div>
+    {
+        googleAnalyticsId && (
+            <div class="entry">
+                <h3>{t('privacy.consent.label')}</h3>
+                <p>{t('privacy.consent.body')}</p>
+                {/* Hidden until the script that can act on it is running (ADR-0004). */}
+                <button type="button" class="change" hidden data-consent-reopen>
+                    {t('privacy.consent.change')}
+                </button>
+            </div>
+        )
+    }
     <div class="entry">
         <h3>{t('privacy.playground.label')}</h3>
         <p>{t('privacy.playground.body')}</p>
@@ -66,6 +83,28 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
 
     .entry p {
         margin: 0;
+    }
+
+    .change {
+        margin: var(--jd-space-3) 0 0;
+        font: inherit;
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-primary);
+        background: var(--jd-surface-raised);
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-sm);
+        padding: var(--jd-space-2) var(--jd-space-4);
+        cursor: pointer;
+        transition: border-color var(--jd-duration-fast) var(--jd-ease);
+    }
+
+    .change:hover {
+        border-color: var(--jd-accent);
+    }
+
+    .change:focus-visible {
+        outline: 2px solid var(--jd-accent);
+        outline-offset: 2px;
     }
 
     .updated {

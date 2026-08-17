@@ -230,23 +230,42 @@ const en = {
     'privacy.meta.description': "What this site measures about you, and what it doesn't.",
     'privacy.tracking.label': "This site doesn't track you.",
     'privacy.tracking.body':
-        "It doesn't need to know who you are to work. There's no account to create, no tracking cookie, and nothing we measure is ever sold or shared with anyone.",
+        "It doesn't need to know who you are to work. There's no account to create, and nothing we measure is ever sold or shared with anyone. Most of what follows runs without any cookie at all and cannot tell one reader from another; the one thing that can asks you first, and does nothing until you answer.",
     'privacy.analytics.label': 'Audience measurement.',
     'privacy.analytics.body':
-        "We use Cloudflare Web Analytics to know how many people visit the site and whether pages load quickly. This tool sets no cookie and doesn't identify anyone individually — it counts visits and load times, not people. One further thing is measured, deliberately: when you copy an install command, the site records which part of the page you copied it from, which command it was, the page's language, that part's position in the page, and when it happened. That is the whole record — no identifier, no address, nothing you typed, nothing that can be traced back to you. It answers one question, which is which part of the page actually helps.",
+        "We use Cloudflare Web Analytics to know how many people visit the site and whether pages load quickly. This tool sets no cookie and doesn't identify anyone individually — it counts visits and load times, not people. One further thing is measured, deliberately: when you copy an install command, the site records which part of the page you copied it from, which command it was, the page's language, that part's position in the page, and when it happened. That is the whole of that record — no identifier, no address, nothing you typed, nothing that can be traced back to you. It answers one question, which is which part of the page actually helps. Neither of these two ever asks your permission, because neither is capable of recognising you.",
     'privacy.playground.label': 'The playground.',
     'privacy.playground.body':
         "The playground, which runs the library, works entirely inside your browser. Nothing you type there is ever sent to a server — there's no server to send it to.",
     'privacy.hosting.label': 'What the host sees.',
     'privacy.hosting.body':
-        "The site is hosted on Cloudflare, which necessarily receives every request in order to serve it — your IP address and the pages requested, for instance. That's an unavoidable part of any web hosting, not a measurement we add; Cloudflare is our only subprocessor, for hosting as well as audience measurement.",
+        "The site is hosted on Cloudflare, which necessarily receives every request in order to serve it — your IP address and the pages requested, for instance. That's an unavoidable part of any web hosting, not a measurement we add; Cloudflare is our subprocessor for hosting and for the audience measurement above.",
     'privacy.controller.label': "Who's responsible for this site.",
     'privacy.controller.body':
         "It's published by REEFACT, a single-member SARL registered under SIREN number 804 026 482, headquartered at 134 rue de Chevilly, 94240 L'Haÿ-les-Roses, France, represented by its manager Sylvain Aurat.",
+    'privacy.consent.label': 'Google Analytics, if you allow it.',
+    'privacy.consent.body':
+        "To understand how this page is actually read — which moment convinces someone, where people stop — the site can use Google Analytics. It is off until you accept it, and if you never do, nothing about you reaches Google. If you accept, it stores a cookie holding a random identifier, so that two visits from the same browser count as one reader rather than two, and Google becomes a second processor alongside Cloudflare, with the transfers outside the European Union that this implies. It is configured never to feed advertising, and what it collects is kept for fourteen months. You can change your mind at any time, here:",
+    'privacy.consent.change': 'Change your choice',
     'privacy.rights.label': 'Your rights.',
     'privacy.rights.body':
-        "Since this site doesn't collect any data that identifies you individually, there's in practice nothing to correct or delete about you. For any question on this, write to privacy@reefact.net.",
-    'privacy.updated': 'Last updated: August 16, 2026.',
+        "If you have never accepted Google Analytics, this site holds nothing that identifies you individually, and there is in practice nothing to correct or delete about you. If you have accepted it, refusing above stops the collection from that moment; to have what was already collected erased, or for any other question, write to privacy@reefact.net.",
+    'privacy.updated': 'Last updated: August 17, 2026.',
+
+    /**
+     * The consent banner (`ConsentBanner.astro`). It speaks only about Google: the
+     * other two measurements set no cookie, recognise nobody, and are not what is
+     * being asked about — saying otherwise would let a refusal read as "the site
+     * now measures nothing", which would be false.
+     */
+    'consent.heading': 'How this page is read.',
+    'consent.body':
+        "The site would like to use Google Analytics to see which parts of this page actually help and where readers stop. That stores a cookie and sends your visit to Google. Refusing changes nothing about what you can read here, and the rest of the site's measurement — which sets no cookie and recognises nobody — runs either way.",
+    'consent.accept': 'Accept',
+    'consent.refuse': 'Refuse',
+    'consent.more': 'What is measured',
+    'consent.state.accepted': 'Google Analytics accepted.',
+    'consent.state.refused': 'Google Analytics refused.',
 
     /**
      * /api — the public surface of the JustDummies and JustDummies.Xunit packages, reflected
@@ -784,23 +803,36 @@ const fr: Record<UiKey, string> = {
     'privacy.meta.description': "Ce que ce site mesure à votre sujet, et ce qu'il ne mesure pas.",
     'privacy.tracking.label': 'Ce site ne vous suit pas.',
     'privacy.tracking.body':
-        "Il n'a pas besoin de savoir qui vous êtes pour fonctionner. Il n'y a pas de compte à créer, pas de cookie de suivi, et rien de ce que nous mesurons n'est revendu ni partagé avec qui que ce soit.",
+        "Il n'a pas besoin de savoir qui vous êtes pour fonctionner. Il n'y a pas de compte à créer, et rien de ce que nous mesurons n'est revendu ni partagé avec qui que ce soit. L'essentiel de ce qui suit fonctionne sans aucun cookie et ne sait pas distinguer un lecteur d'un autre ; la seule chose qui en soit capable vous demande d'abord, et ne fait rien tant que vous n'avez pas répondu.",
     'privacy.analytics.label': "Mesure d'audience.",
     'privacy.analytics.body':
-        "Nous utilisons Cloudflare Web Analytics pour savoir combien de personnes visitent le site et si les pages se chargent rapidement. Cet outil ne dépose aucun cookie et n'identifie personne individuellement : il compte des visites et des temps de chargement, pas des personnes. Une chose de plus est mesurée, délibérément : quand vous copiez une commande d'installation, le site enregistre depuis quel endroit de la page vous l'avez copiée, de quelle commande il s'agit, la langue de la page, la position de cet endroit dans la page, et le moment. C'est tout l'enregistrement — aucun identifiant, aucune adresse, rien de ce que vous avez saisi, rien qui puisse remonter jusqu'à vous. Il répond à une seule question : quelle partie de la page sert vraiment.",
+        "Nous utilisons Cloudflare Web Analytics pour savoir combien de personnes visitent le site et si les pages se chargent rapidement. Cet outil ne dépose aucun cookie et n'identifie personne individuellement : il compte des visites et des temps de chargement, pas des personnes. Une chose de plus est mesurée, délibérément : quand vous copiez une commande d'installation, le site enregistre depuis quel endroit de la page vous l'avez copiée, de quelle commande il s'agit, la langue de la page, la position de cet endroit dans la page, et le moment. C'est tout cet enregistrement — aucun identifiant, aucune adresse, rien de ce que vous avez saisi, rien qui puisse remonter jusqu'à vous. Il répond à une seule question : quelle partie de la page sert vraiment. Aucune de ces deux mesures ne vous demande votre accord, parce qu'aucune n'est capable de vous reconnaître.",
     'privacy.playground.label': 'Le playground.',
     'privacy.playground.body':
         "Le playground, qui exécute la bibliothèque, tourne entièrement dans votre navigateur. Ce que vous y saisissez n'est jamais envoyé à un serveur — il n'y a d'ailleurs aucun serveur à qui l'envoyer.",
     'privacy.hosting.label': "Ce que l'hébergeur voit.",
     'privacy.hosting.body':
-        "Le site est hébergé chez Cloudflare, qui reçoit nécessairement chaque requête pour la servir — votre adresse IP et les pages demandées, par exemple. C'est un passage obligé de tout hébergement web, pas une mesure que nous ajoutons ; Cloudflare est notre unique sous-traitant, pour l'hébergement comme pour la mesure d'audience.",
+        "Le site est hébergé chez Cloudflare, qui reçoit nécessairement chaque requête pour la servir — votre adresse IP et les pages demandées, par exemple. C'est un passage obligé de tout hébergement web, pas une mesure que nous ajoutons ; Cloudflare est notre sous-traitant pour l'hébergement comme pour la mesure d'audience ci-dessus.",
     'privacy.controller.label': 'Qui est responsable de ce site.',
     'privacy.controller.body':
         "Il est édité par REEFACT, SARL unipersonnelle immatriculée sous le numéro SIREN 804 026 482, dont le siège est situé 134 rue de Chevilly, 94240 L'Haÿ-les-Roses, représentée par son gérant Sylvain Aurat.",
+    'privacy.consent.label': "Google Analytics, si vous l'autorisez.",
+    'privacy.consent.body':
+        "Pour comprendre comment cette page est réellement lue — quel moment convainc, où l'on s'arrête —, le site peut utiliser Google Analytics. Il est éteint tant que vous ne l'avez pas accepté, et si vous ne l'acceptez jamais, rien vous concernant n'arrive chez Google. Si vous l'acceptez, il dépose un cookie contenant un identifiant aléatoire, afin que deux visites depuis le même navigateur comptent pour un lecteur et non pour deux, et Google devient un second sous-traitant aux côtés de Cloudflare, avec les transferts hors de l'Union européenne que cela implique. Il est configuré pour ne jamais alimenter la publicité, et ce qu'il collecte est conservé quatorze mois. Vous pouvez changer d'avis à tout moment, ici :",
+    'privacy.consent.change': 'Modifier votre choix',
     'privacy.rights.label': 'Vos droits.',
     'privacy.rights.body':
-        "Comme ce site ne collecte aucune donnée qui vous identifie individuellement, il n'y a en pratique rien à corriger ou à effacer vous concernant. Pour toute question sur ce point, écrivez à privacy@reefact.net.",
-    'privacy.updated': 'Dernière mise à jour : 16 août 2026.',
+        "Si vous n'avez jamais accepté Google Analytics, ce site ne détient rien qui vous identifie individuellement, et il n'y a en pratique rien à corriger ou à effacer vous concernant. Si vous l'avez accepté, le refuser ci-dessus arrête la collecte à partir de cet instant ; pour faire effacer ce qui a déjà été collecté, ou pour toute autre question, écrivez à privacy@reefact.net.",
+    'privacy.updated': 'Dernière mise à jour : 17 août 2026.',
+
+    'consent.heading': 'Comment cette page est lue.',
+    'consent.body':
+        "Le site aimerait utiliser Google Analytics pour voir quelles parties de cette page servent vraiment et où les lecteurs s'arrêtent. Cela dépose un cookie et envoie votre visite à Google. Refuser ne change rien à ce que vous pouvez lire ici, et le reste de la mesure du site — qui ne dépose aucun cookie et ne reconnaît personne — fonctionne dans les deux cas.",
+    'consent.accept': 'Accepter',
+    'consent.refuse': 'Refuser',
+    'consent.more': 'Ce qui est mesuré',
+    'consent.state.accepted': 'Google Analytics accepté.',
+    'consent.state.refused': 'Google Analytics refusé.',
 
     'api.meta.description': "La surface publique de JustDummies et JustDummies.Xunit : chaque générateur, chaque contrainte, reflétés depuis les paquets publiés.",
     'api.english.note':

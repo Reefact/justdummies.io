@@ -123,6 +123,21 @@ if (!ownFigure && sample === undefined) {
 
                     current = entry.target as HTMLElement;
                     current.dataset.current = '';
+
+                    // Said out loud, to whoever is listening. This component knows the
+                    // reader has arrived at a beat; it deliberately does not know that
+                    // anything measures them, which is the same arrangement
+                    // `CopyableCommand` has with the collector. A second observer
+                    // watching the same scroll would be the alternative, and this page
+                    // already argues against paying for one twice.
+                    document.dispatchEvent(
+                        new CustomEvent('jd:scene-entered', {
+                            detail: {
+                                scene: current.dataset.scene,
+                                act: current.closest<HTMLElement>('.act')?.id,
+                            },
+                        }),
+                    );
                 }
             },
             { rootMargin: BAND },

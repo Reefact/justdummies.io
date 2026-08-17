@@ -514,6 +514,71 @@ if [ -f "${dist}/_headers" ]; then
   fi
 fi
 
+# The analytics tag and the policy that has to admit it — the same shape as the beacon
+# block above, plus a third direction the beacon never needed.
+#
+# THE THIRD DIRECTION IS THE ONE THAT COST SOMETHING TO LEARN. The beacon is a tag in a
+# document, so "is it in the artefact" and "is it in a document" are one question. A
+# bundled module is not: Astro collects every <script> from the module graph rather than
+# the render tree, so a tag written as a bundled script leaves a chunk under _astro/
+# even on a build that renders it nowhere — a chunk no document loads, no policy admits,
+# and the size budget counts in full. That is why GoogleAnalytics.astro is is:inline,
+# and this is what says it still is.
+if [ -f "${dist}/_headers" ]; then
+  in_documents=0
+  grep -rqs 'www\.googletagmanager\.com' "${dist}" --include='*.html' && in_documents=1
+
+  in_chunks=0
+  for chunk in "${dist}"/_astro/*.js; do
+    [ -f "${chunk}" ] || continue
+    if grep -qs -e 'googletagmanager\.com' -e 'google-analytics\.com' -e 'analytics\.google\.com' "${chunk}"; then
+      in_chunks=1
+      break
+    fi
+  done
+
+  if [ "${in_chunks}" -eq 1 ]; then
+    fail "a bundled chunk under _astro/ names a Google host — the analytics tag must stay is:inline, or the artefact carries a host the policy cannot honestly admit"
+  elif [ "${in_documents}" -eq 1 ]; then
+    if grep -q "script-src[^;]*https://www\.googletagmanager\.com" "${dist}/_headers" \
+      && grep -q "connect-src[^;]*https://\*\.google-analytics\.com" "${dist}/_headers" \
+      && grep -q "connect-src[^;]*https://\*\.analytics\.google\.com" "${dist}/_headers" \
+      && grep -q "connect-src[^;]*https://www\.googletagmanager\.com" "${dist}/_headers" \
+      && grep -q "img-src[^;]*https://\*\.google-analytics\.com" "${dist}/_headers"; then
+      pass "the analytics tag is present and the policy admits every host it uses"
+    else
+      fail "the artefact carries the analytics tag but the policy does not admit all of its hosts — it will be blocked"
+    fi
+  elif grep -q 'googletagmanager\|google-analytics\|analytics\.google' "${dist}/_headers"; then
+    fail "the policy names the Google hosts, but no document carries the analytics tag"
+  else
+    pass "no analytics tag was built in, and the policy grants Google nothing"
+  fi
+
+  # The three advertising signals are denied permanently and are never updated: since
+  # June 2026 ad_storage is the only thing keeping tag data out of Google Ads, so the
+  # denial cannot live in a console setting nothing here can read. The tag is inline,
+  # which means the built document IS the source — what is asserted is what ships.
+  if [ "${in_documents}" -eq 1 ]; then
+    advertising="$(
+      node -e '
+        const fs = require("node:fs");
+        const html = fs.readFileSync(process.argv[1], "utf8");
+        const signals = ["ad_storage", "ad_user_data", "ad_personalization"];
+        const missing = signals.filter((k) => !new RegExp(k + "\\s*:\\s*.denied.").test(html));
+        const granted = signals.filter((k) => new RegExp(k + "\\s*:\\s*.granted.").test(html));
+        if (missing.length) { console.log("never denied: " + missing.join(", ")); }
+        if (granted.length) { console.log("granted somewhere: " + granted.join(", ")); }
+      ' "${dist}/index.html"
+    )"
+    if [ -z "${advertising}" ]; then
+      pass "every advertising consent signal is denied, and none is ever granted"
+    else
+      fail "the advertising consent signals are not what the measurement decision requires — ${advertising}"
+    fi
+  fi
+fi
+
 if [ "${failures}" -ne 0 ]; then
   echo "verify-output: ${failures} check(s) failed." >&2
   exit 1

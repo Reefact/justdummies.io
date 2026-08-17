@@ -1,0 +1,139 @@
+---
+/**
+ * The one question this site asks before measuring something that could recognise
+ * you. It is rendered only on builds that carry the analytics tag: with nothing to
+ * consent to, a banner asking for consent would be theatre (ADR-0004).
+ *
+ * IT SHIPS HIDDEN AND IS UNHIDDEN BY SCRIPT. `base.css` makes `[hidden]` a
+ * guarantee rather than a suggestion, so a visitor with no scripting sees no banner
+ * — and gets no Google either, because the tag only ever starts from the same
+ * script. That pairing is the point: the two are consistent rather than one of them
+ * being a hole.
+ *
+ * REFUSING IS AT LEAST AS EASY AS ACCEPTING. Both buttons carry the same class and
+ * therefore the same size, weight and colour, and refusing comes first in reading
+ * order. There is no `primary` here to find, which is deliberate: the moment one of
+ * the two is styled to be chosen, the answer stops being an answer.
+ *
+ * IT IS NOT A `<h2>`. The landing page and the privacy page own the heading outline
+ * of their documents, and a banner that injects a heading into the middle of that
+ * outline breaks the order an assistive reader navigates by. `aria-labelledby` on a
+ * paragraph gives the dialogue its name without making a claim about hierarchy.
+ *
+ * NOTHING HERE MOVES THE PAGE. `position: fixed` keeps it out of flow, so unhiding
+ * it shifts no layout and costs nothing in cumulative layout shift. It is also
+ * outside the reveal system on purpose — a question should not animate in.
+ */
+import { localeFromPath, pathForLocale } from '../i18n/routing';
+import { useTranslations } from '../i18n/ui';
+
+const locale = localeFromPath(Astro.url.pathname);
+const t = useTranslations(locale);
+const privacyPath = pathForLocale('/privacy/', locale);
+---
+
+<div
+    class="consent"
+    data-consent
+    hidden
+    role="dialog"
+    aria-modal="false"
+    aria-labelledby="jd-consent-title"
+    aria-describedby="jd-consent-body"
+    tabindex="-1"
+>
+    {/* Class names are prefixed because this markup is injected into every page on the
+        site, and Astro's scoping applies to the stylesheet, not to the names themselves.
+        A bare `.body` here collided with the 404 page's sentence and made a check that
+        selects `.body` match two elements — the banner is a guest on every page, so it
+        takes names nothing else would want. */}
+    <div class="consent-text">
+        <p class="consent-title" id="jd-consent-title">{t('consent.heading')}</p>
+        <p class="consent-body" id="jd-consent-body">
+            {t('consent.body')} <a href={privacyPath}>{t('consent.more')}</a>
+        </p>
+    </div>
+    {/* `data-announce` carries what the live region says afterwards, because the copy
+        is translated and the script that announces it is not. */}
+    <div class="choices">
+        <button type="button" class="choice" data-consent-refuse data-announce={t('consent.state.refused')}>
+            {t('consent.refuse')}
+        </button>
+        <button type="button" class="choice" data-consent-accept data-announce={t('consent.state.accepted')}>
+            {t('consent.accept')}
+        </button>
+    </div>
+</div>
+
+{/* Outside the dialogue, so the outcome is still announced after the banner is hidden. */}
+<p class="visually-hidden" role="status" data-consent-status></p>
+
+<style>
+    .consent {
+        position: fixed;
+        inset: auto 0 0 0;
+        /* Above the page, below nothing else: the site stacks nothing at all today,
+           so this is the first and only claim on a stacking order. */
+        z-index: 10;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--jd-space-4);
+        padding: var(--jd-space-4) var(--jd-space-6);
+        background: var(--jd-surface-raised);
+        border-top: 1px solid var(--jd-border);
+        box-shadow: var(--jd-shadow-raised);
+    }
+
+    .consent-text {
+        flex: 1 1 24rem;
+        min-width: 0;
+    }
+
+    .consent-title {
+        margin: 0 0 var(--jd-space-1);
+        font-weight: 600;
+    }
+
+    .consent-body {
+        margin: 0;
+        color: var(--jd-text-muted);
+        font-size: var(--jd-text-sm);
+        line-height: var(--jd-line-body);
+    }
+
+    .choices {
+        flex: none;
+        display: flex;
+        gap: var(--jd-space-3);
+    }
+
+    /* One class for both answers. See the note at the top of this file: any rule that
+       distinguishes them by size, weight or colour is the bug, not a refinement. */
+    .choice {
+        font: inherit;
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-primary);
+        background: var(--jd-surface);
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-sm);
+        padding: var(--jd-space-2) var(--jd-space-4);
+        cursor: pointer;
+        transition: border-color var(--jd-duration-fast) var(--jd-ease);
+    }
+
+    .choice:hover {
+        border-color: var(--jd-accent);
+    }
+
+    .choice:focus-visible {
+        outline: 2px solid var(--jd-accent);
+        outline-offset: 2px;
+    }
+
+    .consent:focus-visible {
+        outline: 2px solid var(--jd-accent);
+        outline-offset: -2px;
+    }
+</style>

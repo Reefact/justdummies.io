@@ -76,6 +76,15 @@ if grep -rqs 'static\.cloudflareinsights\.com' "${dist}" --include='*.html'; the
   report "audience beacon (third party, not counted above)" "~5 KiB, fetched from Cloudflare"
 fi
 
+# The analytics tag is an order of magnitude heavier than the beacon, which is exactly
+# why leaving it unsaid would be the failure the paragraph above describes. It is also
+# the only third-party file here that most visitors never fetch at all: nothing loads
+# until somebody accepts it, so its weight is real but it is not on the first-visit
+# path and never on the path of a visitor who refused.
+if grep -rqs 'www\.googletagmanager\.com' "${dist}" --include='*.html'; then
+  report "analytics tag (third party, not counted above)" "~50 KiB, fetched from Google, only after consent"
+fi
+
 if [ "${failures}" -ne 0 ]; then
   echo "check-budgets: ${failures} budget(s) exceeded." >&2
   exit 1

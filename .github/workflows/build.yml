@@ -106,8 +106,20 @@ jobs:
         # Unset is a normal build: no beacon, and a policy that grants the analytics
         # hosts nothing. generate-headers.mjs prints which of the two it produced, so a
         # pipeline that quietly stopped measuring says so in this step's log.
+        #
+        # THE TWO ANALYTICS VARIABLES ARE STRICTER THAN THAT, AND DELIBERATELY SO. Both
+        # must be set, in every build, or the build fails. A missing beacon token can
+        # only ever measure less; a missing analytics state leaves "is Google on?"
+        # answered by an absence, which is the ambiguity the explicit word exists to
+        # remove. The id is kept even while the state is `disabled`, so that switching
+        # the measurement back on never means going to look it up again.
+        #
+        # Both are `vars` for the same reason the token is: a measurement id is rendered
+        # into every page that carries the tag and is meant to be read.
         env:
           PUBLIC_CF_BEACON_TOKEN: ${{ vars.PUBLIC_CF_BEACON_TOKEN }}
+          PUBLIC_GA_MEASUREMENT_ID: ${{ vars.PUBLIC_GA_MEASUREMENT_ID }}
+          PUBLIC_GA_MEASUREMENT_STATE: ${{ vars.PUBLIC_GA_MEASUREMENT_STATE }}
         run: pnpm build
 
       # The build regenerates what the site displays. If the committed copies differ,
