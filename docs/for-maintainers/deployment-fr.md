@@ -508,7 +508,7 @@ Attendu :
 ```
 content-security-policy: default-src 'self'; base-uri 'self'
 /                  <title>JustDummies — Focused, fluent test values for .NET.</title>
-/fr/               <title>JustDummies — Des valeurs de test fluides et ciblées, pour .NET.</title>
+/fr/               <title>JustDummies — Des valeurs de test ciblées grâce à une API fluent, pour .NET.</title>
 /playground/       <title>Playground — JustDummies</title>
 /nexiste-pas       <title>Page not found — JustDummies</title>
 /fr/nexiste-pas    <title>Page introuvable — JustDummies</title>
