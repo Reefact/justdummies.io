@@ -192,6 +192,7 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
      */
     const tag = window as unknown as {
         jdAnalyticsStart?: () => void;
+        jdAnalyticsStop?: () => void;
         gtag?: (...args: unknown[]) => void;
     };
 
@@ -251,24 +252,17 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
     }
 
     /**
-     * Withdrawal, and it has to do two things rather than one.
+     * Withdrawal, which has to reach the loaded tag and not merely this file.
      *
-     * Stopping `track` is not enough: by the time somebody withdraws they may already
-     * have accepted, which means Google's own script is loaded and holds a granted
-     * `analytics_storage`. Left alone it would go on measuring for the rest of the page
-     * from a consent the visitor has just taken back — so the signal is revoked as well,
-     * and the tag is told in the only language it listens to.
-     *
-     * There is no symmetric `jdAnalyticsStop`: the script cannot be unloaded, and
-     * pretending otherwise would be the more comfortable lie. What can be done is done
-     * here, and the rest is the reload the next page brings.
+     * Silencing `track` is the easy half. The hard half is that by the time somebody
+     * withdraws, Google's own script may be loaded — and revoking the consent signal
+     * alone does not stop it, it puts it into cookieless-ping mode, which is the one
+     * behaviour ADR-0014 rejects by name. `jdAnalyticsStop` raises Google's documented
+     * opt-out flag, which the tag reads before sending anything at all.
      */
     function stop(): void {
         reporting = false;
-
-        if (tag.gtag !== undefined) {
-            tag.gtag('consent', 'update', { analytics_storage: 'denied' });
-        }
+        tag.jdAnalyticsStop?.();
     }
 
     function track(name: string, parameters: Record<string, unknown>): void {
@@ -319,6 +313,42 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
         }
     }
 
+    /**
+     * Brings this document into line with the stored answer — the reporting and the
+     * banner together, because they are two halves of one state and drifted apart twice.
+     *
+     * READ RATHER THAN REMEMBERED, and re-read rather than read once. The answer can
+     * change without this document doing anything: another tab can write one, and the
+     * six-month lifetime can expire under a tab that simply stayed open. A decision
+     * consulted only at startup left this page reporting under a grant that had run out,
+     * and left a second tab measuring while its own banner still asked the question.
+     *
+     * Called from the three moments where the stored answer and this page can disagree:
+     * startup, another document writing, and this one coming back into view.
+     */
+    function applyDecision(): void {
+        const decided: Answer | undefined = remembered();
+
+        if (decided === 'granted') {
+            start();
+        } else {
+            stop();
+        }
+
+        if (banner === null) {
+            return;
+        }
+
+        if (decided === undefined) {
+            // Guarded on `hidden` so that a repeat call does not take focus a second time.
+            if (banner.hidden) {
+                show();
+            }
+        } else {
+            banner.hidden = true;
+        }
+    }
+
     if (banner !== null) {
         const accept = banner.querySelector<HTMLElement>('[data-consent-accept]');
         const refuse = banner.querySelector<HTMLElement>('[data-consent-refuse]');
@@ -338,13 +368,7 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
             }
         });
 
-        const already: Answer | undefined = remembered();
-
-        if (already === undefined) {
-            show();
-        } else if (already === 'granted') {
-            start();
-        }
+        applyDecision();
 
         // The privacy page's way back in. Hidden in the markup for the same reason the
         // banner is: a button that reopens a dialogue is dead without scripting.
@@ -372,10 +396,17 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
             return;
         }
 
-        if (remembered() === 'granted') {
-            start();
-        } else {
-            stop();
+        applyDecision();
+    });
+
+    /**
+     * And when this document comes back into view, because that is the moment a tab that
+     * has been sitting for months is worth re-asking about. It is also the cheapest place
+     * to notice an expiry: no timer to schedule, no cost while nobody is looking.
+     */
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            applyDecision();
         }
     });
 

@@ -66,6 +66,7 @@ const { id }: Props = Astro.props;
              * and Google stayed denied until a reload. The exact mirror of the defect the
              * withdrawal path was written to fix.
              */
+            window['ga-disable-' + id] = false;
             gtag('consent', 'update', { analytics_storage: 'granted' });
 
             if (window.jdAnalyticsStarted) {
@@ -80,6 +81,32 @@ const { id }: Props = Astro.props;
 
             gtag('js', new Date());
             gtag('config', id);
+        };
+
+        /*
+         * WITHDRAWAL, AND WHY IT TAKES TWO THINGS RATHER THAN ONE.
+         *
+         * Denying `analytics_storage` on a tag that is already loaded does not silence it —
+         * it changes its mode. Google's own documentation says a denied analytics consent
+         * means no cookie is written and a cookieless payload is sent instead. That is
+         * advanced consent mode, which is the one thing ADR-0014 rejects by name, so a
+         * withdrawal implemented with the consent update alone would leave the site doing
+         * precisely what its own decision record argues against.
+         *
+         * `ga-disable-<id>` is the documented opt-out, and it is a different kind of thing:
+         * the tag reads it BEFORE setting a cookie or sending anything, and does nothing at
+         * all when it is raised. That is a stop rather than a mode.
+         *
+         * Both are done. The flag stops the transmission; the consent update keeps the tag's
+         * own recorded state honest, so that a later acceptance resumes from the truth rather
+         * than from a stale grant.
+         */
+        window.jdAnalyticsStop = function () {
+            window['ga-disable-' + id] = true;
+
+            if (window.gtag) {
+                gtag('consent', 'update', { analytics_storage: 'denied' });
+            }
         };
     })();
 </script>
