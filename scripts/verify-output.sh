@@ -323,6 +323,7 @@ for locale in "" "/fr"; do
     fail "${why#"${dist}"/} ships the comparison control visible — without scripting it filters nothing"
   fi
 
+  # shellcheck disable=SC2016  # single-quoted on purpose: the ${...} below are JS template literals for node -e, not bash parameters
   matrix_gating="$(node -e '
 const { readFileSync } = require("node:fs");
 const page = readFileSync(process.argv[1], "utf8");
