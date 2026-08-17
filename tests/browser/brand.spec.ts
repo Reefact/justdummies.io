@@ -30,6 +30,8 @@ const PAGES: readonly string[] = [
     '/fr/about',
     '/privacy',
     '/fr/privacy',
+    '/api',
+    '/fr/api',
     '/404.html',
     '/fr/404.html',
 ];
