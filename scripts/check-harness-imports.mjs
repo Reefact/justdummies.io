@@ -192,18 +192,33 @@ function loadsRunner(node) {
 }
 
 /**
- * Where a check may take `test` from: the harness, and nowhere else.
+ * Where a check may take `test` from, and where the module graph may go.
  *
- * THE RULE ABOVE IS NOT ENOUGH ON ITS OWN, and Codex is what showed why. It reads the modules
- * under `tests/browser`, so a helper filed outside — `tests/shared-runner.ts`, say — is never
- * opened, while Playwright loads it as an ordinary dependency and a check imports `test` from
- * it. Following each check's imports would close that, and would then have to follow the
- * imports of what it found, through re-exports, and a dynamic one would still slip past.
+ * THE RULE ABOVE IS NOT ENOUGH ON ITS OWN, and Codex is what showed why — twice. It reads the
+ * modules under `tests/browser`, so a helper filed outside — `tests/shared-runner.ts`, say —
+ * is never opened, while Playwright loads it as an ordinary dependency.
  *
- * This closes it from the other end and needs no resolution at all. A check may bind `test`
- * from exactly one specifier, and every other source is refused whatever it does internally —
- * Playwright, a helper next door, a helper three directories up, a package. The rule the error
- * message already stated is now the rule that is enforced.
+ * The first answer here refused a check that bound `test` from anything but the harness. That
+ * caught `import { test } from '../shared-runner'` and missed
+ * `import test from '../shared-runner'`, which Codex then found: a default import has no named
+ * bindings, so the loop had nothing to walk. Patching the default case would have left
+ * `import { runner } from '../shared-runner'` and `runner(…)`, which no rule about the name
+ * `test` can ever see.
+ *
+ * So the name is the wrong thing to chase. **A relative import may not leave the suite.** With
+ * that, the module graph a check reaches through relative paths is closed inside a directory
+ * every file of which the rule above has already read — so what a helper is called, and what it
+ * names what it re-exports, stops mattering. `tests/shared-runner.ts` is unreachable rather
+ * than inspected.
+ *
+ * Bare specifiers stay allowed: `axe-core` and `@axe-core/playwright` are what the suite is
+ * built on. A package could in principle re-export the runner, and if one is ever installed to
+ * do that this rule will not catch it — but installing a dependency to smuggle a fixture past a
+ * lint is not the accident this exists to prevent, and saying so beats implying otherwise.
+ *
+ * The `test`-by-name rule stays as well, default bindings included. It is now redundant with
+ * the one above for anything inside the suite, and it is kept because it names the mistake in
+ * the message a maintainer will actually read.
  */
 const HARNESS_SPECIFIER = /^(\.\/|\.\.\/)+support\/harness(\.[cm]?[jt]s)?$/;
 
@@ -228,6 +243,13 @@ function bindsTestElsewhere(node) {
         return null;
     }
 
+    /* `import test from '…'` — a default import binds a name and has no named bindings, so the
+     * loop below never sees it. What matters is the local name, since that is what a check
+     * calls. */
+    if (clause.name !== undefined && clause.name.text === 'test') {
+        return `binds test from '${from}' rather than the harness`;
+    }
+
     const named = clause.namedBindings;
 
     if (named === undefined || ts.isNamespaceImport(named)) {
@@ -235,14 +257,33 @@ function bindsTestElsewhere(node) {
     }
 
     for (const element of named.elements) {
+        /* Either side: `{ test }`, `{ test as x }` and `{ x as test }` all put the runner
+         * within reach of a check that means to use it. */
         const imported = (element.propertyName ?? element.name).text;
 
-        if (imported === 'test' && !element.isTypeOnly) {
+        if ((imported === 'test' || element.name.text === 'test') && !element.isTypeOnly) {
             return `binds test from '${from}' rather than the harness`;
         }
     }
 
     return null;
+}
+
+/** A relative specifier that resolves outside the suite, or null. */
+function leavesTheSuite(node, file) {
+    const specifier = ts.isImportDeclaration(node) || (ts.isExportDeclaration(node) && node.moduleSpecifier !== undefined)
+        ? node.moduleSpecifier
+        : undefined;
+
+    if (specifier === undefined || !ts.isStringLiteral(specifier) || !specifier.text.startsWith('.')) {
+        return null;
+    }
+
+    const target = resolve(dirname(file), specifier.text);
+
+    return target === SUITE || target.startsWith(`${SUITE}/`)
+        ? null
+        : `reaches '${specifier.text}', outside the suite this check reads`;
 }
 
 const strays = [];
@@ -266,8 +307,16 @@ for await (const file of modules(SUITE)) {
             note(node, loads);
         }
 
-        /* The second rule applies to the files Playwright registers tests from. A helper may
-         * pass `test` around; a check has to have taken it from the harness. */
+        /* Applies to every module, check or helper: one module reaching out is enough to put
+         * the runner back within reach of the check that imports it. */
+        const outside = leavesTheSuite(node, file);
+
+        if (outside !== null) {
+            note(node, outside);
+        }
+
+        /* This one is about the files Playwright registers tests from. A helper may pass `test`
+         * around; a check has to have taken it from the harness. */
         if (isCheck) {
             const elsewhere = bindsTestElsewhere(node);
 
