@@ -564,7 +564,7 @@
     /// still parse the same way once copied out) — a parameterless Parse() would instead use
     /// whatever culture the pasted code happens to run under.</summary>
     private static string FormatArgumentLiteral(string typeKey, string raw) => typeKey switch {
-        ArgumentParsing.TypeKeyString  => $"\"{EscapeForStringLiteral(raw)}\"",
+        ArgumentParsing.TypeKeyString  => FormatStringLiteral(raw),
         ArgumentParsing.TypeKeyChar    => $"'{EscapeForCharLiteral(raw)}'",
         ArgumentParsing.TypeKeyInt32   => raw,
         // bool.Parse has no Parse(string, IFormatProvider) overload — the uniform Parse(...)
@@ -585,6 +585,38 @@
         ArgumentParsing.TypeKeyDecimal => $"decimal.Parse(\"{EscapeForStringLiteral(raw)}\", System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture)",
         _                              => $"{ClrTypeNameFor(typeKey)}.Parse(\"{EscapeForStringLiteral(raw)}\", System.Globalization.CultureInfo.InvariantCulture)",
     };
+
+    /// <summary>
+    ///     One <c>string</c> argument as a C# literal — verbatim where that is the form a reader
+    ///     would rather have, escaped where it is the only one available.
+    ///
+    ///     WHY VERBATIM AT ALL. A regular literal writes one backslash as two, so a regular
+    ///     expression — <c>Any.StringMatching(...)</c> is an entry point, so <c>\d+</c> is
+    ///     something a visitor types on their first step — comes out as <c>"\\d+"</c>. That
+    ///     compiles and is correct, and it still reads as a puzzle: the reader typed one
+    ///     backslash and is handed two. <c>@"\d+"</c> compiles to the same three characters and
+    ///     shows the one they typed, so it is the better line to hand over.
+    ///
+    ///     It is also the only form that lets the code block above the bar draw the same literal.
+    ///     That block puts the raw field between two drawn quotes, so it was showing
+    ///     <c>"\d+"</c> — which is not valid C# at all (CS1009, unrecognised escape sequence).
+    ///     With a verbatim literal the block's <c>@"\d+"</c> and the bar's are the same text and
+    ///     both compile, and the visitor still sees in the field exactly what they typed.
+    ///
+    ///     WHY NOT ALWAYS. <c>@"ORD-"</c> is valid but noisier than <c>"ORD-"</c>, and the
+    ///     landing page's card writes the plain form — so the verbatim one is used only when it
+    ///     buys something, which is when the value carries a backslash.
+    ///
+    ///     WHAT IT CANNOT COVER. A verbatim literal escapes a quote by doubling it, so a value
+    ///     holding one would need <c>""</c> where the field shows <c>"</c> — the same mismatch
+    ///     from the other side. Those fall back to the escaped form, where the bar stays correct
+    ///     and the block is the one that reads oddly. A quote inside a pattern is rare where a
+    ///     backslash is routine, so the common case is the one that gets the exact form.
+    /// </summary>
+    private static string FormatStringLiteral(string raw) =>
+        raw.Contains('\\') && !raw.Contains('"')
+            ? $"@\"{raw}\""
+            : $"\"{EscapeForStringLiteral(raw)}\"";
 
     /// <summary>Escapes <paramref name="raw" /> for embedding in a regular (non-verbatim) C#
     /// string literal. Beyond backslash and the enclosing quote, this must also escape every

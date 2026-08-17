@@ -67,12 +67,13 @@
                 var index     = i;
                 var parameter = settled.Parameters[i];
                 var quote     = QuoteFor(parameter.TypeKey);
+                var opening   = OpeningQuoteFor(parameter.TypeKey, State.Argument(index));
 
                 @if (index > 0) {
                     <span class="tok-punctuation">, </span>
                 }
-                @if (quote is not null) {
-                    <span class="tok-string">@quote</span>
+                @if (opening is not null) {
+                    <span class="tok-string">@opening</span>
                 }
                 <input @ref="_argumentRefs[index]"
                     type="@InputTypeFor(parameter.TypeKey)"
@@ -314,6 +315,30 @@
         _ when InputTypeFor(typeKey) == "number" => "tok-number",
         _ => "tok-string",
     };
+
+    /// <summary>
+    ///     What opens the literal drawn to the left of an argument field: <c>@"</c> where the
+    ///     value carries a backslash, <c>"</c> otherwise, <c>'</c> for a char, nothing for a bare
+    ///     one. The closing side is always <see cref="QuoteFor" />'s plain character — a verbatim
+    ///     literal opens with two marks and closes with one.
+    ///
+    ///     THE <c>@</c> IS WHAT MAKES THIS BLOCK VALID C# for the values that carry a backslash,
+    ///     and <c>Any.StringMatching(...)</c> is an entry point, so a regular expression is
+    ///     something a visitor types on their first step. Drawn with a plain quote, the field's
+    ///     <c>\d+</c> came out as <c>"\d+"</c> — not a compiler error away from correct, an
+    ///     actual one: CS1009, unrecognised escape sequence. The alternative was escaping the
+    ///     value for display, which cannot be done without changing what the field shows, since
+    ///     the field is the display. A verbatim literal needs no escaping at all, so the visitor
+    ///     keeps seeing exactly what they typed and the line around it compiles.
+    ///
+    ///     Home.razor's FormatStringLiteral makes the same choice on the same condition, so the
+    ///     block and the bar under it print the same literal rather than two readings of one.
+    /// </summary>
+    private static string? OpeningQuoteFor(string typeKey, string raw) =>
+        QuoteFor(typeKey) switch {
+            "\"" when raw.Contains('\\') && !raw.Contains('"') => "@\"",
+            var quote                                        => quote,
+        };
 
     /// <summary>
     ///     The quote character drawn either side of an argument field, or <c>null</c> for one

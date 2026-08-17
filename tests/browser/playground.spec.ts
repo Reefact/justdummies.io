@@ -460,6 +460,59 @@ test.describe('the playground', () => {
     });
 
     /**
+     * A value carrying a backslash is printed as a verbatim literal, in both readings.
+     *
+     * `Any.StringMatching(...)` is an entry point, so a regular expression is something a visitor
+     * types on their first step — and a regular literal writes one backslash as two. That is
+     * correct C# and still a puzzle: the reader typed `\d+` and was handed `"\\d+"`. Worse, the
+     * block above drew the raw field between plain quotes, so it printed `"\d+"`, which is not
+     * valid C# at all — CS1009, unrecognised escape sequence.
+     *
+     * A verbatim literal needs no escaping, so both readings can print what was typed and both
+     * compile. Verified against the compiler, not assumed: `@"\d+"` builds and yields the three
+     * characters `\`, `d`, `+`.
+     */
+    test('prints a backslashed value as a verbatim literal, the same in the block and the bar', async ({ page, context }) => {
+        await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+        await page.goto('/playground/');
+
+        await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'StringMatching(pattern)' });
+        await page.locator('.chain-link').nth(0).locator('input').fill(String.raw`\d+`);
+
+        // The field keeps what was typed — the whole reason a verbatim literal is used rather
+        // than an escaped one, which would have had to change the field to change the display.
+        await expect(page.locator('.chain-link').nth(0).locator('input')).toHaveValue(String.raw`\d+`);
+
+        // The block opens the literal with `@"`, so what it draws is C# and not CS1009.
+        await expect(page.locator('.chain-link').nth(0).locator('.call .tok-string').first()).toHaveText('@"');
+
+        const line = String.raw`string anyValue = Any.StringMatching(@"\d+").Generate();`;
+
+        await expect(page.locator('.playground-widget .code-bar .code-text')).toHaveText(line);
+
+        await page.getByRole('button', { name: 'Copy code' }).click();
+        expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(line);
+    });
+
+    /**
+     * A value with no backslash keeps the plain literal the landing page's card writes — the
+     * verbatim form is used only where it buys something, since `@"ORD-"` is noisier than
+     * `"ORD-"` for no gain.
+     */
+    test('leaves an ordinary value in a plain literal', async ({ page }) => {
+        await page.goto('/playground/');
+
+        await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'String()' });
+        await page.locator('.chain-link').nth(1).locator('select').selectOption({ label: 'StartingWith(prefix)' });
+        await page.locator('.chain-link').nth(1).locator('input').fill('ORD-');
+
+        await expect(page.locator('.chain-link').nth(1).locator('.call .tok-string').first()).toHaveText('"');
+        await expect(page.locator('.playground-widget .code-bar .code-text')).toHaveText(
+            'string anyValue = Any.String().StartingWith("ORD-").Generate();',
+        );
+    });
+
+    /**
      * The declared type follows the chain rather than the entry point's name, and it is a C#
      * keyword where the language has one. `var` is the fallback for a receiver the catalogue does
      * not describe a Generate() for — it compiles, which is the whole reason it is the fallback —
