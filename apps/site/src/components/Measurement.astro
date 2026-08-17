@@ -204,6 +204,19 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
     let returnFocusTo: HTMLElement | null = null;
 
     /**
+     * Declared up here rather than by the rest of the journey tracking below, because
+     * `start()` can now reach into `scenes` and `seenScenes` through `reportHeldScene()` —
+     * and `start()` can run as early as this document's first synchronous pass, from
+     * `applyDecision()` reading a grant already on record. A `const` declared later is
+     * still in its temporal dead zone at that point; reading it there throws, and the
+     * throw happens inside the consent setup, before anything after it — the storage
+     * listener, the journey listeners, the search listeners — ever gets registered.
+     */
+    const scenes: HTMLElement[] = Array.from(document.querySelectorAll<HTMLElement>('[data-scene]'));
+    const seenScenes = new Set<string>();
+    const seenActs = new Set<string>();
+
+    /**
      * What `remembered()` falls back to when storage itself is the thing that failed.
      *
      * A browser that throws on `setItem` throws on `getItem` too, so without this a
@@ -262,6 +275,7 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
 
         reporting = true;
         tag.jdAnalyticsStart();
+        reportHeldScene();
     }
 
     /**
@@ -435,9 +449,6 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
      * is registered as a metric rather than a dimension — the same separation the
      * collector makes by writing it among its doubles.
      */
-    const scenes: HTMLElement[] = Array.from(document.querySelectorAll<HTMLElement>('[data-scene]'));
-    const seenScenes = new Set<string>();
-    const seenActs = new Set<string>();
     let dwelling: number | undefined;
 
     function sceneOrdinal(name: string | undefined): number {
@@ -468,6 +479,42 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
         return box.top <= middle && box.bottom >= middle;
     }
 
+    /** Marks a scene seen and reports it, with the act it belongs to if this is the act's first. */
+    function reportScene(name: string, act: string | undefined): void {
+        seenScenes.add(name);
+        track('scene_view', { scene_name: name, act: act ?? '', scene_ordinal: sceneOrdinal(name) });
+
+        if (act !== undefined && !seenActs.has(act)) {
+            seenActs.add(act);
+            track('act_reached', { act });
+        }
+    }
+
+    /**
+     * The scene a visitor was already reading when reporting starts, which the dwell timer
+     * cannot report a second time: it already fired while unanswered, found nothing to
+     * report, and consumed nothing — and `Scene.astro` dispatches `jd:scene-entered` only on
+     * a fresh arrival, not because a script elsewhere started caring. Without this, a reader
+     * who dwells on the first scene while deciding, then accepts without scrolling, never has
+     * that scene enter `scene_view` at all — the scene likeliest to still be on screen the
+     * moment the banner is answered.
+     *
+     * Geometry rather than `data-current`, for the same reason `holdsTheBand` already is: the
+     * act is derived the same way `Scene.astro` derives it for the event this stands in for.
+     */
+    function reportHeldScene(): void {
+        const held: HTMLElement | undefined = scenes.find(
+            (scene: HTMLElement) =>
+                scene.dataset.scene !== undefined && !seenScenes.has(scene.dataset.scene) && holdsTheBand(scene.dataset.scene),
+        );
+
+        if (held === undefined) {
+            return;
+        }
+
+        reportScene(held.dataset.scene as string, held.closest<HTMLElement>('.act')?.id);
+    }
+
     document.addEventListener('jd:scene-entered', (event: Event) => {
         const detail: SceneEntered = (event as CustomEvent<SceneEntered>).detail ?? {};
         const scene: string | undefined = detail.scene;
@@ -492,13 +539,7 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
                 return;
             }
 
-            seenScenes.add(scene);
-            track('scene_view', { scene_name: scene, act: detail.act ?? '', scene_ordinal: sceneOrdinal(scene) });
-
-            if (detail.act !== undefined && !seenActs.has(detail.act)) {
-                seenActs.add(detail.act);
-                track('act_reached', { act: detail.act });
-            }
+            reportScene(scene, detail.act);
         }, DWELL_MS);
     });
 
@@ -620,9 +661,7 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
          * abandoned ones in the report, which is the opposite of what the measurement plan
          * says it wants to learn.
          *
-         * Both signals, because `pagehide` alone is unreliable on mobile and
-         * `visibilitychange` is what actually fires there. Firing twice costs nothing:
-         * `reportSearch` empties the term.
+         * Firing twice costs nothing: `reportSearch` empties the term.
          */
         function flushSearch(): void {
             window.clearTimeout(settling);
@@ -630,8 +669,19 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
         }
 
         window.addEventListener('pagehide', flushSearch);
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden') {
+
+        /**
+         * A click on a result, not `visibilitychange`. `hidden` used to stand in here for the
+         * same click — `pagehide` alone was found unreliable for it on mobile — but `hidden`
+         * fires on far more than a departure: a tab switch, a locked screen, a backgrounded
+         * app the visitor returns to a moment later, still on this page. Flushing on those
+         * sent an unsettled term as though it were final, and a visitor who came back and kept
+         * typing then sent the real one behind it — partial and duplicate terms in a report
+         * that documents itself as one settled term per search. A click on a result is the
+         * same signal the click-through was ever a proxy for, earlier and unambiguous.
+         */
+        document.getElementById('api-search-results')?.addEventListener('click', (event: Event) => {
+            if (event.target instanceof Element && event.target.closest('a') !== null) {
                 flushSearch();
             }
         });
