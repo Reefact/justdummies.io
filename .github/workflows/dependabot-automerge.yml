@@ -95,7 +95,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
-        run: gh pr merge --auto --merge "$PR_URL"
+        run: gh pr merge --auto --rebase "$PR_URL"
 
       - name: Withdraw auto-merge from a foreign head
         # The step that closes the gap: auto-merge armed on Dependabot's own commit stays
