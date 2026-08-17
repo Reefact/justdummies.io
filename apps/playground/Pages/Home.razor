@@ -94,6 +94,8 @@
         *@
         <div class="result-bar" role="status" aria-live="polite">
             @if (_refusal is not null) {
+                <span class="arrow" aria-hidden="true">→</span>
+                <span class="label">@PlaygroundStrings.T(LocaleState.Current, "hero.produced")</span>
                 <output @key="_drawToken" class="refusal">@_refusal</output>
             } else if (_generatedValue is not null) {
                 <span class="arrow" aria-hidden="true">→</span>
@@ -357,7 +359,16 @@
     /// </summary>
     private IReadOnlyList<CodeSegment> CodeSegments {
         get {
+            // The declaration the line is only half of without it. A chain ending in Generate()
+            // is an expression, and an expression is not something a reader can paste into a
+            // method body and run — what they can paste is the assignment, which also states the
+            // one thing the chain's own text never spells out: what type comes back. The same
+            // opening the landing page's snippet has, for the same reason.
+            var declared = DeclaredTypeName;
+
             var segments = new List<CodeSegment> {
+                new(declared, declared == "var" || IsCSharpKeywordType(declared) ? "tok-keyword" : "tok-type"),
+                new(" anyValue = ", null),
                 new("Any", "tok-type"),
                 new(".", "tok-punctuation"),
             };
@@ -415,6 +426,72 @@
     /// <summary>What the copy button puts on the clipboard: <see cref="CodeSegments" /> joined
     /// back up, so it is exactly the line drawn in the bar above it.</summary>
     private string CodeText => string.Concat(CodeSegments.Select(s => s.Text));
+
+    /// <summary>
+    ///     The C# type the copied line declares its variable as — the type <c>Generate()</c>
+    ///     actually returns for the chain as it currently stands, read off the catalogue rather
+    ///     than guessed from the entry point: <c>Any.String().WithLength(4)</c> and
+    ///     <c>Any.String()</c> both come back as <c>string</c>, but nothing in the chain's own
+    ///     text says so, and a reader pasting the line needs it said.
+    ///
+    ///     Falls back to <c>var</c>, which compiles for any right-hand side that is not null, so a
+    ///     receiver whose <c>Generate()</c> the catalogue does not describe still produces a line
+    ///     that builds. It cannot fall back to <c>var</c> on an empty chain and produce the
+    ///     uncompilable <c>var anyValue = null;</c>, because an empty chain has no bar to print on
+    ///     — see the card's markup above.
+    /// </summary>
+    private string DeclaredTypeName =>
+        PlaygroundCatalogue.StepsFor(_currentTypeKey).FirstOrDefault(m => m.MethodName == "Generate") is { } generate
+            ? CSharpTypeNameFor(generate.ReturnTypeKey)
+            : "var";
+
+    /// <summary>
+    ///     A type key as it is written in C#: the keyword where the language has one, the bare
+    ///     type name otherwise.
+    ///
+    ///     Deliberately not <see cref="ClrTypeNameFor" />, which throws on anything it has no
+    ///     entry for. That is right there — it formats arguments, and an argument type nobody
+    ///     registered is a defect that should stop the build rather than emit a broken literal —
+    ///     and wrong here: this names a *return* type, the catalogue grows new generators without
+    ///     this file hearing about it, and a playground that threw while rendering a chain it had
+    ///     just run successfully would be trading a cosmetic gap for a blank page.
+    /// </summary>
+    private static string CSharpTypeNameFor(string returnTypeKey) {
+        // A terminal Generate()'s return type key is namespaced by the catalogue generator —
+        // "Terminal:System.String", not "System.String" — so that a drawn value's type can never
+        // collide with a chain-eligible builder's key (tools/playground-catalogue's
+        // CatalogueWalker). Everything after the last ":" is the type itself, which is what the
+        // parameter type keys below are written as.
+        string typeKey = returnTypeKey[(returnTypeKey.LastIndexOf(':') + 1)..];
+
+        return typeKey switch {
+        ArgumentParsing.TypeKeyString  => "string",
+        ArgumentParsing.TypeKeyChar    => "char",
+        ArgumentParsing.TypeKeyInt32   => "int",
+        ArgumentParsing.TypeKeyBoolean => "bool",
+        ArgumentParsing.TypeKeyByte    => "byte",
+        ArgumentParsing.TypeKeySByte   => "sbyte",
+        ArgumentParsing.TypeKeyInt16   => "short",
+        ArgumentParsing.TypeKeyUInt16  => "ushort",
+        ArgumentParsing.TypeKeyUInt32  => "uint",
+        ArgumentParsing.TypeKeyInt64   => "long",
+        ArgumentParsing.TypeKeyUInt64  => "ulong",
+        ArgumentParsing.TypeKeySingle  => "float",
+        ArgumentParsing.TypeKeyDouble  => "double",
+        ArgumentParsing.TypeKeyDecimal => "decimal",
+        // Everything else keeps its own name, unqualified: Guid, DateOnly, TimeSpan, Uri and
+        // whatever the catalogue gains next all live in namespaces a C# file imports implicitly,
+        // so the short name is what a reader would type.
+        _ => typeKey[(typeKey.LastIndexOf('.') + 1)..],
+        };
+    }
+
+    /// <summary>Whether a name from <see cref="CSharpTypeNameFor" /> is a language keyword, and so
+    /// takes the keyword colour rather than the type colour — the same distinction highlight.ts
+    /// draws on the site, where <c>string</c> and <c>Guid</c> are not painted alike.</summary>
+    private static bool IsCSharpKeywordType(string name) => name is
+        "string" or "char" or "int" or "bool" or "byte" or "sbyte" or "short" or
+        "ushort" or "uint" or "long" or "ulong" or "float" or "double" or "decimal";
 
     /// <summary>Formats one argument the way it would need to read in real C#, so "Copy code"
     /// produces code that actually compiles rather than the raw text an input held. Only
