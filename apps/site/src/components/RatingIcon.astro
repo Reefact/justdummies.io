@@ -1,0 +1,90 @@
+---
+/**
+ * The three-icon vocabulary for a rating (§4quinquies of the why-justdummies rewrite): a
+ * check for "core", a wrench for "possible", a neutral dash for "out-of-scope". One
+ * definition so a rating never gets a different glyph in two places on the page.
+ *
+ * RESERVED FOR THE CONDENSED MATRIX AND ITS LEGEND. The detailed criterion blocks already
+ * carry the rating word and the note that qualifies it — an icon there would only restate
+ * what the prose just explained.
+ *
+ * The glyph is always `aria-hidden`, and the word is always present next to it, whether
+ * visible (the micro-legend) or `.visually-hidden` (a table cell, where the word would
+ * otherwise repeat forty times down the column). An icon never stands in for text a screen
+ * reader cannot read.
+ */
+import type { Rating } from '../comparison';
+
+interface Props {
+    rating: Rating;
+    label: string;
+    /** Hidden in a table cell (the glyph carries the visual weight); shown in the legend. */
+    hideLabel?: boolean;
+}
+
+const { rating, label, hideLabel = true } = Astro.props;
+---
+
+<span class="rating-icon" data-rating={rating}>
+    {
+        rating === 'core' && (
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+                <polyline points="20 6 9 17 4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+        )
+    }
+    {
+        rating === 'possible' && (
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+                <path
+                    d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                />
+            </svg>
+        )
+    }
+    {
+        rating === 'out-of-scope' && (
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
+                <line x1="8" y1="12" x2="16" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+        )
+    }
+    <span class={hideLabel ? 'visually-hidden' : 'rating-icon-label'}>{label}</span>
+</span>
+
+<style>
+    .rating-icon {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--jd-space-2);
+    }
+
+    .rating-icon svg {
+        width: 1em;
+        height: 1em;
+        flex: none;
+    }
+
+    .rating-icon-label {
+        font-size: var(--jd-text-sm);
+    }
+
+    /* §4quinquies: the check takes the site's accent, never plain "good" green — the other
+       two ratings are not failures, so nothing here reads as red. */
+    .rating-icon[data-rating='core'] {
+        color: var(--jd-accent);
+    }
+
+    .rating-icon[data-rating='possible'] {
+        color: var(--jd-text-primary);
+    }
+
+    .rating-icon[data-rating='out-of-scope'] {
+        color: var(--jd-text-muted);
+    }
+</style>

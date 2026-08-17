@@ -18,11 +18,10 @@
  *   #try-it    §11.9 — coexistence made into an action, after the reasons not to
  *   #sources   §11.10 — what was checked, where, when, and how to say we got it wrong
  */
-import CodeSample from './CodeSample.astro';
 import Comparison from './Comparison.astro';
 import CopyableCommand from './CopyableCommand.astro';
 import ToolCard from './ToolCard.astro';
-import { localeFromPath } from '../i18n/routing';
+import { localeFromPath, pathForLocale } from '../i18n/routing';
 import { localeTags, useTranslations, type UiKey } from '../i18n/ui';
 import { site } from '../site';
 import {
@@ -110,6 +109,23 @@ const reportUrl =
 const isPreRelease: boolean = site.library.version.includes('-');
 
 /**
+ * §7 of the why-justdummies rewrite: a case is a label and a body, rendered as one icon
+ * list item rather than six near-identical `<div class="case">` blocks. The pre-release
+ * case folds in here rather than branching in the template, so `isPreRelease` still governs
+ * whether it exists at all (§2, §14.1) without a second conditional at the render site.
+ */
+const notForCases: ReadonlyArray<{ labelKey: UiKey; bodyKey: UiKey }> = [
+    { labelKey: 'why.notFor.realism.label', bodyKey: 'why.notFor.realism.body' },
+    { labelKey: 'why.notFor.noRules.label', bodyKey: 'why.notFor.noRules.body' },
+    { labelKey: 'why.notFor.exploration.label', bodyKey: 'why.notFor.exploration.body' },
+    { labelKey: 'why.notFor.secrets.label', bodyKey: 'why.notFor.secrets.body' },
+    ...(isPreRelease
+        ? [{ labelKey: 'why.notFor.preRelease.label' as UiKey, bodyKey: 'why.notFor.preRelease.body' as UiKey }]
+        : []),
+    { labelKey: 'why.notFor.solo.label', bodyKey: 'why.notFor.solo.body' },
+];
+
+/**
  * The libraries whose claims have a source to show. The hand-written literal has none to
  * have: its ratings follow from what a literal is, not from a project's documentation.
  */
@@ -134,25 +150,6 @@ const sections: ReadonlyArray<{ id: string; key: UiKey }> = [
 
     <p class="lede">{t('why.lede')}</p>
 
-    {/*
-      §4's three questions, answered before the first criterion. This is the whole page in
-      sixty words, and it is what a reader who scrolls no further leaves with.
-    */}
-    <dl class="orientation">
-        <div>
-            <dt>{t('why.orient.replace.question')}</dt>
-            <dd>{t('why.orient.replace.answer')}</dd>
-        </div>
-        <div>
-            <dt>{t('why.orient.gap.question')}</dt>
-            <dd>{t('why.orient.gap.answer')}</dd>
-        </div>
-        <div>
-            <dt>{t('why.orient.try.question')}</dt>
-            <dd>{t('why.orient.try.answer')}</dd>
-        </div>
-    </dl>
-
     <nav class="toc" aria-label={t('why.toc.label')}>
         <span class="toc-label">{t('why.toc.label')}</span>
         <ul>
@@ -167,27 +164,11 @@ const sections: ReadonlyArray<{ id: string; key: UiKey }> = [
     <section id="problem" aria-labelledby="why-problem-heading">
         <h3 id="why-problem-heading">{t('why.problem.heading')}</h3>
 
-        <p>{t('why.problem.body1')}</p>
+        <p>{t('why.problem.body')}</p>
 
-        <CodeSample id="literal-test" outcome="none" />
-
-        <p>{t('why.problem.body2')}</p>
-
-        <CodeSample id="concise-test" outcome="none" />
-
-        <p>{t('why.problem.body3')}</p>
-
-        {/*
-          The guard clauses, folded. They are the evidence behind "your own code refuses
-          things", and a reader who already believes that does not need to read three
-          `throw`s to keep going — which is exactly what `<details>` is for, and why nothing
-          above depends on opening it.
-        */}
-        <details class="rules">
-            <summary>{t('why.problem.rules.summary')}</summary>
-            <p>{t('why.problem.rules.body')}</p>
-            <CodeSample id="order-reference-invariants" outcome="none" />
-        </details>
+        <p class="home-link">
+            <a href={pathForLocale('/', locale)}>{t('why.problem.homeLink')}</a>
+        </p>
     </section>
 
     <section id="choose" aria-labelledby="why-choose-heading">
@@ -213,14 +194,16 @@ const sections: ReadonlyArray<{ id: string; key: UiKey }> = [
 
         <p>{t('why.instead.lede')}</p>
 
-        {
-            competitors.map((entry: Competitor) => (
-                <div class="instead">
-                    <h4>{entry.kind === 'manual' ? t(entry.nameKey) : entry.name}</h4>
-                    <p>{t(entry.chooseInsteadKey)}</p>
-                </div>
-            ))
-        }
+        <div class="instead-cards">
+            {
+                competitors.map((entry: Competitor) => (
+                    <article class="instead-card">
+                        <h4>{entry.kind === 'manual' ? t(entry.nameKey) : entry.name}</h4>
+                        <p>{t(entry.chooseInsteadKey)}</p>
+                    </article>
+                ))
+            }
+        </div>
     </section>
 
     <section id="not-for" aria-labelledby="why-notfor-heading">
@@ -228,34 +211,27 @@ const sections: ReadonlyArray<{ id: string; key: UiKey }> = [
 
         <p>{t('why.notFor.lede')}</p>
 
-        <div class="case">
-            <h4>{t('why.notFor.realism.label')}</h4>
-            <p>{t('why.notFor.realism.body')}</p>
-        </div>
-        <div class="case">
-            <h4>{t('why.notFor.noRules.label')}</h4>
-            <p>{t('why.notFor.noRules.body')}</p>
-        </div>
-        <div class="case">
-            <h4>{t('why.notFor.exploration.label')}</h4>
-            <p>{t('why.notFor.exploration.body')}</p>
-        </div>
-        <div class="case">
-            <h4>{t('why.notFor.secrets.label')}</h4>
-            <p>{t('why.notFor.secrets.body')}</p>
-        </div>
-        {
-            isPreRelease && (
-                <div class="case">
-                    <h4>{t('why.notFor.preRelease.label')}</h4>
-                    <p>{t('why.notFor.preRelease.body')}</p>
-                </div>
-            )
-        }
-        <div class="case">
-            <h4>{t('why.notFor.solo.label')}</h4>
-            <p>{t('why.notFor.solo.body')}</p>
-        </div>
+        <ul class="not-for-list">
+            {
+                notForCases.map((item) => (
+                    <li class="not-for-item">
+                        <svg class="not-for-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+                            <path
+                                d="m9 6 6 6-6 6"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            />
+                        </svg>
+                        <div>
+                            <h4>{t(item.labelKey)}</h4>
+                            <p>{t(item.bodyKey)}</p>
+                        </div>
+                    </li>
+                ))
+            }
+        </ul>
     </section>
 
     <section id="try-it" aria-labelledby="why-tryit-heading">
@@ -278,23 +254,36 @@ const sections: ReadonlyArray<{ id: string; key: UiKey }> = [
 
         <p>{t('why.sources.body')}</p>
 
-        <p class="verified">{t('why.verified.label')} {verifiedDate}.</p>
+        <p class="verified">
+            <span class="verified-badge">
+                {t('why.verified.label')} {verifiedDate}
+            </span>
+        </p>
 
         {
             cited.map((entry: CitedLibrary) => (
                 <div class="source">
                     <h4>{entry.name}</h4>
                     <p>{t(entry.checkedKey)}</p>
-                    <ul>
+                    <div class="source-links">
                         {entry.sources.map((url: string) => (
-                            <li>
-                                <a href={url} target="_blank" rel="noopener noreferrer">
-                                    {url.replace('https://', '')}
-                                    <span class="visually-hidden"> {t('state.newTab')}</span>
-                                </a>
-                            </li>
+                            <a class="source-chip" href={url} target="_blank" rel="noopener noreferrer">
+                                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+                                    <path
+                                        d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    />
+                                    <polyline points="15 3 21 3 21 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    <line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                </svg>
+                                {url.replace('https://', '')}
+                                <span class="visually-hidden"> {t('state.newTab')}</span>
+                            </a>
                         ))}
-                    </ul>
+                    </div>
                 </div>
             ))
         }
@@ -302,18 +291,27 @@ const sections: ReadonlyArray<{ id: string; key: UiKey }> = [
         <div class="source">
             <h4>{t('why.sources.mentioned')}</h4>
             <p>{t('why.sources.mentionedBody')}</p>
-            <ul>
+            <div class="source-links">
                 {
                     mentioned.map((url: string) => (
-                        <li>
-                            <a href={url} target="_blank" rel="noopener noreferrer">
-                                {url.replace('https://', '')}
-                                <span class="visually-hidden"> {t('state.newTab')}</span>
-                            </a>
-                        </li>
+                        <a class="source-chip" href={url} target="_blank" rel="noopener noreferrer">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+                                <path
+                                    d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+                                <polyline points="15 3 21 3 21 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                <line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                            {url.replace('https://', '')}
+                            <span class="visually-hidden"> {t('state.newTab')}</span>
+                        </a>
                     ))
                 }
-            </ul>
+            </div>
         </div>
 
         <p class="report">
@@ -373,30 +371,6 @@ const sections: ReadonlyArray<{ id: string; key: UiKey }> = [
         margin-top: var(--jd-space-8);
     }
 
-    /* --- the three questions, answered above everything else ------------------------- */
-
-    .orientation {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
-        gap: var(--jd-space-4);
-        margin: 0 0 var(--jd-space-6);
-        padding: var(--jd-space-4);
-        border: 1px solid var(--jd-border);
-        border-radius: var(--jd-radius-md);
-        background: var(--jd-surface);
-    }
-
-    .orientation dt {
-        font-weight: 600;
-        margin-bottom: var(--jd-space-1);
-    }
-
-    .orientation dd {
-        margin: 0;
-        font-size: var(--jd-text-sm);
-        color: var(--jd-text-muted);
-    }
-
     /* --- where the page goes next ---------------------------------------------------- */
 
     .toc {
@@ -423,26 +397,9 @@ const sections: ReadonlyArray<{ id: string; key: UiKey }> = [
 
     /* --- the problem ------------------------------------------------------------------ */
 
-    .rules {
-        border: 1px solid var(--jd-border);
-        border-radius: var(--jd-radius-md);
-        padding: var(--jd-space-3) var(--jd-space-4);
-        margin: var(--jd-space-4) 0 0;
-    }
-
-    .rules summary {
-        cursor: pointer;
-        font-weight: 600;
-        color: var(--jd-text-primary);
-    }
-
-    .rules summary:focus-visible {
-        outline: 2px solid var(--jd-accent);
-        outline-offset: 2px;
-    }
-
-    .rules p {
-        margin: var(--jd-space-3) 0;
+    .home-link {
+        margin: 0;
+        font-size: var(--jd-text-sm);
     }
 
     /* --- the four needs --------------------------------------------------------------- */
@@ -457,26 +414,74 @@ const sections: ReadonlyArray<{ id: string; key: UiKey }> = [
      * browser check found it at 320 and 360 and nowhere else, which is exactly the width
      * band a `minmax()` minimum goes wrong in.
      */
+    /* `align-items: start` rather than the grid default (`stretch`): the hardcoded-value
+       card carries no repository link, so stretching it to match a taller row-mate would
+       leave dead space at its own bottom instead of just ending where its content ends. */
     .cards {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
+        align-items: start;
         gap: var(--jd-space-4);
     }
 
-    /* --- where another tool wins, and where none of them do --------------------------- */
+    /* --- where another tool wins --------------------------------------------------------
+       Deliberately quieter than ToolCard's own look (no accent border, no surface shadow):
+       #choose is the structuring choice on this page, #instead only qualifies it, and the
+       two should not compete for the same visual weight. */
 
-    .instead,
-    .case {
-        margin: 0 0 var(--jd-space-6);
+    .instead-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr));
+        gap: var(--jd-space-4);
     }
 
-    .instead:last-child,
-    .case:last-child {
-        margin-bottom: 0;
+    .instead-card {
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-md);
+        padding: var(--jd-space-3) var(--jd-space-4);
     }
 
-    .instead p,
-    .case p {
+    .instead-card h4 {
+        color: var(--jd-text-muted);
+    }
+
+    .instead-card p {
+        margin: 0;
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+    }
+
+    /* --- where none of them do -----------------------------------------------------------
+       A sober list rather than a card grid: this section tempers a claim rather than sells
+       one, and a heavy border or a drop shadow here would read as another product pitch. */
+
+    .not-for-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: var(--jd-space-4);
+    }
+
+    .not-for-item {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--jd-space-3);
+    }
+
+    .not-for-icon {
+        flex: none;
+        width: 1.1em;
+        height: 1.1em;
+        margin-top: 0.2em;
+        color: var(--jd-text-muted);
+    }
+
+    .not-for-item h4 {
+        margin: 0 0 var(--jd-space-1);
+    }
+
+    .not-for-item p {
         margin: 0;
     }
 
@@ -488,9 +493,22 @@ const sections: ReadonlyArray<{ id: string; key: UiKey }> = [
         margin-bottom: var(--jd-space-2);
     }
 
-    /* --- what was checked, and where --------------------------------------------------- */
+    /* --- what was checked, and where ---------------------------------------------------
+       Deliberately the plainest section on the page: this is an annexe a reader checks,
+       not editorial content, and dressing it up like the sections above it would trade
+       credibility-by-rigour for the look of a pitch (§9). */
 
+    /* A pill rather than a line of text lost in the flow — the freshness signal a reader
+       skimming past should catch immediately. */
     .verified {
+        margin: 0 0 var(--jd-space-4);
+    }
+
+    .verified-badge {
+        display: inline-block;
+        padding: var(--jd-space-1) var(--jd-space-3);
+        border: 1px solid var(--jd-border);
+        border-radius: 999px;
         font-size: var(--jd-text-sm);
         color: var(--jd-text-muted);
     }
@@ -500,19 +518,42 @@ const sections: ReadonlyArray<{ id: string; key: UiKey }> = [
     }
 
     .source p {
-        margin: 0 0 var(--jd-space-1);
+        margin: 0 0 var(--jd-space-2);
         font-size: var(--jd-text-sm);
         color: var(--jd-text-muted);
     }
 
-    /* A source is a URL, and a URL is one word. Left alone, the longest of them is wider
-       than a phone and takes the whole document sideways with it — which is the one thing
-       §11.7 asks this page never to do. */
-    .source ul {
-        margin: 0;
-        padding-inline-start: var(--jd-space-4);
+    /* Chips, not a bulleted list of raw URLs: denser, and each one scans as a single unit
+       rather than as a line of text to read. A source is still just a URL, and the longest
+       of them is wider than a phone left alone — `overflow-wrap` is what keeps a chip from
+       taking the whole document sideways with it (§11.7). */
+    .source-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--jd-space-2);
+    }
+
+    .source-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--jd-space-1);
+        max-width: 100%;
+        padding: var(--jd-space-1) var(--jd-space-2);
+        border-radius: var(--jd-radius-sm);
+        background: var(--jd-surface);
+        color: var(--jd-text-muted);
         font-size: var(--jd-text-sm);
         overflow-wrap: anywhere;
+    }
+
+    .source-chip:hover {
+        color: var(--jd-text-primary);
+    }
+
+    .source-chip svg {
+        flex: none;
+        width: 0.85em;
+        height: 0.85em;
     }
 
     .report {

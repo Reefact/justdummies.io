@@ -32,6 +32,7 @@
  * is deciding which one that is, and saying so in words.
  */
 import CodeSample from './CodeSample.astro';
+import RatingIcon from './RatingIcon.astro';
 import { localeFromPath } from '../i18n/routing';
 import { useTranslations } from '../i18n/ui';
 import { axisOf, competitors, families, ratings, tools, type Cell, type Rating, type Tool } from '../comparison';
@@ -87,10 +88,17 @@ function ratingLabel(rating: Rating): string {
         </p>
     </div>
 
+    {/*
+      §4bis of the why-justdummies rewrite: native <details>/<summary>, the same mechanism
+      the matrix already uses below — no JS required to read every family, in keeping with
+      ADR-0004. Only the first family opens by default, so the comparison's strongest
+      section is not buried, while the other three start collapsed to cut the density a
+      reader meets on first scroll.
+    */}
     {
         families.map((family) => (
-            <div class="family">
-                <h4>{t(family.headingKey)}</h4>
+            <details class="family" open={family.id === 'accepted'}>
+                <summary>{t(family.headingKey)}</summary>
 
                 {family.axes.map((id) => {
                     const axis = axisOf(id);
@@ -137,7 +145,7 @@ function ratingLabel(rating: Rating): string {
                         </div>
                     );
                 })}
-            </div>
+            </details>
         ))
     }
 
@@ -152,6 +160,20 @@ function ratingLabel(rating: Rating): string {
     <details class="matrix">
         <summary>{t('why.matrix.summary')}</summary>
         <p class="matrix-intro">{t('why.matrix.intro')}</p>
+        {/*
+          §5 of the why-justdummies rewrite: the legend higher up the page is easy to have
+          scrolled past by the time a reader lands here via an anchor link, so the three
+          icons get their names repeated once more, compactly, right where they are read.
+        */}
+        <ul class="matrix-legend" aria-label={t('why.legend.heading')}>
+            {
+                ratings.map((rating) => (
+                    <li>
+                        <RatingIcon rating={rating.id} label={t(rating.labelKey)} hideLabel={false} />
+                    </li>
+                ))
+            }
+        </ul>
         <table>
             <caption>{t('why.table.caption')}</caption>
             <thead>
@@ -196,7 +218,10 @@ function ratingLabel(rating: Rating): string {
                                             data-competitor={tool.kind === 'self' ? undefined : tool.id}
                                             data-rating={tool.ratings[axis.id].rating}
                                         >
-                                            {ratingLabel(tool.ratings[axis.id].rating)}
+                                            <RatingIcon
+                                                rating={tool.ratings[axis.id].rating}
+                                                label={ratingLabel(tool.ratings[axis.id].rating)}
+                                            />
                                         </td>
                                     ))}
                                 </tr>
@@ -383,7 +408,10 @@ function ratingLabel(rating: Rating): string {
         margin: var(--jd-space-8) 0 0;
     }
 
-    .family h4 {
+    /* The family's own heading doubles as the disclosure control — the same idiom the
+       matrix below already uses, rather than a second, JS-driven toggle beside a static
+       heading (ADR-0004). */
+    .family summary {
         font-size: var(--jd-text-lg);
         line-height: var(--jd-line-tight);
         margin: 0;
@@ -532,6 +560,18 @@ function ratingLabel(rating: Rating): string {
         color: var(--jd-text-muted);
     }
 
+    .matrix-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--jd-space-1) var(--jd-space-4);
+        list-style: none;
+        margin: 0 0 var(--jd-space-4);
+        padding: var(--jd-space-2) var(--jd-space-3);
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-sm);
+        color: var(--jd-text-muted);
+    }
+
     table {
         width: 100%;
         border-collapse: collapse;
@@ -579,19 +619,7 @@ function ratingLabel(rating: Rating): string {
         font-size: var(--jd-text-sm);
     }
 
-    /* Three answers, three treatments. With only two, the middle one read as the absence of
-       a verdict rather than as a verdict of its own — and it is the most common cell here. */
-    td[data-rating='core'] {
-        color: var(--jd-text-primary);
-        font-weight: 600;
-    }
-
-    td[data-rating='possible'] {
-        color: var(--jd-text-primary);
-        font-style: italic;
-    }
-
-    td[data-rating='out-of-scope'] {
-        color: var(--jd-text-muted);
-    }
+    /* A cell's own colour now comes from RatingIcon (§4quinquies) rather than from the text
+       this rule used to style — the glyph carries the three-way distinction the old
+       weight/italic/muted treatment gave the words. */
 </style>

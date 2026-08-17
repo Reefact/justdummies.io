@@ -197,11 +197,15 @@ if (axes.length !== allAxisIds.length || allAxisIds.some((id) => !axes.some((axi
  * consecutive wins before reaching a criterion anyone else could take — which is how a
  * comparison stops being read as one.
  *
- * Grouped by question, the order is the reader's rather than ours, and each family holds at
- * least one criterion JustDummies does not win: AutoFixture takes `graph` in the first,
- * every option ties on `reuse` in the second, Bogus takes `realism` outright in the third,
- * and JustDummies is only "possible" on `compileTime` in the fourth. Nothing was deleted to
- * arrange that; the ten criteria and their answers are the ones that were already here.
+ * Grouped by question, the order is the reader's rather than ours, and three of the four
+ * families hold a criterion JustDummies does not win outright: AutoFixture takes `graph` in
+ * the first, every option ties on `reuse` in the second, Bogus takes `realism` outright in
+ * the third. The fourth is the one family where JustDummies rates "core" on all three of its
+ * criteria — but two of the three notes still carry a real limit: `reproducibility` ships
+ * through the xUnit adapter only, and `compileTime` catches a self-contradictory rule, never
+ * a simply forgotten one, which is a ceiling every option in this comparison shares, not a
+ * JustDummies-specific gap. Nothing was deleted to arrange any of this; the ten criteria and
+ * their answers are the ones that were already here.
  */
 export interface Family {
     id: string;
@@ -327,7 +331,7 @@ const justDummies: Tool = {
         realism: { rating: 'out-of-scope', noteKey: 'why.note.justdummies.realism' },
         graph: { rating: 'possible', noteKey: 'why.note.justdummies.graph' },
         reproducibility: { rating: 'core', noteKey: 'why.note.justdummies.reproducibility' },
-        compileTime: { rating: 'possible', noteKey: 'why.note.justdummies.compileTime' },
+        compileTime: { rating: 'core', noteKey: 'why.note.justdummies.compileTime' },
         codeGen: { rating: 'core', noteKey: 'why.note.justdummies.codeGen' },
         exploration: { rating: 'out-of-scope', noteKey: 'why.note.justdummies.exploration' },
     },
