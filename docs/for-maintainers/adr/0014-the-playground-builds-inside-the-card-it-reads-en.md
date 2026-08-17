@@ -2,8 +2,9 @@
 
 🌍 🇬🇧 English (this file) · 🇫🇷 [Français](0014-le-playground-construit-dans-le-bloc-quil-donne-a-lire-fr.md)
 
-**Status:** Proposed
+**Status:** Accepted
 **Proposed:** 2026-08-17
+**Accepted:** 2026-08-17
 **Decision Makers:** Reefact
 
 ## Context
