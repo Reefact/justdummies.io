@@ -13,9 +13,13 @@
     you see" must not be attached to the one thing showing something else. Home.razor's CodeSegments
     is what makes that promise literal: the bar draws the runs, this copies them concatenated.
 
-    Never disabled, because it is never offered when there is nothing to copy — the bar it lives on
-    is not drawn at all until the chain has a step in it (ADR-0004: a control appears only when it
-    can act).
+    ABSENT WHEN THERE IS NOTHING TO COPY, DISABLED WHEN THERE IS NOTHING VALID TO COPY, and the two
+    are different states rather than one treated twice. No chain at all: the bar this lives on is
+    not drawn, so neither is this — ADR-0004's rule, a control appears only when it can act. A chain
+    holding an argument that has no literal form: the bar is drawn, because there is something to
+    say about it, and what it says is that the line cannot be written. The button stays beside that
+    sentence, dimmed, so the reason a copy is unavailable is on screen next to the thing that is
+    unavailable rather than inferred from its absence.
 
     §13.4 asks copy buttons for accessible feedback, and there are two halves of it here: the live
     region below, and the glyph swapping to a tick for anyone who is watching rather than listening.
@@ -23,6 +27,7 @@
 
 <button type="button"
         class="copy"
+        disabled="@(!Enabled)"
         data-copied="@(_copyStatus == CopyStatus.Copied ? "" : null)"
         @onclick="HandleCopy">
     @if (_copyStatus == CopyStatus.Copied) {
@@ -43,6 +48,11 @@
 @code {
 
     [Parameter, EditorRequired] public string CodeText { get; set; } = "";
+
+    /// <summary>False while the chain holds an argument this playground could not parse, so there
+    /// is no line to hand over — see Home.razor's IsWritableAsCode, and the note above on why that
+    /// is a disabled button here rather than an absent one.</summary>
+    [Parameter, EditorRequired] public bool Enabled { get; set; }
 
     private enum CopyStatus { None, Copied, Failed }
 
