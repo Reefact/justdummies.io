@@ -387,6 +387,46 @@ test.describe('the playground', () => {
     });
 
     /**
+     * The tick means "what you see is on your clipboard", so it has to go when what you see stops
+     * being a line at all.
+     *
+     * The status was cleared only when the formatted text changed, which misses the one type
+     * where invalidating an argument does not change it: `FormatArgumentLiteral` writes an
+     * unparsable boolean as `false`, the same characters a valid `false` produces. Clearing the
+     * field therefore disabled the button while leaving it wearing a success tick, with the live
+     * region still announcing "copied to clipboard" next to a bar reading "Code does not
+     * compile".
+     */
+    test('drops the copied tick when the line stops being writable', async ({ page, context }) => {
+        await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+        await page.goto('/playground/');
+
+        await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'Boolean()' });
+        await page.locator('.chain-link').nth(1).locator('select').selectOption({ label: 'DifferentFrom(value)' });
+
+        const argument = page.locator('.chain-link').nth(1).locator('input').first();
+        const copy = page.getByRole('button', { name: 'Copy code' });
+        const status = page.locator('.playground-widget .visually-hidden[role="status"]');
+
+        await argument.fill('false');
+        await expect(page.locator('.playground-widget .code-bar .code-text')).toHaveText(
+            'bool anyValue = Any.Boolean().DifferentFrom(false).Generate();',
+        );
+
+        await copy.click();
+        await expect(copy).toHaveAttribute('data-copied', '');
+        await expect(status).toHaveText(/copied/);
+
+        // Emptied — no longer parsable, and formatted to the very same `false` as before.
+        await argument.fill('');
+
+        await expect(page.locator('.playground-widget .code-bar .not-compilable')).toBeVisible();
+        await expect(copy).toBeDisabled();
+        await expect(copy).not.toHaveAttribute('data-copied', '');
+        await expect(status).toHaveText('');
+    });
+
+    /**
      * The declared type follows the chain rather than the entry point's name, and it is a C#
      * keyword where the language has one. `var` is the fallback for a receiver the catalogue does
      * not describe a Generate() for — it compiles, which is the whole reason it is the fallback —
