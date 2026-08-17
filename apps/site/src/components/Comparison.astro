@@ -91,7 +91,12 @@ function ratingLabel(rating: Rating): string {
           gives a mouse user the full sentence on hover — a bonus, not the only way in: a
           `title` reaches neither a touch reader nor a keyboard one (the span it sits on
           takes no focus), so the same three sentences are also one native, closed-by-default
-          <details> below — a tap or an Enter key away, never only a hover.
+          <details> — a tap or an Enter key away, never only a hover. That <details> sits
+          *outside* this div, not in it: `.matrix` itself is `display: none` below 48rem
+          (its own media query, further down), and a definitions block nested inside it
+          would inherit that hiding — reachable by mouse hover on a desktop that never
+          needed the keyboard/touch route in the first place, and gone exactly where it
+          was needed.
         */}
         <ul class="matrix-legend" aria-label={t('why.legend.heading')}>
             {
@@ -107,19 +112,6 @@ function ratingLabel(rating: Rating): string {
                 ))
             }
         </ul>
-        <details class="legend-definitions">
-            <summary>{t('why.legend.definitionsLabel')}</summary>
-            <dl>
-                {
-                    ratings.map((rating) => (
-                        <div class="legend-definition-row">
-                            <dt>{t(rating.labelKey)}</dt>
-                            <dd>{t(rating.legendKey)}</dd>
-                        </div>
-                    ))
-                }
-            </dl>
-        </details>
         <table>
             <caption>{t('why.table.caption')}</caption>
             <thead>
@@ -178,6 +170,20 @@ function ratingLabel(rating: Rating): string {
             }
         </table>
     </div>
+
+    <details class="legend-definitions">
+        <summary>{t('why.legend.definitionsLabel')}</summary>
+        <dl>
+            {
+                ratings.map((rating) => (
+                    <div class="legend-definition-row">
+                        <dt>{t(rating.labelKey)}</dt>
+                        <dd>{t(rating.legendKey)}</dd>
+                    </div>
+                ))
+            }
+        </dl>
+    </details>
 
     <p class="order">{t('why.legend.order')}</p>
 
@@ -588,7 +594,7 @@ function ratingLabel(rating: Rating): string {
     /* The keyboard/touch route to the same three sentences `title` already gives a mouse
        user on hover — closed by default so it costs nothing until asked for. */
     .legend-definitions {
-        margin: 0 0 var(--jd-space-4);
+        margin: var(--jd-space-4) 0;
         font-size: var(--jd-text-sm);
     }
 
