@@ -1,8 +1,12 @@
-import { test as base, expect, type Browser, type BrowserContext, type BrowserContextOptions } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
+import { dirname, extname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { test as base, expect, type Browser, type BrowserContext, type BrowserContextOptions, type Route } from '@playwright/test';
 
 /**
- * The suite's own `test`, which differs from Playwright's in exactly one way: **no check
- * ever talks to the measurement hosts.**
+ * The suite's own `test`, which differs from Playwright's in two ways: **no check ever talks
+ * to the measurement hosts**, and **no check asks the dev server to stream the .NET runtime.**
  *
  * WHY IT HAS TO EXIST. The browser suite renders `dist/` — the same artefact the deploy job
  * publishes, downloaded rather than rebuilt, which is the whole point of ADR-0009. Once the
@@ -39,13 +43,93 @@ async function refuseMeasurement(context: BrowserContext): Promise<void> {
 }
 
 /**
+ * The .NET runtime's binaries, handed to the browser from `dist/` rather than fetched from
+ * the dev server.
+ *
+ * WHY. `wrangler dev` puts a ProxyWorker between the browser and workerd, and that proxy
+ * cannot survive this suite's traffic. Around thirty checks boot the playground, each pulling
+ * roughly five megabytes of runtime — a hundred and fifty megabytes a run — and somewhere in
+ * that the ProxyWorker posts an error to its controller, which treats it as fatal and takes
+ * the whole server down mid-run. Every check still to come then reports
+ * ERR_CONNECTION_REFUSED, which is how one failure became two hundred and six.
+ *
+ * Measured on this machine before this route existed: three consecutive runs, two of them
+ * red — 206 failed, then 208 passed, then 22 failed. The stack is always the same, and it is
+ * wrangler's rather than this repository's:
+ *
+ *     at ProxyController2.emitErrorEvent
+ *     at ProxyController2.onProxyWorkerMessage
+ *     at async #handleLoopbackCustomFetchService (miniflare)
+ *
+ * The `kj … Broken pipe` line that usually accompanies it is a symptom and not the cause:
+ * the run that failed worst logged no broken pipe at all, and wrangler 4.123.0 already
+ * survives that one — the fatal path is the proxy's, and there is no flag that removes it.
+ *
+ * WHAT THIS COSTS, stated rather than buried: the browser suite no longer proves that the
+ * runtime serves these files correctly. That is checked, on every build, by
+ * `scripts/check-served-headers.sh` — which asserts the WebAssembly comes back as itself
+ * rather than as `text/html`, and that the host really compresses it. This route removes a
+ * duplicate, not a check.
+ *
+ * WHAT IS DELIBERATELY LEFT ALONE. Only `.wasm` and `.dat` are served from disk — inert
+ * binaries, and 99% of the bytes. `blazor.boot.json` and the loader scripts still come from
+ * the runtime, because that manifest is what decides which files are fetched and verified:
+ * a runtime that mis-served it would break the boot, and that is a signal worth keeping.
+ *
+ * The bytes are the artefact's own, so Blazor's integrity check against the hashes in
+ * `blazor.boot.json` passes exactly as it does against the server. A path that is not on
+ * disk is passed through rather than invented, so a missing file is still a real 404 from
+ * the runtime instead of a lie told by this file.
+ */
+const FRAMEWORK: string = '/playground/_framework/';
+
+const ARTEFACT: string = resolve(dirname(fileURLToPath(import.meta.url)), '../../../dist');
+
+const BINARIES: Readonly<Record<string, string>> = {
+    '.wasm': 'application/wasm',
+    '.dat':  'application/octet-stream',
+};
+
+async function serveRuntimeFromDisk(context: BrowserContext): Promise<void> {
+    await context.route(
+        (url: URL) => url.pathname.startsWith(FRAMEWORK) && extname(url.pathname) in BINARIES,
+        async (route: Route): Promise<void> => {
+            const pathname: string = new URL(route.request().url()).pathname;
+            const file: string = resolve(ARTEFACT, `.${pathname}`);
+
+            /* Nothing outside the artefact, whatever the URL says. */
+            if (!file.startsWith(`${ARTEFACT}/`)) {
+                await route.continue();
+
+                return;
+            }
+
+            try {
+                await route.fulfill({
+                    status: 200,
+                    contentType: BINARIES[extname(pathname)],
+                    body: await readFile(file),
+                });
+            } catch {
+                await route.continue();
+            }
+        },
+    );
+}
+
+async function install(context: BrowserContext): Promise<void> {
+    await refuseMeasurement(context);
+    await serveRuntimeFromDisk(context);
+}
+
+/**
  * `auto: true` so no spec has to remember. A check that opts in is a check somebody forgets
  * to opt in, and the failure is silent — the run passes and the analytics are wrong.
  */
-export const test = base.extend<{ measurementRefused: void }, { browser: Browser }>({
-    measurementRefused: [
+export const test = base.extend<{ routed: void }, { browser: Browser }>({
+    routed: [
         async ({ context }, use) => {
-            await refuseMeasurement(context);
+            await install(context);
             await use();
         },
         { auto: true },
@@ -69,7 +153,7 @@ export const test = base.extend<{ measurementRefused: void }, { browser: Browser
 
             browser.newContext = async (options?: BrowserContextOptions): Promise<BrowserContext> => {
                 const context: BrowserContext = await openContext(options);
-                await refuseMeasurement(context);
+                await install(context);
 
                 return context;
             };
