@@ -19,11 +19,25 @@
  * than no guard, because it is the reason nobody looks — so this asks the compiler instead of
  * guessing, and the argument ends.
  *
- * WHAT IS FLAGGED, precisely: an import from '@playwright/test' that binds `test` — under any
- * name, `{ test }` or `{ test as t }` — or that binds the whole module as a namespace, which
- * can reach it. Nothing else. `import type { Page }` and `import { type Page }` bind no
- * runner and TypeScript erases them; `import { expect }` names the same assertion the harness
- * re-exports and cannot bypass anything.
+ * WHAT IS FLAGGED, precisely. A static import of '@playwright/test' that binds `test` — under
+ * any name, `{ test }` or `{ test as t }` — or that binds the whole module as a namespace,
+ * which can reach it. And **every other way a module can be loaded**, because a guard that
+ * covers one way is a guard that names the others as the route around it: a re-export, a
+ * `require`, an `import x = require(…)`, and a dynamic `import()`. The tree is walked whole
+ * rather than statement by statement, since a dynamic import is an expression and can sit
+ * anywhere one can.
+ *
+ * A dynamic specifier this cannot read — a variable, a template, a concatenation — is refused
+ * rather than waved through. What cannot be verified is not the same as what is fine, and no
+ * check in this suite needs to load a module by a name computed at run time.
+ *
+ * Not flagged: `import type { Page }` and `import { type Page }`, which bind no runner and
+ * TypeScript erases; a bare `import '@playwright/test'`, which binds nothing at all; and
+ * `import { expect }`, which names the same assertion the harness re-exports and cannot
+ * bypass anything.
+ *
+ * What remains outside its reach is `eval` and friends. Said rather than left implied — but a
+ * check that reaches for eval to dodge a lint is not an accident anybody has by mistake.
  */
 import { readdir, readFile } from 'node:fs/promises';
 import { dirname, join, relative, resolve } from 'node:path';
@@ -86,28 +100,77 @@ function reachesRunner(declaration) {
     return null;
 }
 
+/** Whether a node names the runner as a module, and how — or null if it does not. */
+function loadsRunner(node) {
+    /* `import … from '@playwright/test'` at any depth a declaration can appear. */
+    if (ts.isImportDeclaration(node)) {
+        return ts.isStringLiteral(node.moduleSpecifier) && node.moduleSpecifier.text === RUNNER
+            ? reachesRunner(node)
+            : null;
+    }
+
+    /* `export … from '@playwright/test'` — re-exporting the runner hands it to a check that
+     * would then import it from a neighbour and pass this guard on both sides. */
+    if (ts.isExportDeclaration(node) && node.moduleSpecifier !== undefined) {
+        return ts.isStringLiteral(node.moduleSpecifier) && node.moduleSpecifier.text === RUNNER
+            ? 're-exports the module'
+            : null;
+    }
+
+    /* `import runner = require('@playwright/test')`. */
+    if (ts.isImportEqualsDeclaration(node)) {
+        const reference = node.moduleReference;
+
+        return ts.isExternalModuleReference(reference)
+            && ts.isStringLiteral(reference.expression)
+            && reference.expression.text === RUNNER
+            ? `require as ${node.name.text}`
+            : null;
+    }
+
+    if (!ts.isCallExpression(node)) {
+        return null;
+    }
+
+    const dynamic = node.expression.kind === ts.SyntaxKind.ImportKeyword;
+    const required = ts.isIdentifier(node.expression) && node.expression.text === 'require';
+
+    if (!dynamic && !required) {
+        return null;
+    }
+
+    const [specifier] = node.arguments;
+
+    if (specifier !== undefined && ts.isStringLiteralLike(specifier)) {
+        return specifier.text === RUNNER ? (dynamic ? 'import() of the module' : 'require() of the module') : null;
+    }
+
+    /* A specifier this cannot read — a variable, a template, a concatenation. Refused rather
+     * than waved through: what cannot be verified is not the same as what is fine, and
+     * nothing in this suite needs to load a module by a name computed at run time. */
+    return dynamic ? 'import() of a specifier this check cannot read' : 'require() of a specifier this check cannot read';
+}
+
 const strays = [];
 
 for await (const file of checks(SUITE)) {
     const source = ts.createSourceFile(file, await readFile(file, 'utf8'), ts.ScriptTarget.Latest, true);
 
-    for (const statement of source.statements) {
-        if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) {
-            continue;
+    /* The whole tree, not just the top-level statements: a dynamic import is an expression and
+     * can sit anywhere one can — inside a `test()` body, a helper, a conditional. */
+    const visit = (node) => {
+        const how = loadsRunner(node);
+
+        if (how !== null) {
+            const { line } = source.getLineAndCharacterOfPosition(node.getStart(source));
+
+            strays.push(`  ${relative(ROOT, file)}:${line + 1}  ${how}`);
         }
 
-        if (statement.moduleSpecifier.text !== RUNNER) {
-            continue;
-        }
+        ts.forEachChild(node, visit);
+    };
 
-        const binding = reachesRunner(statement);
-
-        if (binding !== null) {
-            const { line } = source.getLineAndCharacterOfPosition(statement.getStart(source));
-
-            strays.push(`  ${relative(ROOT, file)}:${line + 1}  binds ${binding}`);
-        }
-    }
+    visit(source);
 }
 
 if (strays.length > 0) {
