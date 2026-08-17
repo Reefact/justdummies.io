@@ -338,8 +338,15 @@ const sections: ReadonlyArray<{ id: string; key: UiKey }> = [
     /* The accent underline marks a *section* — this page's own top-level divisions — and
        nothing smaller: a sub-heading carrying the same mark would compete with the
        structure it sits inside, which is what the family headings in Comparison.astro used
-       to do before this moved here. */
+       to do before this moved here.
+
+       `width: fit-content` rather than the full 60rem measure: seven sections each drawing
+       a full-width bar reads as seven dividers stacked down the page, competing with every
+       other accent-coloured thing above the fold (nav, tagline, links) for the same
+       attention. Hugging the heading's own text keeps it a mark on that heading rather than
+       a rule across the column — still a section-level signal, just not a shout. */
     h3 {
+        width: fit-content;
         font-size: var(--jd-text-lg);
         line-height: var(--jd-line-tight);
         margin: 0 0 var(--jd-space-3);
@@ -402,6 +409,19 @@ const sections: ReadonlyArray<{ id: string; key: UiKey }> = [
         list-style: none;
         margin: 0;
         padding: 0;
+    }
+
+    /* In-page navigation, not a call to action: six accent-coloured links sitting this close
+       together, right under the tagline and the nav bar's own accent link, is where the
+       page's orange stopped reading as an accent and started reading as its base colour.
+       Muted at rest, accent only once the reader is actually pointing at one. */
+    .toc a {
+        color: var(--jd-text-muted);
+    }
+
+    .toc a:hover,
+    .toc a:focus-visible {
+        color: var(--jd-accent);
     }
 
     /* --- the problem ------------------------------------------------------------------ */

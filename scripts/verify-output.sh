@@ -297,14 +297,13 @@ fi
 # Three assertions per locale, and each one alone passes while the page is broken. The
 # first is that all ten criteria reached the document — a criterion silently dropped by a
 # refactor is a comparison the reader cannot audit. The second is ADR-0004 on the duel
-# control. The third used to require that no verdict ever sit inside a `<details>` at all;
-# the why-justdummies rewrite deliberately wraps each of the four criterion families in a
-# native `<details>`/`<summary>` accordion, one open by default and three collapsed, to cut
-# the density a reader meets on first scroll (still no script: opening one is a plain
-# click). What the page may still not do is open on nothing — a reader who scrolls this far
-# without clicking anything has to land on at least one family whose verdicts are already
-# there to read, or the comparison says nothing until it is opened, which is the original
-# defect this check exists to catch.
+# control. The third used to require that at least one criterion family ship open with its
+# verdicts visible, back when the family accordion was the only thing on the page that could
+# say anything without a click. A maintainer review moved the always-open matrix ahead of
+# the accordion and closed all four families by default — the matrix is what now guarantees
+# a reader who scrolls this far and clicks nothing still sees the whole comparison, so what
+# this checks is that guarantee: the matrix is never itself gated behind a `<details>`, and
+# every verdict it should hold reached the page.
 for locale in "" "/fr"; do
   why="${dist}${locale}/why-justdummies/index.html"
 
@@ -326,33 +325,33 @@ for locale in "" "/fr"; do
     fail "${why#"${dist}"/} ships the comparison control visible — without scripting it filters nothing"
   fi
 
-  # Scoped to `class="family"` specifically — not `class="matrix"`, which has always been
-  # allowed to sit closed, and not any `<details>` incidentally containing a class name
-  # that merely starts with "rating" (RatingIcon's own `.rating-icon`), which an earlier,
-  # looser version of this check mistook for a verdict. A verdict is matched by the exact
-  # class the criterion cards render, `class="rating"`, nothing else.
-  family_disclosure="$(node -e '
+  matrix_gating="$(node -e '
 const { readFileSync } = require("node:fs");
 const page = readFileSync(process.argv[1], "utf8");
 const wrong = [];
-let openWithVerdicts = 0;
-for (const block of page.matchAll(/<details\b([^>]*)>[\s\S]*?<\/details>/g)) {
-    const [whole, attrs] = block;
-    if (!/class="[^"]*\bfamily\b[^"]*"/.test(attrs)) { continue; }
-    const hasVerdict = /class="rating"/.test(whole);
-    const isOpen = /\bopen\b/.test(attrs);
-    if (hasVerdict && isOpen) { openWithVerdicts += 1; }
+
+if (!/<div class="matrix"/.test(page)) {
+    wrong.push("no <div class=\"matrix\"> found — the condensed table should say everything with no click required");
 }
-if (openWithVerdicts < 1) {
-    wrong.push("no criterion family ships open with its verdicts visible — the comparison says nothing until a reader clicks something");
+if (/<details class="matrix"/.test(page)) {
+    wrong.push("the matrix is wrapped in a <details> — it must ship permanently open, not collapsible");
 }
+
+// Ten criteria times four tools, once in the matrix and once more in the criterion cards
+// beneath it — so 80 is the number that says both copies of the comparison are complete,
+// not just one of the two.
+const ratedCells = (page.match(/data-rating="(?:core|possible|out-of-scope)"/g) ?? []).length;
+if (ratedCells < 80) {
+    wrong.push(`only ${ratedCells} rated cell(s) found, fewer than the 80 the matrix and the criterion cards together should carry`);
+}
+
 process.stdout.write(wrong.join("; "));
 ' "${why}")"
 
-  if [ -z "${family_disclosure}" ]; then
-    pass "and at least one family ships open, with its verdicts already on the page${locale:+ (${locale#/})}"
+  if [ -z "${matrix_gating}" ]; then
+    pass "and the matrix says the whole comparison with nothing collapsed${locale:+ (${locale#/})}"
   else
-    fail "${why#"${dist}"/}: ${family_disclosure}"
+    fail "${why#"${dist}"/}: ${matrix_gating}"
   fi
 done
 

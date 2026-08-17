@@ -266,11 +266,14 @@ export type Cell =
 export type Ratings = Record<AxisId, Cell>;
 
 /**
- * The three answers, with their definitions, as one list.
+ * The three answers, as one list rather than three separate constants — so the matrix's
+ * compact legend and every cell it labels read off the same order and the same words.
  *
- * The legend and the cells read the same array, so a rating word cannot exist on the page
- * without the sentence that defines it — which is what §11.6 asks for, expressed as data
- * rather than as a habit.
+ * `legendKey`, the fuller one-sentence definition of each answer, used to render as a
+ * standalone boxed `<dl>` above the matrix. A maintainer review folded that box away —
+ * three accent-adjacent chips of prose were more weight than three words needed — but kept
+ * the sentences themselves: they are still §11.6's "defined before first use", just reached
+ * by hovering the compact legend's own icon rather than read off the page unprompted.
  */
 export const ratings: ReadonlyArray<{ id: Rating; labelKey: UiKey; legendKey: UiKey }> = [
     { id: 'core', labelKey: 'why.rating.core', legendKey: 'why.legend.core' },
