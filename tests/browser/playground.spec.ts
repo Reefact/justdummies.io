@@ -427,6 +427,39 @@ test.describe('the playground', () => {
     });
 
     /**
+     * A long argument stays inside the card on a phone.
+     *
+     * `FieldWidth` reaches for the widest rung on a Guid, which is around 300px — more than a
+     * 375px viewport has left once the card's padding, the step's indent and `.DifferentFrom(`
+     * have taken theirs. The card clips rather than scrolls, so the end of the field and the caret
+     * with it were cut off the edge and stayed there while the visitor typed.
+     */
+    test('keeps a long argument field inside the card on a phone', async ({ page }) => {
+        await page.setViewportSize({ width: 375, height: 780 });
+        await page.goto('/playground/');
+
+        await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'Guid()' });
+        await page.locator('.chain-link').nth(1).locator('select').selectOption({ label: 'DifferentFrom(value)' });
+
+        const field = page.locator('.chain-link').nth(1).locator('input').first();
+
+        await field.fill('3fa85f64-5717-4562-b3fc-2c963f66afa6');
+
+        const card = await page.locator('.playground-widget .card').boundingBox();
+        const box = await field.boundingBox();
+
+        expect(card, 'the card is not rendered').not.toBeNull();
+        expect(box, 'the field is not rendered').not.toBeNull();
+
+        // The right edge is where the caret sits when the value is typed to its end, so it is the
+        // edge that matters — one pixel of tolerance for sub-pixel layout, and nothing more.
+        expect(
+            box!.x + box!.width,
+            `the field ends ${Math.round(box!.x + box!.width - (card!.x + card!.width))}px past the card`,
+        ).toBeLessThanOrEqual(card!.x + card!.width + 1);
+    });
+
+    /**
      * The declared type follows the chain rather than the entry point's name, and it is a C#
      * keyword where the language has one. `var` is the fallback for a receiver the catalogue does
      * not describe a Generate() for — it compiles, which is the whole reason it is the fallback —
