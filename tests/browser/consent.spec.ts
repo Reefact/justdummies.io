@@ -224,6 +224,54 @@ test.describe('once the visitor has accepted', () => {
 });
 
 /**
+ * An answer that storage would not keep, kept anyway for the page that gave it.
+ *
+ * A browser that throws on `setItem` — private mode with storage blocked outright, a quota
+ * already spent — leaves `remember()`'s write failing silently by design (its own comment says
+ * so). Without a page-local fallback the next `visibilitychange` finds nothing to read: an
+ * accepted session stops mid-page and a banner already answered comes back. Broken only after
+ * the page has loaded, so the harness's own seeding is unaffected — this is about the write
+ * `remember()` makes, not about storage in general.
+ */
+test.describe('when storage refuses to keep the answer', () => {
+    test.use({ consent: 'unasked' });
+
+    test('an accepted session survives storage rejecting the write', async ({ page }) => {
+        await page.goto('/');
+        await skipWithoutTag(page);
+
+        await page.evaluate(() => {
+            window.localStorage.setItem = () => {
+                throw new DOMException('rejected for this test', 'QuotaExceededError');
+            };
+        });
+
+        await page.locator('[data-consent-accept]').click();
+        await expect(page.locator('[data-consent]')).toBeHidden();
+
+        await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+
+        const trail: string[] = await page.evaluate(() => {
+            const queue: unknown[] = (window as unknown as { dataLayer?: unknown[] }).dataLayer ?? [];
+
+            return queue
+                .map((entry: unknown) => Array.from(entry as ArrayLike<unknown>))
+                .filter((entry: unknown[]) => entry[0] === 'consent' && entry[1] === 'update')
+                .map((entry: unknown[]) => (entry[2] as { analytics_storage?: string }).analytics_storage ?? '');
+        });
+
+        expect(
+            trail[trail.length - 1],
+            'the accepted session was silently stopped after storage rejected the write',
+        ).toBe('granted');
+        await expect(
+            page.locator('[data-consent]'),
+            'the banner reopened despite an answer already given this page',
+        ).toBeHidden();
+    });
+});
+
+/**
  * Withdrawal has to reach Google, not merely stop the site talking to it.
  *
  * A visitor who withdraws has already accepted, so Google's script is loaded and holds a
@@ -293,7 +341,7 @@ test.describe('when a visitor takes consent back', () => {
      * Revoking `analytics_storage` on a tag that has already loaded does not silence it —
      * Google's documented behaviour for a denied analytics consent is to write no cookie
      * and send a cookieless payload instead. That is advanced consent mode, which is the
-     * one thing ADR-0014 rejects by name, so a withdrawal built on the consent update
+     * one thing ADR-0015 rejects by name, so a withdrawal built on the consent update
      * alone would have the site doing what its own decision record argues against.
      *
      * `ga-disable-<id>` is the opt-out the tag reads before sending anything. This asserts

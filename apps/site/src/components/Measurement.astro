@@ -1,6 +1,6 @@
 ---
 /**
- * What the site measures, in the three lanes §15 asks for (ADR-0012, ADR-0014).
+ * What the site measures, in the three lanes §15 asks for (ADR-0012, ADR-0015).
  *
  * LANE ONE is Cloudflare Web Analytics: how many people come, and whether pages
  * load quickly (§15.1). It has no quota of any kind, so it is the half that cannot
@@ -204,6 +204,17 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
     let returnFocusTo: HTMLElement | null = null;
 
     /**
+     * What `remembered()` falls back to when storage itself is the thing that failed.
+     *
+     * A browser that throws on `setItem` throws on `getItem` too, so without this a
+     * choice `remember()` just made could not survive the page's own next read: the
+     * following `visibilitychange` would find nothing, stop an accepted session mid-page,
+     * and reopen a banner that was already answered. Storage is still consulted first
+     * everywhere below — this is only reached when it has nothing to say.
+     */
+    let inMemoryAnswer: Answer | undefined;
+
+    /**
      * Every read and every write is guarded. This is the first persistent state this
      * site has ever written, and local storage throws rather than returning null in a
      * browser configured to refuse it — so an unguarded read would take the banner
@@ -214,31 +225,33 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
             const raw: string | null = window.localStorage.getItem(STORAGE_KEY);
 
             if (raw === null) {
-                return undefined;
+                return inMemoryAnswer;
             }
 
             const parsed: Remembered = JSON.parse(raw) as Remembered;
 
             if (parsed.v !== 1 || (parsed.choice !== 'granted' && parsed.choice !== 'denied')) {
-                return undefined;
+                return inMemoryAnswer;
             }
 
             // An answer older than the retention reads as no answer, so the banner
             // returns rather than a decade-old yes standing in for a live one.
             return Date.now() - parsed.at > REMEMBER_FOR_MS ? undefined : parsed.choice;
         } catch {
-            return undefined;
+            return inMemoryAnswer;
         }
     }
 
     function remember(choice: Answer): void {
+        inMemoryAnswer = choice;
+
         try {
             const value: Remembered = { v: 1, choice, at: Date.now() };
 
             window.localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
         } catch {
-            // A refusal to store is not a reason to refuse the answer: the choice still
-            // holds for this page, and the banner will simply ask again next time.
+            // Storage refused the write; the in-memory fallback above keeps the choice
+            // for this page, and the banner will simply ask again next time.
         }
     }
 
@@ -257,7 +270,7 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
      * Silencing `track` is the easy half. The hard half is that by the time somebody
      * withdraws, Google's own script may be loaded — and revoking the consent signal
      * alone does not stop it, it puts it into cookieless-ping mode, which is the one
-     * behaviour ADR-0014 rejects by name. `jdAnalyticsStop` raises Google's documented
+     * behaviour ADR-0015 rejects by name. `jdAnalyticsStop` raises Google's documented
      * opt-out flag, which the tag reads before sending anything at all.
      */
     function stop(): void {
