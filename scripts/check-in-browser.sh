@@ -65,35 +65,11 @@ fi
 # second as an unrelated check reporting ERR_CONNECTION_REFUSED. chrome-parity.spec.ts did
 # exactly this, and both consequences were live.
 #
-# Types are fine — `import type { Page }` names no runner, and TypeScript erases it.
-#
-# Read statement by statement rather than line by line. A first version of this guard matched
-# a single line carrying `import`, `from` and a single-quoted module name together, which two
-# ordinary TypeScript forms walk straight past: a double-quoted specifier, and named imports
-# broken across lines. Neither is prohibited anywhere in this repository, so both were
-# available to the next spec — and a guard with a way around it is worse than none, because it
-# is the reason nobody looks.
-#
-# Newlines become spaces and `;` becomes the separator, so every import arrives on one line
-# whatever the source did with it.
-strays=''
-
-for spec in "${root}/tests/browser"/*.spec.ts; do
-  runners="$(tr '\n' ' ' < "${spec}" | tr ';' '\n' \
-    | grep -E "from[[:space:]]*[\"']@playwright/test[\"']" \
-    | grep -vE "^[[:space:]]*import[[:space:]]+type[[:space:]]" || true)"
-
-  if [ -n "${runners}" ]; then
-    strays="${strays}  ${spec#"${root}/"}"$'\n'"$(printf '%s\n' "${runners}" | sed 's/^[[:space:]]*/      /')"$'\n'
-  fi
-done
-
-if [ -n "${strays}" ]; then
-  echo "check-in-browser: a check takes its test runner from Playwright rather than the harness." >&2
-  printf '%s' "${strays}" >&2
-  echo "  Import { expect, test } from './support/harness' instead." >&2
-  exit 1
-fi
+# The check itself asks TypeScript rather than a pattern, and why is written where it lives.
+# Two grep versions of it leaked three times — a double-quoted specifier, imports without
+# semicolons, and a check filed in a subdirectory — all of them valid TypeScript that nothing
+# here prohibits.
+node "${root}/scripts/check-harness-imports.mjs"
 
 # A browser this machine already has, when it has one, so a container that ships Chromium
 # does not download a second copy. CI leaves it unset and uses the one it installed.
