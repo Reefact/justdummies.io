@@ -71,6 +71,15 @@ shows it; on the block it was attached to the one thing showing something else. 
 promise is literal, and it is made literal by construction rather than by care — the bar and the
 clipboard are drawn from one list of runs, so they cannot say different things.
 
+A bar that claims to hold the line that compiles has to be able to decline. An argument the site
+could not parse has no literal form, so there is nothing to write where it goes and the line does
+not exist — most often while a freshly chosen step still has empty arguments, which is a state every
+chain passes through. The bar says that, and the copy control dims beside the sentence saying it,
+rather than printing a line with a hole in it and offering to hand it over. A refusal the library
+raised is not that case and must not be treated as one: that line compiles and throws, which is the
+demonstration, so it keeps printing and stays copyable — pasting it reproduces the refusal, which is
+the most useful thing it could do.
+
 Drawing a chosen step as code rather than as a control is what makes the block readable, and it is
 affordable because of a fact already true: choosing a different method discarded the rest of the
 chain anyway. What the visitor loses is one gesture — a step is now removed and re-chosen rather

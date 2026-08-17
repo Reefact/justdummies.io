@@ -78,6 +78,15 @@ bandeau la promesse est littérale, et elle l'est par construction plutôt que p
 et le presse-papiers sont dessinés depuis une même liste de fragments, ils ne peuvent donc pas dire
 deux choses différentes.
 
+Un bandeau qui prétend porter la ligne qui compile doit pouvoir refuser. Un argument que le site n'a
+pas su analyser n'a aucune forme littérale : il n'y a rien à écrire à sa place et la ligne n'existe
+pas — le plus souvent pendant qu'une étape fraîchement choisie a encore ses arguments vides, état
+par lequel toute chaîne passe. Le bandeau le dit, et le contrôle de copie s'éteint à côté de la
+phrase qui le dit, plutôt que d'imprimer une ligne trouée et de proposer de la remettre. Un refus
+émis par la bibliothèque n'est pas ce cas et ne doit pas être traité comme tel : cette ligne-là
+compile et lève, ce qui est la démonstration même — elle continue donc de s'imprimer et reste
+copiable, et la coller reproduit le refus, ce qui est la chose la plus utile qu'elle puisse faire.
+
 Dessiner une étape choisie comme du code plutôt que comme un contrôle est ce qui rend le bloc
 lisible, et c'est abordable en raison d'un fait déjà vrai : choisir une autre méthode écartait de
 toute façon le reste de la chaîne. Ce que le visiteur perd est un geste — une étape se supprime et
