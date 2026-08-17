@@ -576,6 +576,22 @@ if [ -f "${dist}/_headers" ]; then
     else
       fail "the advertising consent signals are not what the measurement decision requires — ${advertising}"
     fi
+
+    # privacy.tracking.body's "nothing measured is ever shared with anyone" is a claim the
+    # very same page contradicts once the lane is on: privacy.consent.body discloses Google
+    # as a second processor a few paragraphs down. A build that ships the tag has to ship a
+    # privacy page that agrees with itself.
+    contradiction=0
+    for privacy_page in "${dist}/privacy/index.html" "${dist}/fr/privacy/index.html"; do
+      [ -f "${privacy_page}" ] || continue
+      grep -qs -e 'shared with anyone' -e 'partagé avec qui que ce soit' "${privacy_page}" && contradiction=1
+    done
+
+    if [ "${contradiction}" -eq 0 ]; then
+      pass "the privacy page does not claim no sharing on a build that discloses Google"
+    else
+      fail "the privacy page still claims nothing is ever shared, on a build that discloses Google as a processor"
+    fi
   fi
 fi
 

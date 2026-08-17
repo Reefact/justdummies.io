@@ -230,7 +230,7 @@ const en = {
     'privacy.meta.description': "What this site measures about you, and what it doesn't.",
     'privacy.tracking.label': "This site doesn't track you.",
     'privacy.tracking.body':
-        "It doesn't need to know who you are to work. There's no account to create, and nothing we measure is ever sold or shared with anyone. Most of what follows runs without any cookie at all and cannot tell one reader from another; the one thing that can asks you first, and does nothing until you answer.",
+        "It doesn't need to know who you are to work. There's no account to create, and nothing we measure is ever sold. Most of what follows runs without any cookie at all and cannot tell one reader from another; the one thing that can asks you first, and does nothing until you answer.",
     /**
      * The same paragraph for a build with the analytics lane switched off, where the
      * sentence about something asking first would describe a question nobody is asked.
@@ -814,7 +814,7 @@ const fr: Record<UiKey, string> = {
     'privacy.meta.description': "Ce que ce site mesure à votre sujet, et ce qu'il ne mesure pas.",
     'privacy.tracking.label': 'Ce site ne vous suit pas.',
     'privacy.tracking.body':
-        "Il n'a pas besoin de savoir qui vous êtes pour fonctionner. Il n'y a pas de compte à créer, et rien de ce que nous mesurons n'est revendu ni partagé avec qui que ce soit. L'essentiel de ce qui suit fonctionne sans aucun cookie et ne sait pas distinguer un lecteur d'un autre ; la seule chose qui en soit capable vous demande d'abord, et ne fait rien tant que vous n'avez pas répondu.",
+        "Il n'a pas besoin de savoir qui vous êtes pour fonctionner. Il n'y a pas de compte à créer, et rien de ce que nous mesurons n'est jamais revendu. L'essentiel de ce qui suit fonctionne sans aucun cookie et ne sait pas distinguer un lecteur d'un autre ; la seule chose qui en soit capable vous demande d'abord, et ne fait rien tant que vous n'avez pas répondu.",
     'privacy.tracking.bodyWithoutAnalytics':
         "Il n'a pas besoin de savoir qui vous êtes pour fonctionner. Il n'y a pas de compte à créer, aucun cookie d'aucune sorte, et rien de ce que nous mesurons n'est revendu ni partagé avec qui que ce soit. Rien de ce qui est décrit ci-dessous ne sait distinguer un lecteur d'un autre.",
     'privacy.analytics.label': "Mesure d'audience.",

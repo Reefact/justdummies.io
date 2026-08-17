@@ -224,6 +224,50 @@ test.describe('once the visitor has accepted', () => {
 });
 
 /**
+ * The dwell timer that fires while unanswered finds nothing to report and consumes
+ * nothing — right, so a later acceptance can still count the scene. But `Scene.astro`
+ * dispatches its event only on a fresh arrival, and a visitor who accepts without having
+ * moved never produces one. Without a re-check at the moment reporting starts, the scene
+ * likeliest to still be on screen when the banner is answered is the one silently missing
+ * from every funnel.
+ */
+test.describe('when a scene is already held before answering', () => {
+    test.use({ consent: 'unasked' });
+
+    test('accepting without scrolling still reports the held scene', async ({ page }) => {
+        await page.goto('/');
+        await skipWithoutTag(page);
+
+        await page.locator('[data-scene="the-seed"]').evaluate((scene: Element) => {
+            scene.scrollIntoView({ block: 'center' });
+        });
+
+        await page.locator('[data-consent-accept]').click();
+
+        // Bounded well under DWELL_MS on purpose. The scroll above also arms the ordinary
+        // one-second dwell timer, which — reporting removed or not — will itself report this
+        // same scene roughly a second later once accepting has made `reporting` true, through
+        // a path this test is not the one exercising. A long poll would wait long enough for
+        // that timer to save a broken fix; this only accepts a report that arrived promptly,
+        // which only `start()`'s own re-check can produce.
+        await expect
+            .poll(
+                () =>
+                    page.evaluate(() => {
+                        const queue: unknown[] = (window as unknown as { dataLayer?: unknown[] }).dataLayer ?? [];
+
+                        return queue
+                            .map((entry: unknown) => Array.from(entry as ArrayLike<unknown>))
+                            .filter((entry: unknown[]) => entry[0] === 'event' && entry[1] === 'scene_view')
+                            .map((entry: unknown[]) => (entry[2] as { scene_name?: string }).scene_name);
+                    }),
+                { message: 'the scene already held when accepting was not reported promptly', timeout: 500 },
+            )
+            .toContain('the-seed');
+    });
+});
+
+/**
  * A grant reaches every open tab through `storage`, and starting all of them at the same
  * instant would fire a page_view from documents nobody was reading — the opposite of an
  * accurate journey. Exercised at startup rather than across two real tabs: the moment
@@ -476,6 +520,34 @@ test.describe('when a search is cut short by leaving', () => {
     });
 
     /**
+     * The default is prevented on the link itself, so the click still bubbles to the
+     * delegated listener but never starts a real navigation — this only needs to know the
+     * report fired, and a destroyed page after navigating would have nothing left to read
+     * it back from.
+     */
+    test('clicking a result flushes the settling term', async ({ page }) => {
+        await page.goto('/api/');
+        await skipWithoutTag(page);
+
+        await page.locator('#api-search-input').fill('Uri');
+        await page.locator('#api-search-results a').first().evaluate((link: HTMLElement) => {
+            link.addEventListener('click', (event: Event) => event.preventDefault(), { once: true });
+            link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+        });
+
+        const terms: unknown[] = await page.evaluate(() => {
+            const queue: unknown[] = (window as unknown as { dataLayer?: unknown[] }).dataLayer ?? [];
+
+            return queue
+                .map((entry: unknown) => Array.from(entry as ArrayLike<unknown>))
+                .filter((entry: unknown[]) => entry[0] === 'event' && entry[1] === 'view_search_results')
+                .map((entry: unknown[]) => (entry[2] as { search_term?: string }).search_term);
+        });
+
+        expect(terms, 'clicking a result did not flush the settling search').toContain('Uri');
+    });
+
+    /**
      * Escape clears the box through a plain `.value` write, which fires no `input` event
      * of its own — the signal this file's settle timer is armed by, and the only one
      * `Measurement.astro` listens for to know a pending term was withdrawn.
@@ -498,6 +570,45 @@ test.describe('when a search is cut short by leaving', () => {
         });
 
         expect(terms, 'a search cancelled with Escape was reported anyway').toEqual([]);
+    });
+});
+
+/**
+ * `hidden` covers far more than a departure — a tab switch, a locked screen, an app
+ * backgrounded for a moment — and the page the visitor is still typing into never fires
+ * `pagehide` for any of them. Reported here through the one thing that tells old and new
+ * behaviour apart: a term still being typed when the tab hides, extended after it is shown
+ * again. The old listener would have sent the unfinished term on `hidden` alone, so the
+ * settled one arrives second — two entries where the settled-term semantics promise one.
+ */
+test.describe('when a search is merely backgrounded, not left', () => {
+    test.use({ consent: 'granted' });
+
+    test('hiding the tab does not finalize a term still being typed', async ({ page }) => {
+        await page.goto('/api/');
+        await skipWithoutTag(page);
+
+        await page.locator('#api-search-input').fill('Uri');
+        await page.evaluate(() => {
+            Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
+            document.dispatchEvent(new Event('visibilitychange'));
+            Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
+        });
+        await page.locator('#api-search-input').fill('UriBuilder');
+        await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
+
+        const terms: unknown[] = await page.evaluate(() => {
+            const queue: unknown[] = (window as unknown as { dataLayer?: unknown[] }).dataLayer ?? [];
+
+            return queue
+                .map((entry: unknown) => Array.from(entry as ArrayLike<unknown>))
+                .filter((entry: unknown[]) => entry[0] === 'event' && entry[1] === 'view_search_results')
+                .map((entry: unknown[]) => (entry[2] as { search_term?: string }).search_term);
+        });
+
+        expect(terms, 'backgrounding reported a partial term instead of waiting for the settled one').toEqual([
+            'UriBuilder',
+        ]);
     });
 });
 
