@@ -23,22 +23,114 @@ import { test as base, expect, type Browser, type BrowserContext, type BrowserCo
  * checks report a failure this file caused. Answering the script with an empty body instead
  * is invisible to them: the tag loads, runs nothing, and posts nothing.
  *
+ * THE ANALYTICS LANE MADE THIS SHARPER, NOT MERELY LONGER. The audience beacon reports into
+ * a dashboard; the analytics tag reports into a property with sessions, paths and funnels, so
+ * a burst of synthetic runs would not just inflate a count but invent journeys nobody took.
+ * Its collect endpoint is region-routed and cannot be named exactly, which is why the
+ * predicate below matches by suffix rather than by a list of hosts.
+ *
+ * THE ADVERTISING HOSTS ARE DELIBERATELY NOT STUBBED. Nothing here answers for
+ * `*.g.doubleclick.net` or `*.google.com`, because stubbing them would hide the one
+ * regression the permanent denial of the advertising signals exists to prevent. Left alone,
+ * a request to one is refused by the content policy — which has no such host in it — and
+ * surfaces as a violation in `policy.spec.ts`.
+ *
  * It is not a substitute for the token being right. That is checked against the real
  * deployment, in step 10 of the deployment guide, which is the only place it can be.
  */
 
 /** Where the audience beacon loads from, and where it reports to. Two hosts, not one. */
-const MEASUREMENT_HOSTS: readonly string[] = ['static.cloudflareinsights.com', 'cloudflareinsights.com'];
+const BEACON_HOSTS: readonly string[] = ['static.cloudflareinsights.com', 'cloudflareinsights.com'];
+
+/** Where the analytics tag loads from. Exact hosts: this repository writes the URL. */
+const ANALYTICS_TAG_HOSTS: readonly string[] = ['www.googletagmanager.com', 'googletagmanager.com'];
+
+/**
+ * Where the analytics tag collects to. Matched by suffix rather than by name, because
+ * the collect endpoint is region-routed at run time — `region1.google-analytics.com`
+ * and its siblings — and no fixed list would hold.
+ *
+ * Suffix and not `includes`: `google-analytics.com.example.invalid` contains that
+ * string and is not Google. The one-label-at-a-time form is what makes the predicate
+ * say what it means.
+ */
+const ANALYTICS_COLLECT_DOMAINS: readonly string[] = ['google-analytics.com', 'analytics.google.com'];
+
+/** What a stubbed host should be answered with — the two need different replies. */
+type Stub = 'script' | 'collect' | undefined;
+
+function stubFor(hostname: string): Stub {
+    if (BEACON_HOSTS.includes(hostname) || ANALYTICS_TAG_HOSTS.includes(hostname)) {
+        return 'script';
+    }
+
+    if (ANALYTICS_COLLECT_DOMAINS.some((domain: string) => hostname === domain || hostname.endsWith(`.${domain}`))) {
+        return 'collect';
+    }
+
+    return undefined;
+}
 
 async function refuseMeasurement(context: BrowserContext): Promise<void> {
     await context.route(
-        (url: URL) => MEASUREMENT_HOSTS.includes(url.hostname),
-        (route) =>
-            route.fulfill({
-                status: 200,
-                contentType: 'application/javascript',
-                body: '',
-            }),
+        (url: URL) => stubFor(url.hostname) !== undefined,
+        (route, request) =>
+            stubFor(new URL(request.url()).hostname) === 'collect'
+                ? // A collect endpoint answers with no body and no type, so "the body was
+                  // empty" stays the proof that the answer came from here.
+                  route.fulfill({ status: 204 })
+                : route.fulfill({
+                      status: 200,
+                      contentType: 'application/javascript',
+                      body: '',
+                  }),
+    );
+}
+
+/** Where the site remembers the visitor's answer. Mirrors `Measurement.astro`. */
+const CONSENT_KEY = 'jd:analytics-consent';
+
+/** What a check wants the visitor to have already answered before the page loads. */
+export type Consent = 'granted' | 'denied' | 'unasked';
+
+/**
+ * Puts the visitor's answer in place before the page can read it. Two things about how,
+ * both of which were found by the checks going red rather than by reasoning.
+ *
+ * IT APPLIES ONCE PER CONTEXT, NOT ONCE PER NAVIGATION. An init script runs on every load,
+ * so a seed written plainly would rewrite storage on every reload — and a check that clicks
+ * "refuse" and reloads to prove the answer stuck would find the seed's answer waiting for it
+ * instead of the visitor's. The session-scoped sentinel is what makes the seed a starting
+ * state rather than a standing instruction.
+ *
+ * IT TAKES ITS OWN SENTINEL, so that two seeds can be layered. Playwright builds its injected
+ * context by calling `browser.newContext()` — the method patched below — so every context is
+ * seeded with the default before a spec's own option is consulted. Distinct sentinels let the
+ * option run after the default and win, on the one navigation where either applies; sharing
+ * one would make the default win and `test.use({ consent: 'unasked' })` silently mean
+ * "denied", which is a banner check that skips past a working banner.
+ */
+async function seedConsent(context: BrowserContext, consent: Consent, sentinel: string): Promise<void> {
+    await context.addInitScript(
+        ([key, choice, once]: [string, string, string]) => {
+            try {
+                if (window.sessionStorage.getItem(once) !== null) {
+                    return;
+                }
+
+                window.sessionStorage.setItem(once, '1');
+
+                if (choice === 'unasked') {
+                    window.localStorage.removeItem(key);
+                } else {
+                    window.localStorage.setItem(key, JSON.stringify({ v: 1, choice, at: Date.now() }));
+                }
+            } catch {
+                // An origin that refuses storage simply gets the banner, which is the
+                // same thing a real visitor there would get.
+            }
+        },
+        [CONSENT_KEY, consent, sentinel] as [string, string, string],
     );
 }
 
@@ -137,10 +229,38 @@ async function install(context: BrowserContext): Promise<void> {
  * `auto: true` so no spec has to remember. A check that opts in is a check somebody forgets
  * to opt in, and the failure is silent — the run passes and the analytics are wrong.
  */
-export const test = base.extend<{ routed: void }, { browser: Browser }>({
+export const test = base.extend<{ routed: void; consent: Consent; consentSeeded: void }, { browser: Browser }>({
     routed: [
         async ({ context }, use) => {
             await install(context);
+            await use();
+        },
+        { auto: true },
+    ],
+
+    /**
+     * What the visitor has already answered. Overridden per spec with
+     * `test.use({ consent: 'unasked' })` to exercise the banner itself.
+     */
+    consent: ['denied', { option: true }],
+
+    /**
+     * Answered before the page loads, for the same "nobody has to remember" reason as
+     * the fixture above — and for a second one that is specific to this banner.
+     *
+     * It is fixed to the bottom of the viewport, so on a release-built artefact it sits
+     * over whatever is at the bottom of the page and swallows clicks meant for it. The
+     * checks that copy an install command out of the last act's exit block are exactly
+     * the ones that would start failing, and the failure would read as a broken copy
+     * button rather than as a banner in the way.
+     *
+     * Refused rather than granted by default: a refusal is the state in which no Google
+     * script is even asked for, which keeps every unrelated check as far from the tag
+     * as it was before the tag existed.
+     */
+    consentSeeded: [
+        async ({ context, consent }, use) => {
+            await seedConsent(context, consent, 'jd:test-consent-option');
             await use();
         },
         { auto: true },
@@ -165,6 +285,10 @@ export const test = base.extend<{ routed: void }, { browser: Browser }>({
             browser.newContext = async (options?: BrowserContextOptions): Promise<BrowserContext> => {
                 const context: BrowserContext = await openContext(options);
                 await install(context);
+                // Always the default here, never the per-spec option: this fixture is
+                // worker-scoped and cannot see a test-scoped one. The option is layered on
+                // top by `consentSeeded`, under its own sentinel, and wins where both apply.
+                await seedConsent(context, 'denied', 'jd:test-consent-default');
 
                 return context;
             };

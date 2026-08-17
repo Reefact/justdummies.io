@@ -32,6 +32,13 @@ test.describe('without scripting', () => {
             await expect(page.locator('[data-tablist]:visible')).toHaveCount(0);
             await expect(page.locator('[data-fold]:visible')).toHaveCount(0);
             await expect(page.locator('[data-copy]:visible')).toHaveCount(0);
+            // The consent banner belongs in this list for a reason the others do not have:
+            // the script that unhides it is the same one that would start the analytics
+            // tag. No script means no banner AND no tag, so a reader who never sees the
+            // question is also never measured by the thing it asks about — the two halves
+            // stay consistent instead of one of them becoming a hole.
+            await expect(page.locator('[data-consent]:visible')).toHaveCount(0);
+            await expect(page.locator('[data-consent-reopen]:visible')).toHaveCount(0);
 
             // And they are there to be hidden. Without this, a page that had lost its install
             // block entirely would pass the three assertions above with room to spare.
