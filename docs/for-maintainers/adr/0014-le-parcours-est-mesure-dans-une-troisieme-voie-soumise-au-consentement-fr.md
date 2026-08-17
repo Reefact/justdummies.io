@@ -2,8 +2,9 @@
 
 🌍 🇫🇷 Français (ce fichier) · 🇬🇧 [English](0014-the-journey-is-measured-in-a-third-lane-gated-on-consent-en.md)
 
-**Statut :** Proposé
+**Statut :** Accepté
 **Proposé le :** 2026-08-17
+**Accepté le :** 2026-08-17
 **Décideurs :** Reefact
 
 ## Contexte

@@ -2,8 +2,9 @@
 
 🌍 🇬🇧 English (this file) · 🇫🇷 [Français](0014-le-parcours-est-mesure-dans-une-troisieme-voie-soumise-au-consentement-fr.md)
 
-**Status:** Proposed
+**Status:** Accepted
 **Proposed:** 2026-08-17
+**Accepted:** 2026-08-17
 **Decision Makers:** Reefact
 
 ## Context
