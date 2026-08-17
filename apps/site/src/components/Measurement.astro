@@ -1,6 +1,6 @@
 ---
 /**
- * What the site measures, in the two lanes §15 asks for (ADR-0010).
+ * What the site measures, in the three lanes §15 asks for (ADR-0012, ADR-0014).
  *
  * LANE ONE is Cloudflare Web Analytics: how many people come, and whether pages
  * load quickly (§15.1). It has no quota of any kind, so it is the half that cannot
@@ -11,16 +11,29 @@
  * custom-event API — and because "people copy the install command" is not the
  * question the page was built to answer. "Which moment convinced them" is.
  *
- * THE TWO ARE INDEPENDENT ON PURPOSE. Lane two runs against a Worker with a daily
- * allowance; lane one does not. If lane two ever went quiet, the audience figures
- * keep arriving and the page keeps working, because nothing a visitor does depends
- * on either.
+ * LANE THREE is Google Analytics, and it answers the question neither of the others
+ * can: not how many arrived or how many copied, but the path between the two — which
+ * scene was reached, where a reader stopped, what they compared first. It is the only
+ * lane that can recognise a returning browser, which is exactly why it is the only
+ * lane that has to ask.
  *
- * THE BEACON APPEARS ONLY WITH A TOKEN TO USE. Without one the tag would load a
- * script that reports to nobody, which is ADR-0004's rule applied to something
- * invisible: a preview build with no token measures nothing rather than measuring
- * into the wrong account.
+ * THE THREE ARE INDEPENDENT ON PURPOSE, and the independence runs in both
+ * directions. Lanes one and two ask nobody's permission and measure everyone, so a
+ * refusal costs no audience figure and no conversion count; lane three is refused by
+ * default and starts only on an explicit yes. Nothing a visitor does depends on any
+ * of them. Lanes two and three are also two separate scripts below rather than one,
+ * so that a fault in the newest lane cannot take the oldest one down with it.
+ *
+ * EACH LANE APPEARS ONLY WITH SOMEWHERE TO REPORT. Without a beacon token the
+ * audience tag is not rendered; without a measurement id neither the analytics tag
+ * nor the banner asking about it is. That is ADR-0004's rule applied to something
+ * invisible: a preview build measures nothing rather than measuring into the wrong
+ * account, and a build with the analytics lane switched off does not ask a question
+ * it could not act on.
  */
+import ConsentBanner from './ConsentBanner.astro';
+import GoogleAnalytics from './GoogleAnalytics.astro';
+import { googleAnalyticsId } from '../measurement';
 
 /**
  * PUBLIC_ because it genuinely is. The token is rendered into every page's HTML and
@@ -40,6 +53,9 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
         />
     )
 }
+
+{googleAnalyticsId && <GoogleAnalytics id={googleAnalyticsId} />}
+{googleAnalyticsId && <ConsentBanner />}
 
 <script>
     /**
@@ -111,4 +127,339 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
         // involves CORS.
         navigator.sendBeacon(ENDPOINT, new Blob([body], { type: 'application/json' }));
     });
+</script>
+
+<script>
+    /**
+     * The consent gate, and the journey events that run behind it (lane three).
+     *
+     * NOTHING HERE REACHES GOOGLE UNTIL SOMEBODY SAYS YES. The tag's bootstrap
+     * declares every consent signal denied and loads no Google script; this file is
+     * the only caller of the function that starts it. That is "basic" consent mode
+     * rather than the advanced one, and the difference is not cosmetic: advanced mode
+     * would send cookieless pings before an answer, which is still a transfer to
+     * Google without a legal basis for it.
+     *
+     * THE ADVERTISING SIGNALS ARE NEVER TOUCHED. Only `analytics_storage` is ever
+     * updated. Since June 2026 `ad_storage` is the sole thing keeping tag data out of
+     * Google Ads, so it stays denied for everyone, including a visitor who accepts.
+     *
+     * IT RUNS ON EVERY PAGE, INCLUDING PAGES WITH NO BANNER. Builds with the
+     * analytics lane switched off render neither the tag nor the banner, and this
+     * script then finds nothing to wire and does nothing — which is why it carries no
+     * Google host of its own and can be bundled unconditionally.
+     */
+    const STORAGE_KEY = 'jd:analytics-consent';
+
+    /**
+     * Six months, after which the banner asks again. It is the retention the CNIL
+     * recommends for a consent record, and it doubles as the answer to the one thing
+     * local storage cannot do: it has no expiry of its own, so the expiry has to be
+     * part of the value and checked on the way out.
+     */
+    const REMEMBER_FOR_MS = 15778800000;
+
+    /**
+     * How long a scene must hold the middle of the viewport before it counts as read.
+     * Without it, one flick of the wheel reports all sixteen scenes and the funnel
+     * says every reader read everything — which is the same as measuring nothing.
+     */
+    const DWELL_MS = 1000;
+
+    type Answer = 'granted' | 'denied';
+
+    interface Remembered {
+        v: number;
+        choice: Answer;
+        at: number;
+    }
+
+    interface SceneEntered {
+        scene?: string;
+        act?: string;
+    }
+
+    interface Copied {
+        placement?: string;
+        variant?: string;
+    }
+
+    /**
+     * The two globals the inline bootstrap publishes. Typed here rather than declared
+     * on `Window`, because a `declare global` needs a module and this script is not
+     * one — and because naming them at their single point of use says plainly that
+     * this file and `GoogleAnalytics.astro` are the two halves of one mechanism.
+     */
+    const tag = window as unknown as {
+        jdAnalyticsStart?: () => void;
+        gtag?: (...args: unknown[]) => void;
+    };
+
+    const banner = document.querySelector<HTMLElement>('[data-consent]');
+    const status = document.querySelector<HTMLElement>('[data-consent-status]');
+    const reopen = document.querySelector<HTMLElement>('[data-consent-reopen]');
+
+    let reporting = false;
+    let returnFocusTo: HTMLElement | null = null;
+
+    /**
+     * Every read and every write is guarded. This is the first persistent state this
+     * site has ever written, and local storage throws rather than returning null in a
+     * browser configured to refuse it — so an unguarded read would take the banner
+     * down with it and leave the page with a question nobody can answer.
+     */
+    function remembered(): Answer | undefined {
+        try {
+            const raw: string | null = window.localStorage.getItem(STORAGE_KEY);
+
+            if (raw === null) {
+                return undefined;
+            }
+
+            const parsed: Remembered = JSON.parse(raw) as Remembered;
+
+            if (parsed.v !== 1 || (parsed.choice !== 'granted' && parsed.choice !== 'denied')) {
+                return undefined;
+            }
+
+            // An answer older than the retention reads as no answer, so the banner
+            // returns rather than a decade-old yes standing in for a live one.
+            return Date.now() - parsed.at > REMEMBER_FOR_MS ? undefined : parsed.choice;
+        } catch {
+            return undefined;
+        }
+    }
+
+    function remember(choice: Answer): void {
+        try {
+            const value: Remembered = { v: 1, choice, at: Date.now() };
+
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
+        } catch {
+            // A refusal to store is not a reason to refuse the answer: the choice still
+            // holds for this page, and the banner will simply ask again next time.
+        }
+    }
+
+    function start(): void {
+        if (reporting || tag.jdAnalyticsStart === undefined) {
+            return;
+        }
+
+        reporting = true;
+        tag.jdAnalyticsStart();
+    }
+
+    function track(name: string, parameters: Record<string, unknown>): void {
+        // Gated on the answer rather than on the tag's presence, so that an event
+        // fired between a refusal and the next page load cannot queue up waiting for
+        // a `config` that is never coming.
+        if (!reporting || tag.gtag === undefined) {
+            return;
+        }
+
+        tag.gtag('event', name, { ...parameters, content_locale: document.documentElement.lang });
+    }
+
+    function show(): void {
+        if (banner === null) {
+            return;
+        }
+
+        returnFocusTo = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        banner.hidden = false;
+        banner.focus();
+    }
+
+    function answer(choice: Answer, announcement: string): void {
+        remember(choice);
+
+        if (banner !== null) {
+            banner.hidden = true;
+        }
+
+        if (status !== null) {
+            status.textContent = announcement;
+        }
+
+        if (reopen !== null) {
+            returnFocusTo = reopen;
+        }
+
+        if (returnFocusTo !== null) {
+            returnFocusTo.focus();
+            returnFocusTo = null;
+        }
+
+        if (choice === 'granted') {
+            start();
+        }
+    }
+
+    if (banner !== null) {
+        const accept = banner.querySelector<HTMLElement>('[data-consent-accept]');
+        const refuse = banner.querySelector<HTMLElement>('[data-consent-refuse]');
+        const accepted: string = accept?.dataset.announce ?? '';
+        const refused: string = refuse?.dataset.announce ?? '';
+
+        accept?.addEventListener('click', () => answer('granted', accepted));
+        refuse?.addEventListener('click', () => answer('denied', refused));
+
+        // Escape refuses rather than dismissing without an answer. Dismissing would
+        // leave the question open and bring the banner back on the next page, which
+        // reads as nagging; recording the refusal is what makes "no" as cheap as
+        // "yes", which is the whole of the parity rule.
+        banner.addEventListener('keydown', (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                answer('denied', refused);
+            }
+        });
+
+        const already: Answer | undefined = remembered();
+
+        if (already === undefined) {
+            show();
+        } else if (already === 'granted') {
+            start();
+        }
+
+        // The privacy page's way back in. Hidden in the markup for the same reason the
+        // banner is: a button that reopens a dialogue is dead without scripting.
+        if (reopen !== null) {
+            reopen.hidden = false;
+            reopen.addEventListener('click', show);
+        }
+    }
+
+    /**
+     * The journey, keyed on the stable scene name and never on its position (§15.3).
+     * The ordinal travels as a measured number, which is where GA4 will keep it if it
+     * is registered as a metric rather than a dimension — the same separation the
+     * collector makes by writing it among its doubles.
+     */
+    const scenes: HTMLElement[] = Array.from(document.querySelectorAll<HTMLElement>('[data-scene]'));
+    const seenScenes = new Set<string>();
+    const seenActs = new Set<string>();
+    let dwelling: number | undefined;
+
+    function sceneOrdinal(name: string | undefined): number {
+        return name === undefined ? -1 : scenes.findIndex((scene: HTMLElement) => scene.dataset.scene === name);
+    }
+
+    document.addEventListener('jd:scene-entered', (event: Event) => {
+        const detail: SceneEntered = (event as CustomEvent<SceneEntered>).detail ?? {};
+        const scene: string | undefined = detail.scene;
+
+        if (scene === undefined || seenScenes.has(scene)) {
+            return;
+        }
+
+        // One timer for the page, not one per scene: scrolling past ten scenes should
+        // arm the eleventh, not report the first ten a second late.
+        window.clearTimeout(dwelling);
+        dwelling = window.setTimeout(() => {
+            seenScenes.add(scene);
+            track('scene_view', { scene_name: scene, act: detail.act ?? '', scene_ordinal: sceneOrdinal(scene) });
+
+            if (detail.act !== undefined && !seenActs.has(detail.act)) {
+                seenActs.add(detail.act);
+                track('act_reached', { act: detail.act });
+            }
+        }, DWELL_MS);
+    });
+
+    // The same event lane two listens to, read a second time rather than re-emitted.
+    document.addEventListener('jd:install-command-copied', (event: Event) => {
+        const detail: Copied = (event as CustomEvent<Copied>).detail ?? {};
+
+        if (detail.placement === undefined || detail.variant === undefined) {
+            return;
+        }
+
+        track('install_command_copied', {
+            placement: detail.placement,
+            variant: detail.variant,
+            scene_ordinal: sceneOrdinal(
+                document.querySelector<HTMLElement>(`[data-placement="${detail.placement}"]`)?.closest<HTMLElement>('[data-scene]')
+                    ?.dataset.scene,
+            ),
+        });
+    });
+
+    /**
+     * One delegated listener for the three things a reader clicks on the way out.
+     *
+     * Delegation rather than a listener per element because two of these are rendered
+     * five times over and the third does not exist on most pages — and because a
+     * listener bound at load would miss nothing here but would have to be rebound the
+     * day any of this becomes conditional.
+     */
+    document.addEventListener('click', (event: Event) => {
+        const target: HTMLElement | null = event.target instanceof HTMLElement ? event.target : null;
+
+        if (target === null) {
+            return;
+        }
+
+        const nuget: HTMLAnchorElement | null = target.closest<HTMLAnchorElement>('a.nuget');
+
+        if (nuget !== null) {
+            // These carry a placement and a variant already, and have since they were
+            // written; nothing has ever read them.
+            track('nuget_link_clicked', {
+                placement: nuget.dataset.placement ?? '',
+                variant: nuget.dataset.variant ?? '',
+                link_url: nuget.href,
+            });
+
+            return;
+        }
+
+        const tab: HTMLElement | null = target.closest<HTMLElement>('[data-tab]');
+
+        if (tab !== null) {
+            const block: HTMLElement | null = tab.closest<HTMLElement>('[data-install-tabs]');
+
+            if (block !== null) {
+                track('install_variant_switched', {
+                    placement: block.querySelector<HTMLElement>('[data-placement]')?.dataset.placement ?? '',
+                    variant: tab.dataset.tab ?? '',
+                });
+            }
+
+            return;
+        }
+
+        if (target.closest('[data-hero-run]') !== null) {
+            // The strongest signal on the page: this is the click that agrees to
+            // download a megabyte and a half to try the library in the browser.
+            track('playground_started', {});
+        }
+    });
+
+    document.querySelector<HTMLSelectElement>('[data-compare-select]')?.addEventListener('change', (event: Event) => {
+        track('comparison_narrowed', { competitor: (event.target as HTMLSelectElement).value });
+    });
+
+    /**
+     * The API search, reported once the typing settles rather than on every keystroke.
+     * `view_search_results` is GA4's own name for this, which is what makes it show up
+     * in the site-search report instead of as one more custom event nobody opens.
+     */
+    const search = document.querySelector<HTMLInputElement>('#api-search-input');
+
+    if (search !== null) {
+        let settling: number | undefined;
+
+        search.addEventListener('input', () => {
+            window.clearTimeout(settling);
+            settling = window.setTimeout(() => {
+                const term: string = search.value.trim();
+
+                if (term !== '') {
+                    track('view_search_results', { search_term: term });
+                }
+            }, 600);
+        });
+    }
 </script>

@@ -1,0 +1,74 @@
+---
+/**
+ * The analytics tag, and the only file in this repository that names a Google host.
+ *
+ * IT IS `is:inline` FOR A REASON THAT IS NOT STYLE. Astro collects bundled `<script>`
+ * tags from the module graph rather than from the render tree, so a `<script>` in a
+ * component that is imported and never rendered still becomes a rollup entry — and
+ * entries are never tree-shaken. Written as a bundled script, a build with the
+ * measurement switched off would still emit an `_astro/` chunk carrying
+ * `googletagmanager.com`: an orphan no document loads, no policy admits, and the size
+ * budget counts in full. `is:inline` never enters the module graph at all, so "off
+ * means the string is absent" is true by construction rather than by hope.
+ * `scripts/verify-output.sh` asserts it anyway, because this paragraph is the kind of
+ * reasoning a later edit undoes without noticing.
+ *
+ * THE ID TRAVELS ON AN ATTRIBUTE, NOT IN THE BODY. The content-security policy names
+ * a hash of the script's body, so a body carrying the id would mean a new hash on the
+ * day the id changes. Read from `dataset` instead, the body is byte-identical on
+ * every page and across every build, and exactly one hash ever enters the policy.
+ *
+ * THE ADVERTISING SIGNALS ARE DENIED AND ARE NEVER UPDATED. Since June 2026
+ * `ad_storage` is the only thing keeping data collected by a Google tag out of Google
+ * Ads — the Google Signals switch in the Analytics console stopped governing that
+ * flow. So the denial lives here, in the artefact, where `verify-output.sh` can read
+ * it, rather than in a console setting nothing in this repository can check.
+ */
+interface Props {
+    /** The `G-…` id. Always present: this component is only rendered when it is. */
+    id: string;
+}
+
+const { id }: Props = Astro.props;
+---
+
+<script is:inline data-jd-analytics={id}>
+    (function () {
+        var tag = document.currentScript;
+        var id = tag && tag.dataset ? tag.dataset.jdAnalytics : '';
+
+        if (!id) {
+            return;
+        }
+
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {
+            window.dataLayer.push(arguments);
+        }
+        window.gtag = gtag;
+
+        gtag('consent', 'default', {
+            ad_storage: 'denied',
+            ad_user_data: 'denied',
+            ad_personalization: 'denied',
+            analytics_storage: 'denied'
+        });
+
+        window.jdAnalyticsStart = function () {
+            if (window.jdAnalyticsStarted) {
+                return;
+            }
+            window.jdAnalyticsStarted = true;
+
+            gtag('consent', 'update', { analytics_storage: 'granted' });
+
+            var script = document.createElement('script');
+            script.async = true;
+            script.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(id);
+            document.head.appendChild(script);
+
+            gtag('js', new Date());
+            gtag('config', id);
+        };
+    })();
+</script>
