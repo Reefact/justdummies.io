@@ -128,22 +128,39 @@ export type Consent = 'granted' | 'denied' | 'unasked';
  * instead of the visitor's. The session-scoped sentinel is what makes the seed a starting
  * state rather than a standing instruction.
  *
- * IT TAKES ITS OWN SENTINEL, so that two seeds can be layered. Playwright builds its injected
- * context by calling `browser.newContext()` — the method patched below — so every context is
- * seeded with the default before a spec's own option is consulted. Distinct sentinels let the
- * option run after the default and win, on the one navigation where either applies; sharing
- * one would make the default win and `test.use({ consent: 'unasked' })` silently mean
- * "denied", which is a banner check that skips past a working banner.
+ * IT DOES NOT DEPEND ON WHICH SEED RUNS FIRST. Two are registered: the default, from the
+ * `newContext` patch below, and the per-spec option, from `consentSeeded`. Playwright nowhere
+ * promises an evaluation order for init scripts, and an earlier version of this file assumed
+ * one — which would have made `test.use({ consent: 'unasked' })` silently mean "denied" the
+ * day the order flipped, turning every banner check green while testing nothing.
+ *
+ * So the order is made not to matter. The authoritative seed marks the choice as decided;
+ * the default seed writes only while nothing has decided. Whichever runs first, the option
+ * is what the page loads with.
  */
-async function seedConsent(context: BrowserContext, consent: Consent, sentinel: string): Promise<void> {
+const DECIDED = 'jd:test-consent-decided';
+
+async function seedConsent(
+    context: BrowserContext,
+    consent: Consent,
+    sentinel: string,
+    authoritative: boolean,
+): Promise<void> {
     await context.addInitScript(
-        ([key, choice, once]: [string, string, string]) => {
+        ([key, choice, once, decided, decides]: [string, string, string, string, string]) => {
             try {
                 if (window.sessionStorage.getItem(once) !== null) {
                     return;
                 }
 
                 window.sessionStorage.setItem(once, '1');
+
+                if (decides === 'yes') {
+                    window.sessionStorage.setItem(decided, '1');
+                } else if (window.sessionStorage.getItem(decided) !== null) {
+                    // The option already answered, in whichever order we were run.
+                    return;
+                }
 
                 if (choice === 'unasked') {
                     window.localStorage.removeItem(key);
@@ -155,7 +172,13 @@ async function seedConsent(context: BrowserContext, consent: Consent, sentinel: 
                 // same thing a real visitor there would get.
             }
         },
-        [CONSENT_KEY, consent, sentinel] as [string, string, string],
+        [CONSENT_KEY, consent, sentinel, DECIDED, authoritative ? 'yes' : 'no'] as [
+            string,
+            string,
+            string,
+            string,
+            string,
+        ],
     );
 }
 
@@ -285,7 +308,7 @@ export const test = base.extend<{ routed: void; consent: Consent; consentSeeded:
      */
     consentSeeded: [
         async ({ context, consent }, use) => {
-            await seedConsent(context, consent, 'jd:test-consent-option');
+            await seedConsent(context, consent, 'jd:test-consent-option', true);
             await use();
         },
         { auto: true },
@@ -311,9 +334,10 @@ export const test = base.extend<{ routed: void; consent: Consent; consentSeeded:
                 const context: BrowserContext = await openContext(options);
                 await install(context);
                 // Always the default here, never the per-spec option: this fixture is
-                // worker-scoped and cannot see a test-scoped one. The option is layered on
-                // top by `consentSeeded`, under its own sentinel, and wins where both apply.
-                await seedConsent(context, 'denied', 'jd:test-consent-default');
+                // worker-scoped and cannot see a test-scoped one. `consentSeeded` layers the
+                // option on top and is the authoritative one, so this yields to it whichever
+                // of the two the browser happens to evaluate first.
+                await seedConsent(context, 'denied', 'jd:test-consent-default', false);
 
                 return context;
             };
