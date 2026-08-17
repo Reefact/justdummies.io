@@ -17,6 +17,20 @@ public sealed class ChainLinkState {
     /// point a screen reader at just the offending input instead of every input in the step.</summary>
     public int? ErrorArgumentIndex { get; set; }
 
+    /// <summary>
+    ///     Whether <see cref="Error" /> is the library's own refusal rather than this site's text
+    ///     about an argument it could not parse. The distinction is <see cref="ChainResult" />'s
+    ///     and it survives this far because the two are shown differently: a parse error is folded
+    ///     into the step's diagnostic flag, while a refusal is also printed in full under the card
+    ///     and never only behind a control somebody has to press (specification §9.9 — the refusal
+    ///     is the demonstration defending itself).
+    ///
+    ///     Not derivable from <see cref="ErrorArgumentIndex" /> being null: a parse failure that
+    ///     does not name one particular argument leaves that null too, and would then be
+    ///     indistinguishable from a refusal.
+    /// </summary>
+    public bool ErrorIsLibraryRefusal { get; set; }
+
     private readonly List<string> _arguments = new();
 
     public void ChooseMethod(MemberDescriptor chosen) {

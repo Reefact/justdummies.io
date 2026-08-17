@@ -1,6 +1,23 @@
 import { expect, test } from './support/harness';
+import type { Locator } from '@playwright/test';
 
 import { watch, type PageComplaints } from './support/watch';
+
+/**
+ * Whether an element takes real space on the screen.
+ *
+ * `toBeHidden()` is the wrong tool for the one element that needs this: a closed diagnostic
+ * message is `.visually-hidden`, which is a one-pixel clipped box rather than a `display: none`
+ * one — deliberately, so `aria-describedby` on the field that caused it still resolves and a
+ * screen reader never has to press anything to hear it. Playwright counts a one-pixel box as
+ * visible, and it is right to: something is in the box tree. What is being asserted here is the
+ * other thing, the one a sighted visitor would report — that there is nothing to look at.
+ */
+async function onScreen(locator: Locator): Promise<boolean> {
+    const box = await locator.boundingBox();
+
+    return box !== null && box.width > 2 && box.height > 2;
+}
 
 /**
  * The playground's builder works.
@@ -34,7 +51,7 @@ test.describe('the playground', () => {
 
         await page.getByRole('button', { name: 'Generate' }).click();
 
-        const value = page.locator('.generate-controls .value');
+        const value = page.locator('.playground-widget .result-bar .value');
         await expect(value).toHaveText(/^"ORD-.*"$/);
 
         // Nothing may have 404'd on the way. This is the blank-page defect stated as an
@@ -57,7 +74,7 @@ test.describe('the playground', () => {
         await page.locator('.chain-link').nth(1).locator('select').selectOption({ label: 'NonEmpty()' });
         await page.getByRole('button', { name: 'Generate' }).click();
 
-        const value = page.locator('.generate-controls .value');
+        const value = page.locator('.playground-widget .result-bar .value');
         await expect(value).toBeVisible();
 
         const drawn: string[] = [];
@@ -93,6 +110,13 @@ test.describe('the playground', () => {
         expect(secondOptions.some(o => o.startsWith('NonEmpty'))).toBe(false);
     });
 
+    /**
+     * §9.9's rule, restated for the card: a refusal is the demonstration defending itself, so
+     * it is never only behind a control somebody has to press. The step that caused it carries
+     * a flag — §13.4's "associated with the zone that provokes it" — and the library's own
+     * wording is printed under the card at the same time, in the bar where a drawn value would
+     * otherwise be, exactly as the landing page's hero prints the refusal it gets.
+     */
     test('shows the library’s own refusal for a contradictory chain, unneutralised', async ({ page }) => {
         await page.goto('/playground/');
 
@@ -102,9 +126,72 @@ test.describe('the playground', () => {
         await page.locator('.chain-link').nth(2).locator('select').selectOption({ label: 'WithMaxLength(length)' });
         await page.locator('.chain-link').nth(2).locator('input').fill('2');
 
-        // The refusal is attached to the step that caused it (specification §13.4), visible
-        // without hovering or focusing anything.
-        await expect(page.locator('.chain-link').nth(2).locator('.error')).toBeVisible();
+        await expect(page.locator('.chain-link').nth(2).locator('.flag')).toBeVisible();
+
+        const refusal = page.locator('.playground-widget .result-bar .refusal');
+
+        await expect(refusal).toBeVisible();
+        expect((await refusal.textContent())?.trim().length ?? 0).toBeGreaterThan(0);
+
+        // And no value beside it: "→ produced" promises something drawn, and a refusal is not
+        // one — the bar shows one or the other, never both.
+        await expect(page.locator('.playground-widget .result-bar .value')).toHaveCount(0);
+    });
+
+    /**
+     * The other kind of failure, which is this site's own text rather than the library's: an
+     * argument that will not parse. That one IS folded behind the flag, and this is the check
+     * that folding it did not put it out of reach — of a pointer, of a keyboard, or of a screen
+     * reader, which gets it through `aria-describedby` whether or not the flag was ever pressed.
+     */
+    test('opens an unparsable argument’s explanation from the step’s flag, and closes it again', async ({ page }) => {
+        await page.goto('/playground/');
+
+        await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'Int32()' });
+        await page.locator('.chain-link').nth(1).locator('select').selectOption({ label: 'Between(minimum, maximum)' });
+
+        // Nothing typed, deliberately: a step chosen a second ago has empty arguments, and an
+        // empty argument is already one this playground cannot parse. It is the state every
+        // freshly chosen step with parameters passes through, so it is the one worth checking —
+        // and unlike a deliberately mistyped value it needs no field that accepts text, which
+        // `Between`'s do not.
+        const step = page.locator('.chain-link').nth(1);
+        const flag = step.locator('.flag');
+        const message = step.locator('.error');
+
+        // Closed to begin with — the flag is the whole of what is on screen — but present in the
+        // document, because the field that caused it points at it with aria-describedby and a
+        // description that resolves to nothing is no description at all.
+        await expect(flag).toHaveAttribute('aria-expanded', 'false');
+        await expect(message).toHaveCount(1);
+        expect(await onScreen(message), 'the message is on screen before its flag was pressed').toBe(false);
+
+        const described = await step.locator('input').first().getAttribute('aria-describedby');
+        expect(described, 'the offending field does not point at its own explanation').toBe(
+            await message.getAttribute('id'),
+        );
+
+        await flag.click();
+        await expect(flag).toHaveAttribute('aria-expanded', 'true');
+        await expect(message).toHaveText(/this argument expects/);
+        expect(await onScreen(message), 'pressing the flag put nothing on screen').toBe(true);
+
+        // Escape, from wherever focus happens to be in the step — a disclosure a keyboard user
+        // has to walk back to the opening control to dismiss is one they will leave open.
+        await page.keyboard.press('Escape');
+        await expect(flag).toHaveAttribute('aria-expanded', 'false');
+        expect(await onScreen(message), 'Escape left the message on screen').toBe(false);
+
+        // And the flag goes altogether once the step has something it can parse — with nothing
+        // left to say, an open callout would sit under a line that is no longer wrong.
+        await flag.click();
+        expect(await onScreen(message)).toBe(true);
+
+        await step.locator('input').first().fill('1');
+        await step.locator('input').nth(1).fill('10');
+
+        await expect(step.locator('.flag')).toHaveCount(0);
+        await expect(step.locator('.error')).toHaveCount(0);
     });
 
     test('removing a step truncates the chain from there on', async ({ page }) => {
@@ -132,6 +219,38 @@ test.describe('the playground', () => {
         const doc = page.locator('.chain-link').nth(0).locator('.doc');
         await expect(doc).toBeVisible();
         expect((await doc.textContent())?.trim().length ?? 0).toBeGreaterThan(0);
+
+        // And it is drawn as the comment it reads like: the marker in the flow beside the text,
+        // in the colour the site's own highlighter gives a `//`.
+        await expect(doc.locator('.marker')).toHaveText('//');
+        await expect(doc).toHaveClass(/tok-comment/);
+    });
+
+    /**
+     * A chosen step is code, not a control. The `<select>` is how a step is chosen and it is
+     * gone once one has been — what is left is the call, in the site's own token colours, and a
+     * delete button to take it back out.
+     *
+     * The click on the card is not incidental: the select survives as long as it has focus, so
+     * that a keyboard user arrowing through the options is not cut off at the first one (see
+     * ChainLink.razor's ShowSelect). Moving focus off it is what settles the step.
+     */
+    test('replaces a chosen step’s combo with coloured code, leaving only the delete control', async ({ page }) => {
+        await page.goto('/playground/');
+
+        const step = page.locator('.chain-link').nth(0);
+
+        await step.locator('select').selectOption({ label: 'String()' });
+        await page.locator('.playground-widget .card').click({ position: { x: 5, y: 5 } });
+
+        await expect(step.locator('select')).toHaveCount(0);
+        await expect(step.locator('.call')).toBeVisible();
+        await expect(step.locator('.call .tok-member')).toHaveText('String');
+        await expect(step.locator('.delete')).toBeVisible();
+
+        // The receiver opens the first line rather than sitting on one of its own, so the card
+        // reads "Any.String()" the way the landing page's does.
+        await expect(step.locator('.prefix')).toHaveText('Any.');
     });
 
     test('the help link opens the library’s repository in a new, unprivileged tab', async ({ page }) => {
@@ -159,7 +278,7 @@ test.describe('the playground', () => {
         const clipboard = await page.evaluate(() => navigator.clipboard.readText());
         expect(clipboard).toBe('Any.String().StartingWith("ORD-").Generate();');
 
-        await expect(page.locator('.generate-controls .visually-hidden[role="status"]')).toHaveText(/copied/);
+        await expect(page.locator('.playground-widget .visually-hidden[role="status"]')).toHaveText(/copied/);
     });
 
     test('a full keyboard-only pass reaches the select, the delete button and the next select', async ({ page }) => {
@@ -187,10 +306,12 @@ test.describe('the playground', () => {
     test('says which version of the library it is running', async ({ page }) => {
         await page.goto('/playground/');
 
+        // Beside the button now, in the landing page's own words — see
+        // tests/browser/code-card-parity.spec.ts, which is what holds the two sentences equal.
         // Read off the loaded assembly rather than written beside it, so the claim cannot go
         // stale — the check is that the reading worked, not that a particular version shipped.
-        await expect(page.locator('.version')).toHaveText(/Generated by JustDummies \S+, running in this browser\./);
-        await expect(page.locator('.version')).not.toHaveText(/unknown/);
+        await expect(page.locator('.playground-widget .live')).toHaveText(/running here, JustDummies \S+/);
+        await expect(page.locator('.playground-widget .live')).not.toHaveText(/unknown/);
     });
 
     test('shows no framework error banner', async ({ page }) => {
