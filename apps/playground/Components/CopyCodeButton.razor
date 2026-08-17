@@ -1,0 +1,93 @@
+@inherits LocalizedComponent
+@inject IJSRuntime JS
+@using JustDummies.Playground.Localization
+
+@*
+    "Copy the complete code" (specification §10.2), as a control on the card rather than beside
+    a second printing of the chain.
+
+    IT USED TO NEED THAT SECOND PRINTING. The builder was a column of <select>s, so the only
+    place the chain existed as code was a strip under it — `Any.Int32().Between(1, 2).Generate();`
+    with this button at its right — and the strip was really the reason the button had somewhere
+    to live. The card reads as code now, so the strip is gone and the button moved onto what it
+    copies.
+
+    WHAT IT COPIES IS NOT WHAT THE CARD SHOWS. The card shows the chain wrapped over lines with
+    its arguments in editable fields; the clipboard gets the one line that compiles, every
+    argument re-emitted as a real C# literal by Home.razor's FormatArgumentLiteral. Both are
+    honest about the same chain — one is for reading, one is for pasting.
+
+    §13.4 asks copy buttons for accessible feedback, and there are two halves of it here: the
+    live region below, and the glyph swapping to a tick for anyone who is watching rather than
+    listening.
+*@
+
+<button type="button"
+        class="copy"
+        disabled="@(!Enabled)"
+        data-copied="@(_copyStatus == CopyStatus.Copied ? "" : null)"
+        aria-label="@PlaygroundStrings.T(LocaleState.Current, "playground.copyCode")"
+        @onclick="HandleCopy">
+    @if (_copyStatus == CopyStatus.Copied) {
+        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false">
+            <path d="M3 8.5 6.5 12 13 4.5" />
+        </svg>
+    } else {
+        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false">
+            <rect x="5.75" y="5.75" width="8.5" height="8.5" rx="1.5" />
+            <path d="M11 3.75V3.25A1.5 1.5 0 0 0 9.5 1.75h-6A1.5 1.5 0 0 0 2 3.25v6a1.5 1.5 0 0 0 1.5 1.5H4" />
+        </svg>
+    }
+</button>
+
+<span class="visually-hidden" role="status" aria-live="polite">@CopyStatusText</span>
+
+@code {
+
+    [Parameter, EditorRequired] public string CodeText { get; set; } = "";
+
+    /// <summary>False while the chain has no chosen step: <c>CodeText</c> is then
+    /// <c>"Any.Generate();"</c>, which is not a call the library has, and a button whose whole
+    /// promise is that what it hands over compiles should not hand that over.</summary>
+    [Parameter, EditorRequired] public bool Enabled { get; set; }
+
+    private enum CopyStatus { None, Copied, Failed }
+
+    private CopyStatus _copyStatus;
+    private string?    _lastCopiedCodeText;
+
+    /// <summary>The chain the visitor last copied can change under them — an edited argument or a
+    /// newly chosen method both rewrite <see cref="CodeText" /> without the button being touched.
+    /// Without this, the tick and the "copied to clipboard" announcement would outlive the
+    /// clipboard contents they are about.</summary>
+    protected override void OnParametersSet() {
+        if (_copyStatus == CopyStatus.Copied && CodeText != _lastCopiedCodeText) {
+            _copyStatus = CopyStatus.None;
+        }
+    }
+
+    private string CopyStatusText => _copyStatus switch {
+        CopyStatus.Copied => PlaygroundStrings.T(LocaleState.Current, "playground.copied"),
+        CopyStatus.Failed => PlaygroundStrings.T(LocaleState.Current, "playground.copyFailed"),
+        _                 => "",
+    };
+
+    /// <summary>Clears the live region before writing, so a repeated copy — success or failure —
+    /// is still a DOM change a screen reader announces, not a no-op update to text that already
+    /// reads the same. Also catches a rejected clipboard write (denied permission, insecure
+    /// context, ...): otherwise the awaited interop call throws and the visitor sees Blazor's own
+    /// error banner instead of a usable status.</summary>
+    private async Task HandleCopy() {
+        _copyStatus = CopyStatus.None;
+        StateHasChanged();
+
+        try {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", CodeText);
+            _copyStatus         = CopyStatus.Copied;
+            _lastCopiedCodeText = CodeText;
+        } catch (JSException) {
+            _copyStatus = CopyStatus.Failed;
+        }
+    }
+
+}

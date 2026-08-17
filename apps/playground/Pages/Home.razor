@@ -6,37 +6,92 @@
 
 <PageTitle>@PageTitleText</PageTitle>
 
-<h2 class="page-title">@PlaygroundStrings.T(LocaleState.Current, "playground.title")</h2>
+@* The prose's own column (see MainLayout's note): the card below is a figure and takes the
+   whole shell, exactly as the landing page's does. *@
+<div class="page-body">
+    <h2 class="page-title">@PlaygroundStrings.T(LocaleState.Current, "playground.title")</h2>
 
-<p class="lede">
-    @((MarkupString)PlaygroundStrings.T(LocaleState.Current, "playground.lede"))
-</p>
-
-<div class="chain">
-    <span class="any-prefix">Any.</span>
-    @for (var i = 0; i < _links.Count; i++) {
-        var index = i;
-        <ChainLink @ref="_linkRefs[index]"
-                   LinkIndex="index"
-                   Prefix="@(index == 0 ? "" : ".")"
-                   Options="@OptionsFor(index)"
-                   State="_links[index]"
-                   Error="@_links[index].Error"
-                   OnMethodChosen="HandleMethodChosen"
-                   OnArgumentChanged="HandleArgumentChanged"
-                   OnDelete="HandleDelete" />
-    }
+    <p class="lede">
+        @((MarkupString)PlaygroundStrings.T(LocaleState.Current, "playground.lede"))
+    </p>
 </div>
 
-<GenerateControls
-    CanGenerate="_canGenerate"
-    Value="@_generatedValue"
-    Refusal="@_refusal"
-    CodeText="@CodeText"
-    DrawToken="_drawToken"
-    OnGenerate="HandleGenerate" />
+@*
+    THE SAME CARD THE LANDING PAGE OPENS WITH (LiveHero.astro's .sample, and Pages/Hero.razor's
+    live replacement for it), holding a chain the visitor builds instead of one that was
+    compiled in. Both classes are load-bearing: `.code-widget` is the shared box — its border,
+    its padding, the result bar under it, the row of controls under that — and
+    `.playground-widget` is what only this one needs, the copy button and the indent its own
+    shorter prefix asks for. The card's measure is the shell's, which is what makes it the same
+    width as the hero's; tests/browser/code-card-parity.spec.ts is where that stops being a
+    coincidence.
+*@
+<div class="playground-widget code-widget">
+    <div class="card">
+        <div class="expression">
+            <div class="chain">
+                @for (var i = 0; i < _links.Count; i++) {
+                    var index = i;
+                    <ChainLink @ref="_linkRefs[index]"
+                               LinkIndex="index"
+                               IsFirst="@(index == 0)"
+                               Options="@OptionsFor(index)"
+                               State="_links[index]"
+                               Error="@_links[index].Error"
+                               OnMethodChosen="HandleMethodChosen"
+                               OnArgumentChanged="HandleArgumentChanged"
+                               OnDelete="HandleDelete" />
+                }
+            </div>
 
-<p class="version">@PlaygroundStrings.T(LocaleState.Current, "playground.generatedBy", LibraryVersion)</p>
+            @*
+                Printed, never offered — Generate() is the button under the card, not a step to
+                pick (see OptionsFor below). But the chain is read as C# here, and C# it is not
+                without the call that closes it, so it is drawn as soon as there is a chain for
+                it to close.
+            *@
+            @if (HasChosenStep) {
+                <span class="closing"><span class="tok-punctuation">.</span><span class="tok-member">Generate</span><span class="tok-punctuation">();</span></span>
+            }
+        </div>
+
+        <CopyCodeButton CodeText="@CodeText" Enabled="HasChosenStep" />
+
+        @*
+            The card's second zone, in the shape the site's own <figcaption> gives it. Three
+            states rather than the hero's two, because a playground opens on an empty chain and
+            has nothing to show until one is built.
+
+            THE <output> IS KEYED ON _drawToken so a draw that reproduces the text already on
+            screen is still announced: for a pinned chain — Boolean().True() — every draw does,
+            and a live region whose text did not change reports nothing at all. Keying replaces
+            the node instead of editing it, and a node added inside a live region is announced
+            whether or not it says something new.
+        *@
+        <div class="result-bar" role="status" aria-live="polite">
+            @if (_refusal is not null) {
+                <output @key="_drawToken" class="refusal">@_refusal</output>
+            } else if (_generatedValue is not null) {
+                <span class="arrow" aria-hidden="true">→</span>
+                <span class="label">@PlaygroundStrings.T(LocaleState.Current, "hero.produced")</span>
+                <output @key="_drawToken" class="value">@DisplayValue(_generatedValue)</output>
+            } else {
+                <span class="pending">@PlaygroundStrings.T(LocaleState.Current, "playground.notDrawnYet")</span>
+            }
+        </div>
+    </div>
+
+    @* Outside the card, at the distance and in the shape LiveHero.astro's own .invite row sits
+       at — the button, then what it costs to press. The mention is the hero's own string, not a
+       paraphrase of it: a visitor who pressed "Run" on the landing page and then opened the
+       playground should be reading the same sentence. *@
+    <div class="controls">
+        <button type="button" class="generate" disabled="@(!_canGenerate)" @onclick="HandleGenerate">
+            @(HasResult ? PlaygroundStrings.T(LocaleState.Current, "playground.generateAgain") : PlaygroundStrings.T(LocaleState.Current, "playground.generate"))
+        </button>
+        <span class="live">@PlaygroundStrings.T(LocaleState.Current, "hero.running", LibraryVersion)</span>
+    </div>
+</div>
 
 @code {
 
@@ -52,11 +107,18 @@
     private bool _canGenerate;
 
     /// <summary>Counts draws rather than describing them: two consecutive draws can produce the
-    /// very same text, and GenerateControls needs to tell them apart to announce the second one
-    /// (see the result region's own note there).</summary>
+    /// very same text, and the result bar needs to tell them apart to announce the second one
+    /// (see the result bar's own note in the markup above).</summary>
     private int _drawToken;
 
     private string PageTitleText => $"{PlaygroundStrings.T(LocaleState.Current, "playground.title")} — JustDummies";
+
+    /// <summary>Whether the chain has anything in it yet. What ".Generate();" is printed for,
+    /// and what "Copy code" is enabled for — an empty chain formats to "Any.Generate();", which
+    /// is not a call the library has.</summary>
+    private bool HasChosenStep => _links.Any(l => l.Chosen is not null);
+
+    private bool HasResult => _generatedValue is not null || _refusal is not null;
 
     /// <summary>
     ///     The version of the library actually loaded, read from the assembly rather than written
@@ -162,11 +224,15 @@
     ///     an argument edited, a step deleted) — the same pattern Pages/Hero.razor uses for its
     ///     fixed-shape chain, generalised to a variable-length one. Clears the last generated
     ///     value/refusal too, since a changed chain makes them stale.
+    ///
+    ///     Cleared BEFORE the replay, not after: <see cref="ReplayChain" /> now sets
+    ///     <see cref="_refusal" /> itself when the chain as declared is one the library refuses,
+    ///     and clearing afterwards would wipe the message it had just written.
     /// </summary>
     private void Recompute() {
-        ReplayChain();
         _generatedValue = null;
         _refusal        = null;
+        ReplayChain();
         StateHasChanged();
     }
 
@@ -181,6 +247,18 @@
     ///     only ever holds the library's own untranslated wording, never a translated key — but
     ///     clearing it on every language switch would still make the drawn value disappear for
     ///     no reason.)
+    ///
+    ///     WHY A REFUSAL IS COPIED OUT TO <see cref="_refusal" /> HERE. A step's failure is shown
+    ///     on the step, behind its diagnostic flag — which is right for an argument this site
+    ///     could not parse, and not enough for the library's own refusal. §9.9 asks that a
+    ///     refusal never be neutralised, and a message nobody sees until they press the control
+    ///     that reveals it is neutralised in every way that matters. So it is also printed in the
+    ///     result bar under the card, verbatim, exactly where the hero prints the one it gets —
+    ///     the flag says which step, the bar says what the library said.
+    ///
+    ///     Only ever set here, never cleared: <see cref="Recompute" /> clears before calling, and
+    ///     a locale switch — the other caller — must leave a refusal from an earlier Generate
+    ///     alone.
     /// </summary>
     private void ReplayChain() {
         object? current  = null;
@@ -188,8 +266,9 @@
         var     stopped   = false;
 
         foreach (var link in _links) {
-            link.Error             = null;
-            link.ErrorArgumentIndex = null;
+            link.Error                 = null;
+            link.ErrorArgumentIndex    = null;
+            link.ErrorIsLibraryRefusal = false;
 
             if (link.Chosen is null || stopped) {
                 continue;
@@ -200,16 +279,31 @@
             typeKey  = result.TypeKey;
 
             if (result.HasError) {
-                link.Error             = ResolveError(result);
-                link.ErrorArgumentIndex = result.ArgumentErrorIndex;
-                stopped                = true;
+                link.Error                 = ResolveError(result);
+                link.ErrorArgumentIndex    = result.ArgumentErrorIndex;
+                link.ErrorIsLibraryRefusal = result.LibraryRefusalText is not null;
+                stopped                    = true;
+
+                if (link.ErrorIsLibraryRefusal) {
+                    _refusal = result.LibraryRefusalText;
+                }
             }
         }
 
         _currentValue   = current;
         _currentTypeKey = typeKey;
-        _canGenerate    = !stopped && _links.Any(l => l.Chosen is not null);
+        _canGenerate    = !stopped && HasChosenStep;
     }
+
+    /// <summary>A generated <c>string</c>/<c>char</c> can legitimately be empty or made only of
+    /// control characters, which would otherwise render as nothing at all inside &lt;output&gt;.
+    /// Quoting mirrors how <see cref="FormatArgumentLiteral" /> already formats these two types
+    /// for the copied code.</summary>
+    private static string DisplayValue(object? value) => value switch {
+        string s => $"\"{s}\"",
+        char c   => $"'{c}'",
+        _        => value?.ToString() ?? "",
+    };
 
     /// <summary>
     ///     A step's failure is one of two distinct kinds (see <see cref="ChainResult" />): an
@@ -260,7 +354,7 @@
         // but the raw input itself might not be lowercase (bool.TryParse accepts "True"), so
         // this re-derives the canonical literal rather than trusting the raw text verbatim.
         // CodeText is rebuilt on every render regardless of whether the chain is complete —
-        // GenerateControls only chooses not to display it while CanGenerate is false — so an
+        // CopyCodeButton only chooses not to offer it while the chain has no step — so an
         // empty or not-yet-valid argument must format to something rather than throw; TryParse
         // rather than Parse is what keeps this a pure, non-throwing formatting function.
         ArgumentParsing.TypeKeyBoolean => bool.TryParse(raw, out var b) && b ? "true" : "false",

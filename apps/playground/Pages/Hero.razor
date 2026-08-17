@@ -35,7 +35,15 @@
     to refuse.
 *@
 
-<div class="hero-widget">
+@*
+    Both classes, and both are load-bearing. `.code-widget` is the card this shares with the
+    playground — the box, its padding, the result bar under it, the row of controls under that,
+    and the button in that row; `.hero-widget` is what only this one needs, which is now down to
+    the depth its continuation lines indent to and the cap hint below the card. They were one
+    class until the playground was rebuilt around the same card: see app.css's own header on
+    `.code-widget` for why the split is what keeps the two from drifting.
+*@
+<div class="hero-widget code-widget">
     @*
         Same two-zone shape as the site's own static sample (LiveHero.astro's .sample: a
         <pre> then a <figcaption>, on the same tokens) — this is the card the visitor was

@@ -12,9 +12,17 @@
     (space-12 against the site's space-8) put them 16 pixels lower. Split the way the site
     splits it, the numbers are the site's numbers and there is nowhere left for them to drift.
 
-    `.page-body` is the last of them: the site's comparative page sets its own section to 60rem
-    inside the 72rem shell, so a line of prose breaks in the same place on both halves of the
-    product rather than running the full measure here and stopping short there.
+    `.page-body` — the 60rem column the site's comparative page sets its own section to, so a
+    line of prose breaks in the same place on both halves of the product — used to be the
+    fourth box, wrapped around @Body here. IT BELONGS TO THE PROSE, NOT TO THE PAGE, and
+    wrapping everything in it was the difference between the playground's code card and the
+    landing page's: the site gives its prose 60rem and its figures the whole 72rem shell
+    (HomeContent.astro says so where it caps its own subtitle at 56rem and lets the expression
+    below it run full width), and a wrapper here could only give both the narrower of the two.
+    Each page opens its own `.page-body` around the words that want it now, and what is a
+    figure — the playground's card — sits directly in the shell, at the measure the landing
+    page's card is drawn at. tests/browser/code-card-parity.spec.ts is what holds the two
+    together from here on.
 *@
 
 <SiteHeader />
@@ -23,9 +31,7 @@
     <div class="shell">
         <BrandHeading />
 
-        <div class="page-body">
-            @Body
-        </div>
+        @Body
     </div>
 </main>
 

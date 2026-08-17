@@ -1,82 +1,149 @@
 @inherits LocalizedComponent
+@using System.Globalization
 @using JustDummies.Playground.Catalogue
 @using JustDummies.Playground.Localization
 
 @*
-    One line of the chain the visitor is building (specification §10.2/§10.4): a native
-    `<select>` offering every method valid at this point (§11.5 — never a custom widget),
-    the chosen method rendered with its arguments as real inputs, a doc string that stays
-    visible without hover or focus (§5.7 — no hover on mobile), a help link, and a delete
-    control that truncates the chain from here on (confirmed behaviour, not a cascade
-    recompute).
+    One line of the chain the visitor is building (specification §10.2/§10.4), written as the
+    line of C# it is.
+
+    A STEP IS A COMBO UNTIL IT IS CHOSEN, AND CODE AFTER THAT. The `<select>` is native
+    (§11.5 — never a custom widget) and it is the only control in the card that is still asking
+    something; once a method has been picked, the step is drawn as coloured code in the same
+    token vocabulary highlight.ts gives the site's own snippets, and the only thing left to do
+    to it is edit its arguments or remove it. Removing truncates the chain from here on
+    (confirmed behaviour, not a cascade recompute) — which is what choosing a different method
+    always did too, so nothing became less reachable when the combo went away, it just takes the
+    delete control to get there.
+
+    EXCEPT WHILE THE SELECT HAS FOCUS — see ShowSelect below. A keyboard user browsing the
+    options of a closed `<select>` commits one on every arrow press, and a select that vanished
+    on the first of them could not be arrowed past its first option.
 
     The method name, its summary and its help link come from the catalogue — the library is
-    their source, so they are never translated (§6.4 as corrected: content the library
-    produces, at build time or at runtime, stays in the language it was written in). Every
-    other piece of text here — the placeholder option, the delete/select labels, "docs" —
-    is this component's own, and is translated like the rest of the playground's chrome.
+    their source, so they are never translated (§6.4 as corrected: content the library produces,
+    at build time or at runtime, stays in the language it was written in). Every other piece of
+    text here — the placeholder option, the delete/select labels, "docs" — is this component's
+    own, and is translated like the rest of the playground's chrome.
 *@
 
-<div class="chain-link">
-    <span class="prefix">@Prefix</span>
+<div class="chain-link" @onkeydown="HandleKeyDown">
+    @if (IsFirst) {
+        <span class="prefix"><span class="tok-type">Any</span><span class="tok-punctuation">.</span></span>
+    } else {
+        <span class="prefix tok-punctuation">.</span>
+    }
 
-    <select @ref="_select"
-            @onchange="HandleMethodChosen"
-            value="@(State.Chosen?.Key ?? "")"
-            aria-label="@SelectLabel"
-            aria-describedby="@(DescribesSelect ? ErrorId : null)"
-            aria-invalid="@(DescribesSelect ? "true" : null)">
-        <option value="" disabled selected="@(State.Chosen is null)">@PlaygroundStrings.T(LocaleState.Current, "playground.chooseMethod")</option>
-        @foreach (var option in Options) {
-            <option value="@option.Key" selected="@(State.Chosen?.Key == option.Key)">@DisplayName(option)</option>
-        }
-    </select>
+    @if (ShowSelect) {
+        <select @ref="_select"
+                @onchange="HandleMethodChosen"
+                @onfocusin="() => _editing = true"
+                @onfocusout="() => _editing = false"
+                value="@(State.Chosen?.Key ?? "")"
+                aria-label="@SelectLabel"
+                aria-describedby="@(DescribesSelect ? ErrorId : null)"
+                aria-invalid="@(DescribesSelect ? "true" : null)">
+            <option value="" disabled selected="@(State.Chosen is null)">@PlaygroundStrings.T(LocaleState.Current, "playground.chooseMethod")</option>
+            @foreach (var option in Options) {
+                <option value="@option.Key" selected="@(State.Chosen?.Key == option.Key)">@DisplayName(option)</option>
+            }
+        </select>
+    } else if (State.Chosen is { } settled) {
+        <span class="call"><span class="tok-member">@settled.MethodName</span><span class="tok-punctuation">(</span>@for (var i = 0; i < settled.Parameters.Count; i++) {
+                var index     = i;
+                var parameter = settled.Parameters[i];
+                var quote     = QuoteFor(parameter.TypeKey);
 
-    @if (State.Chosen is { } chosen) {
-        <span class="call">
-            <span class="method-name">@chosen.MethodName</span><span class="paren">(</span>
-            @for (var i = 0; i < chosen.Parameters.Count; i++) {
-                var index = i;
-                var parameter = chosen.Parameters[i];
-                @if (i > 0) {
-                    <span class="comma">, </span>
+                @if (index > 0) {
+                    <span class="tok-punctuation">, </span>
+                }
+                @if (quote is not null) {
+                    <span class="tok-string">@quote</span>
                 }
                 <input
                     type="@InputTypeFor(parameter.TypeKey)"
                     step="@StepFor(parameter.TypeKey)"
-                    placeholder="@parameter.Placeholder"
-                    aria-label="@($"{chosen.MethodName} {parameter.Name}")"
+                    class="@TokenClassFor(parameter.TypeKey)"
+                    data-width="@FieldWidth(State.Argument(index), parameter.Name)"
+                    placeholder="@parameter.Name"
+                    aria-label="@($"{settled.MethodName} {parameter.Name}")"
                     aria-describedby="@(DescribesInput(index) ? ErrorId : null)"
                     aria-invalid="@(DescribesInput(index) ? "true" : null)"
                     value="@State.Argument(index)"
                     @oninput="e => HandleArgumentChanged(index, e)" />
-            }
-            <span class="paren">)</span>
-        </span>
+                @if (quote is not null) {
+                    <span class="tok-string">@quote</span>
+                }
+            }<span class="tok-punctuation">)</span></span>
+    }
 
-        <button type="button" class="delete" aria-label="@PlaygroundStrings.T(LocaleState.Current, "playground.deleteStep")" @onclick="HandleDelete">−</button>
-
-        <p class="doc">
-            @chosen.Summary
-            <a class="help" href="@chosen.HelpUrl" target="_blank" rel="noopener noreferrer">
-                @PlaygroundStrings.T(LocaleState.Current, "playground.docs")
-                <svg class="arrow" viewBox="0 0 12 12" width="10" height="10" aria-hidden="true" focusable="false">
-                    <path d="M3 9L9 3M4.5 3H9v4.5" />
-                </svg>
-                <span class="visually-hidden">@PlaygroundStrings.T(LocaleState.Current, "state.newTab")</span>
-            </a>
-        </p>
-
+    @if (State.Chosen is { } chosen) {
+        @*
+            The diagnostic flag, between the code and its comment — where an editor puts a
+            gutter mark. It opens the message rather than printing it; app.css's own note on
+            `.chain-link .flag` says which failures that is allowed for and which one is also
+            printed under the card regardless (§9.9's, which is never only behind a control).
+        *@
         @if (HasError) {
-            <p class="error" id="@ErrorId" role="status">@Error</p>
+            <button type="button"
+                    class="flag"
+                    aria-expanded="@(_errorOpen ? "true" : "false")"
+                    aria-controls="@ErrorId"
+                    aria-label="@PlaygroundStrings.T(LocaleState.Current, "playground.showError")"
+                    @onclick="() => _errorOpen = !_errorOpen">
+                <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true" focusable="false">
+                    <circle class="disc" cx="8" cy="8" r="7" />
+                    <path class="cross" d="M5.5 5.5 10.5 10.5M10.5 5.5 5.5 10.5" />
+                </svg>
+            </button>
         }
+
+        @* "×" rather than the "−" this used to draw. A minus sign sitting immediately after
+           `.WithLength(12)`, in a block that is read as C#, is a subtraction — and it was
+           rendering as one. A cross is the one glyph nobody reads as arithmetic. *@
+        <button type="button" class="delete" aria-label="@PlaygroundStrings.T(LocaleState.Current, "playground.deleteStep")" @onclick="HandleDelete">×</button>
+
+        @*
+            Always in the DOM once there is something to say, whether or not the flag is open:
+            `.visually-hidden` is what the closed state costs, so `aria-describedby` on the
+            offending field always resolves to a real element and a screen reader never has to
+            find, let alone press, the control that reveals it (§13.4 — error messages are
+            associated with the zone that provokes them).
+        *@
+        @if (HasError) {
+            <p class="error @(_errorOpen ? null : "visually-hidden")" id="@ErrorId">@Error</p>
+        }
+
+        @*
+            The documentation, as the comment it reads like — always visible, never on hover
+            (§5.7: there is no hover on a phone). The marker is its own column so the summary
+            hangs under itself when it wraps; app.css says why it is one marker rather than one
+            per line.
+        *@
+        <p class="doc tok-comment">
+            <span class="marker" aria-hidden="true">//</span>
+            <span class="text">@chosen.Summary
+                <a class="help" href="@chosen.HelpUrl" target="_blank" rel="noopener noreferrer">
+                    @PlaygroundStrings.T(LocaleState.Current, "playground.docs")
+                    <svg class="arrow" viewBox="0 0 12 12" width="10" height="10" aria-hidden="true" focusable="false">
+                        <path d="M3 9L9 3M4.5 3H9v4.5" />
+                    </svg>
+                    <span class="visually-hidden">@PlaygroundStrings.T(LocaleState.Current, "state.newTab")</span>
+                </a>
+            </span>
+        </p>
     }
 </div>
 
 @code {
 
     [Parameter, EditorRequired] public int LinkIndex { get; set; }
-    [Parameter, EditorRequired] public string Prefix { get; set; } = "Any.";
+
+    /// <summary>Whether this step opens the chain, and therefore carries the <c>Any.</c> receiver
+    /// on its own line rather than the leading <c>.</c> every step below it carries. What makes
+    /// the card read <c>Any.String()</c> on one line, with every dot under the first one.</summary>
+    [Parameter] public bool IsFirst { get; set; }
+
     [Parameter, EditorRequired] public IReadOnlyList<MemberDescriptor> Options { get; set; } = Array.Empty<MemberDescriptor>();
     [Parameter, EditorRequired] public ChainLinkState State { get; set; } = null!;
     [Parameter, EditorRequired] public string? Error { get; set; }
@@ -87,11 +154,41 @@
 
     private ElementReference _select;
 
+    /// <summary>Whether the visitor's focus is currently in this step's <c>&lt;select&gt;</c> —
+    /// see <see cref="ShowSelect" />, which is the only thing it is for.</summary>
+    private bool _editing;
+
+    /// <summary>Whether the flag's message is open. Closed by default, and forced closed again
+    /// the moment there is nothing to say (<see cref="OnParametersSet" />) — otherwise a step
+    /// whose argument was just fixed would keep an empty callout open under it, and a component
+    /// instance reused for a different step after a truncation would inherit the last one's.</summary>
+    private bool _errorOpen;
+
+    /// <summary>
+    ///     Whether this step is still drawn as a combo rather than as code.
+    ///
+    ///     Unchosen, obviously. Chosen, only while the select still has focus — and that clause
+    ///     is not a nicety. A closed native <c>&lt;select&gt;</c> raises <c>change</c> on every
+    ///     arrow press, so a keyboard user browsing the options commits each one in turn; if the
+    ///     control were replaced by text on the first of those commits, the list could never be
+    ///     arrowed past its first entry, and the only methods reachable without a pointer would
+    ///     be whichever ones happen to sort first. Kept until focus leaves, the browsing works
+    ///     exactly as it does anywhere else and the step settles into code on the way out.
+    /// </summary>
+    private bool ShowSelect => State.Chosen is null || _editing;
+
+    protected override void OnParametersSet() {
+        if (!HasError) {
+            _errorOpen = false;
+        }
+    }
+
     /// <summary>Lets Home.razor put keyboard focus back on this link's own <c>&lt;select&gt;</c>
     /// after a deletion replaces the chain from here on with a fresh empty step — otherwise the
     /// button that triggered the deletion is gone from the DOM and focus silently falls back to
-    /// &lt;body&gt;, forcing a keyboard user to renavigate the page from the top.</summary>
-    public ValueTask FocusAsync() => _select.FocusAsync();
+    /// &lt;body&gt;, forcing a keyboard user to renavigate the page from the top. A no-op if this
+    /// step is drawn as code, which has no select to focus.</summary>
+    public ValueTask FocusAsync() => ShowSelect ? _select.FocusAsync() : ValueTask.CompletedTask;
 
     private bool HasError => !string.IsNullOrEmpty(Error);
     private string ErrorId => $"chain-link-{LinkIndex}-error";
@@ -111,6 +208,16 @@
     /// they navigate away from it.</summary>
     private bool DescribesSelect => HasError && State.Chosen is { Parameters.Count: 0 };
     private string SelectLabel => PlaygroundStrings.T(LocaleState.Current, "playground.selectAria", LinkIndex + 1);
+
+    /// <summary>Escape closes the flag's message, from anywhere in the step — the button that
+    /// opened it, an argument field beside it, the select. A disclosure that can only be closed
+    /// by finding the control that opened it is one a keyboard user has to walk backwards to
+    /// dismiss.</summary>
+    private void HandleKeyDown(KeyboardEventArgs e) {
+        if (e.Key == "Escape") {
+            _errorOpen = false;
+        }
+    }
 
     private static string DisplayName(MemberDescriptor member) =>
         member.Parameters.Count == 0
@@ -132,6 +239,81 @@
         "System.Single" or "System.Double" or "System.Half" or "System.Decimal" => "any",
         _ => null,
     };
+
+    /// <summary>
+    ///     Which of the site's code colours an argument field is drawn in — the same
+    ///     <c>.tok-*</c> classes highlight.ts writes onto the site's own snippets, so a value
+    ///     typed here is the colour the same value would be in a code block on the landing page.
+    /// </summary>
+    private static string TokenClassFor(string typeKey) => typeKey switch {
+        ArgumentParsing.TypeKeyBoolean => "tok-keyword",
+        _ when InputTypeFor(typeKey) == "number" => "tok-number",
+        _ => "tok-string",
+    };
+
+    /// <summary>
+    ///     The quote character drawn either side of an argument field, or <c>null</c> for one
+    ///     that takes none.
+    ///
+    ///     Only the two types that have a literal form of their own get one: a <c>string</c> and
+    ///     a <c>char</c>, exactly as Home.razor's FormatArgumentLiteral quotes them for the code
+    ///     the copy button hands over. A number and a <c>bool</c> are bare there and bare here.
+    ///
+    ///     THE REST — Guid, the date/time family, the wide integers — have no bare literal in
+    ///     C# at all, and what the copy button emits for them is a <c>Parse(...)</c> call several
+    ///     times longer than the value inside it. Printing that in the card would bury a
+    ///     four-word chain in ceremony, so the card shows the value between quotes, which is how
+    ///     the visitor typed it and how <c>Parse</c> takes it. The card is the reading of the
+    ///     chain; the clipboard is the code. Neither one is lying about the other.
+    /// </summary>
+    private static string? QuoteFor(string typeKey) => typeKey switch {
+        ArgumentParsing.TypeKeyChar    => "'",
+        ArgumentParsing.TypeKeyBoolean => null,
+        _ when InputTypeFor(typeKey) == "number" => null,
+        _ => "\"",
+    };
+
+    /// <summary>
+    ///     The rungs app.css declares a <c>[data-width]</c> rule for. Exact to 12 columns, and
+    ///     coarse past it: see that file's own note — a rule per column to 40 would be forty
+    ///     rules to spare a Guid three columns of slack.
+    /// </summary>
+    private static readonly int[] WidthLadder = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 20, 24, 28, 32, 36, 40 };
+
+    /// <summary>
+    ///     How wide an argument field renders, in <c>ch</c>, written to <c>data-width</c> rather
+    ///     than to a <c>style</c> attribute: the site's CSP is <c>style-src 'self'</c> with no
+    ///     <c>unsafe-inline</c>, so a computed inline width is dropped by the browser rather than
+    ///     applied (Pages/Hero.razor's FieldWidth carries the long version of this).
+    ///
+    ///     Wide enough for what the field actually holds, plus a column for the caret — and for
+    ///     the parameter's own name while it holds nothing, so an untouched call reads
+    ///     <c>Between(minimum, maximum)</c>, its signature, rather than showing a pair of slivers.
+    ///
+    ///     THE TWO CASES ARE NOT MAXED TOGETHER, which is what a first version did to stop the
+    ///     line shuffling sideways on the first keystroke. The cost was permanent and the
+    ///     benefit was not: every short value sat in a box built for its parameter's name, so
+    ///     the quotes this component draws either side of a string argument landed three or four
+    ///     characters clear of the text they are supposed to wrap — <c>StartingWith("ORD-   ")</c>
+    ///     — which is the exact defect Pages/Hero.razor's own FieldWidth was written to fix, on
+    ///     the exact same markup. One keystroke of movement is cheaper than that.
+    ///
+    ///     Counted by text element rather than by <see cref="string" /> length: a
+    ///     supplementary-plane character is two UTF-16 code units in .NET, and sizing a box in
+    ///     code units makes it a column too wide for every emoji in it.
+    /// </summary>
+    private static int FieldWidth(string value, string placeholder) {
+        string shown  = value.Length == 0 ? placeholder : value;
+        int    wanted = new StringInfo(shown).LengthInTextElements + 1;
+
+        foreach (int rung in WidthLadder) {
+            if (rung >= wanted) {
+                return rung;
+            }
+        }
+
+        return WidthLadder[^1];
+    }
 
     private Task HandleMethodChosen(ChangeEventArgs e) {
         var key = e.Value as string;

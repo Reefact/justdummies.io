@@ -4,10 +4,14 @@
 
 <PageTitle>@PageTitleText</PageTitle>
 
-<h2 class="page-title">@PlaygroundStrings.T(LocaleState.Current, "notFound.title")</h2>
-<p class="lede">
-    @((MarkupString)PlaygroundStrings.T(LocaleState.Current, "notFound.lede", RestartHref, SiteHomeHref))
-</p>
+@* `.page-body` is opened here rather than by MainLayout — see the note there: it is the
+   prose's 60rem column, and this page is nothing but prose. *@
+<div class="page-body">
+    <h2 class="page-title">@PlaygroundStrings.T(LocaleState.Current, "notFound.title")</h2>
+    <p class="lede">
+        @((MarkupString)PlaygroundStrings.T(LocaleState.Current, "notFound.lede", RestartHref, SiteHomeHref))
+    </p>
+</div>
 
 @code {
 
