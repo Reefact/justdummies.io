@@ -338,13 +338,19 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
      *
      * Called from the three moments where the stored answer and this page can disagree:
      * startup, another document writing, and this one coming back into view.
+     *
+     * GRANTING WAITS FOR A VISIBLE TAB; WITHDRAWING NEVER DOES. `storage` reaches every
+     * open document at once — accepting with three tabs open would start three tags in
+     * the same instant, and two of them would fire `config`'s page_view from a document
+     * nobody was reading. `visibilitychange` already calls this again on the tab that
+     * deferred, so nothing is lost, only held until there is a page to attribute it to.
      */
     function applyDecision(): void {
         const decided: Answer | undefined = remembered();
 
-        if (decided === 'granted') {
+        if (decided === 'granted' && document.visibilityState === 'visible') {
             start();
-        } else {
+        } else if (decided !== 'granted') {
             stop();
         }
 
