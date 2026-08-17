@@ -1347,6 +1347,116 @@ de onze à quatorze scènes, et deux périodes mesurées par position ne seraien
 
 ---
 
+## Étape 11 — Allumer le parcours
+
+### Pourquoi
+
+Les étapes 5 et 10 ont donné à §15 ses deux voies : combien de personnes viennent, et combien copient
+une commande d'installation. Aucune ne dit ce qui s'est passé entre les deux — quelles scènes ont été
+lues, où un lecteur s'est arrêté, ce qu'il a comparé d'abord. C'est la voie trois, et
+[ADR-0014](adr/0014-le-parcours-est-mesure-dans-une-troisieme-voie-soumise-au-consentement-fr.md) dit
+pourquoi elle existe et ce qu'elle coûte.
+
+Contrairement aux deux autres, celle-ci **demande d'abord au visiteur** et ne fait rien du tout tant
+qu'il n'a pas dit oui. C'est aussi la seule voie que l'on puisse éteindre depuis le dépôt, ce qui est
+la raison pour laquelle elle prend deux variables et non une.
+
+### Faire
+
+**1. Créer la propriété.** Google Analytics → *Admin* → créer une propriété pour `justdummies.io` et
+un flux de données **Web** sur ce nom d'hôte. Copier l'identifiant de mesure — la valeur `G-…`. Ne
+coller l'extrait d'installation nulle part : le site rend sa propre balise, et seul l'identifiant est
+utile.
+
+**2. Désactiver les pages vues sur événement d'historique.** *Admin* → *Flux de données* → le flux →
+*Enhanced measurement* → l'engrenage à côté de **Pages vues** → décocher **Page changes based on
+browser history events**.
+
+Ce n'est ni optionnel ni cosmétique. La page principale intercepte chaque clic sur une ancre interne
+et pousse un état d'historique ; laissé actif, **chaque clic de chevron rapporte une page vue** et
+gonfle silencieusement tous les chiffres de la page que l'on veut justement lire. Aucun contrôle de ce
+dépôt ne peut le détecter : aucun paramètre de balise ne le règle, et la suite navigateur répond à la
+balise par un script vide. C'est nommé dans les Risques d'ADR-0014 pour exactement cette raison.
+
+Tant qu'on y est : Google Signals **désactivé**, personnalisation publicitaire **désactivée**,
+rétention **14 mois**.
+
+**3. Déclarer les définitions personnalisées.** *Admin* → *Définitions personnalisées*. Dimensions à
+portée événement : `placement`, `variant`, `scene_name`, `act`, `content_locale`, `competitor`,
+`link_url`. Une métrique personnalisée : `scene_ordinal`.
+
+À faire **avant** le premier trafic réel. Un paramètre non déclaré est collecté mais pas exploitable
+en rapport, et le déclarer plus tard ne remplit pas le passé — l'historique antérieur reste illisible.
+`scene_ordinal` est une *métrique* et jamais une dimension ; le [plan de mesure](measurement-plan-fr.md)
+dit pourquoi, et c'est §15.3.
+
+**4. Donner les deux variables à la CI.** *Settings* du dépôt → *Secrets and variables* → *Actions* →
+**Variables**, à côté de `PUBLIC_CF_BEACON_TOKEN` :
+
+| Variable | Valeur |
+|---|---|
+| `PUBLIC_GA_MEASUREMENT_ID` | l'identifiant `G-…` |
+| `PUBLIC_GA_MEASUREMENT_STATE` | `enabled` ou `disabled` |
+
+Des variables et non des secrets, pour la même raison que le jeton du beacon : l'identifiant est rendu
+dans chaque page qui porte la balise et il est fait pour être lu.
+
+**Les deux sont exigées, à chaque build, y compris les builds qui ne mesurent rien.** C'est plus
+strict que le jeton du beacon, délibérément — un jeton absent ne peut que mesurer moins, tandis qu'un
+état absent laisse « Google est-il allumé ? » répondu par une absence. Le build échoue, et dit quelle
+variable et quoi écrire.
+
+L'identifiant est conservé même quand l'état est `disabled`. C'est toute la raison d'en avoir deux :
+éteindre la mesure ne doit jamais coûter l'identifiant, et la rallumer ne doit jamais signifier revenir
+ici le rechercher.
+
+Seuls `enabled` et `disabled` sont acceptés. `true`, `yes`, `1` et `Enabled` font échouer le build
+plutôt que de signifier « éteint » en silence.
+
+**5. Reconstruire et publier.** La balise est rendue au build, donc les variables prennent effet au
+prochain tag de release — pas au prochain déploiement d'un artefact construit avant elles.
+
+### ✅ Contrôle
+
+Avec l'état `enabled`, sur le déploiement :
+
+```bash
+curl -s https://justdummies.io/ | grep -c 'www.googletagmanager.com'   # attendu 1
+curl -sI https://justdummies.io/ | grep -i 'content-security-policy' | grep -c 'googletagmanager'   # attendu 1
+```
+
+Avec l'état `disabled`, les deux attendent `0` — et c'est le contrôle qui vaut d'être fait une fois,
+parce que toute la valeur du commutateur est qu'éteint signifie *absent*, pas *présent et inerte*.
+
+Ouvrir ensuite le site dans un navigateur, console affichée. §13.2 exige que toute évolution de la
+politique de contenu soit validée par un chargement réel plutôt que par une revue, et c'est ce
+chargement :
+
+* le bandeau apparaît, une fois ;
+* **refuser** — l'onglet Réseau ne montre absolument rien vers un hôte Google ;
+* recharger — le bandeau ne revient pas ;
+* *Confidentialité* → **Modifier votre choix** → **accepter** — `gtag/js` charge, et la console ne
+  rapporte aucune violation de politique ;
+* copier une commande d'installation — elle est enregistrée dans les deux voies.
+
+Enfin, GA4 → *Admin* → **DebugView**, avec l'extension Google Analytics Debugger active, et lire
+`scene_view` arriver avec un `scene_name`. Confirmer que les paramètres arrivent **avant** de faire
+confiance aux rapports, parce que les définitions personnalisées déclarées à l'étape 3 ne s'appliquent
+qu'à partir du moment où elles ont existé.
+
+### S'il faut arrêter la mesure
+
+Par ordre de rapidité :
+
+1. **Immédiat, sans toucher au dépôt** — supprimer le flux de données dans la console GA4. La collecte
+   s'arrête pour tout le monde d'un coup.
+2. **La voie enregistrée** — mettre `PUBLIC_GA_MEASUREMENT_STATE` à `disabled` et publier un tag de
+   release. Plus lent, et cela laisse une trace datée dans l'historique du dépôt plutôt que dans une
+   console que personne ne peut dater. C'est l'échange autour duquel le commutateur a été conçu.
+3. **Pour un visiteur** — *Confidentialité* → *Modifier votre choix* → *Refuser*, avec effet immédiat.
+
+---
+
 ## Récapitulatif des contrôles
 
 | # | Étape | Ce que ça prouve |
@@ -1365,6 +1475,7 @@ de onze à quatorze scènes, et deux périodes mesurées par position ne seraien
 | 8 | `HTTP/2 200` sur le domaine | DNS, TLS et rattachement du Worker en place. |
 | 9 | `deployments list` inchangé | Une preview ne touche pas la production. |
 | 10 | le beacon dans la page, puis `204`, `405`, `404` | La mesure est allumée, et le Worker est hors du chemin de tout le reste. |
+| 11 | la balise dans la page, les hôtes dans la politique, puis refuser → rien vers Google | Le parcours est allumé, et il demande avant de mesurer. |
 
 ---
 

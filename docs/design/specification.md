@@ -1166,6 +1166,28 @@ moment narratif.
 L'ordinal peut voyager en champ secondaire, pour la lisibilité d'un tableau de bord.
 Jamais comme identifiant.
 
+### 15.4 Le parcours, et ce qu'il demande d'abord
+
+Les deux mesures ci-dessus ne demandent leur accord à personne, parce qu'aucune ne
+sait reconnaître un lecteur. Elles disent combien arrivent et combien copient ; elles
+ne disent rien de ce qui s'est passé entre les deux.
+
+Le parcours — quelles scènes ont été lues, où l'on s'arrête, ce qui a été comparé
+avant de se décider — demande une mesure capable de relier deux visites, donc capable
+de reconnaître. **Elle est soumise au consentement**, et le consentement est un oui
+explicite : rien n'est chargé, et rien n'est envoyé, avant qu'il soit donné. Un site
+qui promet cela doit pouvoir le prouver, et non l'affirmer.
+
+Elle est une **troisième voie, et elle est séparée**. Les deux premières n'en dépendent
+jamais : un refus coûte un parcours et jamais un total. C'est ce qui garde un taux
+lisible, puisque son dénominateur reste celui de la voie que personne ne refuse.
+
+Ce qu'elle mesure ne sert jamais la publicité. Cette exclusion est portée par la
+politique de contenu, de sorte qu'un changement d'avis casse un contrôle au lieu
+d'être livré.
+
+Le refus est offert aussi visiblement que l'accord, et se révise à tout moment.
+
 ---
 
 ## 16. Ce qui est vérifié, et par quoi
@@ -1195,6 +1217,9 @@ cassé.
 | Un emplacement de mesure indexé sur une position | 15.3 | Vérification de l'artefact, et refus du collecteur |
 | Une paire emplacement/variante qui désigne deux choses | 15.2 | Vérification de l'artefact |
 | Le beacon d'audience et la politique qui doit l'admettre | 15.1, 13.2 | Vérification de l'artefact, dans les deux sens |
+| La balise de parcours et la politique qui doit l'admettre | 15.4, 13.2 | Vérification de l'artefact, dans les trois sens |
+| Rien n'atteint le tiers avant que le visiteur ait accepté | 15.4 | Test de navigateur dédié |
+| La mesure de parcours ne sert jamais la publicité | 15.4 | Vérification de l'artefact, et refus du navigateur |
 | Une version de paquet déclarée en retard sur le registre, ou en désaccord avec elle-même | 7.5 | `scripts/check-package-freshness.mjs`, sur planification et à chaque release ; avertissement et issue, jamais un échec de publication |
 
 Quand une règle de ce document n'a pas de ligne ici, c'est qu'elle repose sur

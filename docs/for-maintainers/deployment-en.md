@@ -1308,6 +1308,110 @@ once, and two periods measured by position would not be comparable.
 
 ---
 
+## Step 11 — Turn the journey on
+
+### Why
+
+Steps 5 and 10 gave §15 its two lanes: how many people come, and how many copy an install command.
+Neither can say what happened between the two — which scenes were read, where a reader stopped, what
+they compared first. That is lane three, and [ADR-0014](adr/0014-the-journey-is-measured-in-a-third-lane-gated-on-consent-en.md)
+is why it exists and what it costs.
+
+Unlike the other two, this one **asks the visitor first** and does nothing at all until they say yes.
+It is also the one lane that can be switched off from the repository, which is why it takes two
+variables rather than one.
+
+### Do
+
+**1. Create the property.** Google Analytics → *Admin* → create a property for `justdummies.io` and a
+**Web** data stream on that hostname. Copy the measurement id — the `G-…` value. Do not paste the
+install snippet anywhere: the site renders its own tag, and only the id is wanted.
+
+**2. Turn off page views on history events.** *Admin* → *Data streams* → the stream → *Enhanced
+measurement* → the gear beside **Page views** → uncheck **Page changes based on browser history
+events**.
+
+This is not optional and it is not cosmetic. The landing page intercepts every in-page anchor click
+and pushes history state, so left on, **every chevron click reports a page view** and silently
+inflates every figure on the page you most want to read. No check in this repository can detect it:
+there is no tag parameter for it, and the browser suite answers the tag with an empty script. It is
+named in ADR-0014's Risks for exactly that reason.
+
+While there: Google Signals **off**, advertising personalisation **off**, data retention **14 months**.
+
+**3. Register the custom definitions.** *Admin* → *Custom definitions*. Event-scoped dimensions:
+`placement`, `variant`, `scene_name`, `act`, `content_locale`, `competitor`, `link_url`. One custom
+metric: `scene_ordinal`.
+
+Do this **before** the first real traffic. A parameter that is not registered is collected but not
+reportable, and registering it later does not backfill — the history before it stays unreadable.
+`scene_ordinal` is a *metric* and never a dimension; the [measurement plan](measurement-plan-en.md)
+says why, and it is §15.3.
+
+**4. Give CI both variables.** Repository *Settings* → *Secrets and variables* → *Actions* →
+**Variables**, beside `PUBLIC_CF_BEACON_TOKEN`:
+
+| Variable | Value |
+|---|---|
+| `PUBLIC_GA_MEASUREMENT_ID` | the `G-…` id |
+| `PUBLIC_GA_MEASUREMENT_STATE` | `enabled` or `disabled` |
+
+Variables and not secrets, for the same reason as the beacon token: the id is rendered into every
+page that carries the tag and is meant to be read.
+
+**Both are required, in every build, including builds that measure nothing.** This is stricter than
+the beacon token, deliberately — a missing token can only measure less, while a missing state leaves
+"is Google on?" answered by an absence. The build fails, and says which variable and what to write.
+
+The id is kept even while the state is `disabled`. That is the whole reason there are two: switching
+the measurement off should never cost the id, and switching it back on should never mean coming back
+here to look it up.
+
+Only `enabled` and `disabled` are accepted. `true`, `yes`, `1` and `Enabled` fail the build rather
+than quietly meaning off.
+
+**5. Rebuild and publish.** The tag is rendered at build time, so the variables take effect on the
+next release tag — not on the next deploy of an artefact built before them.
+
+### ✅ Check
+
+With the state `enabled`, on the deployment:
+
+```bash
+curl -s https://justdummies.io/ | grep -c 'www.googletagmanager.com'   # expect 1
+curl -sI https://justdummies.io/ | grep -i 'content-security-policy' | grep -c 'googletagmanager'   # expect 1
+```
+
+With the state `disabled`, both expect `0` — and that is the check worth running once, because the
+whole value of the switch is that off means *absent*, not *present and idle*.
+
+Then open the site in a browser with the console showing. §13.2 requires every change to the content
+policy to be validated by a real load rather than by review, and this is that load:
+
+* the banner appears, once;
+* **refuse** — the Network panel shows nothing at all to any Google host;
+* reload — the banner does not come back;
+* *Privacy* → **Change your choice** → **accept** — `gtag/js` loads, and the console reports no policy
+  violation;
+* copy an install command — it is recorded in both lanes.
+
+Finally, GA4 → *Admin* → **DebugView**, with the browser's Google Analytics Debugger enabled, and read
+`scene_view` arriving with a `scene_name`. Confirm the parameters are landing **before** trusting the
+reports, because the custom definitions registered in step 3 only apply from the moment they existed.
+
+### If the measurement has to stop
+
+In order of speed:
+
+1. **Immediate, without touching the repository** — delete the data stream in the GA4 console.
+   Collection stops for everyone at once.
+2. **The recorded way** — set `PUBLIC_GA_MEASUREMENT_STATE` to `disabled` and publish a release tag.
+   Slower, and it leaves a dated trace in the repository's history rather than in a console nobody
+   can date. That is the trade the switch was designed around.
+3. **For one visitor** — *Privacy* → *Change your choice* → *Refuse*, which takes effect immediately.
+
+---
+
 ## Every check, in one table
 
 | # | Step | What it proves |
@@ -1326,6 +1430,7 @@ once, and two periods measured by position would not be comparable.
 | 8 | `HTTP/2 200` on the domain | DNS, TLS and the Worker attachment are in place. |
 | 9 | `deployments list` unchanged | A preview does not touch production. |
 | 10 | the beacon in the page, then `204`, `405`, `404` | The measurement is on, and the Worker is off the path of everything else. |
+| 11 | the tag in the page, the hosts in the policy, then refuse → nothing to Google | The journey is on, and it asks before it measures. |
 
 ---
 
