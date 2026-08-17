@@ -45,6 +45,56 @@ test.describe('the content-security-policy', () => {
 
     }
 
+    /**
+     * The analytics hosts, exercised rather than read.
+     *
+     * The harness answers the tag with an empty script, so accepting never makes the tag
+     * issue a single collect request — which means loading a page proves nothing about the
+     * `connect-src` and `img-src` entries the tag needs. They would be wrong in exactly the
+     * way that only shows up in production, on a visitor who accepted.
+     *
+     * So the request is made here on purpose, the same way the inline style below is
+     * injected on purpose. The policy is enforced in the renderer before the request ever
+     * reaches Playwright's routing, so a missing `connect-src` entry raises a violation and
+     * never gets as far as the stub.
+     */
+    test('admits the hosts the analytics tag collects to', async ({ page }) => {
+        const complaints: PageComplaints = await watch(page);
+
+        await page.goto('/');
+
+        const html: string = await page.content();
+
+        test.skip(!html.includes('www.googletagmanager.com'), 'this artefact was built without the analytics tag');
+
+        await page.evaluate(async () => {
+            await fetch('https://region1.google-analytics.com/g/collect', { method: 'POST' }).catch(() => undefined);
+        });
+
+        expect(await complaints.violations(), 'the policy refuses a host the tag has to reach').toEqual([]);
+    });
+
+    /**
+     * And the advertising hosts stay refused. They are deliberately absent from the policy
+     * and deliberately not stubbed by the harness, because the permanent denial of the three
+     * advertising consent signals is a decision no build step can enforce on its own. This is
+     * the browser enforcing it: whatever the tag is configured to do, a request to an
+     * advertising host cannot leave this page.
+     */
+    test('refuses the advertising hosts, whatever the tag decides', async ({ page }) => {
+        const complaints: PageComplaints = await watch(page);
+
+        await page.goto('/');
+
+        await page.evaluate(async () => {
+            await fetch('https://stats.g.doubleclick.net/g/collect', { method: 'POST' }).catch(() => undefined);
+        });
+
+        const violations: string[] = await complaints.violations();
+
+        expect(violations.join('\n'), 'an advertising host was reachable from this page').toContain('connect-src');
+    });
+
     test('refuses an inline style, so the check above is checking something', async ({ page }) => {
         const complaints: PageComplaints = await watch(page);
 
