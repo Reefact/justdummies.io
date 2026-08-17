@@ -1,20 +1,24 @@
 ---
 /**
- * The comparison itself (§11.7): the legend, the criterion blocks, and — for a screen wide
- * enough to hold a grid — the matrix. Three renders of one source (`../comparison.ts`).
+ * The comparison itself (§11.7): the matrix first, then the criterion blocks — two renders
+ * of one source (`../comparison.ts`).
  *
- * WHAT CHANGED, AND WHY IT IS NOT A REFACTOR. The first version of this component was a
- * five-column table: ten rows of two-word axis labels, each cell a rating and a note. It
- * satisfied §11 as it was then written, and it asked the reader to learn ten criteria from
- * their names before the page had told them anything. §11.4 now forbids that, so the
- * primary render is a **block per criterion**: the plain-language name, the question it
- * settles, the sentence that explains it, and only then where the four options stand.
+ * THE MATRIX LEADS NOW, AND THAT IS A REVERSAL OF THE ORIGINAL ORDER, deliberately. The
+ * first version of this component was a five-column table and nothing else: ten rows of
+ * two-word axis labels, each cell a rating and a note, asking the reader to learn ten
+ * criteria from their names before the page had told them anything. §11.4 answered that by
+ * putting the taught, one-block-per-criterion view first and demoting the table to a
+ * collapsed "everything on one screen" summary underneath it. A maintainer review found
+ * that ordering backwards for its own reason: a reader who scrolls this far and reads
+ * nothing further should still see the whole comparison, not a wall of collapsed
+ * accordions. So the matrix — the one thing that says all forty verdicts before any click —
+ * leads, and the criterion blocks, still taught the same way, follow as the place to go for
+ * the question, the explanation and the worked example behind a number just read.
  *
- * That shape is also what removes the two layout defects the table had. It is one column
- * of stacked blocks at every width, so nothing can scroll sideways (§11.7) and there is no
- * mobile replacement to keep in step — what a phone gets is the same markup, and all of
- * it. The matrix survives as the at-a-glance view it always was, below, and adds nothing
- * a reader has not already been given with its explanation attached.
+ * The criterion blocks are what remove the two layout defects the original table had on
+ * their own, independent of ordering. Each is one column of stacked content at every width,
+ * so nothing can scroll sideways (§11.7) and there is no mobile replacement to keep in step
+ * — what a phone gets is the same markup, and all of it.
  *
  * NO JAVASCRIPT, NO DEAD CONTROL (ADR-0004, same rule `InstallTabs` and `LanguageSelector`
  * follow). What is on disk shows every option, everywhere: a complete, honest answer with
@@ -50,21 +54,6 @@ function ratingLabel(rating: Rating): string {
 ---
 
 <div class="comparison" data-comparison>
-    <div class="legend">
-        <h4 id="why-legend-heading">{t('why.legend.heading')}</h4>
-        <dl aria-labelledby="why-legend-heading">
-            {
-                ratings.map((rating) => (
-                    <div class="legend-row" data-rating={rating.id}>
-                        <dt>{t(rating.labelKey)}</dt>
-                        <dd>{t(rating.legendKey)}</dd>
-                    </div>
-                ))
-            }
-        </dl>
-        <p class="order">{t('why.legend.order')}</p>
-    </div>
-
     {/*
       Everything in here needs the script. The line saying what is on screen is in here too,
       and deliberately: on a page showing all four options it would state the obvious, and
@@ -89,101 +78,30 @@ function ratingLabel(rating: Rating): string {
     </div>
 
     {/*
-      §4bis of the why-justdummies rewrite: native <details>/<summary>, in keeping with
-      ADR-0004 — no JS required to read every family. Only the first family opens by
-      default, so the comparison's strongest section is not buried, while the other three
-      start collapsed to cut the density a reader meets on first scroll.
-
-      A shared `name` makes the four mutually exclusive — natively, in every evergreen
-      browser (Chrome 120, Firefox 122, Safari 17.4): opening one closes whichever else was
-      open, with no script deciding it. That trades a taller page for a shorter one, never
-      both open at once competing for the same attention.
-
-      The heading lives *inside* the summary rather than being replaced by it: a bare
-      <summary> operates the disclosure but drops the family's name from the heading
-      outline, so a reader navigating this long comparison by heading (a screen reader's
-      own list of h-elements) would jump straight from the section's own h3 to a criterion's
-      h5 and never learn a family existed. <h4> nested in <summary> keeps both — the
-      disclosure control and the heading — true at once.
-    */}
-    {
-        families.map((family) => (
-            <details class="family" name="compare-family" open={family.id === 'accepted'}>
-                <summary><h4>{t(family.headingKey)}</h4></summary>
-
-                {family.axes.map((id) => {
-                    const axis = axisOf(id);
-
-                    return (
-                        <div class="criterion" id={`criterion-${axis.id}`}>
-                            <h5>{t(axis.labelKey)}</h5>
-                            <p class="question">{t(axis.questionKey)}</p>
-                            <p class="explanation">{t(axis.explanationKey)}</p>
-                            {axis.termKey && (
-                                <p class="term">
-                                    <span class="term-label">{t('why.axis.termLabel')}</span> {t(axis.termKey)}
-                                </p>
-                            )}
-                            {axis.figure && (
-                                <div class="figure">
-                                    <CodeSample
-                                        id={axis.figure.id}
-                                        outcome={axis.figure.outcome}
-                                        from={axis.figure.from}
-                                    />
-                                </div>
-                            )}
-
-                            <ul class="verdicts">
-                                {tools.map((tool: Tool) => {
-                                    const cell: Cell = tool.ratings[axis.id];
-
-                                    return (
-                                        <li
-                                            data-competitor={tool.kind === 'self' ? undefined : tool.id}
-                                            data-rating={cell.rating}
-                                            data-self={tool.kind === 'self' ? '' : undefined}
-                                        >
-                                            <span class="who">{nameOf(tool)}</span>
-                                            <span class="rating">{ratingLabel(cell.rating)}</span>
-                                            {cell.noteKey && <p class="note">{t(cell.noteKey)}</p>}
-                                        </li>
-                                    );
-                                })}
-                            </ul>
-
-                            {axis.elsewhereKey && <p class="elsewhere">{t(axis.elsewhereKey)}</p>}
-                        </div>
-                    );
-                })}
-            </details>
-        ))
-    }
-
-    {/*
-      The grid, and only where a grid can be read. Every rating in it is already above, with
-      the question it answers and the note that qualifies it, so what this adds is the one
-      thing the blocks cannot give: all forty at once. Below the width that holds five
-      columns it is *replaced* by those blocks rather than shrunk or set scrolling sideways
-      (§11.7) — which is why it carries no note, and why nothing here is the only copy of
-      anything.
-
-      A plain section, not a <details>: unlike the criterion families above, this table is
-      never collapsed by editorial decision — it stays a heading, not a disclosure control.
+      The grid comes first now: the one thing on this page that says everything — all forty
+      verdicts — before a reader has clicked anything at all. Never a <details>, by
+      editorial decision: unlike the criterion families below, this table is not collapsed.
     */}
     <div class="matrix">
         <h4 id="why-matrix-heading">{t('why.matrix.summary')}</h4>
         <p class="matrix-intro">{t('why.matrix.intro')}</p>
         {/*
-          §5 of the why-justdummies rewrite: the legend higher up the page is easy to have
-          scrolled past by the time a reader lands here via an anchor link, so the three
-          icons get their names repeated once more, compactly, right where they are read.
+          §5 of the why-justdummies rewrite: the three words a rating can take, defined once,
+          compactly, right where a reader meets them for the first time (§11.6). The full
+          sentence — what used to fill a boxed <dl> above the matrix — is still here, just a
+          hover away rather than sitting on the page unprompted: `tooltip` overrides the
+          plain word `title` would otherwise show.
         */}
         <ul class="matrix-legend" aria-label={t('why.legend.heading')}>
             {
                 ratings.map((rating) => (
                     <li>
-                        <RatingIcon rating={rating.id} label={t(rating.labelKey)} hideLabel={false} />
+                        <RatingIcon
+                            rating={rating.id}
+                            label={t(rating.labelKey)}
+                            tooltip={t(rating.legendKey)}
+                            hideLabel={false}
+                        />
                     </li>
                 ))
             }
@@ -246,6 +164,81 @@ function ratingLabel(rating: Rating): string {
             }
         </table>
     </div>
+
+    <p class="order">{t('why.legend.order')}</p>
+
+    {/*
+      §4bis of the why-justdummies rewrite: native <details>/<summary>, in keeping with
+      ADR-0004 — no JS required to read every family. All four ship closed: the matrix above
+      already said everything once, so nothing here is the reader's only way to learn it —
+      opening one is for whoever wants the explanation and the worked example behind a
+      number they just read.
+
+      A shared `name` makes the four mutually exclusive — natively, in every evergreen
+      browser (Chrome 120, Firefox 122, Safari 17.4): opening one closes whichever else was
+      open, with no script deciding it. That trades a taller page for a shorter one, never
+      both open at once competing for the same attention.
+
+      The heading lives *inside* the summary rather than being replaced by it: a bare
+      <summary> operates the disclosure but drops the family's name from the heading
+      outline, so a reader navigating this long comparison by heading (a screen reader's
+      own list of h-elements) would jump straight from the section's own h3 to a criterion's
+      h5 and never learn a family existed. <h4> nested in <summary> keeps both — the
+      disclosure control and the heading — true at once.
+    */}
+    {
+        families.map((family) => (
+            <details class="family" name="compare-family">
+                <summary><h4>{t(family.headingKey)}</h4></summary>
+
+                {family.axes.map((id) => {
+                    const axis = axisOf(id);
+
+                    return (
+                        <div class="criterion" id={`criterion-${axis.id}`}>
+                            <h5>{t(axis.labelKey)}</h5>
+                            <p class="question">{t(axis.questionKey)}</p>
+                            <p class="explanation">{t(axis.explanationKey)}</p>
+                            {axis.termKey && (
+                                <p class="term">
+                                    <span class="term-label">{t('why.axis.termLabel')}</span> {t(axis.termKey)}
+                                </p>
+                            )}
+                            {axis.figure && (
+                                <div class="figure">
+                                    <CodeSample
+                                        id={axis.figure.id}
+                                        outcome={axis.figure.outcome}
+                                        from={axis.figure.from}
+                                    />
+                                </div>
+                            )}
+
+                            <ul class="verdicts">
+                                {tools.map((tool: Tool) => {
+                                    const cell: Cell = tool.ratings[axis.id];
+
+                                    return (
+                                        <li
+                                            data-competitor={tool.kind === 'self' ? undefined : tool.id}
+                                            data-rating={cell.rating}
+                                            data-self={tool.kind === 'self' ? '' : undefined}
+                                        >
+                                            <span class="who">{nameOf(tool)}</span>
+                                            <span class="rating">{ratingLabel(cell.rating)}</span>
+                                            {cell.noteKey && <p class="note">{t(cell.noteKey)}</p>}
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+
+                            {axis.elsewhereKey && <p class="elsewhere">{t(axis.elsewhereKey)}</p>}
+                        </div>
+                    );
+                })}
+            </details>
+        ))
+    }
 </div>
 
 <script>
@@ -340,7 +333,6 @@ function ratingLabel(rating: Rating): string {
     /* Prose stays at a readable measure even where its block is wide. The 38rem is the
        measure the rest of the page uses; it is repeated here rather than inherited because
        Astro scopes styles per component and this one owns its own paragraphs. */
-    .legend dd,
     .order,
     .question,
     .explanation,
@@ -351,63 +343,14 @@ function ratingLabel(rating: Rating): string {
         max-width: 38rem;
     }
 
-    /* --- the legend: the three words, defined before their first use (§11.6) ---------- */
-
-    .legend {
-        border: 1px solid var(--jd-border);
-        border-radius: var(--jd-radius-md);
-        background: var(--jd-surface);
-        padding: var(--jd-space-4);
-        margin: 0 0 var(--jd-space-6);
-    }
-
-    .legend h4 {
-        font-size: var(--jd-text-sm);
-        font-weight: 600;
-        letter-spacing: 0.03em;
-        text-transform: uppercase;
-        color: var(--jd-text-muted);
-        margin: 0 0 var(--jd-space-3);
-    }
-
-    .legend dl {
-        margin: 0;
-        display: grid;
-        gap: var(--jd-space-2);
-    }
-
-    .legend-row {
-        display: grid;
-        grid-template-columns: minmax(0, 11rem) 1fr;
-        gap: var(--jd-space-1) var(--jd-space-4);
-    }
-
-    .legend dt {
-        font-weight: 600;
-        color: var(--jd-text-primary);
-    }
-
-    .legend-row[data-rating='out-of-scope'] dt {
-        font-weight: 400;
-        color: var(--jd-text-muted);
-    }
-
-    .legend dd {
-        margin: 0;
-        color: var(--jd-text-muted);
-        font-size: var(--jd-text-sm);
-    }
-
+    /* Sits between the matrix and the accordion it introduces — the same sentence that used
+       to close the old boxed legend (§11.6's three words now live in the matrix's own
+       compact legend instead), kept because it explains the one thing about the accordion
+       below that is not obvious: the order is the reader's question, not our own scorecard. */
     .order {
-        margin: var(--jd-space-3) 0 0;
+        margin: 0 0 var(--jd-space-6);
         font-size: var(--jd-text-sm);
         color: var(--jd-text-muted);
-    }
-
-    @media (max-width: 34rem) {
-        .legend-row {
-            grid-template-columns: 1fr;
-        }
     }
 
     /* --- the controls, and what they are doing --------------------------------------- */

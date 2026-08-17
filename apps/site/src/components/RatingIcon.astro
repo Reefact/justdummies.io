@@ -22,6 +22,13 @@
  * otherwise repeat forty times down the column). An icon never stands in for text a screen
  * reader cannot read. `title` adds a native, script-free tooltip on hover for a sighted
  * mouse user — a supplement to that text, not a replacement for it.
+ *
+ * `tooltip`, separately from `label`, is how the compact legend keeps §11.6's full,
+ * one-sentence definition of each answer without spending a pixel of layout on it: three
+ * words are what the legend shows, the definition that used to sit in a boxed `<dl>` above
+ * it is what a mouse user gets by hovering. A table cell has no use for it — the note next
+ * to a "possible" or "out-of-scope" verdict already says what the generic sentence would —
+ * so it defaults to the same word `label` already carries.
  */
 import type { Rating } from '../comparison';
 
@@ -30,12 +37,14 @@ interface Props {
     label: string;
     /** Hidden in a table cell (the glyph carries the visual weight); shown in the legend. */
     hideLabel?: boolean;
+    /** The legend's fuller definition, on hover. Defaults to `label` for a table cell. */
+    tooltip?: string;
 }
 
-const { rating, label, hideLabel = true } = Astro.props;
+const { rating, label, hideLabel = true, tooltip = label } = Astro.props;
 ---
 
-<span class="rating-icon" data-rating={rating} title={label}>
+<span class="rating-icon" data-rating={rating} title={tooltip}>
     {
         rating === 'core' && (
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">

@@ -139,9 +139,9 @@ for (const { path, possible, solo } of WHY_PAGES) {
         // by heading still finds all four families, disclosure or not.
         await expect(page.locator('.family > summary > h4')).toHaveCount(4);
 
-        // §11.6 — the three answers are defined on the page, before their first use.
-        await expect(page.locator('.legend dd')).toHaveCount(3);
-        await expect(page.locator('.legend')).toContainText(possible);
+        // §11.6 — the three answers are named on the page, before their first use — in the
+        // matrix's own compact legend now that the standalone boxed one is gone.
+        await expect(page.locator('.matrix-legend')).toContainText(possible);
 
         // Four options on every criterion, JustDummies included and never hideable.
         await expect(page.locator('.criterion .verdicts > li')).toHaveCount(40);
@@ -187,13 +187,15 @@ for (const { path, possible, solo } of WHY_PAGES) {
  * script can act, and what it enhances — all four options, every rating, every note — is
  * already there. A reader without scripting loses a convenience, never an answer.
  *
- * §4bis wraps each of the four criterion families in a native `<details name="…">`, open by
- * default on only the first — a *script-free* default, not a script-gated one. The shared
- * `name` also makes the four mutually exclusive, natively: opening one always closes
- * whichever else was open, so unlike the first version of this test, "all ten visible at
- * once" is no longer a reachable state at all, script or no script. The bar this test holds
- * is what is actually true now: every criterion is reachable, one family's worth of clicking
- * at a time, and whichever family is open holds nothing back behind a further click.
+ * The matrix leads the comparison now and is never a `<details>`, so it alone already
+ * answers the "without scripting" bar for the whole comparison — all forty verdicts, on the
+ * page, with nothing to click. §4bis still wraps each of the four criterion families in a
+ * native `<details name="…">`, all four closed by default; the shared `name` makes them
+ * mutually exclusive, so "all ten criteria's full explanation visible at once" is not a
+ * reachable state, script or no script — that was never the matrix's job to begin with. The
+ * bar this test holds for the families is narrower and still real: every criterion is
+ * reachable, one family's worth of clicking at a time, and whichever family is open holds
+ * nothing back behind a further click.
  */
 test('/why-justdummies is whole, and offers no dead control, without scripting', async ({ browser }) => {
     const context = await browser.newContext({ javaScriptEnabled: false });
@@ -203,9 +205,13 @@ test('/why-justdummies is whole, and offers no dead control, without scripting',
 
     await expect(page.locator('[data-duel-controls]:visible')).toHaveCount(0);
 
-    // Nothing is missing, whether or not its family happens to be open.
+    // The matrix already says the whole comparison — every rated cell, no click required.
+    await expect(page.locator('.matrix:visible')).toHaveCount(1);
+    await expect(page.locator('.matrix .matrix-legend:visible')).toHaveCount(1);
+    await expect(page.locator('.matrix td[data-rating]:visible')).toHaveCount(40);
+
+    // And nothing is missing from the criterion blocks, whether or not their family is open.
     await expect(page.locator('.criterion')).toHaveCount(10);
-    await expect(page.locator('.legend dd:visible')).toHaveCount(3);
 
     // Visit each family in turn — clicking a closed one's own summary is itself a native,
     // no-script action — and record every criterion id seen while it was the one open.
@@ -255,8 +261,11 @@ test('/why-justdummies narrows to one alternative, and back to all of them', asy
 
     const select = page.locator('[data-compare-select]');
     const status = page.locator('[data-duel-status]');
-    const autofixture = page.locator('.criterion .verdicts > li[data-competitor="autofixture"]').first();
-    const bogus = page.locator('.criterion .verdicts > li[data-competitor="bogus"]').first();
+    // The matrix, not a criterion block: it is never behind a click, where every family's
+    // accordion now starts closed and a criterion's own verdicts would be hidden along
+    // with it — unrelated to whichever alternative the duel is narrowed to.
+    const autofixture = page.locator('.matrix td[data-competitor="autofixture"]').first();
+    const bogus = page.locator('.matrix td[data-competitor="bogus"]').first();
 
     // §11.7 — the scripted page opens where the unscripted one stops: everything shown.
     await expect(select).toBeVisible();
