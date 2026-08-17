@@ -203,9 +203,12 @@ if (axes.length !== allAxisIds.length || allAxisIds.some((id) => !axes.some((axi
  * the third. The fourth is the one family where JustDummies rates "core" on all three of its
  * criteria — but two of the three notes still carry a real limit: `reproducibility` ships
  * through the xUnit adapter only, and `compileTime` catches a self-contradictory rule, never
- * a simply forgotten one, which is a ceiling every option in this comparison shares, not a
- * JustDummies-specific gap. Nothing was deleted to arrange any of this; the ten criteria and
- * their answers are the ones that were already here.
+ * a domain invariant nobody declared as a rule at all. That second limit is narrower than it
+ * sounds and not a clean JustDummies-only gap either: Bogus Premium's analyzer can flag a
+ * property with no RuleFor, because a Faker<T>'s properties are a known, enumerable set to
+ * check completeness against — a hand-written constructor's own invariants are not, so
+ * nothing here can flag one that was simply never written. Nothing was deleted to arrange
+ * any of this; the ten criteria and their answers are the ones that were already here.
  */
 export interface Family {
     id: string;
