@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Every browser check takes its `test` from the harness.
+ * Every module under the browser suite takes its `test` from the harness — or takes none.
  *
  * WHY IT MATTERS. `tests/browser/support/harness.ts` holds two things no check should have to
  * remember: it keeps the run off the measurement hosts, so a release does not post a burst of
@@ -49,17 +49,29 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SUITE = join(ROOT, 'tests', 'browser');
 const RUNNER = '@playwright/test';
 
-/** Playwright's own default `testMatch`, so this reads exactly the files it runs. */
-const IS_CHECK = /\.(spec|test)\.[cm]?[jt]sx?$/;
+/**
+ * Every module under the suite, not only the files whose names end in `.spec`.
+ *
+ * Scanning the checks alone left the runner one hop away: a check importing `test` from an
+ * ordinary helper passes, while the helper re-exports it from Playwright and is never opened.
+ * Following each check's imports would work and would also have to follow the imports of what
+ * it finds, and a dynamic one would slip past. Reading everything is both simpler and
+ * stronger — nothing under this directory may bind the runner except the harness, and the
+ * harness is one file.
+ */
+const IS_MODULE = /\.[cm]?[jt]sx?$/;
+
+/** The one module allowed to import the runner, because it is what the rest import instead. */
+const HARNESS = join(SUITE, 'support', 'harness.ts');
 
 /** Recursive, because `testDir` is: a check in a subdirectory is still a check. */
-async function* checks(directory) {
+async function* modules(directory) {
     for (const entry of await readdir(directory, { withFileTypes: true })) {
         const path = join(directory, entry.name);
 
         if (entry.isDirectory()) {
-            yield* checks(path);
-        } else if (IS_CHECK.test(entry.name)) {
+            yield* modules(path);
+        } else if (IS_MODULE.test(entry.name) && path !== HARNESS) {
             yield path;
         }
     }
@@ -153,7 +165,7 @@ function loadsRunner(node) {
 
 const strays = [];
 
-for await (const file of checks(SUITE)) {
+for await (const file of modules(SUITE)) {
     const source = ts.createSourceFile(file, await readFile(file, 'utf8'), ts.ScriptTarget.Latest, true);
 
     /* The whole tree, not just the top-level statements: a dynamic import is an expression and

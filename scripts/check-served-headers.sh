@@ -209,6 +209,56 @@ if [ -n "${wasm}" ] && present "/${wasm}" "its compression"; then
   fi
 fi
 
+# --- the globalisation data reaches the browser at all ---------------------------
+# Blazor fetches one ICU `.dat` per boot, and without it the runtime does not start.
+# Nothing used to ask the host for one: this file measured the `.wasm` and stopped, and the
+# browser suite covered the rest by booting the playground thirty times over.
+#
+# It no longer does. `tests/browser/support/harness.ts` hands the browser the `.wasm` and
+# `.dat` binaries from `dist/` because `wrangler dev`'s proxy dies streaming them, so this is
+# now the only place that asks the host for a `.dat` at all — which is why the check is here
+# rather than left implied. A host that excluded or rewrote these files would otherwise leave
+# every check green and the deployed playground unable to start.
+#
+# EVERY ICU file, not one of them. The artefact carries three — EFIGS, CJK and no-CJK — and
+# which one a boot fetches depends on the locale it starts in. A check that took the first the
+# filesystem offered would be checking a file no boot might ask for, and would go on passing
+# while the one that matters was gone.
+#
+# WHAT IS MEASURED, and what deliberately is not. The served length against the file on disk.
+# That catches the host answering with something else — a 404 page, or `_framework` rewritten
+# to HTML by a rule — because neither weighs what the artefact weighs. It cannot catch a
+# truncated artefact, and is not meant to: both sides read the same bytes, so the comparison
+# is only ever about what happens between them. `verify-output.sh` is what reads the artefact.
+#
+# NOT the content type. Measured on a healthy artefact these files come back with **no
+# `Content-Type` at all** — Cloudflare has no MIME mapping for `.dat`, where it does give the
+# `.wasm` `application/wasm`. That is not a defect: Blazor reads ICU data as bytes and never
+# consults the type. The first version of this check asserted a type was present and went red
+# on a build that works, which would have taught the next reader to distrust the check rather
+# than the build.
+# shellcheck disable=SC2015  # the `|| true` only keeps a failed cd/find from tripping `set -e`; the pipeline's stdout is what matters here
+icu_files="$(cd "${root}/dist" && find playground/_framework -name 'icudt*.dat' | sort || true)"
+
+if [ -z "${icu_files}" ]; then
+  fail "the artefact carries no globalisation data — the playground cannot start without it"
+else
+  while IFS= read -r icu; do
+    present "/${icu}" "its length" || continue
+
+    on_disk="$(wc -c < "${root}/dist/${icu}" | tr -d ' ')"
+    served="$(curl -sS -o /dev/null -w '%{size_download}' --max-time 30 "${base}/${icu}" || echo 0)"
+
+    if [ "${served}" = "${on_disk}" ]; then
+      pass "${icu##*/} is served whole (${served} bytes)"
+    else
+      fail "${icu##*/} is served as ${served} bytes against ${on_disk} in the artefact — excluded or rewritten"
+    fi
+  done <<EOF
+${icu_files}
+EOF
+fi
+
 if [ "${failures}" -ne 0 ]; then
   echo "check-served-headers: ${failures} check(s) failed." >&2
   exit 1
