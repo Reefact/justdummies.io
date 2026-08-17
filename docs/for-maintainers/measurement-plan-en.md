@@ -75,9 +75,13 @@ the same separation by writing the ordinal among its doubles and never among its
 
 ## What is deliberately not measured
 
-* **No scroll depth beyond the scenes.** `scene_view` already says how far a reader got, in the units
-  the page is actually built from. A percentage would be a second answer to the same question, in
-  units nothing else uses.
+* **No scroll depth of our own.** Enhanced measurement's `scroll` is left on and is enough. On the
+  landing page `scene_view` says the same thing far better, in the units the page is actually built
+  from — but scenes exist only there, and on the twenty-odd other routes `scroll` is the only signal
+  of whether a page was read at all. The setting is per stream rather than per page, so switching it
+  off to avoid a redundancy on two pages would remove the only answer on all the others. Read
+  `scene_view` on the narrative and `scroll` everywhere else; they are two granularities of one
+  question, not two answers to it.
 * **Nothing the playground is given.** §15.1 states that what is typed there is never recorded, and the
   playground runs entirely in the browser — there is no server to send it to.
 * **No advertising signals, ever.** They are denied permanently rather than following consent, and the

@@ -80,9 +80,13 @@ Regrouper par `scene_name` ; ne lire `scene_ordinal` que pour trier un tableau.
 
 ## Ce qui n'est délibérément pas mesuré
 
-* **Aucune profondeur de défilement au-delà des scènes.** `scene_view` dit déjà jusqu'où un lecteur
-  est allé, dans l'unité dont la page est réellement faite. Un pourcentage serait une seconde réponse
-  à la même question, dans une unité que rien d'autre n'emploie.
+* **Aucune profondeur de défilement à nous.** Le `scroll` de la mesure améliorée est laissé actif et
+  suffit. Sur la page principale, `scene_view` dit la même chose bien mieux, dans l'unité dont la
+  page est réellement faite — mais les scènes n'existent que là, et sur la vingtaine d'autres routes
+  le `scroll` est le seul signal disant si une page a été lue. Le réglage est par flux et non par
+  page, donc le désactiver pour éviter une redondance sur deux pages supprimerait la seule réponse
+  sur toutes les autres. Lire `scene_view` sur la narration et `scroll` partout ailleurs ; ce sont
+  deux granularités d'une même question, pas deux réponses à celle-ci.
 * **Rien de ce qui est saisi dans le playground.** §15.1 énonce que ce qui y est tapé n'est jamais
   enregistré, et le playground tourne entièrement dans le navigateur — il n'y a aucun serveur à qui
   l'envoyer.
