@@ -886,11 +886,13 @@ Une section **« quand ne pas utiliser JustDummies »** existe en propre, non en
 énumère ses cas un par un, et n'est pas un paragraphe qui les enchaîne : c'est la section
 qu'un lecteur sceptique lit le plus attentivement, donc la dernière où entasser des idées.
 
-Elle porte aussi ce qui n'est pas un cas d'usage mais un fait sur le projet : **JustDummies
-est écrit et maintenu par une seule personne.** C'est la première question d'un lead à qui
-l'on propose une dépendance sous chacun de ses tests, il l'apprendra de toute façon, et
-l'apprendre ailleurs lui fera relire tout le reste avec méfiance. Le dire ici coûte quelques
-conversions et achète la même chose que §11.8 : le droit d'être cru.
+La première version portait aussi ce qu'elle présentait comme un fait sur le projet :
+**« JustDummies est écrit et maintenu par une seule personne. »** Ce n'est plus le cas.
+Un fait ne convainc que s'il pointe un risque réel, et le nombre de mainteneurs n'en
+est pas un en soi : NFluent, une bibliothèque largement adoptée, est elle aussi l'œuvre
+d'un seul développeur, sans que cela ait jamais entamé la confiance qu'on lui porte.
+Écrire la phrase revenait à se décrédibiliser soi-même sur un critère qui ne mesure
+rien — l'inverse de ce que demande §11.1.
 
 ### 11.9 Coexistence
 
