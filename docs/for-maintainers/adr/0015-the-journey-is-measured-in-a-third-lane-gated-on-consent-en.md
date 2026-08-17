@@ -1,6 +1,6 @@
-# ADR-0014 | The journey is measured in a third lane, gated on consent
+# ADR-0015 | The journey is measured in a third lane, gated on consent
 
-🌍 🇬🇧 English (this file) · 🇫🇷 [Français](0014-le-parcours-est-mesure-dans-une-troisieme-voie-soumise-au-consentement-fr.md)
+🌍 🇬🇧 English (this file) · 🇫🇷 [Français](0015-le-parcours-est-mesure-dans-une-troisieme-voie-soumise-au-consentement-fr.md)
 
 **Status:** Accepted
 **Proposed:** 2026-08-17

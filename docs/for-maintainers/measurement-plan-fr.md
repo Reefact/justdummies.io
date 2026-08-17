@@ -17,7 +17,7 @@ lecteur futur devra écarter.
 |---|---|---|---|
 | Cloudflare Web Analytics | les visites, et si les pages se chargent vite (§15.1) | non requis | tout le monde |
 | Le collecteur Worker sur `/_event` | l'événement de copie dimensionné (§15.2) | non requis | tout le monde |
-| Google Analytics 4 | le parcours entre les deux (ADR-0014) | **requis** | ceux qui acceptent |
+| Google Analytics 4 | le parcours entre les deux (ADR-0015) | **requis** | ceux qui acceptent |
 
 Les deux premières sont les totaux ; la troisième est l'explication. **Lire un taux contre la voie
 deux, jamais contre la voie trois** — le dénominateur de la voie trois est la fraction consentante,
@@ -77,7 +77,7 @@ Regrouper par `scene_name` ; ne lire `scene_ordinal` que pour trier un tableau.
 * **Enhanced Measurement : les pages vues sur événement d'historique doivent être DÉSACTIVÉES.** La
   page principale intercepte chaque clic sur une ancre interne et pousse un état d'historique ;
   laissé actif, chaque clic de chevron rapporte une page vue. Rien dans ce dépôt ne peut le détecter
-  — voir les Risques d'ADR-0014.
+  — voir les Risques d'ADR-0015.
 * Personnalisation publicitaire désactivée. **Google Signals reste éteint, ce qui sur une propriété
   neuve veut dire le laisser tranquille et non le désactiver** — il est livré inactif et propose de
   l'activer. Depuis juin 2026 il ne gouverne plus que l'enrichissement démographique, pas la remontée

@@ -89,7 +89,7 @@ const { id }: Props = Astro.props;
          * Denying `analytics_storage` on a tag that is already loaded does not silence it —
          * it changes its mode. Google's own documentation says a denied analytics consent
          * means no cookie is written and a cookieless payload is sent instead. That is
-         * advanced consent mode, which is the one thing ADR-0014 rejects by name, so a
+         * advanced consent mode, which is the one thing ADR-0015 rejects by name, so a
          * withdrawal implemented with the consent update alone would leave the site doing
          * precisely what its own decision record argues against.
          *
