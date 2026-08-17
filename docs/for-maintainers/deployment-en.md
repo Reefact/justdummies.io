@@ -1314,7 +1314,7 @@ once, and two periods measured by position would not be comparable.
 
 Steps 5 and 10 gave §15 its two lanes: how many people come, and how many copy an install command.
 Neither can say what happened between the two — which scenes were read, where a reader stopped, what
-they compared first. That is lane three, and [ADR-0014](adr/0014-the-journey-is-measured-in-a-third-lane-gated-on-consent-en.md)
+they compared first. That is lane three, and [ADR-0015](adr/0015-the-journey-is-measured-in-a-third-lane-gated-on-consent-en.md)
 is why it exists and what it costs.
 
 Unlike the other two, this one **asks the visitor first** and does nothing at all until they say yes.
@@ -1335,7 +1335,7 @@ This is not optional and it is not cosmetic. The landing page intercepts every i
 and pushes history state, so left on, **every chevron click reports a page view** and silently
 inflates every figure on the page you most want to read. No check in this repository can detect it:
 there is no tag parameter for it, and the browser suite answers the tag with an empty script. It is
-named in ADR-0014's Risks for exactly that reason.
+named in ADR-0015's Risks for exactly that reason.
 
 **Google Signals: nothing to switch off, and nothing to switch on.** It is off by default on a new
 property and appears as an invitation to enable it rather than as a toggle already set — so do not go
