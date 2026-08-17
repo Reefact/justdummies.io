@@ -297,13 +297,16 @@ test.describe('the playground', () => {
 
         const printed = page.locator('.playground-widget .code-bar .code-text');
 
-        await expect(printed).toHaveText('Any.String().StartingWith("ORD-").Generate();');
+        // The assignment is part of what is copied, and its type is read off the catalogue's own
+        // description of Generate() for the chain in hand rather than guessed from the entry
+        // point — `string` here, and the one thing the chain's own text never spells out.
+        await expect(printed).toHaveText('string anyValue = Any.String().StartingWith("ORD-").Generate();');
 
         await page.getByRole('button', { name: 'Copy code' }).click();
 
         const clipboard = await page.evaluate(() => navigator.clipboard.readText());
 
-        expect(clipboard).toBe('Any.String().StartingWith("ORD-").Generate();');
+        expect(clipboard).toBe('string anyValue = Any.String().StartingWith("ORD-").Generate();');
         expect(clipboard, 'the clipboard and the printed line have drifted apart').toBe(
             await printed.textContent(),
         );
@@ -327,6 +330,35 @@ test.describe('the playground', () => {
 
         await expect(page.locator('.playground-widget .code-bar')).toBeVisible();
         await expect(page.getByRole('button', { name: 'Copy code' })).toBeVisible();
+    });
+
+    /**
+     * The declared type follows the chain rather than the entry point's name, and it is a C#
+     * keyword where the language has one. `var` is the fallback for a receiver the catalogue does
+     * not describe a Generate() for — it compiles, which is the whole reason it is the fallback —
+     * and it can never appear over an empty chain, since the bar carrying it is not drawn then:
+     * `var anyValue = null;` is not valid C# and this is why it cannot be produced.
+     */
+    test('declares the copied variable as the type the chain actually returns', async ({ page }) => {
+        await page.goto('/playground/');
+
+        const printed = page.locator('.playground-widget .code-bar .code-text');
+
+        await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'Int32()' });
+        await expect(printed).toHaveText('int anyValue = Any.Int32().Generate();');
+
+        // Constraining it does not change what comes back, and the declaration must not drift.
+        await page.locator('.chain-link').nth(1).locator('select').selectOption({ label: 'Positive()' });
+        await expect(printed).toHaveText('int anyValue = Any.Int32().Positive().Generate();');
+
+        // A type with no C# keyword keeps its own name, unqualified, and takes the type colour
+        // rather than the keyword one. Reached by deleting the first step rather than re-picking
+        // it, because a chosen step is code and no longer a combo — the two gestures this card
+        // trades for a block that reads as C#, exercised here on the way past.
+        await page.locator('.chain-link').nth(0).locator('.delete').click();
+        await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'Guid()' });
+        await expect(printed).toHaveText('Guid anyValue = Any.Guid().Generate();');
+        await expect(printed.locator('.tok-type').first()).toHaveText('Guid');
     });
 
     test('a full keyboard-only pass reaches the select, the delete button and the next select', async ({ page }) => {

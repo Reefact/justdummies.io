@@ -521,8 +521,13 @@ main {
 }
 
 /* The refusal is the library defending the demonstration (§9.9), so it is legible and
-   plain — the error colour on the text, and nothing around it that reads as an alarm. No
-   arrow beside it: "→" promises a value, and a refusal is not one. */
+   plain — the error colour on the text, and nothing around it that reads as an alarm.
+
+   It sits behind the same arrow and label a value does. That is a reversal: the arrow used
+   to be withheld here, on the reasoning that "→" promises a value and a refusal is not one.
+   True, and beside the point — the bar then changed shape between two presses of the same
+   button, which is a bigger claim than the arrow was ever making, and the colour says which
+   of the two came back without the layout having to. */
 .code-widget .result-bar .refusal {
     color: var(--jd-error);
     font-family: var(--jd-font-sans);
