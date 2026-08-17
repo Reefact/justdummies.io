@@ -75,7 +75,12 @@ Regrouper par `scene_name` ; ne lire `scene_ordinal` que pour trier un tableau.
   page principale intercepte chaque clic sur une ancre interne et pousse un état d'historique ;
   laissé actif, chaque clic de chevron rapporte une page vue. Rien dans ce dépôt ne peut le détecter
   — voir les Risques d'ADR-0014.
-* Google Signals désactivé, personnalisation publicitaire désactivée, rétention 14 mois.
+* Google Signals désactivé, personnalisation publicitaire désactivée.
+* **Rétention : 14 mois pour les données d'événement, 14 mois pour les données utilisateur, et
+  « réinitialiser lors d'une nouvelle activité » laissé actif.** C'est donc une fenêtre glissante —
+  les données d'un visiteur sont effacées quatorze mois après sa *dernière* visite et non après la
+  collecte —, ce que la page vie privée énonce dans ces termes. Changer l'un oblige à changer
+  l'autre.
 * Un filtre de trafic interne pour le mainteneur.
 
 ## Ce qui n'est délibérément pas mesuré
