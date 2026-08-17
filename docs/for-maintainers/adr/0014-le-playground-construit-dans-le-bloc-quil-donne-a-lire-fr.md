@@ -2,8 +2,9 @@
 
 🌍 🇬🇧 [English](0014-the-playground-builds-inside-the-card-it-reads-en.md) · 🇫🇷 Français (ce fichier)
 
-**Statut :** Proposée
+**Statut :** Acceptée
 **Proposée :** 2026-08-17
+**Acceptée :** 2026-08-17
 **Décideurs :** Reefact
 
 ## Contexte
