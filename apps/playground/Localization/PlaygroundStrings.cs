@@ -72,10 +72,11 @@ public static class PlaygroundStrings {
         ["hero.produced"]       = "produced",
 
         ["playground.title"] = "Playground",
-        ["playground.lede"] =
-            "Build an expression by choosing a method at each step — the supported scalar surface " +
-            "is here, not a hand-picked few. Arguments are typed directly into the call; once at " +
-            "least one step is chosen, <code>Generate</code> below draws a value.",
+        ["playground.lede"] = "Build an expression by choosing a method at each step.",
+        ["playground.ledeDetail"] =
+            "The supported scalar surface is here, not a hand-picked few. Arguments are typed " +
+            "directly into the call; once at least one step is chosen, <code>Generate</code> " +
+            "below draws a value.",
         ["playground.generate"]      = "Generate",
         ["playground.generateAgain"] = "Generate again",
         // What the result bar reads before anything has been drawn — a state the landing
@@ -160,13 +161,15 @@ public static class PlaygroundStrings {
 
         ["playground.title"] = new("Playground", "Playground"),
         ["playground.lede"] = new(
-            "Construisez une expression en choisissant une méthode à chaque étape — la surface " +
-            "scalaire prise en charge est proposée ici, pas une poignée choisie à la main. Les " +
-            "arguments se saisissent directement dans l'appel ; une fois au moins une étape choisie, " +
-            "<code>Generate</code> ci-dessous tire une valeur.",
-            "Build an expression by choosing a method at each step — the supported scalar surface " +
-            "is here, not a hand-picked few. Arguments are typed directly into the call; once at " +
-            "least one step is chosen, <code>Generate</code> below draws a value."),
+            "Construisez une expression en choisissant une méthode à chaque étape.",
+            "Build an expression by choosing a method at each step."),
+        ["playground.ledeDetail"] = new(
+            "La surface scalaire prise en charge est proposée ici, pas une poignée choisie à la " +
+            "main. Les arguments se saisissent directement dans l'appel ; une fois au moins une " +
+            "étape choisie, <code>Generate</code> ci-dessous tire une valeur.",
+            "The supported scalar surface is here, not a hand-picked few. Arguments are typed " +
+            "directly into the call; once at least one step is chosen, <code>Generate</code> " +
+            "below draws a value."),
         ["playground.generate"]      = new("Générer", "Generate"),
         ["playground.generateAgain"] = new("Générer à nouveau", "Generate again"),
         ["playground.notDrawnYet"]   = new("aucune valeur tirée pour l'instant", "no value drawn yet"),

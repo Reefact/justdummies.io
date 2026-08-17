@@ -171,11 +171,25 @@ main {
     outline: none;
 }
 
-/* The page's opening paragraph. Set at body size and folded to a classic 38rem
-   measure — this lede is two full sentences of explanation, not the site's single
-   confident line (WhyJustDummiesContent.astro's `.lede`), so it reads as a normal
-   paragraph rather than a display line stretched across the whole column. */
+/* The page's opening line, drawn as the site draws the same line —
+   WhyJustDummiesContent.astro's `.lede` for both the type and the measure. FULL
+   WIDTH AND text-lg BY THE SAME EDITORIAL DECISION THE SITE MADE, and load-bearing
+   this time rather than restated for its own sake: tests/browser/chrome-parity.spec.ts
+   measures the element right after this page's `<h2>` against the one right after
+   /why-justdummies's, so whatever sits there has to keep this exact rule, one
+   confident sentence at a time — the fuller explanation belongs in `.lede-detail`
+   below, not here. */
 .lede {
+    font-size: var(--jd-text-lg);
+    line-height: var(--jd-line-body);
+    color: var(--jd-text-primary);
+    margin: 0 0 var(--jd-space-4);
+}
+
+/* The rest of the opening explanation, after the one-line `.lede` above — normal
+   body size, folded to a classic 38rem measure, the way an ordinary paragraph
+   reads rather than a display line. */
+.lede-detail {
     max-width: 38rem;
     font-size: var(--jd-text-base);
     line-height: var(--jd-line-body);
