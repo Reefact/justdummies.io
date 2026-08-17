@@ -224,6 +224,20 @@ test.describe('the playground', () => {
         // in the colour the site's own highlighter gives a `//`.
         await expect(doc.locator('.marker')).toHaveText('//');
         await expect(doc).toHaveClass(/tok-comment/);
+
+        // Running on from the step it documents, the way a trailing comment does in C# — not on
+        // a row of its own, which cost every chosen step a second line and pushed the chain that
+        // much further from the shape the landing page shows.
+        const call = page.locator('.chain-link').nth(0).locator('.prefix');
+        const callBox = await call.boundingBox();
+        const docBox = await doc.boundingBox();
+
+        expect(callBox, 'the step is not rendered').not.toBeNull();
+        expect(docBox, 'the comment is not rendered').not.toBeNull();
+        expect(
+            docBox!.y < callBox!.y + callBox!.height,
+            'the comment starts below the step it documents rather than beside it',
+        ).toBe(true);
     });
 
     /**
@@ -265,6 +279,14 @@ test.describe('the playground', () => {
         await expect(help.locator('.visually-hidden')).toHaveText(/opens in a new tab/);
     });
 
+    /**
+     * The card's middle bar prints the chain as the one line that compiles — no comments, every
+     * argument re-emitted as a real C# literal — and the copy button sits on that bar rather
+     * than on the block above it. What is asserted here is that the promise holds both ways: the
+     * clipboard matches the chain, and it matches the line the visitor was looking at when they
+     * pressed. Home.razor builds both from one list of runs so they cannot drift, and this is
+     * what notices if that ever stops being true.
+     */
     test('copying the code puts the exact chain on the clipboard, with accessible feedback', async ({ page, context }) => {
         await context.grantPermissions(['clipboard-read', 'clipboard-write']);
         await page.goto('/playground/');
@@ -273,12 +295,38 @@ test.describe('the playground', () => {
         await page.locator('.chain-link').nth(1).locator('select').selectOption({ label: 'StartingWith(prefix)' });
         await page.locator('.chain-link').nth(1).locator('input').fill('ORD-');
 
+        const printed = page.locator('.playground-widget .code-bar .code-text');
+
+        await expect(printed).toHaveText('Any.String().StartingWith("ORD-").Generate();');
+
         await page.getByRole('button', { name: 'Copy code' }).click();
 
         const clipboard = await page.evaluate(() => navigator.clipboard.readText());
+
         expect(clipboard).toBe('Any.String().StartingWith("ORD-").Generate();');
+        expect(clipboard, 'the clipboard and the printed line have drifted apart').toBe(
+            await printed.textContent(),
+        );
 
         await expect(page.locator('.playground-widget .visually-hidden[role="status"]')).toHaveText(/copied/);
+    });
+
+    /**
+     * ADR-0004's rule, on the one control this card offers that cannot always act: an empty chain
+     * formats to `Any.Generate();`, which is not a call the library has. The bar carrying it is
+     * not drawn at all rather than drawn and refused.
+     */
+    test('prints no copyable line, and offers no copy, until there is a chain', async ({ page }) => {
+        await page.goto('/playground/');
+
+        await expect(page.locator('.playground-widget .card')).toBeVisible();
+        await expect(page.locator('.playground-widget .code-bar')).toHaveCount(0);
+        await expect(page.getByRole('button', { name: 'Copy code' })).toHaveCount(0);
+
+        await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'String()' });
+
+        await expect(page.locator('.playground-widget .code-bar')).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Copy code' })).toBeVisible();
     });
 
     test('a full keyboard-only pass reaches the select, the delete button and the next select', async ({ page }) => {

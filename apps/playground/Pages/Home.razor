@@ -55,10 +55,34 @@
             }
         </div>
 
-        <CopyCodeButton CodeText="@CodeText" Enabled="HasChosenStep" />
+        @*
+            THE CHAIN AS ONE LINE, and the control that copies it, on the same bar.
+
+            This is the reading the block above is not. The block is where the chain is built and
+            documented — its arguments are fields, its steps carry their summaries as comments,
+            and it wraps over as many lines as that takes. This is the line that compiles: no
+            comments, every argument re-emitted as a real C# literal, and the copy button sitting
+            on it rather than on something else.
+
+            THAT PLACEMENT IS THE POINT, not a tidier corner. The button used to hang off the
+            block's top-right, which meant the one control whose whole promise is "you get exactly
+            what you see" was attached to the one thing that shows something else. Here what is
+            copied is on screen, character for character — CodeSegments is what guarantees the
+            "character for character", since the bar draws the runs and the clipboard gets them
+            concatenated.
+
+            Only once there is a chain: an empty one formats to "Any.Generate();", which is not a
+            call the library has, and a bar showing it would be inviting the visitor to copy it.
+        *@
+        @if (HasChosenStep) {
+            <div class="code-bar">
+                <code class="code-text">@foreach (var segment in CodeSegments) {<span class="@segment.TokenClass">@segment.Text</span>}</code>
+                <CopyCodeButton CodeText="@CodeText" />
+            </div>
+        }
 
         @*
-            The card's second zone, in the shape the site's own <figcaption> gives it. Three
+            The card's last zone, in the shape the site's own <figcaption> gives it. Three
             states rather than the hero's two, because a playground opens on an empty chain and
             has nothing to show until one is built.
 
@@ -317,21 +341,80 @@
             ? PlaygroundStrings.T(LocaleState.Current, "argument.template", PlaygroundStrings.T(LocaleState.Current, key))
             : result.LibraryRefusalText!;
 
-    private string CodeText {
+    /// <summary>One run of the copied line that is drawn in one colour — a method name, a
+    /// punctuation mark, a literal. <c>TokenClass</c> is null for a run that takes the block's
+    /// ordinary text colour.</summary>
+    private readonly record struct CodeSegment(string Text, string? TokenClass);
+
+    /// <summary>
+    ///     The chain as one line of compiling C#, cut into coloured runs.
+    ///
+    ///     THE CUTTING IS WHAT KEEPS THE BAR AND THE CLIPBOARD IN AGREEMENT. The code bar draws
+    ///     these runs and <see cref="CodeText" /> concatenates them, so the line a visitor reads
+    ///     and the line they copy are the same characters by construction rather than by two
+    ///     functions currently agreeing. A first version had the bar re-render a finished string
+    ///     through a highlighter, which is the shape where they drift.
+    /// </summary>
+    private IReadOnlyList<CodeSegment> CodeSegments {
         get {
-            var chosen = _links.Where(l => l.Chosen is not null).ToList();
-            if (chosen.Count == 0) {
-                return "Any.Generate();";
+            var segments = new List<CodeSegment> {
+                new("Any", "tok-type"),
+                new(".", "tok-punctuation"),
+            };
+
+            foreach (var link in _links.Where(l => l.Chosen is not null)) {
+                var chosen = link.Chosen!;
+
+                segments.Add(new(chosen.MethodName, "tok-member"));
+                segments.Add(new("(", "tok-punctuation"));
+
+                for (var i = 0; i < chosen.Parameters.Count; i++) {
+                    if (i > 0) {
+                        segments.Add(new(", ", "tok-punctuation"));
+                    }
+
+                    var parameter = chosen.Parameters[i];
+
+                    segments.Add(new(FormatArgumentLiteral(parameter.TypeKey, link.Argument(i)),
+                                     LiteralTokenClassFor(parameter.TypeKey)));
+                }
+
+                segments.Add(new(")", "tok-punctuation"));
+                segments.Add(new(".", "tok-punctuation"));
             }
 
-            var steps = chosen.Select(l => {
-                var args = l.Chosen!.Parameters.Select((p, i) => FormatArgumentLiteral(p.TypeKey, l.Argument(i)));
-                return $"{l.Chosen!.MethodName}({string.Join(", ", args)})";
-            });
+            segments.Add(new("Generate", "tok-member"));
+            segments.Add(new("();", "tok-punctuation"));
 
-            return "Any." + string.Join(".", steps) + ".Generate();";
+            return segments;
         }
     }
+
+    /// <summary>
+    ///     Which colour a formatted argument takes in the code bar, or null for the block's
+    ///     ordinary text colour.
+    ///
+    ///     Only what <see cref="FormatArgumentLiteral" /> emits as an actual literal is coloured
+    ///     as one. Everything else comes out of that method as a <c>Parse(...)</c> call — a type
+    ///     name, a quoted payload and two qualified constants — and painting that whole
+    ///     expression in the string colour would be claiming it is a string. Left plain, it reads
+    ///     as what it is: a call among literals.
+    ///
+    ///     The cases below are exactly the ones <see cref="FormatArgumentLiteral" /> has a literal
+    ///     form for, and no others — <c>Int32</c> alone among the integer types, because every
+    ///     other width goes through <c>Parse</c> there. Adding a type here without adding it there
+    ///     would paint a call in the colour of a value.
+    /// </summary>
+    private static string? LiteralTokenClassFor(string typeKey) => typeKey switch {
+        ArgumentParsing.TypeKeyString or ArgumentParsing.TypeKeyChar => "tok-string",
+        ArgumentParsing.TypeKeyBoolean                               => "tok-keyword",
+        ArgumentParsing.TypeKeyInt32                                 => "tok-number",
+        _                                                            => null,
+    };
+
+    /// <summary>What the copy button puts on the clipboard: <see cref="CodeSegments" /> joined
+    /// back up, so it is exactly the line drawn in the bar above it.</summary>
+    private string CodeText => string.Concat(CodeSegments.Select(s => s.Text));
 
     /// <summary>Formats one argument the way it would need to read in real C#, so "Copy code"
     /// produces code that actually compiles rather than the raw text an input held. Only
