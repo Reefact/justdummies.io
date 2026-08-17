@@ -20,9 +20,13 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
 <section class="privacy" aria-labelledby="privacy-heading">
     <h2 id="privacy-heading">{t('privacy.heading')}</h2>
 
+    {/* Two of these paragraphs describe the analytics lane — one by promising something
+        asks first, one by pointing at a control "above". On a build with the lane switched
+        off there is no question and no control, so each has a counterpart that says what
+        that artefact actually does. */}
     <div class="entry">
         <h3>{t('privacy.tracking.label')}</h3>
-        <p>{t('privacy.tracking.body')}</p>
+        <p>{t(googleAnalyticsId ? 'privacy.tracking.body' : 'privacy.tracking.bodyWithoutAnalytics')}</p>
     </div>
     <div class="entry">
         <h3>{t('privacy.analytics.label')}</h3>
@@ -54,7 +58,7 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
     </div>
     <div class="entry">
         <h3>{t('privacy.rights.label')}</h3>
-        <p>{t('privacy.rights.body')}</p>
+        <p>{t(googleAnalyticsId ? 'privacy.rights.body' : 'privacy.rights.bodyWithoutAnalytics')}</p>
     </div>
 
     <p class="updated">{t('privacy.updated')}</p>

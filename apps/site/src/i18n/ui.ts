@@ -231,6 +231,14 @@ const en = {
     'privacy.tracking.label': "This site doesn't track you.",
     'privacy.tracking.body':
         "It doesn't need to know who you are to work. There's no account to create, and nothing we measure is ever sold or shared with anyone. Most of what follows runs without any cookie at all and cannot tell one reader from another; the one thing that can asks you first, and does nothing until you answer.",
+    /**
+     * The same paragraph for a build with the analytics lane switched off, where the
+     * sentence about something asking first would describe a question nobody is asked.
+     * `PrivacyContent.astro` picks between the two — a page has to say what its own
+     * artefact does, and "disabled" is a production state rather than a test case.
+     */
+    'privacy.tracking.bodyWithoutAnalytics':
+        "It doesn't need to know who you are to work. There's no account to create, no cookie of any kind, and nothing we measure is ever sold or shared with anyone. Nothing described below can tell one reader from another.",
     'privacy.analytics.label': 'Audience measurement.',
     'privacy.analytics.body':
         "We use Cloudflare Web Analytics to know how many people visit the site and whether pages load quickly. This tool sets no cookie and doesn't identify anyone individually — it counts visits and load times, not people. One further thing is measured, deliberately: when you copy an install command, the site records which part of the page you copied it from, which command it was, the page's language, that part's position in the page, and when it happened. That is the whole of that record — no identifier, no address, nothing you typed, nothing that can be traced back to you. It answers one question, which is which part of the page actually helps. Neither of these two ever asks your permission, because neither is capable of recognising you.",
@@ -250,6 +258,9 @@ const en = {
     'privacy.rights.label': 'Your rights.',
     'privacy.rights.body':
         "If you have never accepted Google Analytics, this site holds nothing that identifies you individually, and there is in practice nothing to correct or delete about you. If you have accepted it, refusing above stops the collection from that moment; to have what was already collected erased, or for any other question, write to privacy@reefact.net.",
+    /** The same, for a build where there is no "above" to refuse. */
+    'privacy.rights.bodyWithoutAnalytics':
+        "This site collects nothing that identifies you individually, so there is in practice nothing to correct or delete about you. For any question on this, write to privacy@reefact.net.",
     'privacy.updated': 'Last updated: August 17, 2026.',
 
     /**
@@ -804,6 +815,8 @@ const fr: Record<UiKey, string> = {
     'privacy.tracking.label': 'Ce site ne vous suit pas.',
     'privacy.tracking.body':
         "Il n'a pas besoin de savoir qui vous êtes pour fonctionner. Il n'y a pas de compte à créer, et rien de ce que nous mesurons n'est revendu ni partagé avec qui que ce soit. L'essentiel de ce qui suit fonctionne sans aucun cookie et ne sait pas distinguer un lecteur d'un autre ; la seule chose qui en soit capable vous demande d'abord, et ne fait rien tant que vous n'avez pas répondu.",
+    'privacy.tracking.bodyWithoutAnalytics':
+        "Il n'a pas besoin de savoir qui vous êtes pour fonctionner. Il n'y a pas de compte à créer, aucun cookie d'aucune sorte, et rien de ce que nous mesurons n'est revendu ni partagé avec qui que ce soit. Rien de ce qui est décrit ci-dessous ne sait distinguer un lecteur d'un autre.",
     'privacy.analytics.label': "Mesure d'audience.",
     'privacy.analytics.body':
         "Nous utilisons Cloudflare Web Analytics pour savoir combien de personnes visitent le site et si les pages se chargent rapidement. Cet outil ne dépose aucun cookie et n'identifie personne individuellement : il compte des visites et des temps de chargement, pas des personnes. Une chose de plus est mesurée, délibérément : quand vous copiez une commande d'installation, le site enregistre depuis quel endroit de la page vous l'avez copiée, de quelle commande il s'agit, la langue de la page, la position de cet endroit dans la page, et le moment. C'est tout cet enregistrement — aucun identifiant, aucune adresse, rien de ce que vous avez saisi, rien qui puisse remonter jusqu'à vous. Il répond à une seule question : quelle partie de la page sert vraiment. Aucune de ces deux mesures ne vous demande votre accord, parce qu'aucune n'est capable de vous reconnaître.",
@@ -823,6 +836,8 @@ const fr: Record<UiKey, string> = {
     'privacy.rights.label': 'Vos droits.',
     'privacy.rights.body':
         "Si vous n'avez jamais accepté Google Analytics, ce site ne détient rien qui vous identifie individuellement, et il n'y a en pratique rien à corriger ou à effacer vous concernant. Si vous l'avez accepté, le refuser ci-dessus arrête la collecte à partir de cet instant ; pour faire effacer ce qui a déjà été collecté, ou pour toute autre question, écrivez à privacy@reefact.net.",
+    'privacy.rights.bodyWithoutAnalytics':
+        "Ce site ne collecte aucune donnée qui vous identifie individuellement, il n'y a donc en pratique rien à corriger ou à effacer vous concernant. Pour toute question sur ce point, écrivez à privacy@reefact.net.",
     'privacy.updated': 'Dernière mise à jour : 17 août 2026.',
 
     'consent.heading': 'Comment cette page est lue.',

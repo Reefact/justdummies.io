@@ -88,6 +88,28 @@ test.describe('with the question unanswered', () => {
         await expect(page.locator('[data-consent]')).toBeHidden();
     });
 
+    /**
+     * Answering in one tab settles the question in the other.
+     *
+     * Starting the measurement there without also taking the banner down would leave that
+     * tab reporting while its own interface still asks whether it may — the state a
+     * visitor would read as the site ignoring them.
+     */
+    test('answering in one tab takes the question down in the other', async ({ page, context }) => {
+        await page.goto('/');
+        await skipWithoutTag(page);
+        await expect(page.locator('[data-consent]')).toBeVisible();
+
+        const other = await context.newPage();
+
+        await other.goto('/');
+        await other.locator('[data-consent-accept]').click();
+
+        await expect(page.locator('[data-consent]'), 'the other tab kept asking a question already answered').toBeHidden();
+
+        await other.close();
+    });
+
     test('accepting loads the tag, and the harness is what answers it', async ({ page }) => {
         const lengths: number[] = [];
 
@@ -263,6 +285,35 @@ test.describe('when a visitor takes consent back', () => {
         });
 
         expect(trail[trail.length - 1], 'the last word to Google was not the visitor’s').toBe('granted');
+    });
+
+    /**
+     * And the loaded tag is actually stopped, not merely put into another mode.
+     *
+     * Revoking `analytics_storage` on a tag that has already loaded does not silence it —
+     * Google's documented behaviour for a denied analytics consent is to write no cookie
+     * and send a cookieless payload instead. That is advanced consent mode, which is the
+     * one thing ADR-0014 rejects by name, so a withdrawal built on the consent update
+     * alone would have the site doing what its own decision record argues against.
+     *
+     * `ga-disable-<id>` is the opt-out the tag reads before sending anything. This asserts
+     * the flag, because the flag is the part that stops transmission.
+     */
+    test('withdrawing raises the flag that stops the tag sending', async ({ page }) => {
+        await page.goto('/privacy/');
+        await skipWithoutTag(page);
+
+        await page.locator('[data-consent-reopen]').click();
+        await page.locator('[data-consent-refuse]').click();
+
+        const disabled: boolean = await page.evaluate(() => {
+            const carrier = document.querySelector<HTMLElement>('[data-jd-analytics]');
+            const id: string = carrier?.dataset.jdAnalytics ?? '';
+
+            return id !== '' && (window as unknown as Record<string, unknown>)[`ga-disable-${id}`] === true;
+        });
+
+        expect(disabled, 'the tag was left free to keep sending after a withdrawal').toBe(true);
     });
 
     /**
