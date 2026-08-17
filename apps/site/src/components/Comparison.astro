@@ -94,11 +94,18 @@ function ratingLabel(rating: Rating): string {
       ADR-0004. Only the first family opens by default, so the comparison's strongest
       section is not buried, while the other three start collapsed to cut the density a
       reader meets on first scroll.
+
+      The heading lives *inside* the summary rather than being replaced by it: a bare
+      <summary> operates the disclosure but drops the family's name from the heading
+      outline, so a reader navigating this long comparison by heading (a screen reader's
+      own list of h-elements) would jump straight from the section's own h3 to a criterion's
+      h5 and never learn a family existed. <h4> nested in <summary> keeps both — the
+      disclosure control and the heading — true at once.
     */}
     {
         families.map((family) => (
             <details class="family" open={family.id === 'accepted'}>
-                <summary>{t(family.headingKey)}</summary>
+                <summary><h4>{t(family.headingKey)}</h4></summary>
 
                 {family.axes.map((id) => {
                     const axis = axisOf(id);
@@ -411,13 +418,22 @@ function ratingLabel(rating: Rating): string {
     /* The family's own heading doubles as the disclosure control — the same idiom the
        matrix below already uses, rather than a second, JS-driven toggle beside a static
        heading (ADR-0004). */
+    /* The border lives on the summary — the disclosure control, spanning the full measure —
+       while the heading nested inside it stays inline text, carrying only what an <h4>
+       needs to (§4bis, and the a11y note above the markup): the disclosure's own
+       `list-item` box is what still draws the native marker. */
     .family summary {
-        font-size: var(--jd-text-lg);
-        line-height: var(--jd-line-tight);
-        margin: 0;
         padding-bottom: var(--jd-space-2);
         border-bottom: 2px solid var(--jd-accent);
         max-width: 38rem;
+    }
+
+    .family summary h4 {
+        display: inline;
+        font-size: var(--jd-text-lg);
+        font-weight: 700;
+        line-height: var(--jd-line-tight);
+        margin: 0;
     }
 
     /* --- a criterion: taught, then answered ------------------------------------------ */

@@ -135,7 +135,9 @@ for (const { path, possible, solo } of WHY_PAGES) {
         await expect(page.locator('.criterion .explanation')).toHaveCount(10);
 
         // §11.5 — grouped under the reader's four questions, not ranked by our own margin.
-        await expect(page.locator('.family > summary')).toHaveCount(4);
+        // The heading lives inside the summary (not replaced by it), so a reader navigating
+        // by heading still finds all four families, disclosure or not.
+        await expect(page.locator('.family > summary > h4')).toHaveCount(4);
 
         // §11.6 — the three answers are defined on the page, before their first use.
         await expect(page.locator('.legend dd')).toHaveCount(3);
