@@ -171,17 +171,13 @@ main {
     outline: none;
 }
 
-/* The page's opening paragraph, drawn as the site draws the same paragraph —
-   WhyJustDummiesContent.astro's `.lede` for both the type and, now, the measure.
-
-   FULL WIDTH BY THE SAME EDITORIAL DECISION THE SITE MADE: the lede is meant to read
-   as one confident line across the column, not folded to the narrower prose measure
-   below it. It used to stop at 38rem to match the site's own `.lede`, which capped
-   itself there at the time — this rule still restates rather than inherits, because
-   there is nothing in this file's cascade that would carry the site's decision across
-   on its own, and that stays true whichever way the site's own number moves. */
+/* The page's opening paragraph. Set at body size and folded to a classic 38rem
+   measure — this lede is two full sentences of explanation, not the site's single
+   confident line (WhyJustDummiesContent.astro's `.lede`), so it reads as a normal
+   paragraph rather than a display line stretched across the whole column. */
 .lede {
-    font-size: var(--jd-text-lg);
+    max-width: 38rem;
+    font-size: var(--jd-text-base);
     line-height: var(--jd-line-body);
     color: var(--jd-text-primary);
     margin: 0 0 var(--jd-space-4);
