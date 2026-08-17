@@ -410,9 +410,13 @@ test.describe('the playground', () => {
         // it, because a chosen step is code and no longer a combo — the two gestures this card
         // trades for a block that reads as C#, exercised here on the way past.
         await page.locator('.chain-link').nth(0).locator('.delete').click();
+        // Qualified, not bare: the line is meant to compile where it is pasted, and a project with
+        // implicit usings disabled has no ambient `using System;` to resolve `Guid` against. The
+        // same reason FormatArgumentLiteral already writes System.Guid.Parse(...) rather than
+        // Guid.Parse(...) for an argument of that type.
         await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'Guid()' });
-        await expect(printed).toHaveText('Guid anyValue = Any.Guid().Generate();');
-        await expect(printed.locator('.tok-type').first()).toHaveText('Guid');
+        await expect(printed).toHaveText('System.Guid anyValue = Any.Guid().Generate();');
+        await expect(printed.locator('.tok-type').first()).toHaveText('System.Guid');
     });
 
     test('a full keyboard-only pass reaches the select, the delete button and the next select', async ({ page }) => {
@@ -435,6 +439,61 @@ test.describe('the playground', () => {
         await page.keyboard.press('Tab');
         const secondSelect = page.locator('.chain-link').nth(1).locator('select');
         await expect(secondSelect).toBeFocused();
+    });
+
+    /**
+     * A parameterized step's arguments are reachable by tabbing forward from the select that
+     * chose it.
+     *
+     * They were not. The select survives as long as it holds focus, so that arrowing through the
+     * options is not cut off at the first one — but at the moment Tab is pressed the browser
+     * computes the next focusable from the DOM as it stands, and the arguments did not exist in it
+     * yet. Focus went to the delete control, the arguments were then inserted *before* it by the
+     * settling render, and forward tabbing never met them again.
+     */
+    test('tabs from a chosen method straight into its first argument', async ({ page }) => {
+        await page.goto('/playground/');
+
+        await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'Int32()' });
+
+        const select = page.locator('.chain-link').nth(1).locator('select');
+
+        await select.focus();
+        await select.selectOption({ label: 'Between(minimum, maximum)' });
+
+        await page.keyboard.press('Tab');
+        await expect(page.locator('.chain-link').nth(1).locator('input').first()).toBeFocused();
+
+        await page.keyboard.press('Tab');
+        await expect(page.locator('.chain-link').nth(1).locator('input').nth(1)).toBeFocused();
+    });
+
+    /**
+     * Writability is a property of the arguments, not of how far the chain got before it stopped.
+     *
+     * ReplayChain halts at the first failing step and clears every later step's error, so a later
+     * step's unparsable argument leaves no trace on it. Reading writability off those cleared
+     * errors said the line was fine while `CodeSegments` was emitting `WithMaxLength()` — an
+     * argument list with nothing in it — under a bar claiming the line compiles.
+     */
+    test('will not offer a line whose later step has an argument it could not parse', async ({ page }) => {
+        await page.goto('/playground/');
+
+        await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'String()' });
+        await page.locator('.chain-link').nth(1).locator('select').selectOption({ label: 'StartingWith(prefix)' });
+        await page.locator('.chain-link').nth(1).locator('input').fill('ORD-12345');
+
+        // Refused by the library from here on, which is what stops the replay.
+        await page.locator('.chain-link').nth(2).locator('select').selectOption({ label: 'WithLength(length)' });
+        await page.locator('.chain-link').nth(2).locator('input').fill('2');
+        await expect(page.locator('.playground-widget .result-bar .refusal')).toBeVisible();
+
+        // Chosen after the stop, so the replay never reaches it — and its argument is empty.
+        await page.locator('.chain-link').nth(3).locator('select').selectOption({ label: 'WithMaxLength(length)' });
+
+        await expect(page.locator('.playground-widget .code-bar .not-compilable')).toBeVisible();
+        await expect(page.locator('.playground-widget .code-bar .code-text')).toHaveCount(0);
+        await expect(page.getByRole('button', { name: 'Copy code' })).toBeDisabled();
     });
 
     test('says which version of the library it is running', async ({ page }) => {
