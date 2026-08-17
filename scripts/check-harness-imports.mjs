@@ -220,20 +220,37 @@ function loadsRunner(node) {
  * the one above for anything inside the suite, and it is kept because it names the mistake in
  * the message a maintainer will actually read.
  */
-const HARNESS_SPECIFIER = /^(\.\/|\.\.\/)+support\/harness(\.[cm]?[jt]s)?$/;
+const HARNESS_PATH = join(SUITE, 'support', 'harness');
+
+/**
+ * Resolved against the importing file, never matched as a spelling.
+ *
+ * The first version of this was a pattern over the specifier, and it would have refused a
+ * check filed in `support/` importing its neighbour as `./harness` — a correct import, called
+ * wrong by a guard reading the text instead of the path. Codex caught it before anyone wrote
+ * that check. The same reason as the re-export branch above: a guard that goes red on
+ * harmless code is one somebody switches off.
+ */
+function resolvesToHarness(specifier, file) {
+    if (!specifier.startsWith('.')) {
+        return false;
+    }
+
+    return resolve(dirname(file), specifier).replace(/\.[cm]?[jt]sx?$/, '') === HARNESS_PATH;
+}
 
 /** Playwright's own default `testMatch`: the files it registers tests from. */
 const IS_CHECK = /\.(spec|test)\.[cm]?[jt]sx?$/;
 
 /** A binding of `test` from anywhere that is not the harness, or null. */
-function bindsTestElsewhere(node) {
+function bindsTestElsewhere(node, file) {
     if (!ts.isImportDeclaration(node) || !ts.isStringLiteral(node.moduleSpecifier)) {
         return null;
     }
 
     const from = node.moduleSpecifier.text;
 
-    if (from === RUNNER || HARNESS_SPECIFIER.test(from)) {
+    if (from === RUNNER || resolvesToHarness(from, file)) {
         return null;
     }
 
@@ -269,13 +286,38 @@ function bindsTestElsewhere(node) {
     return null;
 }
 
-/** A relative specifier that resolves outside the suite, or null. */
-function leavesTheSuite(node, file) {
-    const specifier = ts.isImportDeclaration(node) || (ts.isExportDeclaration(node) && node.moduleSpecifier !== undefined)
-        ? node.moduleSpecifier
-        : undefined;
+/**
+ * A relative specifier that resolves outside the suite, or null.
+ *
+ * EVERY WAY OF NAMING A PATH, not only the two declarations. The first version read
+ * `import … from` and `export … from` and stopped, so `await import('../shared-runner')`
+ * walked straight out — Codex again, and the same shape as every round before it: covering
+ * some of the ways names the rest as the way round. A dynamic import whose specifier cannot
+ * be read is refused by `loadsRunner` already, so between them nothing relative escapes.
+ */
+function relativeSpecifierOf(node) {
+    if (ts.isImportDeclaration(node) || (ts.isExportDeclaration(node) && node.moduleSpecifier !== undefined)) {
+        return node.moduleSpecifier;
+    }
 
-    if (specifier === undefined || !ts.isStringLiteral(specifier) || !specifier.text.startsWith('.')) {
+    if (ts.isImportEqualsDeclaration(node) && ts.isExternalModuleReference(node.moduleReference)) {
+        return node.moduleReference.expression;
+    }
+
+    if (ts.isCallExpression(node)) {
+        const loads = node.expression.kind === ts.SyntaxKind.ImportKeyword
+            || (ts.isIdentifier(node.expression) && node.expression.text === 'require');
+
+        return loads ? node.arguments[0] : undefined;
+    }
+
+    return undefined;
+}
+
+function leavesTheSuite(node, file) {
+    const specifier = relativeSpecifierOf(node);
+
+    if (specifier === undefined || !ts.isStringLiteralLike(specifier) || !specifier.text.startsWith('.')) {
         return null;
     }
 
@@ -318,7 +360,7 @@ for await (const file of modules(SUITE)) {
         /* This one is about the files Playwright registers tests from. A helper may pass `test`
          * around; a check has to have taken it from the harness. */
         if (isCheck) {
-            const elsewhere = bindsTestElsewhere(node);
+            const elsewhere = bindsTestElsewhere(node, file);
 
             if (elsewhere !== null) {
                 note(node, elsewhere);
