@@ -235,6 +235,108 @@ test.describe('when a visitor takes consent back', () => {
 
         expect(denials.length, 'the tag was never told the consent was withdrawn').toBeGreaterThan(0);
     });
+
+    /**
+     * And accepting again, without a reload, has to grant again.
+     *
+     * The tag loads once; the consent signal does not. Guarding both behind one flag made a
+     * second acceptance in a page silently grant nothing — the banner said yes while Google
+     * stayed denied. Asserted on the order of the queue rather than on its contents, because
+     * a `granted` from the first acceptance is still in there.
+     */
+    test('accepting again after a withdrawal grants again', async ({ page }) => {
+        await page.goto('/privacy/');
+        await skipWithoutTag(page);
+
+        await page.locator('[data-consent-reopen]').click();
+        await page.locator('[data-consent-refuse]').click();
+        await page.locator('[data-consent-reopen]').click();
+        await page.locator('[data-consent-accept]').click();
+
+        const trail: string[] = await page.evaluate(() => {
+            const queue: unknown[] = (window as unknown as { dataLayer?: unknown[] }).dataLayer ?? [];
+
+            return queue
+                .map((entry: unknown) => Array.from(entry as ArrayLike<unknown>))
+                .filter((entry: unknown[]) => entry[0] === 'consent' && entry[1] === 'update')
+                .map((entry: unknown[]) => (entry[2] as { analytics_storage?: string }).analytics_storage ?? '');
+        });
+
+        expect(trail[trail.length - 1], 'the last word to Google was not the visitor’s').toBe('granted');
+    });
+
+    /**
+     * A visitor with the site open twice, withdrawing in one of them.
+     *
+     * The `storage` event fires in every document of the origin except the one that wrote,
+     * so the other tab is where the promise is kept or broken. This is the check that was
+     * missing when the withdrawal path was first written — it held in the tab you were
+     * looking at, and nowhere else.
+     */
+    test('refusing in one tab stops the analytics in another', async ({ page, context }) => {
+        await page.goto('/');
+        await skipWithoutTag(page);
+
+        const other = await context.newPage();
+
+        await other.goto('/privacy/');
+
+        await other.locator('[data-consent-reopen]').click();
+        await other.locator('[data-consent-refuse]').click();
+
+        await expect
+            .poll(
+                () =>
+                    page.evaluate(() => {
+                        const queue: unknown[] = (window as unknown as { dataLayer?: unknown[] }).dataLayer ?? [];
+
+                        // `update` and not merely `consent`: the bootstrap's `default` call
+                        // is a denial too, and it is in every queue from the first line of
+                        // the page. Counting it would make this check pass on a tab that
+                        // never heard anything — which it did, until the break test said so.
+                        return queue
+                            .map((entry: unknown) => Array.from(entry as ArrayLike<unknown>))
+                            .filter(
+                                (entry: unknown[]) =>
+                                    entry[0] === 'consent' &&
+                                    entry[1] === 'update' &&
+                                    (entry[2] as { analytics_storage?: string }).analytics_storage === 'denied',
+                            ).length;
+                    }),
+                'the other tab kept measuring after the visitor withdrew',
+            )
+            .toBeGreaterThan(0);
+
+        await other.close();
+    });
+});
+
+/**
+ * The searches that worked are the ones the settle delay would lose, because a visitor who
+ * finds what they wanted clicks a result before it expires. Exercised by sending the same
+ * signal a real departure sends, so the check needs neither a navigation nor a fixed wait.
+ */
+test.describe('when a search is cut short by leaving', () => {
+    test.use({ consent: 'granted' });
+
+    test('the pending term is still reported', async ({ page }) => {
+        await page.goto('/api/');
+        await skipWithoutTag(page);
+
+        await page.locator('#api-search-input').fill('Uri');
+        await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
+
+        const terms: unknown[] = await page.evaluate(() => {
+            const queue: unknown[] = (window as unknown as { dataLayer?: unknown[] }).dataLayer ?? [];
+
+            return queue
+                .map((entry: unknown) => Array.from(entry as ArrayLike<unknown>))
+                .filter((entry: unknown[]) => entry[0] === 'event' && entry[1] === 'view_search_results')
+                .map((entry: unknown[]) => (entry[2] as { search_term?: string }).search_term);
+        });
+
+        expect(terms, 'a search abandoned by leaving reported nothing').toContain('Uri');
+    });
 });
 
 /**

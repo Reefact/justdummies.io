@@ -355,6 +355,31 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
     }
 
     /**
+     * The same answer, applied in every other tab the visitor has open.
+     *
+     * `localStorage` is shared across an origin's documents but changing it notifies
+     * nobody by itself — the `storage` event does, and it fires in every document except
+     * the one that wrote. Without this, a visitor with the site open twice who withdraws
+     * in one tab leaves the other still reporting, with Google still holding a granted
+     * signal. The privacy page promises that refusing stops the collection; it does not
+     * say "in this tab", and it should not have to.
+     *
+     * Symmetric on purpose: accepting elsewhere starts this tab too, so the two never
+     * disagree in either direction. A cleared key reads as no consent, which stops.
+     */
+    window.addEventListener('storage', (event: StorageEvent) => {
+        if (event.key !== STORAGE_KEY) {
+            return;
+        }
+
+        if (remembered() === 'granted') {
+            start();
+        } else {
+            stop();
+        }
+    });
+
+    /**
      * The journey, keyed on the stable scene name and never on its position (§15.3).
      * The ordinal travels as a measured number, which is where GA4 will keep it if it
      * is registered as a metric rather than a dimension — the same separation the
@@ -406,6 +431,14 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
         window.clearTimeout(dwelling);
         dwelling = window.setTimeout(() => {
             if (!holdsTheBand(scene)) {
+                return;
+            }
+
+            // Nothing is consumed while nothing is measured. `track` would discard the
+            // event anyway, but marking the scene seen before that would spend it: a
+            // reader who scrolls first and accepts afterwards would have those scenes
+            // silently struck off, and the acts with them.
+            if (!reporting) {
                 return;
             }
 
@@ -504,17 +537,53 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
     const search = document.querySelector<HTMLInputElement>('#api-search-input');
 
     if (search !== null) {
+        const SETTLE_MS = 600;
+
         let settling: number | undefined;
+        let pending = '';
+
+        /** Reports the settled term, once. Emptying `pending` makes a second call a no-op. */
+        function reportSearch(): void {
+            if (pending === '') {
+                return;
+            }
+
+            const term: string = pending;
+
+            pending = '';
+            track('view_search_results', { search_term: term });
+        }
 
         search.addEventListener('input', () => {
+            pending = search.value.trim();
             window.clearTimeout(settling);
-            settling = window.setTimeout(() => {
-                const term: string = search.value.trim();
+            settling = window.setTimeout(reportSearch, SETTLE_MS);
+        });
 
-                if (term !== '') {
-                    track('view_search_results', { search_term: term });
-                }
-            }, 600);
+        /**
+         * Sent before the page goes away, because the settle delay would otherwise swallow
+         * the searches that worked.
+         *
+         * The results render as the visitor types, so the ones who find what they wanted
+         * click a result well inside the settle window and navigate before the timer fires.
+         * Those are precisely the successful searches — leaving only the slow and the
+         * abandoned ones in the report, which is the opposite of what the measurement plan
+         * says it wants to learn.
+         *
+         * Both signals, because `pagehide` alone is unreliable on mobile and
+         * `visibilitychange` is what actually fires there. Firing twice costs nothing:
+         * `reportSearch` empties the term.
+         */
+        function flushSearch(): void {
+            window.clearTimeout(settling);
+            reportSearch();
+        }
+
+        window.addEventListener('pagehide', flushSearch);
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                flushSearch();
+            }
         });
     }
 </script>

@@ -55,12 +55,23 @@ const { id }: Props = Astro.props;
         });
 
         window.jdAnalyticsStart = function () {
+            /*
+             * GRANTING FIRST, AND OUTSIDE THE GUARD. Two different natures live in this
+             * function: granting the signal is idempotent and has to run on every
+             * acceptance, while loading the script is once and only once.
+             *
+             * Guarding both together was wrong in a way that only shows on the second
+             * acceptance in one page — accept, withdraw, accept again. The guard returned
+             * before the grant, so the banner said yes, the site believed it was reporting,
+             * and Google stayed denied until a reload. The exact mirror of the defect the
+             * withdrawal path was written to fix.
+             */
+            gtag('consent', 'update', { analytics_storage: 'granted' });
+
             if (window.jdAnalyticsStarted) {
                 return;
             }
             window.jdAnalyticsStarted = true;
-
-            gtag('consent', 'update', { analytics_storage: 'granted' });
 
             var script = document.createElement('script');
             script.async = true;
