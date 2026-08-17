@@ -673,7 +673,7 @@ export type UiKey = keyof typeof en;
 
 const fr: Record<UiKey, string> = {
     'brand.tagline': 'Juste des dummies, mais redoutablement efficaces.',
-    'brand.subtitle': 'Des valeurs de test fluides et ciblées, pour .NET.',
+    'brand.subtitle': 'Des valeurs de test ciblées grâce à une API fluent, pour .NET.',
 
     'nav.why': 'Pourquoi JustDummies',
     'nav.playground': 'Playground',
