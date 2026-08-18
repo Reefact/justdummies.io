@@ -234,7 +234,7 @@ test.describe('once the visitor has accepted', () => {
 test.describe('when a scene is already held before answering', () => {
     test.use({ consent: 'unasked' });
 
-    test('accepting without scrolling still reports the held scene', async ({ page }) => {
+    test('accepting without scrolling still reports the held scene, after it dwells', async ({ page }) => {
         await page.goto('/');
         await skipWithoutTag(page);
 
@@ -244,25 +244,23 @@ test.describe('when a scene is already held before answering', () => {
 
         await page.locator('[data-consent-accept]').click();
 
-        // Bounded well under DWELL_MS on purpose. The scroll above also arms the ordinary
-        // one-second dwell timer, which — reporting removed or not — will itself report this
-        // same scene roughly a second later once accepting has made `reporting` true, through
-        // a path this test is not the one exercising. A long poll would wait long enough for
-        // that timer to save a broken fix; this only accepts a report that arrived promptly,
-        // which only `start()`'s own re-check can produce.
-        await expect
-            .poll(
-                () =>
-                    page.evaluate(() => {
-                        const queue: unknown[] = (window as unknown as { dataLayer?: unknown[] }).dataLayer ?? [];
+        const sceneNames = () =>
+            page.evaluate(() => {
+                const queue: unknown[] = (window as unknown as { dataLayer?: unknown[] }).dataLayer ?? [];
 
-                        return queue
-                            .map((entry: unknown) => Array.from(entry as ArrayLike<unknown>))
-                            .filter((entry: unknown[]) => entry[0] === 'event' && entry[1] === 'scene_view')
-                            .map((entry: unknown[]) => (entry[2] as { scene_name?: string }).scene_name);
-                    }),
-                { message: 'the scene already held when accepting was not reported promptly', timeout: 500 },
-            )
+                return queue
+                    .map((entry: unknown) => Array.from(entry as ArrayLike<unknown>))
+                    .filter((entry: unknown[]) => entry[0] === 'event' && entry[1] === 'scene_view')
+                    .map((entry: unknown[]) => (entry[2] as { scene_name?: string }).scene_name);
+            });
+
+        // Not yet, this soon after accepting — a scene held for only an instant is exactly
+        // what the dwell delay exists to exclude, and reporting it immediately here would be
+        // the same mistake as reporting one flicked past while scrolling.
+        expect(await sceneNames(), 'the held scene was reported before it had dwelled').not.toContain('the-seed');
+
+        await expect
+            .poll(sceneNames, 'the scene already held when accepting was never reported')
             .toContain('the-seed');
     });
 });
@@ -350,6 +348,74 @@ test.describe('when storage refuses to keep the answer', () => {
             page.locator('[data-consent]'),
             'the banner reopened despite an answer already given this page',
         ).toBeHidden();
+    });
+});
+
+/**
+ * A stale record left by a failed write is a different problem from an absent one, and the
+ * two need opposite answers: the in-memory answer has to win over a stubborn old record, but
+ * lose to a genuine absence — which is what another tab clearing everything looks like from
+ * here. Both are exercised against the same starting point, an already-granted session with a
+ * real record on disk, because that is the only state either failure mode can corrupt.
+ */
+test.describe('when the stored record disagrees with what just happened', () => {
+    test.use({ consent: 'granted' });
+
+    test('a withdrawal is not undone by the stale grant a failed write left behind', async ({ page }) => {
+        await page.goto('/privacy/');
+        await skipWithoutTag(page);
+
+        await page.evaluate(() => {
+            window.localStorage.setItem = () => {
+                throw new DOMException('rejected for this test', 'QuotaExceededError');
+            };
+        });
+
+        await page.locator('[data-consent-reopen]').click();
+        await page.locator('[data-consent-refuse]').click();
+
+        await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+
+        const trail: string[] = await page.evaluate(() => {
+            const queue: unknown[] = (window as unknown as { dataLayer?: unknown[] }).dataLayer ?? [];
+
+            return queue
+                .map((entry: unknown) => Array.from(entry as ArrayLike<unknown>))
+                .filter((entry: unknown[]) => entry[0] === 'consent' && entry[1] === 'update')
+                .map((entry: unknown[]) => (entry[2] as { analytics_storage?: string }).analytics_storage ?? '');
+        });
+
+        expect(trail[trail.length - 1], 'the stale grant still on record overrode the withdrawal').toBe('denied');
+    });
+
+    /**
+     * `localStorage.clear()` fires one `storage` event with `key: null` rather than one
+     * naming this key, which a tab already reporting has to treat the same way — the visitor
+     * or something acting for them just wiped every answer this origin held.
+     */
+    test('another tab clearing every key at once stops reporting here too', async ({ page }) => {
+        await page.goto('/privacy/');
+        await skipWithoutTag(page);
+
+        await page.evaluate(() => {
+            window.localStorage.clear();
+            window.dispatchEvent(new StorageEvent('storage', { key: null, storageArea: window.localStorage }));
+        });
+
+        const trail: string[] = await page.evaluate(() => {
+            const queue: unknown[] = (window as unknown as { dataLayer?: unknown[] }).dataLayer ?? [];
+
+            return queue
+                .map((entry: unknown) => Array.from(entry as ArrayLike<unknown>))
+                .filter((entry: unknown[]) => entry[0] === 'consent' && entry[1] === 'update')
+                .map((entry: unknown[]) => (entry[2] as { analytics_storage?: string }).analytics_storage ?? '');
+        });
+
+        expect(trail[trail.length - 1], 'a cleared storage area was ignored, and reporting continued').toBe('denied');
+        await expect(
+            page.locator('[data-consent]'),
+            'the banner did not return after storage was cleared',
+        ).toBeVisible();
     });
 });
 

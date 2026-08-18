@@ -228,6 +228,19 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
     let inMemoryAnswer: Answer | undefined;
 
     /**
+     * Whether the last write attempt failed — set by `remember()`, read by `remembered()`.
+     *
+     * A failed write leaves the stored record stale rather than absent, and a stale record
+     * still reads back successfully: without this, `remembered()` would trust it over the
+     * fresher in-memory answer just because the read itself worked, letting a withdrawal
+     * be undone by the grant still on disk. It has to be a flag rather than "prefer memory
+     * whenever it is set": once storage is working again, a genuinely empty read — another
+     * tab's `localStorage.clear()`, most notably — has to mean unanswered, not "fall back
+     * to whatever this tab decided earlier."
+     */
+    let storageIsUnreliable = false;
+
+    /**
      * Every read and every write is guarded. This is the first persistent state this
      * site has ever written, and local storage throws rather than returning null in a
      * browser configured to refuse it — so an unguarded read would take the banner
@@ -238,12 +251,16 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
             const raw: string | null = window.localStorage.getItem(STORAGE_KEY);
 
             if (raw === null) {
-                return inMemoryAnswer;
+                return storageIsUnreliable ? inMemoryAnswer : undefined;
             }
 
             const parsed: Remembered = JSON.parse(raw) as Remembered;
 
             if (parsed.v !== 1 || (parsed.choice !== 'granted' && parsed.choice !== 'denied')) {
+                return inMemoryAnswer;
+            }
+
+            if (storageIsUnreliable) {
                 return inMemoryAnswer;
             }
 
@@ -262,9 +279,11 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
             const value: Remembered = { v: 1, choice, at: Date.now() };
 
             window.localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
+            storageIsUnreliable = false;
         } catch {
             // Storage refused the write; the in-memory fallback above keeps the choice
             // for this page, and the banner will simply ask again next time.
+            storageIsUnreliable = true;
         }
     }
 
@@ -422,10 +441,13 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
      * say "in this tab", and it should not have to.
      *
      * Symmetric on purpose: accepting elsewhere starts this tab too, so the two never
-     * disagree in either direction. A cleared key reads as no consent, which stops.
+     * disagree in either direction. A cleared key reads as no consent, which stops —
+     * and `key === null` is also a clear, the one `localStorage.clear()` sends instead of
+     * naming this key on its own. A tab already reporting would otherwise never learn
+     * everything was wiped, and would simply keep going.
      */
     window.addEventListener('storage', (event: StorageEvent) => {
-        if (event.key !== STORAGE_KEY) {
+        if (event.key !== STORAGE_KEY && event.key !== null) {
             return;
         }
 
@@ -491,6 +513,29 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
     }
 
     /**
+     * One timer for the page, not one per scene: scrolling past ten scenes should arm the
+     * eleventh, not report the first ten a second late.
+     */
+    function armDwell(name: string, act: string | undefined): void {
+        window.clearTimeout(dwelling);
+        dwelling = window.setTimeout(() => {
+            if (!holdsTheBand(name)) {
+                return;
+            }
+
+            // Nothing is consumed while nothing is measured. `track` would discard the
+            // event anyway, but marking the scene seen before that would spend it: a
+            // reader who scrolls first and accepts afterwards would have those scenes
+            // silently struck off, and the acts with them.
+            if (!reporting) {
+                return;
+            }
+
+            reportScene(name, act);
+        }, DWELL_MS);
+    }
+
+    /**
      * The scene a visitor was already reading when reporting starts, which the dwell timer
      * cannot report a second time: it already fired while unanswered, found nothing to
      * report, and consumed nothing — and `Scene.astro` dispatches `jd:scene-entered` only on
@@ -498,6 +543,11 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
      * who dwells on the first scene while deciding, then accepts without scrolling, never has
      * that scene enter `scene_view` at all — the scene likeliest to still be on screen the
      * moment the banner is answered.
+     *
+     * Arms the same dwell timer a fresh arrival would, rather than reporting on the spot: a
+     * grant already on record starts analytics as early as this document's first synchronous
+     * pass, and reporting immediately there would count a scene visible for a single instant —
+     * exactly the flicker `DWELL_MS` exists to exclude everywhere else.
      *
      * Geometry rather than `data-current`, for the same reason `holdsTheBand` already is: the
      * act is derived the same way `Scene.astro` derives it for the event this stands in for.
@@ -512,7 +562,7 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
             return;
         }
 
-        reportScene(held.dataset.scene as string, held.closest<HTMLElement>('.act')?.id);
+        armDwell(held.dataset.scene as string, held.closest<HTMLElement>('.act')?.id);
     }
 
     document.addEventListener('jd:scene-entered', (event: Event) => {
@@ -523,24 +573,7 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
             return;
         }
 
-        // One timer for the page, not one per scene: scrolling past ten scenes should
-        // arm the eleventh, not report the first ten a second late.
-        window.clearTimeout(dwelling);
-        dwelling = window.setTimeout(() => {
-            if (!holdsTheBand(scene)) {
-                return;
-            }
-
-            // Nothing is consumed while nothing is measured. `track` would discard the
-            // event anyway, but marking the scene seen before that would spend it: a
-            // reader who scrolls first and accepts afterwards would have those scenes
-            // silently struck off, and the acts with them.
-            if (!reporting) {
-                return;
-            }
-
-            reportScene(scene, detail.act);
-        }, DWELL_MS);
+        armDwell(scene, detail.act);
     });
 
     // The same event lane two listens to, read a second time rather than re-emitted.
