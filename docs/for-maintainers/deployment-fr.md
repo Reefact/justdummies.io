@@ -320,6 +320,16 @@ aucun compte : c'est le bon endroit pour découvrir un problème.
 
 ```bash
 pnpm install
+
+# La voie analytics est gouvernée par deux variables et le build exige les deux : cette étape
+# échoue sans elles, si peu que vous comptiez mesurer. `disabled` ne mesure rien et ne contacte
+# jamais l'identifiant — mais celui-ci doit rester bien formé, car un identifiant égaré pendant
+# que la mesure est éteinte est une mémoire cassée, et le jour où on la rallume est trop tard
+# pour s'en apercevoir. Les vraies valeurs sont posées à l'étape 11 ; celles-ci servent à
+# construire en local.
+export PUBLIC_GA_MEASUREMENT_STATE=disabled
+export PUBLIC_GA_MEASUREMENT_ID=G-0000000000
+
 pnpm build 2>&1 | tee /tmp/build.log
 ```
 
@@ -1516,6 +1526,7 @@ Par ordre de rapidité :
 | CI : `Authentication error` | Jeton absent, expiré, ou créé sur un autre compte. |
 | `curl: (6) Could not resolve host` | Zone pas encore **Active**, ou serveurs de noms inchangés chez le registrar. |
 | Le domaine sert encore l'ancien site | Même cause, ou cache DNS local. |
+| `PUBLIC_GA_MEASUREMENT_STATE is not set, and this build expects it` | Les deux variables analytics sont exigées par tout build, y compris un build qui ne mesure rien. L'étape 1 porte les deux lignes `export` pour une construction locale ; l'étape 11 donne les vraies valeurs. |
 | Aucun beacon dans la page, aucun chiffre de fréquentation | `PUBLIC_CF_BEACON_TOKEN` n'était pas défini quand l'artefact a été construit. Le journal de build dit laquelle des deux variantes il a produite. Il faut reconstruire : la balise est rendue au build, pas à la requête. |
 | La console signale une violation de politique nommant `cloudflareinsights` | `_headers` a été modifié à la main, ou une balise beacon a été ajoutée à un build fait sans le jeton. La politique est dérivée de l'artefact ; reconstruire plutôt que rustiner. |
 | `wrangler deploy` : `You need to enable Analytics Engine` `[code: 10089]` | Un réglage de compte, pas une faute du dépôt — les assets sont envoyés et les bindings affichés avant l'échec. Voir l'étape 5. |

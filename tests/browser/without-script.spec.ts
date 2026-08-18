@@ -38,7 +38,6 @@ test.describe('without scripting', () => {
             // question is also never measured by the thing it asks about — the two halves
             // stay consistent instead of one of them becoming a hole.
             await expect(page.locator('[data-consent]:visible')).toHaveCount(0);
-            await expect(page.locator('[data-consent-reopen]:visible')).toHaveCount(0);
 
             // And they are there to be hidden. Without this, a page that had lost its install
             // block entirely would pass the three assertions above with room to spare.
@@ -57,6 +56,27 @@ test.describe('without scripting', () => {
             await expect(page.locator('[data-panel="pm"]').first()).toBeVisible();
         });
 
+    }
+
+    /**
+     * The reopen control, checked where one actually exists.
+     *
+     * It was in the loop above, which visits `/` and `/fr/` — and only `PrivacyContent.astro`
+     * renders it, so the locator matched nothing on every path it was ever evaluated against.
+     * `toHaveCount(0)` was satisfied by absence rather than by hiddenness, and would have gone
+     * on being satisfied by it with the `hidden` attribute removed. Paired with a count here
+     * for that exact reason, the way the tablist and copy assertions above already are.
+     */
+    for (const path of ['/privacy/', '/fr/privacy/']) {
+        test(`${path} offers no reopen control it cannot honour`, async ({ page }) => {
+            await page.goto(path);
+
+            expect(
+                await page.locator('[data-consent-reopen]').count(),
+                'this page carries no reopen control, so hiding it proves nothing',
+            ).toBeGreaterThan(0);
+            await expect(page.locator('[data-consent-reopen]:visible')).toHaveCount(0);
+        });
     }
 
     test('shows the scaffolded file whole', async ({ page }) => {
