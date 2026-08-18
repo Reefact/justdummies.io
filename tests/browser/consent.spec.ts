@@ -417,6 +417,103 @@ test.describe('when the stored record disagrees with what just happened', () => 
             'the banner did not return after storage was cleared',
         ).toBeVisible();
     });
+
+    /**
+     * The in-memory fallback does not survive navigation — a fresh page starts with none
+     * of it — so a failed denial has to leave storage itself in a state that reads as
+     * "unanswered" rather than as the grant it could not remove.
+     */
+    test('a failed refusal write removes the stale grant rather than leaving it', async ({ page }) => {
+        await page.goto('/privacy/');
+        await skipWithoutTag(page);
+
+        await page.evaluate(() => {
+            window.localStorage.setItem = () => {
+                throw new DOMException('rejected for this test', 'QuotaExceededError');
+            };
+        });
+
+        await page.locator('[data-consent-reopen]').click();
+        await page.locator('[data-consent-refuse]').click();
+
+        const stillGranted: boolean = await page.evaluate(() => {
+            const raw: string | null = window.localStorage.getItem('jd:analytics-consent');
+
+            return raw !== null && (JSON.parse(raw) as { choice?: string }).choice === 'granted';
+        });
+
+        expect(
+            stillGranted,
+            'the stale grant survived a failed refusal write, ready to restart on the next page',
+        ).toBe(false);
+    });
+});
+
+/**
+ * A record with no usable timestamp is not "very old" — `Date.now() - NaN` is `NaN`, and
+ * `NaN > REMEMBER_FOR_MS` is false — so treating it the same as a missing or garbled choice
+ * is what keeps a corrupted record from being read as a live grant.
+ */
+test.describe('when a stored record carries no usable timestamp', () => {
+    test.use({ consent: 'unasked' });
+
+    test('a record without a valid "at" is not trusted as a live grant', async ({ page }) => {
+        await page.goto('/');
+        await skipWithoutTag(page);
+
+        await page.evaluate(() => {
+            window.localStorage.setItem('jd:analytics-consent', JSON.stringify({ v: 1, choice: 'granted' }));
+            document.dispatchEvent(new Event('visibilitychange'));
+        });
+
+        const started: boolean = await page.evaluate(
+            () => (window as unknown as { jdAnalyticsStarted?: boolean }).jdAnalyticsStarted === true,
+        );
+
+        expect(started, 'a record with no timestamp was trusted as a live grant').toBe(false);
+    });
+});
+
+/**
+ * The six-month retention is otherwise only rechecked on a `storage` event or on becoming
+ * visible again — nothing revisits it for a tab that simply never goes anywhere, and
+ * scheduling a timer for six months out isn't reliable either, since that delay overflows
+ * `setTimeout`'s own limit long before it would fire. `track()` re-validates instead, since
+ * every report already passes through it.
+ */
+test.describe('when the retention window has quietly closed', () => {
+    test.use({ consent: 'granted' });
+
+    test('an event does not report once the grant has quietly expired', async ({ page }) => {
+        await page.goto('/');
+        await skipWithoutTag(page);
+
+        // The record this tab started with is overwritten with one already past its
+        // retention — simulating six months passing while this tab simply stayed open,
+        // without the hidden-then-visible transition the other recheck relies on.
+        await page.evaluate(() => {
+            window.localStorage.setItem('jd:analytics-consent', JSON.stringify({ v: 1, choice: 'granted', at: 0 }));
+        });
+
+        await page.locator('[data-scene="the-seed"]').evaluate((scene: Element) => {
+            scene.scrollIntoView({ block: 'center' });
+        });
+
+        await expect(
+            page.locator('[data-consent]'),
+            'the banner never returned once the grant had quietly expired',
+        ).toBeVisible();
+
+        const sceneViews: unknown[] = await page.evaluate(() => {
+            const queue: unknown[] = (window as unknown as { dataLayer?: unknown[] }).dataLayer ?? [];
+
+            return queue
+                .map((entry: unknown) => Array.from(entry as ArrayLike<unknown>))
+                .filter((entry: unknown[]) => entry[0] === 'event' && entry[1] === 'scene_view');
+        });
+
+        expect(sceneViews, 'a scene was reported under a grant whose retention had already lapsed').toEqual([]);
+    });
 });
 
 /**
@@ -528,31 +625,33 @@ test.describe('when a visitor takes consent back', () => {
 
         await other.goto('/privacy/');
 
+        // `update` and not merely `consent`: the bootstrap's `default` call is a denial
+        // too, and it is in every queue from the first line of the page. Counting it would
+        // make this check pass on a tab that never heard anything — which it did, until the
+        // break test said so.
+        const deniedCount = () =>
+            page.evaluate(() => {
+                const queue: unknown[] = (window as unknown as { dataLayer?: unknown[] }).dataLayer ?? [];
+
+                return queue
+                    .map((entry: unknown) => Array.from(entry as ArrayLike<unknown>))
+                    .filter(
+                        (entry: unknown[]) =>
+                            entry[0] === 'consent' &&
+                            entry[1] === 'update' &&
+                            (entry[2] as { analytics_storage?: string }).analytics_storage === 'denied',
+                    ).length;
+            });
+
+        // Baselined once the second tab has loaded and before it is asked anything, so a
+        // harness seed race that briefly writes and overwrites its own answer while that
+        // tab starts up cannot be mistaken for the withdrawal this check is actually about.
+        const before: number = await deniedCount();
+
         await other.locator('[data-consent-reopen]').click();
         await other.locator('[data-consent-refuse]').click();
 
-        await expect
-            .poll(
-                () =>
-                    page.evaluate(() => {
-                        const queue: unknown[] = (window as unknown as { dataLayer?: unknown[] }).dataLayer ?? [];
-
-                        // `update` and not merely `consent`: the bootstrap's `default` call
-                        // is a denial too, and it is in every queue from the first line of
-                        // the page. Counting it would make this check pass on a tab that
-                        // never heard anything — which it did, until the break test said so.
-                        return queue
-                            .map((entry: unknown) => Array.from(entry as ArrayLike<unknown>))
-                            .filter(
-                                (entry: unknown[]) =>
-                                    entry[0] === 'consent' &&
-                                    entry[1] === 'update' &&
-                                    (entry[2] as { analytics_storage?: string }).analytics_storage === 'denied',
-                            ).length;
-                    }),
-                'the other tab kept measuring after the visitor withdrew',
-            )
-            .toBeGreaterThan(0);
+        await expect.poll(deniedCount, 'the other tab kept measuring after the visitor withdrew').toBeGreaterThan(before);
 
         await other.close();
     });

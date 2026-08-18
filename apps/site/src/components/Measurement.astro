@@ -256,7 +256,15 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
 
             const parsed: Remembered = JSON.parse(raw) as Remembered;
 
-            if (parsed.v !== 1 || (parsed.choice !== 'granted' && parsed.choice !== 'denied')) {
+            if (
+                parsed.v !== 1 ||
+                (parsed.choice !== 'granted' && parsed.choice !== 'denied') ||
+                !Number.isFinite(parsed.at)
+            ) {
+                // A timestamp that fails to parse is not "very old" — `Date.now() - NaN` is
+                // `NaN`, and `NaN > REMEMBER_FOR_MS` is false, so the retention check below
+                // would wave a corrupted record through as a live grant. Treated the same as
+                // any other malformed record instead: not a valid answer at all.
                 return inMemoryAnswer;
             }
 
@@ -284,6 +292,20 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
             // Storage refused the write; the in-memory fallback above keeps the choice
             // for this page, and the banner will simply ask again next time.
             storageIsUnreliable = true;
+
+            if (choice === 'denied') {
+                // The in-memory fallback does not survive navigation — a fresh page starts
+                // with none of it — so a grant already on record would otherwise still be
+                // there to read, undoing this withdrawal the moment the visitor moves on.
+                // Removing costs no quota the way writing does, so it succeeds even when the
+                // write that prompted it could not; a granted choice has no such record to
+                // strip, since the fail-closed default is already "not reporting".
+                try {
+                    window.localStorage.removeItem(STORAGE_KEY);
+                } catch {
+                    // Nothing more storage can do; this page's in-memory answer still holds.
+                }
+            }
         }
     }
 
@@ -316,6 +338,18 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
         // fired between a refusal and the next page load cannot queue up waiting for
         // a `config` that is never coming.
         if (!reporting || tag.gtag === undefined) {
+            return;
+        }
+
+        // Re-read rather than trusted from whenever start() last ran. The six-month
+        // retention is otherwise only ever rechecked on a storage event or on becoming
+        // visible again — nothing revisits it for a tab that simply never goes anywhere,
+        // and scheduling a timer for six months out isn't reliable either: that delay
+        // overflows setTimeout's own 32-bit limit long before it would fire. This is the
+        // one place every report already passes through, so it costs nothing extra to ask.
+        if (remembered() !== 'granted') {
+            applyDecision();
+
             return;
         }
 
