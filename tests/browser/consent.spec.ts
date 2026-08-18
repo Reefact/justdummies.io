@@ -224,6 +224,54 @@ test.describe('once the visitor has accepted', () => {
 });
 
 /**
+ * The reader who stops just short of the middle, which is the reader this event exists to find.
+ *
+ * `Scene.astro` announces a scene the moment it touches a band spanning 45% to 55% of the
+ * viewport; the dwell then asks, a second later, whether the scene is still there. The two have
+ * to be asking about the same region. Asking a narrower question — the exact middle line —
+ * loses a scene resting anywhere in the 5% overhang, and loses it twice over: arming for it
+ * already cancelled whatever was pending, and the observer announces a scene once, so nothing
+ * ever re-arms. Reading on for a minute produces no report at all.
+ */
+test.describe('when a scene comes to rest inside the band but short of the middle', () => {
+    test.use({ consent: 'granted' });
+
+    test('the scene the reader stopped on is still reported', async ({ page }) => {
+        await page.clock.install();
+        await page.goto('/');
+        await skipWithoutTag(page);
+
+        // Resting with its top just below the middle: inside the band the observer watches,
+        // outside the line the dwell was asking about.
+        await page.locator('[data-scene="the-seed"]').evaluate((scene: Element) => {
+            window.scrollBy(0, scene.getBoundingClientRect().top - window.innerHeight * 0.52);
+        });
+
+        await expect(
+            page.locator('[data-scene="the-seed"]'),
+            'the scene never registered as arrived, so the band was not entered at all',
+        ).toHaveAttribute('data-current', '');
+
+        await page.clock.runFor(1400);
+
+        await expect
+            .poll(
+                () =>
+                    page.evaluate(() => {
+                        const queue: unknown[] = (window as unknown as { dataLayer?: unknown[] }).dataLayer ?? [];
+
+                        return queue
+                            .map((entry: unknown) => Array.from(entry as ArrayLike<unknown>))
+                            .filter((entry: unknown[]) => entry[0] === 'event' && entry[1] === 'scene_view')
+                            .map((entry: unknown[]) => (entry[2] as { scene_name?: string }).scene_name);
+                    }),
+                'a scene the reader had stopped on was announced as arrived and then never reported',
+            )
+            .toContain('the-seed');
+    });
+});
+
+/**
  * The dwell timer that fires while unanswered finds nothing to report and consumes
  * nothing — right, so a later acceptance can still count the scene. But `Scene.astro`
  * dispatches its event only on a fresh arrival, and a visitor who accepts without having
@@ -235,14 +283,9 @@ test.describe('when a scene is already held before answering', () => {
     test.use({ consent: 'unasked' });
 
     test('accepting without scrolling still reports the held scene, after it dwells', async ({ page }) => {
+        await page.clock.install();
         await page.goto('/');
         await skipWithoutTag(page);
-
-        await page.locator('[data-scene="the-seed"]').evaluate((scene: Element) => {
-            scene.scrollIntoView({ block: 'center' });
-        });
-
-        await page.locator('[data-consent-accept]').click();
 
         const sceneNames = () =>
             page.evaluate(() => {
@@ -254,10 +297,50 @@ test.describe('when a scene is already held before answering', () => {
                     .map((entry: unknown[]) => (entry[2] as { scene_name?: string }).scene_name);
             });
 
+        await page.locator('[data-scene="the-seed"]').evaluate((scene: Element) => {
+            scene.scrollIntoView({ block: 'center' });
+        });
+
+        /*
+         * The arrival has to have landed before the clock is moved, and `data-current` is the
+         * observable proof that it has: `Scene.astro` sets it from the same callback that
+         * dispatches the event this file listens for. Without waiting on it the timer was armed
+         * after the first advance instead of before it, so the arrival's own dwell straddled the
+         * click and reported the scene through the ordinary path — green with the catch-up
+         * deleted, for the second time in this one check.
+         */
+        await expect(
+            page.locator('[data-scene="the-seed"]'),
+            'the scene never registered as arrived, so no dwell was armed to spend',
+        ).toHaveAttribute('data-current', '');
+
+        /*
+         * The scroll is itself an arrival, and an arrival arms the ordinary dwell timer. That
+         * timer has to be spent before accepting, or the ordinary path reports the scene a
+         * second after the click and this check passes with the catch-up deleted — which is
+         * precisely what it did, until the break test was run against it.
+         *
+         * Driven rather than waited on. A fixed delay is what ADR-0009 forbids and what this
+         * repository's own runner rejects, and it would be the wrong tool anyway: the expiry
+         * being waited for is deliberately unobservable, since the callback returns having done
+         * nothing at all while the question is unanswered. Advancing the clock makes it a
+         * transition this check causes rather than one it hopes for.
+         */
+        await page.clock.runFor(1400);
+
+        expect(
+            await sceneNames(),
+            'the scene was reported while the question was still unanswered',
+        ).not.toContain('the-seed');
+
+        await page.locator('[data-consent-accept]').click();
+
         // Not yet, this soon after accepting — a scene held for only an instant is exactly
         // what the dwell delay exists to exclude, and reporting it immediately here would be
         // the same mistake as reporting one flicked past while scrolling.
         expect(await sceneNames(), 'the held scene was reported before it had dwelled').not.toContain('the-seed');
+
+        await page.clock.runFor(1400);
 
         await expect
             .poll(sceneNames, 'the scene already held when accepting was never reported')

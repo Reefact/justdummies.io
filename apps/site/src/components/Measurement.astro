@@ -184,6 +184,16 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
      */
     const DWELL_MS = 1000;
 
+    /**
+     * Where the reading band starts and ends, as a fraction of the viewport from each edge.
+     * It mirrors the `-45%` root margin `Scene.astro` gives its observer, and mirroring it is
+     * the point: that component decides when a scene has arrived and this file decides whether
+     * it is still there, so the two asking about different regions loses exactly the scenes a
+     * reader came to rest on. Changing one without the other is the defect, and the number
+     * lives here under a name so that the next person to move it sees there are two ends to it.
+     */
+    const BAND_EDGE = 0.45;
+
     type Answer = 'granted' | 'denied';
 
     interface Remembered {
@@ -622,8 +632,7 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
     }
 
     /**
-     * Whether the scene still straddles the middle of the viewport, asked at the moment
-     * the dwell expires.
+     * Whether the scene is still in the band, asked at the moment the dwell expires.
      *
      * MEASURED RATHER THAN REMEMBERED, and the difference is the whole check. `Scene.astro`
      * reports arrivals only, and its `data-current` is sticky — it is cleared when another
@@ -631,6 +640,14 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
      * scrolls on into the footer leaves nothing behind that says they left: the attribute
      * stays set, no further arrival cancels the timer, and a dwell that never happened
      * would be reported as a read. Asking the geometry sidesteps both.
+     *
+     * THE SAME BAND `Scene.astro` WATCHES, and it has to be. That component's observer uses a
+     * root margin of -45%, so it announces a scene the moment it touches the middle tenth of
+     * the viewport; this asked the narrower question of whether the scene covered the exact
+     * middle line. A scene resting in the 5% between the two was announced and then never
+     * reported — and lost twice, because arming for it had already cancelled whatever was
+     * pending and an observer announces a scene once. It landed precisely on readers who
+     * stopped, which is the whole population the event was built to find.
      */
     function holdsTheBand(name: string): boolean {
         const scene: HTMLElement | undefined = scenes.find((candidate: HTMLElement) => candidate.dataset.scene === name);
@@ -640,9 +657,9 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
         }
 
         const box: DOMRect = scene.getBoundingClientRect();
-        const middle: number = window.innerHeight / 2;
+        const height: number = window.innerHeight;
 
-        return box.top <= middle && box.bottom >= middle;
+        return box.top < height * (1 - BAND_EDGE) && box.bottom > height * BAND_EDGE;
     }
 
     /**
