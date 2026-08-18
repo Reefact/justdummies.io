@@ -333,8 +333,28 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
         }
     }
 
+    /**
+     * Re-arms the periodic expiry re-check, on every call rather than only the first.
+     *
+     * Called from `start()` before its own guard, deliberately: that guard exists to stop
+     * the tag being started twice, and reusing it here would also stop the schedule being
+     * renewed twice — which is the one thing that has to happen every time, including on
+     * the very call this function's own timeout makes back into `start()` once reporting is
+     * already `true`. Without the split, the chain would fire once and never re-arm itself.
+     */
+    function scheduleExpiryCheck(): void {
+        window.clearTimeout(expiryCheck);
+        expiryCheck = window.setTimeout(applyDecision, EXPIRY_CHECK_MS);
+    }
+
     function start(): void {
-        if (reporting || tag.jdAnalyticsStart === undefined) {
+        if (tag.jdAnalyticsStart === undefined) {
+            return;
+        }
+
+        scheduleExpiryCheck();
+
+        if (reporting) {
             return;
         }
 
@@ -354,6 +374,7 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
      */
     function stop(): void {
         reporting = false;
+        window.clearTimeout(expiryCheck);
         tag.jdAnalyticsStop?.();
     }
 
@@ -438,14 +459,15 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
      * nobody was reading. `visibilitychange` already calls this again on the tab that
      * deferred, so nothing is lost, only held until there is a page to attribute it to.
      *
-     * THE PERIODIC RE-ARM STOPS THE TAG ITSELF, NOT ONLY THIS SITE'S OWN EVENTS. Enhanced
-     * measurement's `scroll` — left on by the measurement plan on every route but the
-     * narrative — is Google's own script watching the page, and it answers to nothing this
-     * file calls; `track()` re-validating before a *site* event cannot reach it. Once
-     * started, the only thing that actually silences it is what withdrawal already uses —
-     * the `ga-disable` flag `stop()` raises — so a tab that outlives its own grant needs
-     * this function to run again on a schedule, not merely the next time something else
-     * happens to call it.
+     * THE PERIODIC RE-ARM LIVES IN `start()` AND `stop()`, NOT HERE, even though this
+     * function is what the schedule calls back into. Enhanced measurement's `scroll` — left
+     * on by the measurement plan on every route but the narrative — is Google's own script
+     * watching the page, answering to nothing this file calls; only the `ga-disable` flag
+     * `stop()` raises actually silences it, so the schedule has to survive a tab that
+     * outlives its own grant without anything else happening to call this function again.
+     * It was tried here first, and missed the ordinary path entirely: a first visitor
+     * clicking Accept calls `start()` directly, never through this function, and would have
+     * gone unscheduled — the most common way a session ever begins.
      */
     function applyDecision(): void {
         const decided: Answer | undefined = remembered();
@@ -454,11 +476,6 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
             start();
         } else if (decided !== 'granted') {
             stop();
-        }
-
-        window.clearTimeout(expiryCheck);
-        if (reporting) {
-            expiryCheck = window.setTimeout(applyDecision, EXPIRY_CHECK_MS);
         }
 
         if (banner === null) {
@@ -524,6 +541,13 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
         if (event.key !== STORAGE_KEY && event.key !== null) {
             return;
         }
+
+        // This event firing at all is proof a write just succeeded somewhere, whatever
+        // this tab's own history of failed ones says — and without lowering the flag here,
+        // a tab that once failed to write would keep preferring its own stale in-memory
+        // answer over a value it can now read fresh and successfully, discarding exactly
+        // the update this listener exists to react to.
+        storageIsUnreliable = false;
 
         applyDecision();
     });
