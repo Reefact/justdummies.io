@@ -15,7 +15,7 @@ guard="${root}/tools/snippet-guard/JustDummies.SnippetGuard.csproj"
 
 # The rules the guard must provoke. Adding an entry here without adding the
 # expression that triggers it fails the run, which is the intended direction.
-EXPECTED_DIAGNOSTICS="JD005 JD015 JD023 JD024"
+EXPECTED_DIAGNOSTICS="JD005 JD015 JD023 JD024 JD029 JD030"
 
 echo "▸ Compiling the published snippets"
 if ! dotnet build "${snippets}" --configuration Release --nologo --verbosity quiet; then

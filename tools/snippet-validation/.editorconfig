@@ -22,11 +22,17 @@ root = true
 # replace. Raising the pinned version in Directory.Packages.props means re-reading the
 # library's own analyzer list against this block — there is no mechanism that does it
 # for you yet.
+#
+# What there is: every rule named here has an expression in tools/snippet-guard that must
+# provoke it, and scripts/validate-snippets.sh fails when one stops being reported. That
+# does not tell you a NEW rule exists, but it does mean none of these can be quietly
+# dropped, and it is why adding a line here means adding a guard entry too.
 [*.cs]
 dotnet_diagnostic.JD020.severity = error
 dotnet_diagnostic.JD022.severity = error
 dotnet_diagnostic.JD024.severity = error
 dotnet_diagnostic.JD029.severity = error
+dotnet_diagnostic.JD030.severity = error
 
 # JD019 — a constant replay seed committed in code — is deliberately NOT raised, and
 # not because it is unimportant.
@@ -37,16 +43,14 @@ dotnet_diagnostic.JD029.severity = error
 # needs a decision when that scene is written, not a setting chosen in advance by
 # whoever happened to create this file.
 
-# JD030 — a string dummy that declares no length — is the same shape of question, and
-# it is UNDECIDED rather than settled. It arrived with preview.2 and it fires, today, on
-# exactly one published expression: the careless factory of the first act
-# (Snippets/FactoriesCareless.cs), whose whole subject is a call that declares nothing
-# and is refused for it. The rule is right about that snippet, which is why raising it
-# to error here would not improve the page — it would forbid the repository from
-# depicting carelessness at all, and the scene is the argument.
+# JD030 — a string dummy that declares no length — asks the same question and is answered
+# the other way, because it can be. It fires on exactly one published expression: the
+# careless factory of the first act, whose scene IS a call that declares nothing. The rule
+# is right about that snippet, and a severity is the wrong instrument for saying so — set
+# to none it would stop holding the other snippets, which is most of what it is for.
 #
-# Left unraised, and named here so it is a decision on the record rather than a silence:
-# the site's own rule (§14.4) says no published expression triggers one of the library's
-# diagnostics, and this one does. Either that rule wants the careless scene carved out of
-# it in as many words, or the scene wants rewriting. Both are editorial, and neither is a
-# severity to pick here.
+# So it is raised here like the rest, and let out at that one site by name, in
+# GlobalSuppressions.cs. The difference from JD019 above is only that JD030 has a scope
+# narrow enough to write down: one member, one justification, and the rule still standing
+# everywhere else. JD019's scene is not yet written, so there is nothing to point an
+# attribute at.

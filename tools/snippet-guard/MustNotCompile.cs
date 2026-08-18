@@ -34,4 +34,26 @@ public static class MustNotCompile {
         return Any.Int32().Between(5, 500).Positive().Generate();
     }
 
+    /// <summary>
+    ///     JD029 — a value in a caller-supplied pool that a declared constraint refuses, so
+    ///     it can never be drawn and the pool quietly means less than it reads. Informational
+    ///     in the library and raised here, like JD024 above: it arrived with preview.2, and
+    ///     without an entry the escalation that covers it would be a line nothing exercises.
+    /// </summary>
+    public static int PooledValueNeverDraws() {
+        return Any.Int32().OneOf(1, 2, 300).Between(1, 10).Generate();
+    }
+
+    /// <summary>
+    ///     JD030 — a string dummy that settles no length, and therefore draws anything from
+    ///     zero to 1024 characters. Also preview.2, also informational, and the one rule of
+    ///     the four with a deliberate exception on the published side: the first act's
+    ///     careless factory is exactly this expression, and is suppressed there by name
+    ///     (tools/snippet-validation/GlobalSuppressions.cs). This entry is what keeps that
+    ///     exception narrow — the rule still has to fire for everyone else.
+    /// </summary>
+    public static string StringWithoutLength() {
+        return Any.String().StartingWith("ORD-").Generate();
+    }
+
 }
