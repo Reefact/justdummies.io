@@ -177,7 +177,7 @@ public static class PlaygroundStrings {
             "Click <code>Generate</code> to see the result."),
         ["playground.note"] = new(
             "Note : le playground utilise la véritable librairie JustDummies. L'interface web " +
-            "est toutefois limitée : toutes les possibilités de la librairie ne sont donc pas " +
+            "est toutefois limitée, toutes les possibilités de la librairie ne sont donc pas " +
             "proposées ici.",
             "Note: the playground uses the real JustDummies library. The web interface is " +
             "limited, though — not everything the library can do is available here."),
