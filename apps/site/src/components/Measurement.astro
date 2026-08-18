@@ -160,6 +160,24 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
     const REMEMBER_FOR_MS = 15778800000;
 
     /**
+     * How far into the future a stored `at` is still trusted. A clock a few minutes fast
+     * when a choice was written is ordinary drift; a record dated further out than that has
+     * no genuine claim to being current, and untrusted is what keeps it from making the
+     * six-month retention effectively permanent — `Date.now() - at` would otherwise stay
+     * negative, and therefore under the retention window, for as long as `at` stays ahead.
+     */
+    const CLOCK_SKEW_TOLERANCE_MS = 300000;
+
+    /**
+     * How often a granted session re-checks the retention window on its own, so a tab that
+     * never triggers a custom report and never goes hidden then visible still catches an
+     * expiry. Not the retention window itself: `setTimeout` overflows its own 32-bit delay
+     * long before six months, so this reschedules itself instead of trying to wait the whole
+     * span in one call. A day is far tighter than the six-month window needs.
+     */
+    const EXPIRY_CHECK_MS = 86400000;
+
+    /**
      * How long a scene must hold the middle of the viewport before it counts as read.
      * Without it, one flick of the wheel reports all sixteen scenes and the funnel
      * says every reader read everything — which is the same as measuring nothing.
@@ -202,6 +220,7 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
 
     let reporting = false;
     let returnFocusTo: HTMLElement | null = null;
+    let expiryCheck: number | undefined;
 
     /**
      * Declared up here rather than by the rest of the journey tracking below, because
@@ -259,12 +278,17 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
             if (
                 parsed.v !== 1 ||
                 (parsed.choice !== 'granted' && parsed.choice !== 'denied') ||
-                !Number.isFinite(parsed.at)
+                !Number.isFinite(parsed.at) ||
+                parsed.at > Date.now() + CLOCK_SKEW_TOLERANCE_MS
             ) {
                 // A timestamp that fails to parse is not "very old" — `Date.now() - NaN` is
                 // `NaN`, and `NaN > REMEMBER_FOR_MS` is false, so the retention check below
-                // would wave a corrupted record through as a live grant. Treated the same as
-                // any other malformed record instead: not a valid answer at all.
+                // would wave a corrupted record through as a live grant. A timestamp dated
+                // into the future has the same effect from the other side: the subtraction
+                // stays negative, and therefore under the retention window, for as long as it
+                // does — making the six-month re-prompt postponable by however far it is
+                // dated out. Both are treated the same as any other malformed record: not a
+                // valid answer at all.
                 return inMemoryAnswer;
             }
 
@@ -404,13 +428,24 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
      * and left a second tab measuring while its own banner still asked the question.
      *
      * Called from the three moments where the stored answer and this page can disagree:
-     * startup, another document writing, and this one coming back into view.
+     * startup, another document writing, and this one coming back into view — plus a fourth
+     * that this function arms for itself, since none of the first three are guaranteed to
+     * happen again before six months are up.
      *
      * GRANTING WAITS FOR A VISIBLE TAB; WITHDRAWING NEVER DOES. `storage` reaches every
      * open document at once — accepting with three tabs open would start three tags in
      * the same instant, and two of them would fire `config`'s page_view from a document
      * nobody was reading. `visibilitychange` already calls this again on the tab that
      * deferred, so nothing is lost, only held until there is a page to attribute it to.
+     *
+     * THE PERIODIC RE-ARM STOPS THE TAG ITSELF, NOT ONLY THIS SITE'S OWN EVENTS. Enhanced
+     * measurement's `scroll` — left on by the measurement plan on every route but the
+     * narrative — is Google's own script watching the page, and it answers to nothing this
+     * file calls; `track()` re-validating before a *site* event cannot reach it. Once
+     * started, the only thing that actually silences it is what withdrawal already uses —
+     * the `ga-disable` flag `stop()` raises — so a tab that outlives its own grant needs
+     * this function to run again on a schedule, not merely the next time something else
+     * happens to call it.
      */
     function applyDecision(): void {
         const decided: Answer | undefined = remembered();
@@ -419,6 +454,11 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
             start();
         } else if (decided !== 'granted') {
             stop();
+        }
+
+        window.clearTimeout(expiryCheck);
+        if (reporting) {
+            expiryCheck = window.setTimeout(applyDecision, EXPIRY_CHECK_MS);
         }
 
         if (banner === null) {
