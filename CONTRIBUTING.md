@@ -15,7 +15,7 @@ the scope table differs, because the components differ.
 The default is **English**: source, comments, commit messages, branch names,
 pull request titles and descriptions, issues.
 
-Two exceptions, bounded and named.
+Three exceptions, bounded and named.
 
 **Design documents under `docs/design/` are in French.** They continue a document
 written in French for a reader who works in that language, and translating them
@@ -27,6 +27,15 @@ guide, and the decision records in `adr/`. They are paired because they are read
 while doing the thing they describe, by whoever is doing it, and someone
 following installation steps in a second language makes mistakes they would not
 make in their own.
+
+**What announces a release to a reader outside this repository is kept as the
+same kind of pair** — `RELEASE_NOTES-en.md` and `RELEASE_NOTES-fr.md`, at the
+repository root (see the `release-notes` skill and
+[`ADR-0016`](docs/for-maintainers/adr/0016-draft-a-releases-github-notes-by-hand-and-refuse-without-them-en.md)).
+Unlike the maintainer-facing pair above, this one is read by anyone glancing at a
+GitHub Release, not only by whoever operates the repository — but a reader
+deciding whether to look at what's new deserves it in their own language just as
+much as someone following a deployment step does.
 
 Both halves carry the same name under an explicit `-en` or `-fr` suffix —
 `deployment-en.md`, `deployment-fr.md` — and each opens with a banner linking to

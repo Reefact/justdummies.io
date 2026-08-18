@@ -160,6 +160,7 @@ requests, issues, diagrams.
 | [ADR-0014](0014-the-playground-builds-inside-the-card-it-reads-en.md) | The playground builds inside the card it reads | Accepted |
 | [ADR-0015](0015-the-combo-names-what-the-playground-cannot-offer-en.md) | The combo names what the playground cannot offer | Proposed |
 | [ADR-0016](0016-a-list-argument-is-one-comma-separated-field-en.md) | A list argument is one comma-separated field | Proposed |
+| [ADR-0016](0016-draft-a-releases-github-notes-by-hand-and-refuse-without-them-en.md) | Draft a release's GitHub notes by hand, and refuse without them | Proposed |
 
 **0008 is absent on purpose.** It named a record that was written, merged, then withdrawn: how a
 scene is titled is an editorial principle, which this file sends to the specification rather than

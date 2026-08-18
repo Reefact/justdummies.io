@@ -336,9 +336,12 @@ jobs:
           pnpm run deploy
 
   # A release is the human-readable half of what a tag already does. The tag publishes;
-  # this gives it a page listing what went out since the previous one, which is where
-  # somebody actually looks. A CHANGELOG.md would be the same list kept by hand, and
-  # nothing consumes this site, so nobody needs a compatibility note about it.
+  # this gives it a page describing what changed since the previous one, in the terms a
+  # reader would actually use — read verbatim from RELEASE_NOTES-en.md, hand-drafted and
+  # reviewed before the tag is ever pushed, never derived from commits or pull requests
+  # (ADR-0016). A CHANGELOG.md would be that same list kept by hand in commit terms
+  # instead of a reader's, and nothing consumes this site, so nobody needs a
+  # compatibility note about it either.
   #
   # Its own job, for one reason: creating a release needs `contents: write`, and the
   # narrowest place to grant that is a job that does nothing else. Deploy keeps the
@@ -391,10 +394,16 @@ jobs:
           # The subject of the annotated tag, which the step above has just checked is the
           # tag's own name. The fallback therefore reads as a belt to that brace rather than
           # as a second title: a dull title beats a red pipeline over a deployment that has
-          # already gone out. What says why a release happened is --generate-notes below.
+          # already gone out. What says why a release happened is RELEASE_NOTES-en.md below.
           title="$(git for-each-ref "refs/tags/${tag}" --format='%(contents:subject)')"
+
+          # Read verbatim from RELEASE_NOTES-en.md, written and reviewed before the tag was
+          # ever pushed — see ADR-0016. Refuses (exit 1) rather than falling back to a
+          # commit-derived list when this release's section is missing, which fails this job
+          # loudly without touching the deployment `notes` depends on, already live by now.
+          ./scripts/release-notes.sh "${tag}" > release-notes.md
 
           gh release create "${tag}" \
             --title "${title:-${tag}}" \
-            --generate-notes \
+            --notes-file release-notes.md \
             --latest
