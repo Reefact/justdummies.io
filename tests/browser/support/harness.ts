@@ -122,11 +122,15 @@ export type Consent = 'granted' | 'denied' | 'unasked';
  * Puts the visitor's answer in place before the page can read it. Two things about how,
  * both of which were found by the checks going red rather than by reasoning.
  *
- * IT APPLIES ONCE PER CONTEXT, NOT ONCE PER NAVIGATION. An init script runs on every load,
- * so a seed written plainly would rewrite storage on every reload — and a check that clicks
- * "refuse" and reloads to prove the answer stuck would find the seed's answer waiting for it
- * instead of the visitor's. The session-scoped sentinel is what makes the seed a starting
- * state rather than a standing instruction.
+ * IT APPLIES ONCE PER CONTEXT, NOT ONCE PER PAGE. An init script runs on every load — every
+ * reload, and every new tab `context.newPage()` opens — so a seed written plainly would
+ * rewrite storage each time, and a check that clicks "refuse" and reloads to prove the
+ * answer stuck would find the seed's answer waiting for it instead of the visitor's. The
+ * sentinel has to live in `localStorage` rather than `sessionStorage` for "once" to mean
+ * once *per context*: session storage is scoped to each top-level page, so a second tab
+ * starts with none of it and reruns both scripts against the one area that IS shared between
+ * tabs — briefly overwriting an answer a first tab had already settled, and firing a
+ * `storage` event that tab never caused and had no reason to see.
  *
  * IT DOES NOT DEPEND ON WHICH SEED RUNS FIRST. Two are registered: the default, from the
  * `newContext` patch below, and the per-spec option, from `consentSeeded`. Playwright nowhere
@@ -149,15 +153,15 @@ async function seedConsent(
     await context.addInitScript(
         ([key, choice, once, decided, decides]: [string, string, string, string, string]) => {
             try {
-                if (window.sessionStorage.getItem(once) !== null) {
+                if (window.localStorage.getItem(once) !== null) {
                     return;
                 }
 
-                window.sessionStorage.setItem(once, '1');
+                window.localStorage.setItem(once, '1');
 
                 if (decides === 'yes') {
-                    window.sessionStorage.setItem(decided, '1');
-                } else if (window.sessionStorage.getItem(decided) !== null) {
+                    window.localStorage.setItem(decided, '1');
+                } else if (window.localStorage.getItem(decided) !== null) {
                     // The option already answered, in whichever order we were run.
                     return;
                 }
