@@ -707,6 +707,99 @@ test.describe('when a stored grant starts reporting on a page opened at a scene'
 });
 
 /**
+ * A scene is spent when it is reported, not when it is offered.
+ *
+ * `armDwell` already refuses to consume a scene while nothing is being measured, and says so:
+ * a reader who scrolls first and accepts afterwards must not have those scenes struck off. The
+ * same rule has a second gate behind it — `track()` re-reads the record on every call and can
+ * decline — and the dedup sets were being written before that gate rather than after it. A
+ * grant lapsing mid-read therefore burns the scene the reader is on and, worse, the act it
+ * belongs to: every later scene of that act reports normally while `act_reached` never fires,
+ * which reads as scenes belonging to an act nobody entered.
+ */
+test.describe('when the grant lapses between arriving at a scene and reporting it', () => {
+    test.use({ consent: 'granted' });
+
+    test('the scene is not struck off, and is reported once the visitor accepts again', async ({ page }) => {
+        await page.goto('/');
+        await skipWithoutTag(page);
+
+        // Aged out in place, with nothing told about it: `reporting` stays true, so the dwell
+        // timer will run and `track()` is the first thing to notice the record has lapsed.
+        await page.evaluate(() => {
+            window.localStorage.setItem('jd:analytics-consent', JSON.stringify({ v: 1, choice: 'granted', at: 0 }));
+        });
+
+        await page.locator('[data-scene="the-seed"]').evaluate((scene: Element) => {
+            scene.scrollIntoView({ block: 'center' });
+        });
+
+        // The banner returning is the proof that the dwell fired and `track()` declined, which
+        // is the exact moment the scene was at risk of being consumed for nothing.
+        await expect(page.locator('[data-consent]'), 'the lapsed grant never reopened the question').toBeVisible();
+
+        await page.locator('[data-consent-accept]').click();
+
+        await expect
+            .poll(
+                () =>
+                    page.evaluate(() => {
+                        const queue: unknown[] = (window as unknown as { dataLayer?: unknown[] }).dataLayer ?? [];
+
+                        return queue
+                            .map((entry: unknown) => Array.from(entry as ArrayLike<unknown>))
+                            .filter(
+                                (entry: unknown[]) =>
+                                    entry[0] === 'event' &&
+                                    entry[1] === 'scene_view' &&
+                                    (entry[2] as { scene_name?: string }).scene_name === 'the-seed',
+                            ).length;
+                    }),
+                'the scene was struck off by a report that was never sent, so accepting could not recover it',
+            )
+            .toBeGreaterThan(0);
+    });
+});
+
+/**
+ * The question the visitor opened themselves, which is not the same question the banner asks
+ * on its own account.
+ *
+ * The banner has two reasons to be up — nobody has answered yet, and the visitor pressed
+ * "change your choice" on the privacy page — and reconciling it against the stored answer
+ * cannot tell them apart. A stored answer exists in the second case by definition, so every
+ * reconciliation wants to close the banner, and the reconciliations are not rare: coming back
+ * to the tab is one, and so is the periodic re-check. Closing it there takes away a dialogue
+ * the visitor deliberately opened, without recording an answer and without saying anything,
+ * and drops focus to the body on the way out.
+ */
+test.describe('when the visitor reopens the question themselves', () => {
+    test.use({ consent: 'granted' });
+
+    test('coming back to the tab does not close it under them', async ({ page }) => {
+        await page.goto('/privacy/');
+        await skipWithoutTag(page);
+
+        await page.locator('[data-consent-reopen]').click();
+        await expect(page.locator('[data-consent]')).toBeVisible();
+
+        // The same transition a tab switch, a locked phone or a backgrounded app produces.
+        await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+
+        await expect(
+            page.locator('[data-consent]'),
+            'the reopened question was closed without the visitor answering it',
+        ).toBeVisible();
+
+        const holdsFocus: boolean = await page.evaluate(
+            () => document.activeElement?.closest('[data-consent]') !== null,
+        );
+
+        expect(holdsFocus, 'focus was dropped out of the reopened banner').toBe(true);
+    });
+});
+
+/**
  * Withdrawal has to reach Google, not merely stop the site talking to it.
  *
  * A visitor who withdraws has already accepted, so Google's script is loaded and holds a

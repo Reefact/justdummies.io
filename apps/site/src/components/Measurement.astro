@@ -223,6 +223,19 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
     let expiryCheck: number | undefined;
 
     /**
+     * Whether the banner is up because the visitor asked for it, rather than because nothing
+     * has been answered yet.
+     *
+     * The two are indistinguishable from the stored answer alone — a visitor reopening the
+     * question from the privacy page has an answer on record by definition — so without this,
+     * every reconciliation wants to close the dialogue they just opened. Those are not rare
+     * events: coming back to the tab is one, and so is the periodic re-check. The question
+     * would vanish mid-thought, with nothing announced and focus dropped to the body, and the
+     * visitor would have to notice and press the control again.
+     */
+    let asking = false;
+
+    /**
      * Every binding `start()` can reach, declared up here rather than beside the journey
      * tracking it belongs to.
      *
@@ -355,7 +368,9 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
      */
     function scheduleExpiryCheck(): void {
         window.clearTimeout(expiryCheck);
-        expiryCheck = window.setTimeout(applyDecision, EXPIRY_CHECK_MS);
+        // Wrapped rather than passed by name, so the schedule cannot start supplying arguments
+        // to a function that now reads its first one.
+        expiryCheck = window.setTimeout(() => applyDecision(), EXPIRY_CHECK_MS);
     }
 
     function start(): void {
@@ -389,12 +404,20 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
         tag.jdAnalyticsStop?.();
     }
 
-    function track(name: string, parameters: Record<string, unknown>): void {
+    /**
+     * Reports one event, and says whether it actually went.
+     *
+     * The return value exists for the dedup sets: a caller that marks something reported has to
+     * know that it was, and both refusals below are reachable long after the caller last
+     * checked. Returning nothing let a lapsed grant spend a scene on a report that was never
+     * sent — and the scene stayed spent after the visitor accepted again.
+     */
+    function track(name: string, parameters: Record<string, unknown>): boolean {
         // Gated on the answer rather than on the tag's presence, so that an event
         // fired between a refusal and the next page load cannot queue up waiting for
         // a `config` that is never coming.
         if (!reporting || tag.gtag === undefined) {
-            return;
+            return false;
         }
 
         // Re-read rather than trusted from whenever start() last ran. The six-month
@@ -406,10 +429,12 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
         if (remembered() !== 'granted') {
             applyDecision();
 
-            return;
+            return false;
         }
 
         tag.gtag('event', name, { ...parameters, content_locale: document.documentElement.lang });
+
+        return true;
     }
 
     function show(): void {
@@ -417,12 +442,14 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
             return;
         }
 
+        asking = true;
         returnFocusTo = document.activeElement instanceof HTMLElement ? document.activeElement : null;
         banner.hidden = false;
         banner.focus();
     }
 
     function answer(choice: Answer, announcement: string): void {
+        asking = false;
         remember(choice);
 
         if (banner !== null) {
@@ -480,7 +507,7 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
      * clicking Accept calls `start()` directly, never through this function, and would have
      * gone unscheduled — the most common way a session ever begins.
      */
-    function applyDecision(): void {
+    function applyDecision(elsewhere: boolean = false): void {
         const decided: Answer | undefined = remembered();
 
         if (decided === 'granted' && document.visibilityState === 'visible') {
@@ -498,7 +525,12 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
             if (banner.hidden) {
                 show();
             }
-        } else {
+        } else if (!asking || elsewhere) {
+            // A question the visitor opened themselves is theirs to close, so the reconciliation
+            // leaves it alone — except when the answer arrived from another document, which is
+            // what `elsewhere` says. That one is not this tab overruling them: they have just
+            // answered the same question somewhere else, and leaving it up here would ask twice.
+            asking = false;
             banner.hidden = true;
         }
     }
@@ -560,7 +592,9 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
         // the update this listener exists to react to.
         storageIsUnreliable = false;
 
-        applyDecision();
+        // The one caller that passes `elsewhere`: this answer came from another document, so a
+        // banner the visitor had open here is closing because they answered, not despite it.
+        applyDecision(true);
     });
 
     /**
@@ -611,14 +645,28 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
         return box.top <= middle && box.bottom >= middle;
     }
 
-    /** Marks a scene seen and reports it, with the act it belongs to if this is the act's first. */
+    /**
+     * Reports a scene, and the act it belongs to if this is the act's first — marking each seen
+     * only once it has actually gone.
+     *
+     * The order is the point. `armDwell` already refuses to consume a scene while nothing is
+     * being measured, for the reader who scrolls first and accepts afterwards; `track()` is a
+     * second gate behind that one, and it can decline long after the first was passed — a grant
+     * that lapses between arriving at a scene and the dwell expiring is exactly that. Marking
+     * first spent the scene on a report nobody received, and spent it permanently: accepting
+     * again could not bring it back, because `reportHeldScene()` skips what is already seen.
+     * The act was worse, being shared — every later scene of it reported normally while
+     * `act_reached` never fired, which reads as scenes belonging to an act nobody entered.
+     */
     function reportScene(name: string, act: string | undefined): void {
-        seenScenes.add(name);
-        track('scene_view', { scene_name: name, act: act ?? '', scene_ordinal: sceneOrdinal(name) });
+        if (!track('scene_view', { scene_name: name, act: act ?? '', scene_ordinal: sceneOrdinal(name) })) {
+            return;
+        }
 
-        if (act !== undefined && !seenActs.has(act)) {
+        seenScenes.add(name);
+
+        if (act !== undefined && !seenActs.has(act) && track('act_reached', { act })) {
             seenActs.add(act);
-            track('act_reached', { act });
         }
     }
 
