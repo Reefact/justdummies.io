@@ -1,5 +1,7 @@
 using System.Text;
 
+using JustDummies.Playground.Catalogue;
+
 namespace JustDummies.PlaygroundCatalogueGenerator;
 
 /// <summary>Emits PlaygroundCatalogue.Descriptors.g.cs — plain data driving the Blazor UI.</summary>
@@ -18,18 +20,22 @@ public static class DescriptorEmitter {
         sb.AppendLine("public static partial class PlaygroundCatalogue {");
         sb.AppendLine();
 
+        // Available and unavailable members share one list per receiver, interleaved by name, so
+        // the combo reads as one alphabetical view of what the library offers on the type in hand
+        // rather than a working list with a leftovers bin under it. Which of the two an entry is
+        // rides on the entry itself (PlaygroundSupport), not on where it sits.
         sb.AppendLine("    public static readonly IReadOnlyList<MemberDescriptor> EntryPoints = new List<MemberDescriptor> {");
-        foreach (var entry in result.EntryPoints.OrderBy(e => e.MethodName, StringComparer.Ordinal)) {
-            sb.AppendLine("        " + DescriptorLiteral(entry) + ",");
+        foreach (var literal in MembersOf(result, CatalogueKeys.EntryPointReceiver, result.EntryPoints)) {
+            sb.AppendLine("        " + literal + ",");
         }
         sb.AppendLine("    };");
         sb.AppendLine();
 
         sb.AppendLine("    public static readonly IReadOnlyDictionary<string, IReadOnlyList<MemberDescriptor>> StepsByReceiverTypeKey = new Dictionary<string, IReadOnlyList<MemberDescriptor>> {");
-        foreach (var group in result.Members.Where(m => !m.IsTerminal || true).GroupBy(m => m.ReceiverTypeKey).OrderBy(g => g.Key, StringComparer.Ordinal)) {
-            sb.AppendLine($"        [\"{Escape(group.Key)}\"] = new List<MemberDescriptor> {{");
-            foreach (var entry in group.OrderBy(e => e.MethodName == "Generate" ? 1 : 0).ThenBy(e => e.MethodName, StringComparer.Ordinal)) {
-                sb.AppendLine("            " + DescriptorLiteral(entry) + ",");
+        foreach (var receiverKey in ReceiverKeysOf(result).OrderBy(key => key, StringComparer.Ordinal)) {
+            sb.AppendLine($"        [\"{Escape(receiverKey)}\"] = new List<MemberDescriptor> {{");
+            foreach (var literal in MembersOf(result, receiverKey, result.Members)) {
+                sb.AppendLine("            " + literal + ",");
             }
             sb.AppendLine("        },");
         }
@@ -40,6 +46,35 @@ public static class DescriptorEmitter {
         return sb.ToString();
     }
 
+    /// <summary>Every receiver key that has anything to show — a catalogued step, an unavailable
+    /// name, or both. Taken from the members rather than from <c>ReceiverTypes</c> so a receiver
+    /// reached by the walk but carrying nothing at all does not emit an empty list.</summary>
+    private static IEnumerable<string> ReceiverKeysOf(WalkResult result) =>
+        result.Members.Select(m => m.ReceiverTypeKey)
+            .Concat(result.Unavailable.Where(u => u.ReceiverTypeKey != CatalogueKeys.EntryPointReceiver).Select(u => u.ReceiverTypeKey))
+            .Distinct(StringComparer.Ordinal);
+
+    /// <summary>
+    ///     One receiver's members as emitted literals, in the order the combo shows them:
+    ///     alphabetical, with <c>Generate()</c> last where it appears at all — it is drawn by the
+    ///     button under the card rather than picked here, and sorting it into the Gs would put a
+    ///     step nothing offers in the middle of the list.
+    /// </summary>
+    private static IEnumerable<string> MembersOf(WalkResult result, string receiverKey, IEnumerable<CatalogueEntry> catalogued) {
+        var available = catalogued
+            .Where(entry => entry.ReceiverTypeKey == receiverKey)
+            .Select(entry => (entry.MethodName, Literal: DescriptorLiteral(entry)));
+
+        var unavailable = result.Unavailable
+            .Where(entry => entry.ReceiverTypeKey == receiverKey)
+            .Select(entry => (entry.MethodName, Literal: UnavailableDescriptorLiteral(entry)));
+
+        return available.Concat(unavailable)
+            .OrderBy(member => member.MethodName == "Generate" ? 1 : 0)
+            .ThenBy(member => member.MethodName, StringComparer.Ordinal)
+            .Select(member => member.Literal);
+    }
+
     private static string DescriptorLiteral(CatalogueEntry entry) {
         var parameters = string.Join(", ", entry.Parameters.Select(p =>
             $"new ParameterDescriptor({Literal(p.Name)}, {Literal(p.TypeKey)}, {Literal(p.Placeholder)})"));
@@ -48,6 +83,24 @@ public static class DescriptorEmitter {
                $"{Literal(entry.Key)}, {Literal(entry.MethodName)}, {Literal(entry.ReceiverTypeKey)}, {Literal(entry.ReturnTypeKey)}, " +
                $"new List<ParameterDescriptor> {{ {parameters} }}, {Literal(entry.Summary)}, {Literal(HelpUrlFor(entry))})";
     }
+
+    /// <summary>
+    ///     An unavailable member as a <see cref="MemberDescriptor" /> literal — a name, a receiver,
+    ///     and the support flag that makes it unselectable. Everything else is empty on purpose:
+    ///     no parameters, because being unable to ask for them is the reason this entry exists; no
+    ///     return type, because nothing chains off a step that cannot be taken; no summary or help
+    ///     link, because a member that can never be chosen never reaches the documentation line,
+    ///     which only renders for the step a visitor settled on.
+    ///
+    ///     THE TRAILING PlaygroundSupport ARGUMENT IS ALSO WHAT KEEPS THE GENERATOR'S SELF-CHECK
+    ///     HONEST — Program.cs reads it back out of this text to tell the dispatchable members from
+    ///     the merely named ones. Emitting it on the same single line as the rest of the literal is
+    ///     load-bearing for that, and every literal here is written on one line already.
+    /// </summary>
+    private static string UnavailableDescriptorLiteral(UnavailableEntry entry) =>
+        "new MemberDescriptor(" +
+        $"{Literal(entry.Key)}, {Literal(entry.MethodName)}, {Literal(entry.ReceiverTypeKey)}, \"\", " +
+        "new List<ParameterDescriptor> {  }, \"\", \"\", PlaygroundSupport.UnavailableInPlayground)";
 
     private static string HelpUrlFor(CatalogueEntry entry) =>
         "https://github.com/Reefact/just-dummies#readme";

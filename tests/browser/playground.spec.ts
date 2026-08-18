@@ -111,6 +111,48 @@ test.describe('the playground', () => {
     });
 
     /**
+     * What the library has and this form cannot ask for is named and refused, never omitted.
+     *
+     * This is the assertion behind that decision, and it is worth stating what breaks without
+     * it: the catalogue's generator hides every member it cannot express, so the combo used to
+     * read as the library's whole surface for the type in hand. A visitor looking for
+     * `ListOf(...)` and not finding it learns the wrong thing — not "this page cannot do that"
+     * but "JustDummies cannot do that", which is the one claim the playground must never make
+     * on the library's behalf.
+     *
+     * Both halves are checked together on purpose. Disabled-and-listed is only correct while
+     * the ordinary entries stay selectable; a regression that disabled the lot would satisfy
+     * half of this test and leave the page unusable.
+     */
+    test('names the library methods it cannot offer, disabled, and leaves the rest selectable', async ({ page }) => {
+        await page.goto('/playground/');
+
+        const firstSelect = page.locator('.chain-link').nth(0).locator('select');
+
+        // Any.ListOf<T>(IAny<T>) is real, documented and shipped — an open generic over a nested
+        // generator, which is exactly what a flat form of text inputs has no way to ask for.
+        const unavailable = firstSelect.locator('option').filter({ hasText: 'ListOf()' });
+        await expect(unavailable).toHaveCount(1);
+        await expect(unavailable).toBeDisabled();
+
+        // The label carries the reason, and the reason names the playground rather than the
+        // library. Greying an entry without saying why leaves a visitor to supply their own
+        // explanation, and the available one is "this library is missing things".
+        await expect(unavailable).toHaveText('ListOf() — not available in the playground');
+
+        const supported = firstSelect.locator('option').filter({ hasText: /^String\(\)$/ });
+        await expect(supported).toBeEnabled();
+        await firstSelect.selectOption({ label: 'String()' });
+        await expect(page.locator('.chain-link').nth(0).locator('.call')).toContainText('String');
+
+        // And the same holds one step in, where the options are the ones the type in hand
+        // carries: .OrNull() extends every generator in the library and none of them here.
+        const secondSelect = page.locator('.chain-link').nth(1).locator('select');
+        await expect(secondSelect.locator('option').filter({ hasText: 'OrNull()' })).toBeDisabled();
+        await expect(secondSelect.locator('option').filter({ hasText: 'NonEmpty()' })).toBeEnabled();
+    });
+
+    /**
      * §9.9's rule, restated for the card: a refusal is the demonstration defending itself, so
      * it is never only behind a control somebody has to press. The step that caused it carries
      * a flag — §13.4's "associated with the zone that provokes it" — and the library's own

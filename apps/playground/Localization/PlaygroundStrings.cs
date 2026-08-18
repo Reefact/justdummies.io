@@ -93,6 +93,11 @@ public static class PlaygroundStrings {
         ["playground.copied"]        = "copied to clipboard",
         ["playground.copyFailed"]    = "Could not copy. Select the code and copy it manually.",
         ["playground.chooseMethod"]  = "choose a method…",
+        // How a method the library has and this form cannot ask for reads in the combo.
+        // Names the playground, never the library: the capability is real and the reader may
+        // well want it, they just cannot reach it from here. The option's own `disabled`
+        // attribute is what makes it unselectable — this is only what explains that.
+        ["playground.unavailableOption"] = "{0} — not available in the playground",
         ["playground.deleteStep"]    = "remove this step and everything after it",
         ["playground.selectAria"]    = "method for step {0}",
         ["playground.docs"]          = "docs",
@@ -184,6 +189,9 @@ public static class PlaygroundStrings {
         ["playground.copied"]        = new("copié dans le presse-papiers", "copied to clipboard"),
         ["playground.copyFailed"]    = new("Copie impossible. Sélectionnez le code et copiez-le à la main.", "Could not copy. Select the code and copy it manually."),
         ["playground.chooseMethod"]  = new("choisir une méthode…", "choose a method…"),
+        ["playground.unavailableOption"] = new(
+            "{0} — non disponible dans le playground",
+            "{0} — not available in the playground"),
         ["playground.deleteStep"]    = new("supprimer cette étape et tout ce qui suit", "remove this step and everything after it"),
         ["playground.selectAria"]    = new("méthode pour l'étape {0}", "method for step {0}"),
         ["playground.docs"]          = new("doc", "docs"),
