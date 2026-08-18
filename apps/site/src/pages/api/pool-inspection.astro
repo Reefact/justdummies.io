@@ -1,0 +1,16 @@
+---
+import PoolInspectionContent from '../../components/api/PoolInspectionContent.astro';
+import ApiPage from '../../layouts/ApiPage.astro';
+import { useTranslations } from '../../i18n/ui';
+import { site } from '../../site';
+
+const t = useTranslations('en');
+---
+
+<ApiPage
+    title={`${t('api.poolInspection.heading')} — API — ${site.name}`}
+    description={t('api.meta.description')}
+    activeSlug="pool-inspection"
+>
+    <PoolInspectionContent />
+</ApiPage>

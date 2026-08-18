@@ -118,7 +118,7 @@ const en = {
 
     'act2.link.title': 'Generated to help you, and yours to change',
     'act2.link.body':
-        'The tool writes the whole file: the fields, the recipe, one With… per parameter, the draw. It cannot read the ORD- prefix rule, so it marked that parameter rather than guess at it. The file compiles, and it throws on every draw until you add the link. You add .StartingWith("ORD-") to the reference parameter, and that is the chain you already wrote, unchanged. The file is yours: read it, edit it, commit it.',
+        'The tool writes the whole file: the fields, the recipe, one With… per parameter, the draw. It cannot read the ORD- prefix rule, so it marked that parameter rather than guess at it. The file compiles, and it throws on every draw until you add the link. You add .StartingWith("ORD-").Printable() to the reference parameter, and that is the chain you already wrote, unchanged. The file is yours: read it, edit it, commit it.',
 
     'act2.concise.title': 'A test that is explicit at last, and does not lie',
     'act2.concise.body':
@@ -300,6 +300,7 @@ const en = {
     'api.nav.collections': 'Collections',
     'api.nav.composition': 'Composition',
     'api.nav.reproducibility': 'Seeds & reproducibility',
+    'api.nav.poolInspection': 'Pool inspection',
     'api.nav.exceptions': 'Exceptions',
     'api.nav.toggle': 'API sections',
 
@@ -325,6 +326,9 @@ const en = {
     'api.reproducibility.heading': 'Seeds & reproducibility',
     'api.reproducibility.lede':
         'What makes a failure on an arbitrary value replayable exactly, instead of a mystery that looks different on every run.',
+    'api.poolInspection.heading': 'Pool inspection',
+    'api.poolInspection.lede':
+        "What a generator's declared constraints leave of a value set you supplied yourself — the values still drawable, and the ones refused, each naming the constraint that refused it.",
     'api.exceptions.heading': 'Exceptions',
     'api.exceptions.lede': 'The family the library throws on its own behalf, and which member appears for which kind of refusal.',
 
@@ -730,7 +734,7 @@ const fr: Record<UiKey, string> = {
 
     'act2.link.title': 'Généré pour vous aider, vous gardez la main',
     'act2.link.body':
-        "L'outil écrit tout le fichier : les champs, la recette, un With… par paramètre, le tirage. Il ne sait pas lire la règle du préfixe ORD-, alors il la signale au lieu de l'inventer. Le fichier compile, et il échoue à chaque tirage tant que le maillon manque. Vous ajoutez .StartingWith(\"ORD-\") sur le paramètre reference : c'est la chaîne que vous avez déjà écrite, inchangée. Le fichier vous appartient : vous le lisez, vous le modifiez, vous le commitez.",
+        "L'outil écrit tout le fichier : les champs, la recette, un With… par paramètre, le tirage. Il ne sait pas lire la règle du préfixe ORD-, alors il la signale au lieu de l'inventer. Le fichier compile, et il échoue à chaque tirage tant que le maillon manque. Vous ajoutez .StartingWith(\"ORD-\").Printable() sur le paramètre reference : c'est la chaîne que vous avez déjà écrite, inchangée. Le fichier vous appartient : vous le lisez, vous le modifiez, vous le commitez.",
 
     'act2.concise.title': 'Un test enfin explicite, et qui ne ment pas',
     'act2.concise.body':
@@ -863,6 +867,7 @@ const fr: Record<UiKey, string> = {
     'api.nav.collections': 'Collections',
     'api.nav.composition': 'Composition',
     'api.nav.reproducibility': 'Seeds et reproductibilité',
+    'api.nav.poolInspection': 'Inspection de pool',
     'api.nav.exceptions': 'Exceptions',
     'api.nav.toggle': "Sections de l'API",
 
@@ -888,6 +893,9 @@ const fr: Record<UiKey, string> = {
     'api.reproducibility.heading': 'Seeds et reproductibilité',
     'api.reproducibility.lede':
         "Ce qui rend un échec sur une valeur arbitraire exactement rejouable, plutôt qu'un mystère qui change d'apparence à chaque exécution.",
+    'api.poolInspection.heading': 'Inspection de pool',
+    'api.poolInspection.lede':
+        "Ce que les contraintes déclarées d'un générateur laissent d'un ensemble de valeurs que vous avez fourni vous-même — celles encore tirables, et celles refusées, chacune nommant la contrainte qui l'a refusée.",
     'api.exceptions.heading': 'Exceptions',
     'api.exceptions.lede': "La famille que la bibliothèque lève elle-même, et quel membre apparaît pour quelle nature de refus.",
 
