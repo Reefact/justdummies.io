@@ -1,4 +1,4 @@
-# Notes de version — justdummies.io
+# Release notes — justdummies.io
 
 🌍 🇬🇧 [English](RELEASE_NOTES-en.md) · 🇫🇷 Français (ce fichier)
 
