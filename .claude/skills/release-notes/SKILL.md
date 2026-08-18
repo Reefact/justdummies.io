@@ -27,6 +27,9 @@ Keep-a-Changelog-shaped:
 ```
 ## release/<tag> — <Month> <day>, <year>
 
+_<optional one-line theme, the way a maintainer would summarise it to someone deciding
+whether to look at what's new — omit rather than force one>_
+
 ### ✨ New
 ### 🙌 Improvements
 ### 🐛 Fixes

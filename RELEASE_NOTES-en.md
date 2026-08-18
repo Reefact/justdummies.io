@@ -14,6 +14,8 @@ _Nothing pending yet._
 
 ## release/2026-08-18T14-49-42Z — August 18, 2026
 
+_The playground gets clearer about its own limits, and its introduction reads properly in French again._
+
 ### ✨ New
 - The playground's method list now shows library features it can't run there (like composite generators) as grayed-out options with an explanation, instead of leaving them out entirely.
 
@@ -22,6 +24,8 @@ _Nothing pending yet._
 - The note beside the "Generate" button now explicitly says the code runs locally in your browser, instead of the vague "running here".
 
 ## release/2026-08-18T12-53-33Z — August 18, 2026
+
+_Wording and layout corrections across the homepage and the playground, nothing structural._
 
 ### 🙌 Improvements
 - Replaced the "problem it solves" section on the why-justdummies page with a short transition sentence, since it had shrunk to little more than a link.
@@ -32,15 +36,21 @@ _Nothing pending yet._
 
 ## release/2026-08-17T20-58-25Z — August 17, 2026
 
+_The playground's code view now matches the one on the homepage._
+
 ### 🙌 Improvements
 - Redesigned the playground to match the landing page's code card, showing your chosen steps as syntax-highlighted code with a one-line, copyable snippet of the full chain.
 
 ## release/2026-08-17T20-39-18Z — August 17, 2026
 
+_One section of the comparison page trimmed down to what still holds up._
+
 ### 🙌 Improvements
 - Simplified the "when not to use JustDummies" section on the why-justdummies page, dropping three points that no longer held up.
 
 ## release/2026-08-17T19-31-39Z — August 17, 2026
+
+_The comparison page's summary table is easier to find, and a misaligned API page header is fixed._
 
 ### 🙌 Improvements
 - On the why-justdummies comparison page, the summary table now appears right at the top of that section, so a reader sees the full comparison without expanding anything.
@@ -51,10 +61,14 @@ _Nothing pending yet._
 
 ## release/2026-08-17T09-26-07Z — August 17, 2026
 
+_A round of polish on the comparison page after maintainer review._
+
 ### 🙌 Improvements
 - Polished the comparison page based on maintainer review: opening one criterion now closes the previous one and keeps your place on the page, the full comparison table is always visible instead of collapsible, and the rating icons are now plain black-and-white shapes with tooltips instead of color-coded.
 
 ## release/2026-08-17T07-43-58Z — August 17, 2026
+
+_Another pass on the comparison page, plus a corrected claim about JustDummies' own compile-time checks._
 
 ### 🙌 Improvements
 - Redesigned the why-justdummies comparison page again: a simpler introduction, criteria you can expand one at a time, and a plain check/wrench/dash icon set for ratings.
@@ -65,6 +79,8 @@ _Nothing pending yet._
 - Fixed an awkward French homepage tagline.
 
 ## release/2026-08-16T19-18-07Z — August 16, 2026
+
+_Lightweight analytics on install links, and the comparison page explains its own criteria before showing the matrix._
 
 ### ✨ New
 - Added lightweight, privacy-friendly analytics that record which install command or link visitors use, so future decisions can be guided by what actually leads people to install (details are explained on the privacy page).
@@ -77,10 +93,14 @@ _Nothing pending yet._
 
 ## release/2026-08-16T07-42-03Z — August 16, 2026
 
+_The playground moves from one fixed example to building a real generator chain step by step._
+
 ### ✨ New
 - The playground now lets you build a real generator chain step by step from the library's actual methods, instead of showing one fixed example.
 
 ## release/2026-08-16T06-55-58Z — August 16, 2026
+
+_Two new pages: a ten-criteria comparison with other tools, and a full API reference._
 
 ### ✨ New
 - Added a "Why JustDummies" page comparing the library to Bogus, AutoFixture, and hand-written test data across ten criteria.
@@ -91,6 +111,8 @@ _Nothing pending yet._
 
 ## release/2026-08-16T01-00-35Z — August 16, 2026
 
+_A Release Notes page for the library ships, and the homepage's live demo now matches its static twin._
+
 ### ✨ New
 - Added a Release Notes page showing the library's changelog history for each of its packages.
 
@@ -98,6 +120,8 @@ _Nothing pending yet._
 - Fixed several visual mismatches in the homepage's live code demo so it now matches the static example it replaces, including formatting, colors, and alignment.
 
 ## release/2026-08-15T22-12-07Z — August 15, 2026
+
+_About and Privacy pages, a sitewide footer, and the playground now speaks French too._
 
 ### ✨ New
 - Added dedicated About and Privacy pages, along with a footer linking to them from every page on the site.
@@ -112,11 +136,15 @@ _Nothing pending yet._
 
 ## release/2026-08-15T09-50-18Z — August 15, 2026
 
+_Two layout fixes: a page jump on collapse, and a homepage demo narrower than the rest of the page._
+
 ### 🐛 Fixes
 - Fixed an occasional page jump when collapsing a code sample's expanded view.
 - Fixed the homepage's live code example and install command being narrower than the rest of the page.
 
 ## release/2026-08-13T11-42-04Z — August 13, 2026
+
+_Small layout fixes around scrollbars, on the 404 page and elsewhere._
 
 ### 🐛 Fixes
 - Fixed a small layout shift where navigating between a page with a scrollbar and one without would nudge the content sideways.
@@ -124,12 +152,16 @@ _Nothing pending yet._
 
 ## release/2026-08-13T09-31-22Z — August 13, 2026
 
+_Consistency pass: the brand sits the same way everywhere, and external links behave predictably._
+
 ### 🙌 Improvements
 - The JustDummies brand now appears in exactly the same position on every page, instead of shifting slightly depending on which page you're on.
 - The GitHub link in the site header now opens in a new tab, so you don't lose your place on the site; the playground link still opens in the same tab.
 - Clarified the wording in the playground's opening scene about what the example's setup step is hiding.
 
 ## release/2026-08-13T08-16-25Z — August 13, 2026
+
+_The 404 page gets the JustDummies brand and a full-width illustration instead of a bare message._
 
 ### 🙌 Improvements
 - The "page not found" pages now open with the JustDummies brand, so it's clear whose site you've landed on, instead of a bare "Page not found" message.
@@ -141,11 +173,15 @@ _Nothing pending yet._
 
 ## release/2026-08-12T21-42-23Z — August 12, 2026
 
+_A /version page shows what's actually live, and the 404 page gets its own illustration._
+
 ### ✨ New
 - Added a /version page showing the site's current release, commit, and build time.
 - Added a custom illustration to the "page not found" screen.
 
 ## release/2026-08-12T20-33-58Z — August 12, 2026
+
+_Faster-loading icons, and a code toggle that can be closed again._
 
 ### 🙌 Improvements
 - Reduced the size of the site's icon images significantly, making the page load faster.
@@ -155,6 +191,8 @@ _Nothing pending yet._
 
 ## release/2026-08-12T14-59-33Z — August 12, 2026
 
+_A code example can now be expanded to its full generated file, and the French text reads more naturally._
+
 ### ✨ New
 - Added an option to expand a code example and see the entire generated file instead of just an excerpt.
 
@@ -162,6 +200,8 @@ _Nothing pending yet._
 - Rewrote the French text throughout the page in plainer, more natural language.
 
 ## release/2026-08-12T13-50-58Z — August 12, 2026
+
+_Code examples get syntax highlighting and a panel showing the real test failure they produce._
 
 ### ✨ New
 - Added syntax highlighting to code examples, coloring keywords, types, strings, and numbers.
@@ -175,6 +215,8 @@ _Nothing pending yet._
 - Fixed a sideways scrollbar that appeared on some desktop screens.
 
 ## release/2026-08-12T11-43-07Z — August 12, 2026
+
+_A wide layout and wording pass across the homepage, plus a code example that now actually compiles._
 
 ### 🙌 Improvements
 - Placed each package's link next to its name for easier reference.
@@ -190,6 +232,8 @@ _Nothing pending yet._
 
 ## release/2026-08-12T10-05-28Z — August 12, 2026
 
+_The first tutorial section rebuilds step by step, and several small interaction rough edges get smoothed out._
+
 ### 🙌 Improvements
 - Reworked the first tutorial section to build up its code example one step at a time.
 - Removed the numbered "Act" labels in favor of plainer navigation wording.
@@ -203,6 +247,8 @@ _Nothing pending yet._
 
 ## release/2026-08-12T08-54-47Z — August 12, 2026
 
+_A language selector arrives, and the homepage's text is rewritten throughout in both languages._
+
 ### ✨ New
 - Added a language selector so visitors can switch between English and French.
 
@@ -211,6 +257,8 @@ _Nothing pending yet._
 - Content now reveals itself in stages as you scroll instead of loading all at once, making the page feel noticeably shorter.
 
 ## release/2026-08-12T02-20-31Z — August 12, 2026
+
+_The site's first public version: a bilingual homepage narrative, a live in-browser demo, and the library's own icon._
 
 ### ✨ New
 - The site now exists in English and French, with equivalent content, metadata, and navigation in both languages.
