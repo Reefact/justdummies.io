@@ -3,12 +3,26 @@ using System.Globalization;
 namespace JustDummies.Playground.Catalogue;
 
 /// <summary>
-///     One parser per primitive parameter type the v1 catalogue's scalar generators actually take
-///     (specification §10.7: "this parameter expects an integer"). Array- and
-///     <c>IEnumerable&lt;T&gt;</c>-typed parameters are out of scope for v1 (see
-///     tools/playground-catalogue/excluded-members.jsonc) — a single text input has no natural
-///     multi-value shape, and every parameter the generator discovers must resolve to a parser
-///     here or the generator fails the build rather than silently skip it.
+///     One parser per primitive parameter type the catalogue's generators actually take
+///     (specification §10.7: "this parameter expects an integer"), plus the list form of each of
+///     them — the type key <c>"System.Int32[]"</c> parses one text input as a comma-separated
+///     <c>int[]</c>. Every parameter the generator discovers must resolve to a parser here or the
+///     generator fails the build rather than silently skip it.
+///
+///     THE LIST FORM IS WHAT <c>Except</c> AND <c>OneOf</c> NEEDED. Both take
+///     <c>params T[]</c> on every scalar builder in the library, and both were excluded from the
+///     v1 catalogue for want of a multi-value input shape — which left the playground unable to
+///     show two of the constraints a visitor is most likely to reach for ("a status among these
+///     three", "any identifier but the ones already taken"). A comma-separated single field is
+///     the shape that costs nothing structurally: the chain stays flat, one parameter is still
+///     one <c>rawArguments[i]</c>, and each element goes through the very same scalar parser
+///     below, so an element inherits its type's own error message and its own sandbox caps for
+///     free.
+///
+///     <c>IEnumerable&lt;T&gt;</c> parameters are still out of scope, and deliberately: the one
+///     that exists (<c>AnyString.OneOf(IEnumerable&lt;string&gt;)</c>) is the same constraint as
+///     its <c>params</c> sibling, so cataloguing it would offer the visitor the identical step
+///     twice.
 ///
 ///     A failed parse returns a <em>key</em>, not resolved text: this project cannot reference
 ///     <c>PlaygroundStrings</c> (apps/playground depends on this project, not the other way
@@ -42,13 +56,42 @@ public static class ArgumentParsing {
     public const string TypeKeyTimeOnly       = "System.TimeOnly";
     public const string TypeKeyTimeSpan       = "System.TimeSpan";
 
-    /// <summary>The full set of parameter type keys v1 knows how to parse from one text input.</summary>
+    /// <summary>The full set of <em>scalar</em> parameter type keys, each parsed from one text
+    /// input into one value. A list parameter's key is one of these with
+    /// <see cref="ListTypeKeySuffix" /> appended — see <see cref="IsListTypeKey" />, and
+    /// <see cref="IsKnownTypeKey" /> for the question the generator actually asks.</summary>
     public static readonly IReadOnlyCollection<string> KnownTypeKeys = new[] {
         TypeKeyString, TypeKeyBoolean, TypeKeyByte, TypeKeySByte, TypeKeyInt16, TypeKeyUInt16,
         TypeKeyInt32, TypeKeyUInt32, TypeKeyInt64, TypeKeyUInt64, TypeKeyInt128, TypeKeyUInt128,
         TypeKeySingle, TypeKeyDouble, TypeKeyHalf, TypeKeyDecimal, TypeKeyGuid, TypeKeyChar,
         TypeKeyDateOnly, TypeKeyDateTime, TypeKeyDateTimeOffset, TypeKeyTimeOnly, TypeKeyTimeSpan,
     };
+
+    /// <summary>
+    ///     What a list parameter's type key ends with: <c>"System.Int32[]"</c> is a comma-separated
+    ///     <c>int[]</c>. Chosen to be exactly what <c>Type.FullName</c> already returns for an array
+    ///     type, so the generated dispatch table's cast — <c>(global::System.Int32[])arg0!</c> —
+    ///     needs no special case at all and stays the ordinary, statically typed call site §10.8
+    ///     requires.
+    /// </summary>
+    public const string ListTypeKeySuffix = "[]";
+
+    /// <summary>What separates one value from the next inside a list field. A comma, because the
+    /// line the code bar prints beside the field separates the same values the same way — the
+    /// field reads as the argument list it becomes.</summary>
+    public const char ListSeparator = ',';
+
+    /// <summary>Whether <paramref name="typeKey" /> names a list parameter rather than a scalar one.</summary>
+    public static bool IsListTypeKey(string typeKey) => typeKey.EndsWith(ListTypeKeySuffix, StringComparison.Ordinal);
+
+    /// <summary>The scalar type key each element of <paramref name="listTypeKey" /> is parsed as.</summary>
+    public static string ElementTypeKeyOf(string listTypeKey) =>
+        IsListTypeKey(listTypeKey) ? listTypeKey[..^ListTypeKeySuffix.Length] : listTypeKey;
+
+    /// <summary>Whether <paramref name="typeKey" /> — scalar or list — has a parser here. This is
+    /// the question tools/playground-catalogue asks of every parameter it discovers, and a "no"
+    /// is what puts a member in the exclusion report instead of the catalogue.</summary>
+    public static bool IsKnownTypeKey(string typeKey) => KnownTypeKeys.Contains(ElementTypeKeyOf(typeKey));
 
     /// <summary>A <c>PlaygroundStrings</c> key naming what one parameter type expects, e.g. "argument.expectsInteger".</summary>
     public const string KeyExpectsBoolean                = "argument.expectsBoolean";
@@ -66,6 +109,17 @@ public static class ArgumentParsing {
     public const string KeyExpectsDuration                = "argument.expectsDuration";
     public const string KeyExpectsWithinSandboxRange       = "argument.expectsWithinSandboxRange";
     public const string KeyExpectsTextWithinSandboxLength  = "argument.expectsTextWithinSandboxLength";
+
+    /// <summary>What an empty list field expects. Deliberately a parse error rather than an empty
+    /// array handed to the library: a freshly chosen step's arguments are empty, and every scalar
+    /// parameter answers that state with "this argument expects an integer" — quiet, and clearly
+    /// "you have not filled this in yet". Passing <c>OneOf()</c> with nothing in it instead would
+    /// open the step on the library's own refusal, which is a louder thing to say about a field
+    /// nobody has typed in.</summary>
+    public const string KeyExpectsAtLeastOneValue           = "argument.expectsAtLeastOneValue";
+
+    /// <summary>What a list field longer than <see cref="SandboxListLengthLimit" /> expects.</summary>
+    public const string KeyExpectsListWithinSandboxLength   = "argument.expectsListWithinSandboxLength";
 
     /// <summary>
     ///     A ceiling on the magnitude of any integer argument this playground will actually pass to
@@ -104,10 +158,60 @@ public static class ArgumentParsing {
     public const int SandboxTextLengthHardCeiling = 4_000;
 
     /// <summary>
+    ///     A ceiling on how many values one list argument may carry. The third of this class's
+    ///     sandbox caps, and it exists for the same reason as the other two rather than for the
+    ///     library's sake: every keystroke in a chain re-parses every argument in it
+    ///     (<c>IsWritableAsCode</c>) and rewrites the copied line (<c>CodeSegments</c>), so a
+    ///     field holding a thousand values would repeat a thousand parses and a thousand literal
+    ///     emissions on each one. Fifty is well past the point where the printed line
+    ///     <c>OneOf("a", "b", …)</c> stopped being something a visitor reads, so the cap binds
+    ///     long after the demonstration has stopped demonstrating anything.
+    /// </summary>
+    public const int SandboxListLengthLimit = 50;
+
+    /// <summary>
+    ///     Cuts a list field's raw text into the values it names: split on
+    ///     <see cref="ListSeparator" />, each trimmed, empties dropped.
+    ///
+    ///     PUBLIC BECAUSE THE CODE BAR MUST CUT IT THE SAME WAY. <c>Home.razor</c> emits one C#
+    ///     literal per value, and a bar that split differently from the parser would print a line
+    ///     that does not produce what the playground just produced. One function, called by both,
+    ///     makes that agreement structural rather than a pair of implementations that currently
+    ///     match.
+    ///
+    ///     TRIMMED, so "red, green, blue" means the three words a visitor obviously meant rather
+    ///     than one word and two with a leading space. EMPTIES DROPPED, so a trailing comma is
+    ///     what it looks like mid-typing — an unfinished list — rather than an extra empty value
+    ///     silently joining it.
+    ///
+    ///     WHAT THAT COSTS, stated rather than hidden: a value that is itself empty, or that
+    ///     carries a leading/trailing space or a comma of its own, cannot be written in this
+    ///     field — <c>Any.Char().Except(',')</c> has no spelling here. The code bar under the
+    ///     card always prints the values as they will actually be passed, so a visitor who hits
+    ///     one of these sees exactly what they got rather than wondering.
+    /// </summary>
+    public static IReadOnlyList<string> SplitList(string raw) {
+        var values = new List<string>();
+
+        foreach (var piece in raw.Split(ListSeparator)) {
+            var trimmed = piece.Trim();
+            if (trimmed.Length > 0) {
+                values.Add(trimmed);
+            }
+        }
+
+        return values;
+    }
+
+    /// <summary>
     ///     Parses <paramref name="raw" /> as <paramref name="typeKey" />, or returns the
     ///     <c>PlaygroundStrings</c> key naming what was expected.
     /// </summary>
     public static bool TryParse(string typeKey, string raw, out object? value, out string? errorKey) {
+        if (IsListTypeKey(typeKey)) {
+            return TryParseList(ElementTypeKeyOf(typeKey), raw, out value, out errorKey);
+        }
+
         switch (typeKey) {
             case TypeKeyString:
                 if (raw.Length > SandboxTextLengthLimit) {
@@ -194,6 +298,86 @@ public static class ArgumentParsing {
                 errorKey = null;
                 throw new InvalidOperationException($"no argument parser registered for type key '{typeKey}'");
         }
+    }
+
+    /// <summary>
+    ///     Parses one list field into the typed array its parameter takes.
+    ///
+    ///     THE ELEMENTS GO THROUGH <see cref="TryParse" /> ITSELF, one at a time, which is what
+    ///     makes this cheap: an element inherits its own type's parsing rules (the invariant
+    ///     culture, the offset and date requirements the date/time family enforces), its own
+    ///     sandbox caps (<see cref="SandboxMagnitudeLimit" />, <see cref="SandboxTextLengthLimit" />)
+    ///     and its own error key — so a visitor who types "1, x, 3" into an <c>int[]</c> field is
+    ///     told "this argument expects an integer", in the very words every other integer field in
+    ///     the playground uses. Naming the offending position too was the alternative; it would
+    ///     need a message this playground writes only for lists, where the field is one input the
+    ///     visitor is already looking at, and the shared vocabulary is worth more than the index.
+    ///
+    ///     The per-element type switch is written out rather than reached through
+    ///     <c>Array.CreateInstance</c>: §10.8 forbids runtime reflection in the playground, and
+    ///     each arm below is an ordinary <c>new T[]</c> the trimmer keeps like any other.
+    /// </summary>
+    private static bool TryParseList(string elementTypeKey, string raw, out object? value, out string? errorKey) {
+        var values = SplitList(raw);
+
+        if (values.Count == 0) {
+            value    = null;
+            errorKey = KeyExpectsAtLeastOneValue;
+            return false;
+        }
+
+        if (values.Count > SandboxListLengthLimit) {
+            value    = null;
+            errorKey = KeyExpectsListWithinSandboxLength;
+            return false;
+        }
+
+        switch (elementTypeKey) {
+            case TypeKeyString:         return TryParseElements<string>(values, elementTypeKey, out value, out errorKey);
+            case TypeKeyBoolean:        return TryParseElements<bool>(values, elementTypeKey, out value, out errorKey);
+            case TypeKeyByte:           return TryParseElements<byte>(values, elementTypeKey, out value, out errorKey);
+            case TypeKeySByte:          return TryParseElements<sbyte>(values, elementTypeKey, out value, out errorKey);
+            case TypeKeyInt16:          return TryParseElements<short>(values, elementTypeKey, out value, out errorKey);
+            case TypeKeyUInt16:         return TryParseElements<ushort>(values, elementTypeKey, out value, out errorKey);
+            case TypeKeyInt32:          return TryParseElements<int>(values, elementTypeKey, out value, out errorKey);
+            case TypeKeyUInt32:         return TryParseElements<uint>(values, elementTypeKey, out value, out errorKey);
+            case TypeKeyInt64:          return TryParseElements<long>(values, elementTypeKey, out value, out errorKey);
+            case TypeKeyUInt64:         return TryParseElements<ulong>(values, elementTypeKey, out value, out errorKey);
+            case TypeKeyInt128:         return TryParseElements<Int128>(values, elementTypeKey, out value, out errorKey);
+            case TypeKeyUInt128:        return TryParseElements<UInt128>(values, elementTypeKey, out value, out errorKey);
+            case TypeKeySingle:         return TryParseElements<float>(values, elementTypeKey, out value, out errorKey);
+            case TypeKeyDouble:         return TryParseElements<double>(values, elementTypeKey, out value, out errorKey);
+            case TypeKeyHalf:           return TryParseElements<Half>(values, elementTypeKey, out value, out errorKey);
+            case TypeKeyDecimal:        return TryParseElements<decimal>(values, elementTypeKey, out value, out errorKey);
+            case TypeKeyGuid:           return TryParseElements<Guid>(values, elementTypeKey, out value, out errorKey);
+            case TypeKeyChar:           return TryParseElements<char>(values, elementTypeKey, out value, out errorKey);
+            case TypeKeyDateOnly:       return TryParseElements<DateOnly>(values, elementTypeKey, out value, out errorKey);
+            case TypeKeyDateTime:       return TryParseElements<DateTime>(values, elementTypeKey, out value, out errorKey);
+            case TypeKeyDateTimeOffset: return TryParseElements<DateTimeOffset>(values, elementTypeKey, out value, out errorKey);
+            case TypeKeyTimeOnly:       return TryParseElements<TimeOnly>(values, elementTypeKey, out value, out errorKey);
+            case TypeKeyTimeSpan:       return TryParseElements<TimeSpan>(values, elementTypeKey, out value, out errorKey);
+            default:
+                // Unreachable for the same reason the scalar switch's own default is — the
+                // generator fails the build on a parameter type nobody registered here.
+                throw new InvalidOperationException($"no argument parser registered for type key '{elementTypeKey}{ListTypeKeySuffix}'");
+        }
+    }
+
+    private static bool TryParseElements<T>(IReadOnlyList<string> values, string elementTypeKey, out object? value, out string? errorKey) {
+        var parsed = new T[values.Count];
+
+        for (var i = 0; i < values.Count; i++) {
+            if (!TryParse(elementTypeKey, values[i], out var element, out errorKey)) {
+                value = null;
+                return false;
+            }
+
+            parsed[i] = (T)element!;
+        }
+
+        value    = parsed;
+        errorKey = null;
+        return true;
     }
 
     /// <summary>True if <paramref name="raw" /> ends with an explicit UTC/offset marker

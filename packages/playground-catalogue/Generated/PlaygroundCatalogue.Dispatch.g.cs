@@ -273,6 +273,17 @@ public static partial class PlaygroundDispatch {
                 return new ChainResult(receiver, "AnyByte", null, refused.Message);
             }
         },
+        ["AnyByte::Except#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Byte[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyByte", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyByte)receiver!;
+            try {
+                var produced = typed.Except((System.Byte[])arg0!);
+                return new ChainResult(produced, "AnyByte", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyByte", null, refused.Message);
+            }
+        },
         ["AnyByte::Generate#0"] = (receiver, rawArguments) => {
             var typed = (global::JustDummies.AnyByte)receiver!;
             try {
@@ -346,6 +357,17 @@ public static partial class PlaygroundDispatch {
                 return new ChainResult(receiver, "AnyByte", null, refused.Message);
             }
         },
+        ["AnyByte::OneOf#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Byte[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyByte", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyByte)receiver!;
+            try {
+                var produced = typed.OneOf((System.Byte[])arg0!);
+                return new ChainResult(produced, "AnyByte", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyByte", null, refused.Message);
+            }
+        },
         ["AnyByte::Zero#0"] = (receiver, rawArguments) => {
             var typed = (global::JustDummies.AnyByte)receiver!;
             try {
@@ -384,6 +406,17 @@ public static partial class PlaygroundDispatch {
                 return new ChainResult(receiver, "AnyChar", null, refused.Message);
             }
         },
+        ["AnyChar::Except#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Char[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyChar", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyChar)receiver!;
+            try {
+                var produced = typed.Except((System.Char[])arg0!);
+                return new ChainResult(produced, "AnyChar", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyChar", null, refused.Message);
+            }
+        },
         ["AnyChar::Generate#0"] = (receiver, rawArguments) => {
             var typed = (global::JustDummies.AnyChar)receiver!;
             try {
@@ -406,6 +439,17 @@ public static partial class PlaygroundDispatch {
             var typed = (global::JustDummies.AnyChar)receiver!;
             try {
                 var produced = typed.Numeric();
+                return new ChainResult(produced, "AnyChar", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyChar", null, refused.Message);
+            }
+        },
+        ["AnyChar::OneOf#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Char[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyChar", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyChar)receiver!;
+            try {
+                var produced = typed.OneOf((System.Char[])arg0!);
                 return new ChainResult(produced, "AnyChar", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnyChar", null, refused.Message);
@@ -488,11 +532,33 @@ public static partial class PlaygroundDispatch {
                 return new ChainResult(receiver, "AnyDateOnly", null, refused.Message);
             }
         },
+        ["AnyDateOnly::Except#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.DateOnly[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyDateOnly", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyDateOnly)receiver!;
+            try {
+                var produced = typed.Except((System.DateOnly[])arg0!);
+                return new ChainResult(produced, "AnyDateOnly", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyDateOnly", null, refused.Message);
+            }
+        },
         ["AnyDateOnly::Generate#0"] = (receiver, rawArguments) => {
             var typed = (global::JustDummies.AnyDateOnly)receiver!;
             try {
                 var produced = typed.Generate();
                 return new ChainResult(produced, "Terminal:System.DateOnly", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyDateOnly", null, refused.Message);
+            }
+        },
+        ["AnyDateOnly::OneOf#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.DateOnly[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyDateOnly", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyDateOnly)receiver!;
+            try {
+                var produced = typed.OneOf((System.DateOnly[])arg0!);
+                return new ChainResult(produced, "AnyDateOnly", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnyDateOnly", null, refused.Message);
             }
@@ -565,11 +631,33 @@ public static partial class PlaygroundDispatch {
                 return new ChainResult(receiver, "AnyDateTime", null, refused.Message);
             }
         },
+        ["AnyDateTime::Except#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.DateTime[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyDateTime", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyDateTime)receiver!;
+            try {
+                var produced = typed.Except((System.DateTime[])arg0!);
+                return new ChainResult(produced, "AnyDateTime", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyDateTime", null, refused.Message);
+            }
+        },
         ["AnyDateTime::Generate#0"] = (receiver, rawArguments) => {
             var typed = (global::JustDummies.AnyDateTime)receiver!;
             try {
                 var produced = typed.Generate();
                 return new ChainResult(produced, "Terminal:System.DateTime", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyDateTime", null, refused.Message);
+            }
+        },
+        ["AnyDateTime::OneOf#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.DateTime[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyDateTime", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyDateTime)receiver!;
+            try {
+                var produced = typed.OneOf((System.DateTime[])arg0!);
+                return new ChainResult(produced, "AnyDateTime", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnyDateTime", null, refused.Message);
             }
@@ -653,11 +741,33 @@ public static partial class PlaygroundDispatch {
                 return new ChainResult(receiver, "AnyDateTimeOffset", null, refused.Message);
             }
         },
+        ["AnyDateTimeOffset::Except#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.DateTimeOffset[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyDateTimeOffset", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyDateTimeOffset)receiver!;
+            try {
+                var produced = typed.Except((System.DateTimeOffset[])arg0!);
+                return new ChainResult(produced, "AnyDateTimeOffset", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyDateTimeOffset", null, refused.Message);
+            }
+        },
         ["AnyDateTimeOffset::Generate#0"] = (receiver, rawArguments) => {
             var typed = (global::JustDummies.AnyDateTimeOffset)receiver!;
             try {
                 var produced = typed.Generate();
                 return new ChainResult(produced, "Terminal:System.DateTimeOffset", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyDateTimeOffset", null, refused.Message);
+            }
+        },
+        ["AnyDateTimeOffset::OneOf#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.DateTimeOffset[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyDateTimeOffset", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyDateTimeOffset)receiver!;
+            try {
+                var produced = typed.OneOf((System.DateTimeOffset[])arg0!);
+                return new ChainResult(produced, "AnyDateTimeOffset", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnyDateTimeOffset", null, refused.Message);
             }
@@ -716,6 +826,17 @@ public static partial class PlaygroundDispatch {
             var typed = (global::JustDummies.AnyDecimal)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.Decimal)arg0!);
+                return new ChainResult(produced, "AnyDecimal", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyDecimal", null, refused.Message);
+            }
+        },
+        ["AnyDecimal::Except#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Decimal[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyDecimal", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyDecimal)receiver!;
+            try {
+                var produced = typed.Except((System.Decimal[])arg0!);
                 return new ChainResult(produced, "AnyDecimal", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnyDecimal", null, refused.Message);
@@ -792,6 +913,17 @@ public static partial class PlaygroundDispatch {
                 return new ChainResult(receiver, "AnyDecimal", null, refused.Message);
             }
         },
+        ["AnyDecimal::OneOf#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Decimal[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyDecimal", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyDecimal)receiver!;
+            try {
+                var produced = typed.OneOf((System.Decimal[])arg0!);
+                return new ChainResult(produced, "AnyDecimal", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyDecimal", null, refused.Message);
+            }
+        },
         ["AnyDecimal::Positive#0"] = (receiver, rawArguments) => {
             var typed = (global::JustDummies.AnyDecimal)receiver!;
             try {
@@ -840,6 +972,17 @@ public static partial class PlaygroundDispatch {
             var typed = (global::JustDummies.AnyDouble)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.Double)arg0!);
+                return new ChainResult(produced, "AnyDouble", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyDouble", null, refused.Message);
+            }
+        },
+        ["AnyDouble::Except#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Double[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyDouble", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyDouble)receiver!;
+            try {
+                var produced = typed.Except((System.Double[])arg0!);
                 return new ChainResult(produced, "AnyDouble", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnyDouble", null, refused.Message);
@@ -911,6 +1054,17 @@ public static partial class PlaygroundDispatch {
             var typed = (global::JustDummies.AnyDouble)receiver!;
             try {
                 var produced = typed.NonZero();
+                return new ChainResult(produced, "AnyDouble", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyDouble", null, refused.Message);
+            }
+        },
+        ["AnyDouble::OneOf#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Double[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyDouble", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyDouble)receiver!;
+            try {
+                var produced = typed.OneOf((System.Double[])arg0!);
                 return new ChainResult(produced, "AnyDouble", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnyDouble", null, refused.Message);
@@ -1047,6 +1201,17 @@ public static partial class PlaygroundDispatch {
                 return new ChainResult(receiver, "AnyGuid", null, refused.Message);
             }
         },
+        ["AnyGuid::Except#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Guid[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyGuid", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyGuid)receiver!;
+            try {
+                var produced = typed.Except((System.Guid[])arg0!);
+                return new ChainResult(produced, "AnyGuid", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyGuid", null, refused.Message);
+            }
+        },
         ["AnyGuid::Generate#0"] = (receiver, rawArguments) => {
             var typed = (global::JustDummies.AnyGuid)receiver!;
             try {
@@ -1060,6 +1225,17 @@ public static partial class PlaygroundDispatch {
             var typed = (global::JustDummies.AnyGuid)receiver!;
             try {
                 var produced = typed.NonEmpty();
+                return new ChainResult(produced, "AnyGuid", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyGuid", null, refused.Message);
+            }
+        },
+        ["AnyGuid::OneOf#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Guid[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyGuid", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyGuid)receiver!;
+            try {
+                var produced = typed.OneOf((System.Guid[])arg0!);
                 return new ChainResult(produced, "AnyGuid", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnyGuid", null, refused.Message);
@@ -1084,6 +1260,17 @@ public static partial class PlaygroundDispatch {
             var typed = (global::JustDummies.AnyHalf)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.Half)arg0!);
+                return new ChainResult(produced, "AnyHalf", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyHalf", null, refused.Message);
+            }
+        },
+        ["AnyHalf::Except#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Half[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyHalf", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyHalf)receiver!;
+            try {
+                var produced = typed.Except((System.Half[])arg0!);
                 return new ChainResult(produced, "AnyHalf", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnyHalf", null, refused.Message);
@@ -1160,6 +1347,17 @@ public static partial class PlaygroundDispatch {
                 return new ChainResult(receiver, "AnyHalf", null, refused.Message);
             }
         },
+        ["AnyHalf::OneOf#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Half[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyHalf", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyHalf)receiver!;
+            try {
+                var produced = typed.OneOf((System.Half[])arg0!);
+                return new ChainResult(produced, "AnyHalf", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyHalf", null, refused.Message);
+            }
+        },
         ["AnyHalf::Positive#0"] = (receiver, rawArguments) => {
             var typed = (global::JustDummies.AnyHalf)receiver!;
             try {
@@ -1197,6 +1395,17 @@ public static partial class PlaygroundDispatch {
             var typed = (global::JustDummies.AnyInt128)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.Int128)arg0!);
+                return new ChainResult(produced, "AnyInt128", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyInt128", null, refused.Message);
+            }
+        },
+        ["AnyInt128::Except#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int128[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyInt128", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyInt128)receiver!;
+            try {
+                var produced = typed.Except((System.Int128[])arg0!);
                 return new ChainResult(produced, "AnyInt128", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnyInt128", null, refused.Message);
@@ -1284,6 +1493,17 @@ public static partial class PlaygroundDispatch {
                 return new ChainResult(receiver, "AnyInt128", null, refused.Message);
             }
         },
+        ["AnyInt128::OneOf#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int128[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyInt128", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyInt128)receiver!;
+            try {
+                var produced = typed.OneOf((System.Int128[])arg0!);
+                return new ChainResult(produced, "AnyInt128", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyInt128", null, refused.Message);
+            }
+        },
         ["AnyInt128::Positive#0"] = (receiver, rawArguments) => {
             var typed = (global::JustDummies.AnyInt128)receiver!;
             try {
@@ -1321,6 +1541,17 @@ public static partial class PlaygroundDispatch {
             var typed = (global::JustDummies.AnyInt16)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.Int16)arg0!);
+                return new ChainResult(produced, "AnyInt16", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyInt16", null, refused.Message);
+            }
+        },
+        ["AnyInt16::Except#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int16[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyInt16", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyInt16)receiver!;
+            try {
+                var produced = typed.Except((System.Int16[])arg0!);
                 return new ChainResult(produced, "AnyInt16", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnyInt16", null, refused.Message);
@@ -1408,6 +1639,17 @@ public static partial class PlaygroundDispatch {
                 return new ChainResult(receiver, "AnyInt16", null, refused.Message);
             }
         },
+        ["AnyInt16::OneOf#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int16[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyInt16", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyInt16)receiver!;
+            try {
+                var produced = typed.OneOf((System.Int16[])arg0!);
+                return new ChainResult(produced, "AnyInt16", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyInt16", null, refused.Message);
+            }
+        },
         ["AnyInt16::Positive#0"] = (receiver, rawArguments) => {
             var typed = (global::JustDummies.AnyInt16)receiver!;
             try {
@@ -1445,6 +1687,17 @@ public static partial class PlaygroundDispatch {
             var typed = (global::JustDummies.AnyInt32)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.Int32)arg0!);
+                return new ChainResult(produced, "AnyInt32", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyInt32", null, refused.Message);
+            }
+        },
+        ["AnyInt32::Except#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int32[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyInt32", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyInt32)receiver!;
+            try {
+                var produced = typed.Except((System.Int32[])arg0!);
                 return new ChainResult(produced, "AnyInt32", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnyInt32", null, refused.Message);
@@ -1532,6 +1785,17 @@ public static partial class PlaygroundDispatch {
                 return new ChainResult(receiver, "AnyInt32", null, refused.Message);
             }
         },
+        ["AnyInt32::OneOf#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int32[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyInt32", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyInt32)receiver!;
+            try {
+                var produced = typed.OneOf((System.Int32[])arg0!);
+                return new ChainResult(produced, "AnyInt32", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyInt32", null, refused.Message);
+            }
+        },
         ["AnyInt32::Positive#0"] = (receiver, rawArguments) => {
             var typed = (global::JustDummies.AnyInt32)receiver!;
             try {
@@ -1569,6 +1833,17 @@ public static partial class PlaygroundDispatch {
             var typed = (global::JustDummies.AnyInt64)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.Int64)arg0!);
+                return new ChainResult(produced, "AnyInt64", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyInt64", null, refused.Message);
+            }
+        },
+        ["AnyInt64::Except#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int64[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyInt64", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyInt64)receiver!;
+            try {
+                var produced = typed.Except((System.Int64[])arg0!);
                 return new ChainResult(produced, "AnyInt64", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnyInt64", null, refused.Message);
@@ -1656,6 +1931,17 @@ public static partial class PlaygroundDispatch {
                 return new ChainResult(receiver, "AnyInt64", null, refused.Message);
             }
         },
+        ["AnyInt64::OneOf#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Int64[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyInt64", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyInt64)receiver!;
+            try {
+                var produced = typed.OneOf((System.Int64[])arg0!);
+                return new ChainResult(produced, "AnyInt64", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyInt64", null, refused.Message);
+            }
+        },
         ["AnyInt64::Positive#0"] = (receiver, rawArguments) => {
             var typed = (global::JustDummies.AnyInt64)receiver!;
             try {
@@ -1720,6 +2006,17 @@ public static partial class PlaygroundDispatch {
             var typed = (global::JustDummies.AnyPattern)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.String)arg0!);
+                return new ChainResult(produced, "AnyPattern", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyPattern", null, refused.Message);
+            }
+        },
+        ["AnyPattern::Except#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.String[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyPattern", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyPattern)receiver!;
+            try {
+                var produced = typed.Except((System.String[])arg0!);
                 return new ChainResult(produced, "AnyPattern", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnyPattern", null, refused.Message);
@@ -1800,6 +2097,17 @@ public static partial class PlaygroundDispatch {
             var typed = (global::JustDummies.AnySByte)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.SByte)arg0!);
+                return new ChainResult(produced, "AnySByte", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnySByte", null, refused.Message);
+            }
+        },
+        ["AnySByte::Except#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.SByte[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnySByte", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnySByte)receiver!;
+            try {
+                var produced = typed.Except((System.SByte[])arg0!);
                 return new ChainResult(produced, "AnySByte", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnySByte", null, refused.Message);
@@ -1887,6 +2195,17 @@ public static partial class PlaygroundDispatch {
                 return new ChainResult(receiver, "AnySByte", null, refused.Message);
             }
         },
+        ["AnySByte::OneOf#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.SByte[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnySByte", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnySByte)receiver!;
+            try {
+                var produced = typed.OneOf((System.SByte[])arg0!);
+                return new ChainResult(produced, "AnySByte", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnySByte", null, refused.Message);
+            }
+        },
         ["AnySByte::Positive#0"] = (receiver, rawArguments) => {
             var typed = (global::JustDummies.AnySByte)receiver!;
             try {
@@ -1924,6 +2243,17 @@ public static partial class PlaygroundDispatch {
             var typed = (global::JustDummies.AnySingle)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.Single)arg0!);
+                return new ChainResult(produced, "AnySingle", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnySingle", null, refused.Message);
+            }
+        },
+        ["AnySingle::Except#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Single[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnySingle", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnySingle)receiver!;
+            try {
+                var produced = typed.Except((System.Single[])arg0!);
                 return new ChainResult(produced, "AnySingle", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnySingle", null, refused.Message);
@@ -2000,6 +2330,17 @@ public static partial class PlaygroundDispatch {
                 return new ChainResult(receiver, "AnySingle", null, refused.Message);
             }
         },
+        ["AnySingle::OneOf#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.Single[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnySingle", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnySingle)receiver!;
+            try {
+                var produced = typed.OneOf((System.Single[])arg0!);
+                return new ChainResult(produced, "AnySingle", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnySingle", null, refused.Message);
+            }
+        },
         ["AnySingle::Positive#0"] = (receiver, rawArguments) => {
             var typed = (global::JustDummies.AnySingle)receiver!;
             try {
@@ -2069,6 +2410,17 @@ public static partial class PlaygroundDispatch {
                 return new ChainResult(receiver, "AnyString", null, refused.Message);
             }
         },
+        ["AnyString::Except#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.String[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyString", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyString)receiver!;
+            try {
+                var produced = typed.Except((System.String[])arg0!);
+                return new ChainResult(produced, "AnyString", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyString", null, refused.Message);
+            }
+        },
         ["AnyString::Generate#0"] = (receiver, rawArguments) => {
             var typed = (global::JustDummies.AnyString)receiver!;
             try {
@@ -2100,6 +2452,17 @@ public static partial class PlaygroundDispatch {
             var typed = (global::JustDummies.AnyString)receiver!;
             try {
                 var produced = typed.Numeric();
+                return new ChainResult(produced, "AnyString", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyString", null, refused.Message);
+            }
+        },
+        ["AnyString::OneOf#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.String[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyString", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyString)receiver!;
+            try {
+                var produced = typed.OneOf((System.String[])arg0!);
                 return new ChainResult(produced, "AnyString", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnyString", null, refused.Message);
@@ -2250,11 +2613,33 @@ public static partial class PlaygroundDispatch {
                 return new ChainResult(receiver, "AnyTimeOnly", null, refused.Message);
             }
         },
+        ["AnyTimeOnly::Except#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.TimeOnly[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyTimeOnly", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyTimeOnly)receiver!;
+            try {
+                var produced = typed.Except((System.TimeOnly[])arg0!);
+                return new ChainResult(produced, "AnyTimeOnly", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyTimeOnly", null, refused.Message);
+            }
+        },
         ["AnyTimeOnly::Generate#0"] = (receiver, rawArguments) => {
             var typed = (global::JustDummies.AnyTimeOnly)receiver!;
             try {
                 var produced = typed.Generate();
                 return new ChainResult(produced, "Terminal:System.TimeOnly", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyTimeOnly", null, refused.Message);
+            }
+        },
+        ["AnyTimeOnly::OneOf#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.TimeOnly[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyTimeOnly", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyTimeOnly)receiver!;
+            try {
+                var produced = typed.OneOf((System.TimeOnly[])arg0!);
+                return new ChainResult(produced, "AnyTimeOnly", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnyTimeOnly", null, refused.Message);
             }
@@ -2289,6 +2674,17 @@ public static partial class PlaygroundDispatch {
             var typed = (global::JustDummies.AnyTimeSpan)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.TimeSpan)arg0!);
+                return new ChainResult(produced, "AnyTimeSpan", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyTimeSpan", null, refused.Message);
+            }
+        },
+        ["AnyTimeSpan::Except#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.TimeSpan[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyTimeSpan", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyTimeSpan)receiver!;
+            try {
+                var produced = typed.Except((System.TimeSpan[])arg0!);
                 return new ChainResult(produced, "AnyTimeSpan", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnyTimeSpan", null, refused.Message);
@@ -2365,6 +2761,17 @@ public static partial class PlaygroundDispatch {
                 return new ChainResult(receiver, "AnyTimeSpan", null, refused.Message);
             }
         },
+        ["AnyTimeSpan::OneOf#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.TimeSpan[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyTimeSpan", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyTimeSpan)receiver!;
+            try {
+                var produced = typed.OneOf((System.TimeSpan[])arg0!);
+                return new ChainResult(produced, "AnyTimeSpan", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyTimeSpan", null, refused.Message);
+            }
+        },
         ["AnyTimeSpan::Positive#0"] = (receiver, rawArguments) => {
             var typed = (global::JustDummies.AnyTimeSpan)receiver!;
             try {
@@ -2413,6 +2820,17 @@ public static partial class PlaygroundDispatch {
             var typed = (global::JustDummies.AnyUInt128)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.UInt128)arg0!);
+                return new ChainResult(produced, "AnyUInt128", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyUInt128", null, refused.Message);
+            }
+        },
+        ["AnyUInt128::Except#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt128[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyUInt128", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyUInt128)receiver!;
+            try {
+                var produced = typed.Except((System.UInt128[])arg0!);
                 return new ChainResult(produced, "AnyUInt128", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnyUInt128", null, refused.Message);
@@ -2491,6 +2909,17 @@ public static partial class PlaygroundDispatch {
                 return new ChainResult(receiver, "AnyUInt128", null, refused.Message);
             }
         },
+        ["AnyUInt128::OneOf#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt128[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyUInt128", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyUInt128)receiver!;
+            try {
+                var produced = typed.OneOf((System.UInt128[])arg0!);
+                return new ChainResult(produced, "AnyUInt128", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyUInt128", null, refused.Message);
+            }
+        },
         ["AnyUInt128::Zero#0"] = (receiver, rawArguments) => {
             var typed = (global::JustDummies.AnyUInt128)receiver!;
             try {
@@ -2519,6 +2948,17 @@ public static partial class PlaygroundDispatch {
             var typed = (global::JustDummies.AnyUInt16)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.UInt16)arg0!);
+                return new ChainResult(produced, "AnyUInt16", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyUInt16", null, refused.Message);
+            }
+        },
+        ["AnyUInt16::Except#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt16[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyUInt16", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyUInt16)receiver!;
+            try {
+                var produced = typed.Except((System.UInt16[])arg0!);
                 return new ChainResult(produced, "AnyUInt16", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnyUInt16", null, refused.Message);
@@ -2597,6 +3037,17 @@ public static partial class PlaygroundDispatch {
                 return new ChainResult(receiver, "AnyUInt16", null, refused.Message);
             }
         },
+        ["AnyUInt16::OneOf#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt16[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyUInt16", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyUInt16)receiver!;
+            try {
+                var produced = typed.OneOf((System.UInt16[])arg0!);
+                return new ChainResult(produced, "AnyUInt16", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyUInt16", null, refused.Message);
+            }
+        },
         ["AnyUInt16::Zero#0"] = (receiver, rawArguments) => {
             var typed = (global::JustDummies.AnyUInt16)receiver!;
             try {
@@ -2625,6 +3076,17 @@ public static partial class PlaygroundDispatch {
             var typed = (global::JustDummies.AnyUInt32)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.UInt32)arg0!);
+                return new ChainResult(produced, "AnyUInt32", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyUInt32", null, refused.Message);
+            }
+        },
+        ["AnyUInt32::Except#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt32[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyUInt32", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyUInt32)receiver!;
+            try {
+                var produced = typed.Except((System.UInt32[])arg0!);
                 return new ChainResult(produced, "AnyUInt32", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnyUInt32", null, refused.Message);
@@ -2703,6 +3165,17 @@ public static partial class PlaygroundDispatch {
                 return new ChainResult(receiver, "AnyUInt32", null, refused.Message);
             }
         },
+        ["AnyUInt32::OneOf#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt32[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyUInt32", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyUInt32)receiver!;
+            try {
+                var produced = typed.OneOf((System.UInt32[])arg0!);
+                return new ChainResult(produced, "AnyUInt32", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyUInt32", null, refused.Message);
+            }
+        },
         ["AnyUInt32::Zero#0"] = (receiver, rawArguments) => {
             var typed = (global::JustDummies.AnyUInt32)receiver!;
             try {
@@ -2731,6 +3204,17 @@ public static partial class PlaygroundDispatch {
             var typed = (global::JustDummies.AnyUInt64)receiver!;
             try {
                 var produced = typed.DifferentFrom((System.UInt64)arg0!);
+                return new ChainResult(produced, "AnyUInt64", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyUInt64", null, refused.Message);
+            }
+        },
+        ["AnyUInt64::Except#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt64[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyUInt64", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyUInt64)receiver!;
+            try {
+                var produced = typed.Except((System.UInt64[])arg0!);
                 return new ChainResult(produced, "AnyUInt64", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnyUInt64", null, refused.Message);
@@ -2804,6 +3288,17 @@ public static partial class PlaygroundDispatch {
             var typed = (global::JustDummies.AnyUInt64)receiver!;
             try {
                 var produced = typed.NonZero();
+                return new ChainResult(produced, "AnyUInt64", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyUInt64", null, refused.Message);
+            }
+        },
+        ["AnyUInt64::OneOf#1"] = (receiver, rawArguments) => {
+            if (!global::JustDummies.Playground.Catalogue.ArgumentParsing.TryParse("System.UInt64[]", rawArguments[0], out var arg0, out var argErrorKey0))
+                return new ChainResult(receiver, "AnyUInt64", argErrorKey0, null, 0);
+            var typed = (global::JustDummies.AnyUInt64)receiver!;
+            try {
+                var produced = typed.OneOf((System.UInt64[])arg0!);
                 return new ChainResult(produced, "AnyUInt64", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnyUInt64", null, refused.Message);

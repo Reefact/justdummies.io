@@ -105,6 +105,10 @@ public static class PlaygroundStrings {
         // the state: `aria-expanded` on the same button already says whether it is open, and a
         // label that said so too would be read twice and disagree with itself half the time.
         ["playground.showError"]     = "show what is wrong with this step",
+        // Appended to a list argument's accessible name (Except, OneOf). The field shows the
+        // convention as punctuation — "values, …" — which says nothing to a screen reader, so
+        // the label is where it gets said in words.
+        ["playground.commaSeparated"] = "comma-separated",
 
         ["argument.expectsBoolean"]                  = "true or false",
         ["argument.expectsByte"]                     = "a whole number between 0 and 255",
@@ -121,6 +125,11 @@ public static class PlaygroundStrings {
         ["argument.expectsDuration"]                   = "a duration, e.g. 01:30:00",
         ["argument.expectsWithinSandboxRange"]         = "a value no greater than 100,000 in magnitude — this playground caps it there; the library itself has no such limit",
         ["argument.expectsTextWithinSandboxLength"]    = "a text no longer than 200 characters — this playground caps it there; the library itself has no such limit",
+        // What a list argument (Except, OneOf) says while it is empty. The other message a list
+        // field can produce is its element type's own — "an integer" for "1, x, 3" — so this is
+        // the only wording lists need of their own beyond the cap below.
+        ["argument.expectsAtLeastOneValue"]            = "one or more values, separated by commas",
+        ["argument.expectsListWithinSandboxLength"]    = "no more than 50 values — this playground caps it there; the library itself has no such limit",
         ["argument.template"]                          = "this argument expects {0}",
 
         ["limit.length"] = "This playground caps the length at {0} characters; the library itself has no such limit.",
@@ -196,6 +205,7 @@ public static class PlaygroundStrings {
         ["playground.selectAria"]    = new("méthode pour l'étape {0}", "method for step {0}"),
         ["playground.docs"]          = new("doc", "docs"),
         ["playground.showError"]     = new("afficher ce qui ne va pas dans cette étape", "show what is wrong with this step"),
+        ["playground.commaSeparated"] = new("séparées par des virgules", "comma-separated"),
 
         ["argument.expectsBoolean"]                = new("true ou false", "true or false"),
         ["argument.expectsByte"]                   = new("un nombre entier entre 0 et 255", "a whole number between 0 and 255"),
@@ -216,6 +226,12 @@ public static class PlaygroundStrings {
         ["argument.expectsTextWithinSandboxLength"]  = new(
             "un texte d'au plus 200 caractères — ce playground le limite là ; la librairie elle-même n'impose aucune limite",
             "a text no longer than 200 characters — this playground caps it there; the library itself has no such limit"),
+        ["argument.expectsAtLeastOneValue"]          = new(
+            "une ou plusieurs valeurs, séparées par des virgules",
+            "one or more values, separated by commas"),
+        ["argument.expectsListWithinSandboxLength"]  = new(
+            "au plus 50 valeurs — ce playground les limite là ; la librairie elle-même n'impose aucune limite",
+            "no more than 50 values — this playground caps it there; the library itself has no such limit"),
         ["argument.template"]                        = new("cet argument attend {0}", "this argument expects {0}"),
 
         ["limit.length"] = new(

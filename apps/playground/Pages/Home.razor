@@ -472,8 +472,12 @@
     ///     form for, and no others — <c>Int32</c> alone among the integer types, because every
     ///     other width goes through <c>Parse</c> there. Adding a type here without adding it there
     ///     would paint a call in the colour of a value.
+    ///
+    ///     A list argument takes its elements' colour, since that is what it is made of:
+    ///     <c>OneOf("red", "green")</c> emits string literals, so the run is the string colour —
+    ///     commas and all, because the whole list is one argument and is drawn as one run.
     /// </summary>
-    private static string? LiteralTokenClassFor(string typeKey) => typeKey switch {
+    private static string? LiteralTokenClassFor(string typeKey) => ArgumentParsing.ElementTypeKeyOf(typeKey) switch {
         ArgumentParsing.TypeKeyString or ArgumentParsing.TypeKeyChar => "tok-string",
         ArgumentParsing.TypeKeyBoolean                               => "tok-keyword",
         ArgumentParsing.TypeKeyInt32                                 => "tok-number",
@@ -568,8 +572,24 @@
     /// explicit invariant-culture argument matters because ArgumentParsing itself always
     /// parses in that same culture (specification-adjacent: what the playground accepted must
     /// still parse the same way once copied out) — a parameterless Parse() would instead use
-    /// whatever culture the pasted code happens to run under.</summary>
-    private static string FormatArgumentLiteral(string typeKey, string raw) => typeKey switch {
+    /// whatever culture the pasted code happens to run under.
+    ///
+    /// A LIST ARGUMENT SPREADS INTO THE CALL — <c>OneOf("red", "green", "blue")</c>, not
+    /// <c>OneOf(new[] { ... })</c> — which is legal because every array parameter the catalogue
+    /// accepts is a <c>params</c> one (tools/playground-catalogue's CatalogueWalker excludes any
+    /// that is not, precisely so this stays true) and is what a reader would have written
+    /// themselves. Its values are cut out of the raw text by <c>ArgumentParsing.SplitList</c>,
+    /// the very function that parsed them, so the line printed here passes exactly the values the
+    /// card above just generated from; each one is then formatted by this same method under its
+    /// element type, and so gets that type's own literal or <c>Parse(...)</c> form.</summary>
+    private static string FormatArgumentLiteral(string typeKey, string raw) {
+        if (ArgumentParsing.IsListTypeKey(typeKey)) {
+            string elementTypeKey = ArgumentParsing.ElementTypeKeyOf(typeKey);
+
+            return string.Join(", ", ArgumentParsing.SplitList(raw).Select(value => FormatArgumentLiteral(elementTypeKey, value)));
+        }
+
+        return typeKey switch {
         ArgumentParsing.TypeKeyString  => FormatStringLiteral(raw),
         ArgumentParsing.TypeKeyChar    => $"'{EscapeForCharLiteral(raw)}'",
         ArgumentParsing.TypeKeyInt32   => raw,
@@ -590,7 +610,8 @@
         // this explicit style.
         ArgumentParsing.TypeKeyDecimal => $"decimal.Parse(\"{EscapeForStringLiteral(raw)}\", System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture)",
         _                              => $"{ClrTypeNameFor(typeKey)}.Parse(\"{EscapeForStringLiteral(raw)}\", System.Globalization.CultureInfo.InvariantCulture)",
-    };
+        };
+    }
 
     /// <summary>
     ///     One <c>string</c> argument as a C# literal — verbatim where that is the form a reader
