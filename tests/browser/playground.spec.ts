@@ -629,7 +629,7 @@ test.describe('the playground', () => {
         // tests/browser/code-card-parity.spec.ts, which is what holds the two sentences equal.
         // Read off the loaded assembly rather than written beside it, so the claim cannot go
         // stale — the check is that the reading worked, not that a particular version shipped.
-        await expect(page.locator('.playground-widget .live')).toHaveText(/running here, JustDummies \S+/);
+        await expect(page.locator('.playground-widget .live')).toHaveText(/Runs locally in your browser with JustDummies \S+/);
         await expect(page.locator('.playground-widget .live')).not.toHaveText(/unknown/);
     });
 
