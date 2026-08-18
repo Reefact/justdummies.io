@@ -985,7 +985,7 @@ test.describe('when a visitor takes consent back', () => {
      * Revoking `analytics_storage` on a tag that has already loaded does not silence it —
      * Google's documented behaviour for a denied analytics consent is to write no cookie
      * and send a cookieless payload instead. That is advanced consent mode, which is the
-     * one thing ADR-0015 rejects by name, so a withdrawal built on the consent update
+     * one thing ADR-0018 rejects by name, so a withdrawal built on the consent update
      * alone would have the site doing what its own decision record argues against.
      *
      * `ga-disable-<id>` is the opt-out the tag reads before sending anything. This asserts

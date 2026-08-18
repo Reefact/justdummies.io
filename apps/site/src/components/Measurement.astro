@@ -1,6 +1,6 @@
 ---
 /**
- * What the site measures, in the three lanes §15 asks for (ADR-0012, ADR-0015).
+ * What the site measures, in the three lanes §15 asks for (ADR-0012, ADR-0018).
  *
  * LANE ONE is Cloudflare Web Analytics: how many people come, and whether pages
  * load quickly (§15.1). It has no quota of any kind, so it is the half that cannot
@@ -405,7 +405,7 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
      * Silencing `track` is the easy half. The hard half is that by the time somebody
      * withdraws, Google's own script may be loaded — and revoking the consent signal
      * alone does not stop it, it puts it into cookieless-ping mode, which is the one
-     * behaviour ADR-0015 rejects by name. `jdAnalyticsStop` raises Google's documented
+     * behaviour ADR-0018 rejects by name. `jdAnalyticsStop` raises Google's documented
      * opt-out flag, which the tag reads before sending anything at all.
      */
     function stop(): void {
