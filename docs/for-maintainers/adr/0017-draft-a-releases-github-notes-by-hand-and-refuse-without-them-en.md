@@ -1,6 +1,6 @@
-# ADR-0016 | Draft a release's GitHub notes by hand, and refuse without them
+# ADR-0017 | Draft a release's GitHub notes by hand, and refuse without them
 
-🌍 🇬🇧 English (this file) · 🇫🇷 [Français](0016-rediger-a-la-main-les-notes-github-dune-release-et-refuser-sans-elles-fr.md)
+🌍 🇬🇧 English (this file) · 🇫🇷 [Français](0017-rediger-a-la-main-les-notes-github-dune-release-et-refuser-sans-elles-fr.md)
 
 **Status:** Proposed
 **Proposed:** 2026-08-18

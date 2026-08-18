@@ -874,7 +874,7 @@ au tag que tu es sur le point de pousser n'existe pas encore. Rédige ou rafraî
 `## Unreleased` à partir de ce qui a changé depuis la release précédente, puis retitre-la avec le
 tag exact ci-dessous, committe cela sur `main`, et attends que la CI passe au vert avant de
 taguer. La compétence release-notes détaille cette marche à suivre ;
-[`ADR-0016`](adr/0016-rediger-a-la-main-les-notes-github-dune-release-et-refuser-sans-elles-fr.md)
+[`ADR-0017`](adr/0017-rediger-a-la-main-les-notes-github-dune-release-et-refuser-sans-elles-fr.md)
 explique pourquoi.
 
 **C'est un tag qui publie.** Pose-en un sur le commit que tu veux mettre en ligne. En PowerShell,
@@ -932,7 +932,7 @@ où le tag a réellement été posé, donc le nom peut être confronté à elle.
 Le message reprend le nom, et ne dit rien d'autre volontairement. Ce qu'une mise en ligne apporte a
 déjà été écrit, avant le tag, dans `RELEASE_NOTES-en.md` — lu verbatim par le job `notes`, jamais
 dérivé des commits ou des pull requests
-([`ADR-0016`](adr/0016-rediger-a-la-main-les-notes-github-dune-release-et-refuser-sans-elles-fr.md)).
+([`ADR-0017`](adr/0017-rediger-a-la-main-les-notes-github-dune-release-et-refuser-sans-elles-fr.md)).
 Une phrase tapée à `git tag -m` redirait cela de mémoire, une fois, et jamais plus, pour aucune
 lectrice qui ne lirait pas déjà le fichier qu'elle répète. La release GitHub prend son titre dans le
 message, donc le titre est le nom du tag lui aussi ; son corps vient du fichier.

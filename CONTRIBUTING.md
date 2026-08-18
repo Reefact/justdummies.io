@@ -31,7 +31,7 @@ make in their own.
 **What announces a release to a reader outside this repository is kept as the
 same kind of pair** — `RELEASE_NOTES-en.md` and `RELEASE_NOTES-fr.md`, at the
 repository root (see the `release-notes` skill and
-[`ADR-0016`](docs/for-maintainers/adr/0016-draft-a-releases-github-notes-by-hand-and-refuse-without-them-en.md)).
+[`ADR-0017`](docs/for-maintainers/adr/0017-draft-a-releases-github-notes-by-hand-and-refuse-without-them-en.md)).
 Unlike the maintainer-facing pair above, this one is read by anyone glancing at a
 GitHub Release, not only by whoever operates the repository — but a reader
 deciding whether to look at what's new deserves it in their own language just as
