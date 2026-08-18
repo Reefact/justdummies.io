@@ -158,6 +158,7 @@ requests, issues, diagrams.
 | [ADR-0012](0012-the-site-runs-one-worker-script-for-measurement-en.md) | The site runs one Worker script, and only for measurement | Accepted |
 | [ADR-0013](0013-mirrored-library-content-is-pinned-to-a-release-tag-en.md) | Mirrored library content is pinned to a release tag | Accepted |
 | [ADR-0014](0014-the-playground-builds-inside-the-card-it-reads-en.md) | The playground builds inside the card it reads | Accepted |
+| [ADR-0015](0015-the-combo-names-what-the-playground-cannot-offer-en.md) | The combo names what the playground cannot offer | Proposed |
 
 **0008 is absent on purpose.** It named a record that was written, merged, then withdrawn: how a
 scene is titled is an editorial principle, which this file sends to the specification rather than
