@@ -194,6 +194,50 @@ test.describe('the playground', () => {
     });
 
     /**
+     * A sandbox cap must report itself, never apply itself silently — and a list field is where
+     * that nearly stopped being true.
+     *
+     * The UI truncates raw input at a hard ceiling before the parser sees it, so a pathological
+     * paste cannot be re-parsed and re-emitted on every keystroke. That ceiling was sized when a
+     * field held one value of at most 200 characters: any 4,000-character residue was still far
+     * over the limit, so the "too long" error always fired anyway. A list broke the reasoning —
+     * fifty values of two hundred characters is a legal argument some ten thousand characters
+     * long, so the ceiling cut legal input down to a SHORTER LIST THAT STILL PARSES: tail values
+     * discarded, the last survivor severed mid-value, and not one message about any of it. It
+     * also made the fifty-value cap unreachable, which is the exact defect the two-ceiling design
+     * exists to prevent, arrived at from the other side.
+     *
+     * Both halves are asserted because fixing one alone is a way to be wrong: a ceiling raised
+     * far enough to stop cutting would also be a ceiling that never reports, and a cap that fires
+     * eagerly would refuse lists the parser accepts.
+     */
+    test('reports a list that is too long, and leaves a long but legal one untouched', async ({ page }) => {
+        await page.goto('/playground/');
+
+        await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'String()' });
+
+        const step = page.locator('.chain-link').nth(1);
+        await step.locator('select').selectOption({ label: 'OneOf(values)' });
+        const field = step.locator('input');
+
+        // Sixty values of a hundred characters — over the fifty-value cap, and over six thousand
+        // characters, which is what used to reach the parser as a compliant forty-value list.
+        await field.fill(Array.from({ length: 60 }, (_, i) => `${i}`.padEnd(100, 'x')).join(', '));
+
+        await step.locator('.flag').click();
+        await expect(step.locator('.error')).toHaveText(/no more than 50 values/);
+
+        // And a list that is long but entirely within both caps — thirty values of two hundred
+        // characters, six thousand characters in all — arrives whole. The last value is the one
+        // truncation took first, so its presence in the copied line is the assertion.
+        const values = Array.from({ length: 30 }, (_, i) => `${i}`.padEnd(200, 'y'));
+        await field.fill(values.join(', '));
+
+        await expect(step.locator('.flag')).toHaveCount(0);
+        await expect(page.locator('.playground-widget .code-bar .code-text')).toContainText(values[29]);
+    });
+
+    /**
      * §9.9's rule, restated for the card: a refusal is the demonstration defending itself, so
      * it is never only behind a control somebody has to press. The step that caused it carries
      * a flag — §13.4's "associated with the zone that provokes it" — and the library's own
