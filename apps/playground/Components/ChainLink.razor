@@ -58,8 +58,23 @@
                 aria-describedby="@(DescribesSelect ? ErrorId : null)"
                 aria-invalid="@(DescribesSelect ? "true" : null)">
             <option value="" disabled selected="@(State.Chosen is null)">@PlaygroundStrings.T(LocaleState.Current, "playground.chooseMethod")</option>
+            @*
+                WHAT THE LIBRARY HAS AND THIS FORM CANNOT ASK FOR IS LISTED, NOT HIDDEN
+                (PlaygroundSupport.UnavailableInPlayground). A visitor reading this combo is
+                reading it as the library's surface for the type in hand, and a list that quietly
+                stopped where the web form does would answer "can JustDummies do X?" with a
+                confident no. Named and refused, it answers the true thing instead — the
+                capability exists, this page cannot reach it — which is the same sentence the
+                page's own scope note opens with, said where the question is actually asked.
+
+                `disabled` is the native way to say unselectable, so the keyboard, the pointer
+                and the screen reader all get it from the platform rather than from anything
+                written here; the label carries the reason so it is not left to the grey.
+            *@
             @foreach (var option in Options) {
-                <option value="@option.Key" selected="@(State.Chosen?.Key == option.Key)">@DisplayName(option)</option>
+                <option value="@option.Key"
+                        disabled="@(!option.IsAvailableInPlayground)"
+                        selected="@(State.Chosen?.Key == option.Key)">@DisplayName(option)</option>
             }
         </select>
     } else if (State.Chosen is { } settled) {
@@ -284,10 +299,25 @@
         }
     }
 
-    private static string DisplayName(MemberDescriptor member) =>
-        member.Parameters.Count == 0
+    /// <summary>
+    ///     What one option reads as. A catalogued method shows its signature, parameter names and
+    ///     all, because that is what the visitor is about to fill in.
+    ///
+    ///     AN UNAVAILABLE ONE SHOWS BARE PARENTHESES AND THE REASON. It has no parameters to
+    ///     print — the catalogue does not carry them, since not being able to ask for them is
+    ///     precisely why the entry is unavailable — and printing a signature this form will never
+    ///     render inputs for would be an invitation the option then refuses. The name, and why it
+    ///     is greyed, is the whole of what this line has to say.
+    /// </summary>
+    private string DisplayName(MemberDescriptor member) {
+        if (!member.IsAvailableInPlayground) {
+            return PlaygroundStrings.T(LocaleState.Current, "playground.unavailableOption", $"{member.MethodName}()");
+        }
+
+        return member.Parameters.Count == 0
             ? $"{member.MethodName}()"
             : $"{member.MethodName}({string.Join(", ", member.Parameters.Select(p => p.Name))})";
+    }
 
     private static string InputTypeFor(string typeKey) => typeKey switch {
         "System.Int16" or "System.UInt16" or "System.Int32" or "System.UInt32" or
@@ -404,9 +434,13 @@
         return WidthLadder[^1];
     }
 
+    /// <summary>An unavailable option is refused here as well as marked <c>disabled</c> in the
+    /// markup. The attribute is what stops a visitor; this is what stops the chain from ever
+    /// holding a step the dispatch table has no call site for, whatever route the value arrived
+    /// by. The two say the same thing, and only one of them is a promise the runtime keeps.</summary>
     private Task HandleMethodChosen(ChangeEventArgs e) {
         var key = e.Value as string;
-        var chosen = Options.FirstOrDefault(o => o.Key == key);
+        var chosen = Options.FirstOrDefault(o => o.Key == key && o.IsAvailableInPlayground);
         return chosen is null ? Task.CompletedTask : OnMethodChosen.InvokeAsync((LinkIndex, chosen));
     }
 

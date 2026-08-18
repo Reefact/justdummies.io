@@ -46,7 +46,17 @@ var dispatchText    = DispatchEmitter.Emit(result);
 // identical — read back from the generated text itself, not from the shared WalkResult both
 // emitters were fed, so an emitter bug that drops or duplicates a key is actually caught rather
 // than trivially agreeing with itself.
-var descriptorKeys = ExtractKeys(descriptorsText, new Regex("new MemberDescriptor\\(\"((?:[^\"\\\\]|\\\\.)*)\""));
+//
+// DESCRIBED IS NO LONGER THE SAME SET AS DISPATCHABLE, so the check reads the smaller one: a
+// member the interface cannot express is described (the combo names it, disabled) and has no
+// dispatch entry, by construction — there is nothing to call. Dropping those lines first keeps
+// the invariant the check was written for, which is that everything the UI can actually *run*
+// resolves to a call site. Line-oriented because DescriptorEmitter writes one literal per line.
+var dispatchableDescriptorsText = string.Join(
+    '\n',
+    descriptorsText.Split('\n').Where(line => !line.Contains("PlaygroundSupport.UnavailableInPlayground")));
+
+var descriptorKeys = ExtractKeys(dispatchableDescriptorsText, new Regex("new MemberDescriptor\\(\"((?:[^\"\\\\]|\\\\.)*)\""));
 var dispatchKeys    = ExtractKeys(dispatchText, new Regex("^\\s*\\[\"((?:[^\"\\\\]|\\\\.)*)\"\\]\\s*=\\s*\\(receiver", RegexOptions.Multiline));
 if (!descriptorKeys.SetEquals(dispatchKeys)) {
     Console.Error.WriteLine("error: descriptor and dispatch key sets disagree — this is a generator bug.");
@@ -71,7 +81,8 @@ if (result.UnusedManualExclusions.Count > 0) {
 Console.WriteLine(
     $"catalogued {result.EntryPoints.Count} entry point(s) and {result.Members.Count} chain step(s) " +
     $"across {result.ReceiverTypes.Count} receiver type(s); " +
-    $"{result.AutoExcluded.Count} auto-excluded, {result.ManuallyExcluded.Count} manually excluded.");
+    $"{result.AutoExcluded.Count} auto-excluded, {result.ManuallyExcluded.Count} manually excluded; " +
+    $"{result.Unavailable.Count} named in the UI as unavailable.");
 
 return 0;
 

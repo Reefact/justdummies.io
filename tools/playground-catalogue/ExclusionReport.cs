@@ -34,6 +34,21 @@ public static class ExclusionReport {
         }
         sb.AppendLine();
 
+        // Excluded from the catalogue is no longer the same thing as invisible. The combo names
+        // the ones the interface cannot express, disabled, so that a visitor is not left to infer
+        // the library stops where this form does — an audit of what was left out should be able to
+        // tell the two apart without reading the generator.
+        sb.AppendLine($"## Named in the playground as unavailable ({result.Unavailable.Count})");
+        sb.AppendLine();
+        sb.AppendLine("Auto-detected exclusions the interface cannot express, shown in the method combo as");
+        sb.AppendLine("disabled entries rather than hidden. One per name per receiver: the combo prints these");
+        sb.AppendLine("without arguments, so overloads would be repeats of one dead line.");
+        sb.AppendLine();
+        foreach (var entry in result.Unavailable) {
+            sb.AppendLine($"- `{entry.ReceiverTypeKey}.{entry.MethodName}`");
+        }
+        sb.AppendLine();
+
         if (result.UnusedManualExclusions.Count > 0) {
             sb.AppendLine($"## Stale entries in `excluded-members.jsonc` ({result.UnusedManualExclusions.Count})");
             sb.AppendLine();

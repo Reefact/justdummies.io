@@ -18,9 +18,40 @@ public sealed record CatalogueEntry(
 /// <summary>One member the walker chose not to catalogue, with a human-readable reason.</summary>
 public sealed record ExcludedEntry(string Member, string Reason, bool WasManual);
 
+/// <summary>
+///     Why a discovered member is not a catalogued chain step. Two causes, and only one of them
+///     is something the playground should name to a visitor.
+/// </summary>
+public enum ExclusionCause {
+
+    /// <summary>
+    ///     Not a step at all: its return type is not a chain-eligible builder, so no expression
+    ///     could continue through it — <c>Any.UseSeed(...)</c>, <c>Any.Reproducibly(...)</c>. These
+    ///     belong to a different part of the library's surface, and offering one in a combo whose
+    ///     every entry is "the next call in this expression" would be a category error rather than
+    ///     a limitation honestly declared.
+    /// </summary>
+    NotAChainStep,
+
+    /// <summary>
+    ///     A real chain step this web form cannot express — an open generic, a lambda, a nested
+    ///     generator, a multi-value argument. This is the cause that becomes a named, disabled
+    ///     option (<see cref="PlaygroundSupport.UnavailableInPlayground" />).
+    /// </summary>
+    InterfaceCannotExpress,
+
+}
+
+/// <summary>One member of the real library the interface cannot offer, kept so the combo can name
+/// it. Carries only what naming it takes — the receiver whose combo it belongs in, and the method
+/// name. There are no arguments to describe: not being able to ask for them is the reason it is
+/// here.</summary>
+public sealed record UnavailableEntry(string Key, string MethodName, string ReceiverTypeKey);
+
 public sealed class WalkResult {
     public required IReadOnlyList<CatalogueEntry>  EntryPoints     { get; init; }
     public required IReadOnlyList<CatalogueEntry>  Members         { get; init; }
+    public required IReadOnlyList<UnavailableEntry> Unavailable    { get; init; }
     public required IReadOnlyDictionary<string, Type> ReceiverTypes { get; init; }
     public required IReadOnlyList<ExcludedEntry>   AutoExcluded    { get; init; }
     public required IReadOnlyList<ExcludedEntry>   ManuallyExcluded { get; init; }
@@ -58,6 +89,12 @@ public sealed class CatalogueWalker {
         var toVisit      = new Queue<Type>();
         var enqueued     = new HashSet<Type>();
 
+        // Named but not offered (PlaygroundSupport.UnavailableInPlayground). Two collections
+        // because the two are found at different moments: one is attributable to a receiver on
+        // sight, the other only once every receiver type is known — see step 3.
+        var unavailable          = new List<UnavailableEntry>();
+        var unavailableOnEvery   = new List<string>();
+
         // 1. Static entry points: every public static class (Any itself, and its extension classes)
         //    is scanned the same way — a static class in this library never carries anything but
         //    generator entry points and extension methods, so no name list is needed.
@@ -73,6 +110,25 @@ public sealed class CatalogueWalker {
 
                 if (!classification.Eligible) {
                     autoExcluded.Add(new ExcludedEntry(docId, classification.Reason!, WasManual: false));
+
+                    if (classification.Cause is ExclusionCause.InterfaceCannotExpress) {
+                        // WHERE THIS STATIC METHOD BELONGS IN THE UI IS NOT WHERE IT WAS FOUND.
+                        // Every public static class is scanned here, and they hold two different
+                        // kinds of thing: Any's own methods, which open a chain, and extension
+                        // methods on IAny<T> (AnyExtensions.As, NullableExtensions.OrNull), which
+                        // continue one. Filing the second kind under the entry-point receiver
+                        // would put `.OrNull()` in the combo that picks a generator, where it is
+                        // not a thing a visitor could ever have written.
+                        if (ExtendsAnyGenerator(method)) {
+                            unavailableOnEvery.Add(method.Name);
+                        } else if (staticClass == typeof(Any)) {
+                            unavailable.Add(new UnavailableEntry(
+                                UnavailableKeyOf(CatalogueKeys.EntryPointReceiver, method.Name),
+                                method.Name,
+                                CatalogueKeys.EntryPointReceiver));
+                        }
+                    }
+
                     continue;
                 }
 
@@ -120,6 +176,11 @@ public sealed class CatalogueWalker {
 
                 if (!classification.Eligible) {
                     autoExcluded.Add(new ExcludedEntry(docId, classification.Reason!, WasManual: false));
+
+                    if (classification.Cause is ExclusionCause.InterfaceCannotExpress) {
+                        unavailable.Add(new UnavailableEntry(UnavailableKeyOf(receiverKey, method.Name), method.Name, receiverKey));
+                    }
+
                     continue;
                 }
 
@@ -133,11 +194,21 @@ public sealed class CatalogueWalker {
             }
         }
 
+        // 3. An extension method on IAny<T> is callable on every generator there is, so it is
+        //    unavailable on every one of them. Done here rather than in the loop above because the
+        //    set of receivers is only complete once the breadth-first walk has finished.
+        foreach (var receiverKey in receiverTypes.Keys) {
+            foreach (var methodName in unavailableOnEvery) {
+                unavailable.Add(new UnavailableEntry(UnavailableKeyOf(receiverKey, methodName), methodName, receiverKey));
+            }
+        }
+
         var unusedManualExclusions = _manualExclusions.UnusedKeys(_usedManualExclusionKeys);
 
         return new WalkResult {
             EntryPoints            = entryPoints,
             Members                = members,
+            Unavailable            = NameOncePerReceiver(unavailable, entryPoints.Concat(members)),
             ReceiverTypes          = receiverTypes,
             AutoExcluded           = autoExcluded,
             ManuallyExcluded       = manuallyExcluded,
@@ -170,6 +241,54 @@ public sealed class CatalogueWalker {
 
         return false;
     }
+
+    /// <summary>
+    ///     One entry per name per receiver, and never a name the same receiver already offers.
+    ///
+    ///     BOTH HALVES ARE ABOUT OVERLOADS, which the combo has no way to show apart — its
+    ///     unavailable entries print a bare <c>Name()</c>, because not being able to ask for the
+    ///     arguments is why they are unavailable in the first place. Seven overloads of
+    ///     <c>Combine</c> would therefore be seven identical dead lines.
+    ///
+    ///     The shadowing half is the one that would otherwise lie. <c>Any.StringMatching(string)</c>
+    ///     is catalogued and works; <c>Any.StringMatching(Regex)</c> has no parser and does not.
+    ///     Listing the second would put "StringMatching() — not available in the playground"
+    ///     directly under a working "StringMatching(pattern)", which reads as a contradiction and
+    ///     resolves, for a visitor, into "some of this is broken". A name with any working overload
+    ///     is an available name; what an unavailable option means is that nothing behind this name
+    ///     can be called here at all.
+    /// </summary>
+    private static IReadOnlyList<UnavailableEntry> NameOncePerReceiver(
+        IEnumerable<UnavailableEntry> unavailable,
+        IEnumerable<CatalogueEntry> catalogued) {
+        var offered = catalogued
+            .Select(entry => (entry.ReceiverTypeKey, entry.MethodName))
+            .ToHashSet();
+
+        return unavailable
+            .Where(entry => !offered.Contains((entry.ReceiverTypeKey, entry.MethodName)))
+            .GroupBy(entry => entry.Key, StringComparer.Ordinal)
+            .Select(group => group.First())
+            .OrderBy(entry => entry.ReceiverTypeKey, StringComparer.Ordinal)
+            .ThenBy(entry => entry.MethodName, StringComparer.Ordinal)
+            .ToList();
+    }
+
+    /// <summary>
+    ///     Deliberately without the <c>#arity</c> marker a catalogued key carries: this key names a
+    ///     method name on a receiver, not one overload of it (see <see cref="NameOncePerReceiver" />).
+    ///     The shape still cannot collide with a catalogued key, since every one of those ends in
+    ///     that marker.
+    /// </summary>
+    private static string UnavailableKeyOf(string receiverTypeKey, string methodName) => $"{receiverTypeKey}::{methodName}";
+
+    /// <summary>Whether this static method is an extension method whose receiver is a generator —
+    /// <c>this IAny&lt;T&gt; source</c>. Those chain onto every builder rather than opening a
+    /// chain, which is what step 3 of <see cref="Walk" /> does with them.</summary>
+    private static bool ExtendsAnyGenerator(MethodInfo method) =>
+        method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute), inherit: false)
+        && method.GetParameters() is [var first, ..]
+        && (IsAnyOfType(first.ParameterType) || first.ParameterType.GetInterfaces().Any(IsAnyOfType));
 
     private static bool IsStaticClass(Type t) => t is { IsAbstract: true, IsSealed: true, IsClass: true };
 
@@ -215,23 +334,30 @@ public sealed class CatalogueWalker {
         return new CatalogueEntry(key, method.Name, receiverTypeKey, returnTypeKey, receiverClrType, method, parameters, doc.Summary, isTerminal);
     }
 
-    private (bool Eligible, string? Reason, Type? ReturnType) Classify(MethodInfo method, Type? receiver) {
+    /// <summary>
+    ///     The cause rides on the first test that rejects, so the order of the tests decides it —
+    ///     and the open-generic test is deliberately first. What stops <c>Any.ListOf&lt;T&gt;(...)</c>
+    ///     is the type argument this form cannot ask for, not anything about its return type, and
+    ///     reaching the return-type test at all would file it under <see cref="ExclusionCause.NotAChainStep" />
+    ///     — the one cause the UI keeps to itself (ADR-0015).
+    /// </summary>
+    private (bool Eligible, string? Reason, ExclusionCause? Cause, Type? ReturnType) Classify(MethodInfo method, Type? receiver) {
         if (method.IsGenericMethodDefinition) {
-            return (false, "open generic method — no closed instantiation is expressible as a flat chain step in v1", null);
+            return (false, "open generic method — no closed instantiation is expressible as a flat chain step in v1", ExclusionCause.InterfaceCannotExpress, null);
         }
 
         if (!IsChainEligibleType(method.ReturnType)) {
-            return (false, $"return type '{method.ReturnType.Name}' does not implement IAny<T> — not a chain-eligible step", null);
+            return (false, $"return type '{method.ReturnType.Name}' does not implement IAny<T> — not a chain-eligible step", ExclusionCause.NotAChainStep, null);
         }
 
         foreach (var parameter in method.GetParameters()) {
             var parameterReason = ClassifyParameter(parameter.ParameterType);
             if (parameterReason is not null) {
-                return (false, parameterReason, null);
+                return (false, parameterReason, ExclusionCause.InterfaceCannotExpress, null);
             }
         }
 
-        return (true, null, method.ReturnType);
+        return (true, null, null, method.ReturnType);
     }
 
     private string? ClassifyParameter(Type parameterType) {
