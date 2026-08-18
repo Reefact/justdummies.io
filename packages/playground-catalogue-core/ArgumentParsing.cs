@@ -145,19 +145,6 @@ public static class ArgumentParsing {
     public const int SandboxTextLengthLimit = 200;
 
     /// <summary>
-    ///     A second, much larger ceiling the UI truncates raw input to at capture time —
-    ///     deliberately not the same number as <see cref="SandboxTextLengthLimit" />. If the UI
-    ///     truncated to that visible limit directly, every over-limit paste would already be
-    ///     exactly at the limit by the time it reached <see cref="TryParse" />, and the "too
-    ///     long" error this class exists to report would never actually fire — the chain would
-    ///     just run silently on a value the visitor never typed. This ceiling exists only to
-    ///     bound worst-case memory for a pathological multi-megabyte paste; anything under it,
-    ///     however far over <see cref="SandboxTextLengthLimit" />, still reaches <see cref="TryParse" />
-    ///     unmodified and gets the real, visible error.
-    /// </summary>
-    public const int SandboxTextLengthHardCeiling = 4_000;
-
-    /// <summary>
     ///     A ceiling on how many values one list argument may carry. The third of this class's
     ///     sandbox caps, and it exists for the same reason as the other two rather than for the
     ///     library's sake: every keystroke in a chain re-parses every argument in it
@@ -168,6 +155,38 @@ public static class ArgumentParsing {
     ///     long after the demonstration has stopped demonstrating anything.
     /// </summary>
     public const int SandboxListLengthLimit = 50;
+
+    /// <summary>
+    ///     A second, much larger ceiling the UI truncates raw input to at capture time —
+    ///     deliberately not the same number as <see cref="SandboxTextLengthLimit" />. If the UI
+    ///     truncated to that visible limit directly, every over-limit paste would already be
+    ///     exactly at the limit by the time it reached <see cref="TryParse" />, and the "too
+    ///     long" error this class exists to report would never actually fire — the chain would
+    ///     just run silently on a value the visitor never typed. This ceiling exists only to
+    ///     bound worst-case memory for a pathological multi-megabyte paste; anything under it,
+    ///     however far over <see cref="SandboxTextLengthLimit" />, still reaches <see cref="TryParse" />
+    ///     unmodified and gets the real, visible error.
+    ///
+    ///     DERIVED FROM THE CAPS IT MUST NOT BITE, rather than chosen — and that is not tidiness,
+    ///     it is the fix for a defect a hard-coded number actually had. Four thousand was ample
+    ///     while every field held one value of at most <see cref="SandboxTextLengthLimit" />
+    ///     characters, because a four-thousand-character residue is still far over that limit and
+    ///     therefore always errored. A list field broke it: <see cref="SandboxListLengthLimit" />
+    ///     values of <see cref="SandboxTextLengthLimit" /> characters is a legal argument some ten
+    ///     thousand characters long, so the ceiling cut legal input down to a SHORTER LIST THAT
+    ///     STILL PARSES — the tail silently discarded, the last survivor severed mid-value, no
+    ///     error anywhere, which is exactly the failure this ceiling's own existence is a defence
+    ///     against. It also made <see cref="KeyExpectsListWithinSandboxLength" /> unreachable: cut
+    ///     to four thousand characters first, sixty values of a hundred characters arrive as forty
+    ///     and never trip the count cap at all.
+    ///
+    ///     Written as an expression so the relationship survives someone changing one of its
+    ///     terms: raising either cap raises this with it, and the invariant — no legal argument is
+    ///     ever altered on the way in — cannot quietly lapse again. The doubling is the room the
+    ///     separators need, plus the whitespace a visitor may put around them, which
+    ///     <see cref="SplitList" /> trims away and the per-element cap therefore never counts.
+    /// </summary>
+    public const int SandboxTextLengthHardCeiling = 2 * SandboxListLengthLimit * SandboxTextLengthLimit;
 
     /// <summary>
     ///     Cuts a list field's raw text into the values it names: split on
