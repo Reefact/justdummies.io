@@ -456,6 +456,9 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
         returnFocusTo = document.activeElement instanceof HTMLElement ? document.activeElement : null;
         banner.hidden = false;
         banner.focus();
+        // Called as well as observed, so a browser without `ResizeObserver` still reserves the
+        // room. The observer refines it; this makes sure there is something to refine.
+        publishBannerHeight();
     }
 
     function answer(choice: Answer, announcement: string): void {
@@ -464,6 +467,7 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
 
         if (banner !== null) {
             banner.hidden = true;
+            publishBannerHeight();
         }
 
         if (status !== null) {
@@ -542,10 +546,40 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
             // answered the same question somewhere else, and leaving it up here would ask twice.
             asking = false;
             banner.hidden = true;
+            publishBannerHeight();
+        }
+    }
+
+    /**
+     * Publishes the banner's height, so the document can leave room for something out of flow.
+     *
+     * `position: fixed` means the layout does not know the banner exists: the page ends where it
+     * always did and the banner lies on top of the footer, taking its clicks. Measured rather
+     * than declared as a constant in the stylesheet, because the banner wraps to two lines at
+     * some widths and three at others, and one number would be wrong at every width but one.
+     *
+     * Observed rather than measured once. The height is not settled when the banner is first
+     * shown — a web font arriving re-wraps it — and it changes again on rotation, on resize and
+     * at a new zoom level. Writing only on a change keeps that from feeding back into itself
+     * through the scrollbar it can cause to appear.
+     */
+    function publishBannerHeight(): void {
+        if (banner === null) {
+            return;
+        }
+
+        const height: string = banner.hidden ? '0px' : `${banner.offsetHeight}px`;
+
+        if (document.documentElement.style.getPropertyValue('--jd-consent-height') !== height) {
+            document.documentElement.style.setProperty('--jd-consent-height', height);
         }
     }
 
     if (banner !== null) {
+        if ('ResizeObserver' in window) {
+            new ResizeObserver(publishBannerHeight).observe(banner);
+        }
+
         const accept = banner.querySelector<HTMLElement>('[data-consent-accept]');
         const refuse = banner.querySelector<HTMLElement>('[data-consent-refuse]');
         const accepted: string = accept?.dataset.announce ?? '';

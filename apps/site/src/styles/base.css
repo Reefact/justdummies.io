@@ -89,9 +89,27 @@
  */
 html {
     scrollbar-gutter: stable;
+    /*
+     * So an anchor jump lands above the consent banner rather than under it, for as long as
+     * there is one. Set from the same measurement as the padding below.
+     */
+    scroll-padding-bottom: var(--jd-consent-height, 0px);
 }
 
+/*
+ * Room at the foot of the document for the consent banner, which is `position: fixed` and
+ * therefore invisible to the layout — the page ends where it always did and the banner simply
+ * lies on top of it. What that covered was the footer: About, API, Release notes and the
+ * repository link could not be clicked at all while the question was unanswered, and a keyboard
+ * reader could still Tab to them behind an opaque panel with the focus ring hidden.
+ *
+ * The height is measured and published by the consent script rather than guessed at here,
+ * because the banner wraps to two lines at some widths and three at others, and a constant
+ * would be wrong at every width but one. It is `0px` until there is a banner up, which is every
+ * page of a build with the lane switched off and every page after the question is answered.
+ */
 body {
+    padding-bottom: var(--jd-consent-height, 0px);
     margin: 0;
     background: var(--jd-background);
     color: var(--jd-text-primary);

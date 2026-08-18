@@ -790,6 +790,39 @@ test.describe('when a stored grant starts reporting on a page opened at a scene'
 });
 
 /**
+ * The banner is fixed to the bottom of the viewport, and the page has to make room for it.
+ *
+ * Out of flow means the document does not know it is there, so at the foot of the page it
+ * simply lies on top of the footer and takes its clicks — About, API, Release notes, the
+ * repository. A keyboard reader fares worse: Tab still reaches those links and the browser
+ * still scrolls them into view, behind an opaque panel, so the focus ring is invisible.
+ *
+ * The suite has known this since before it was a defect: `harness.ts` seeds a refusal into
+ * every other spec precisely so the banner is never up while something at the bottom of a page
+ * is being clicked. That made the checks pass and left the page as it was.
+ *
+ * `trial: true` asks Playwright for the actionability check without the click, so this stays a
+ * question about whether the link can be reached rather than a navigation.
+ */
+test.describe('while the question is still on screen', () => {
+    test.use({ consent: 'unasked' });
+
+    test('the footer underneath it can still be used', async ({ page }) => {
+        await page.goto('/');
+        await skipWithoutTag(page);
+
+        await expect(page.locator('[data-consent]')).toBeVisible();
+
+        await page.locator('.site-footer').scrollIntoViewIfNeeded();
+
+        await page
+            .locator('.footer-nav a')
+            .first()
+            .click({ trial: true, timeout: 5000 });
+    });
+});
+
+/**
  * A scene is spent when it is reported, not when it is offered.
  *
  * `armDwell` already refuses to consume a scene while nothing is being measured, and says so:
