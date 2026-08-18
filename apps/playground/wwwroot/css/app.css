@@ -197,6 +197,19 @@ main {
     margin: 0 0 var(--jd-space-4);
 }
 
+/* Same treatment as the site's own ApiIndexContent.astro `.english-note` — a caveat, not part
+   of the pitch, so it drops out of the reading flow: muted, smaller, set off by a rule rather
+   than sized and colored like the lede text above it. */
+.playground-note {
+    max-width: 38rem;
+    font-size: var(--jd-text-sm);
+    line-height: var(--jd-line-body);
+    color: var(--jd-text-muted);
+    border-left: 2px solid var(--jd-generated);
+    padding-left: var(--jd-space-3);
+    margin: 0 0 var(--jd-space-4);
+}
+
 /* The pre-runtime shell. Styled from the same tokens so the boot state and the
    booted page are the same page, not two designs — which is why it takes the shell's
    measure rather than one of its own: the word "Playground" would otherwise start at

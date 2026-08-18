@@ -72,11 +72,13 @@ public static class PlaygroundStrings {
         ["hero.produced"]       = "produced",
 
         ["playground.title"] = "Playground",
-        ["playground.lede"] = "Build an expression by choosing a method at each step.",
+        ["playground.lede"] = "Discover the JustDummies library by trying it directly here.",
         ["playground.ledeDetail"] =
-            "The supported scalar surface is here, not a hand-picked few. Arguments are typed " +
-            "directly into the call; once at least one step is chosen, <code>Generate</code> " +
-            "below draws a value.",
+            "Choose a method, fill in its arguments, then chain steps to build your expression. " +
+            "Click <code>Generate</code> to see the result.",
+        ["playground.note"] =
+            "Note: the playground uses the real JustDummies library. The web interface is " +
+            "limited, though — not everything the library can do is available here.",
         ["playground.generate"]      = "Generate",
         ["playground.generateAgain"] = "Generate again",
         // What the result bar reads before anything has been drawn — a state the landing
@@ -161,16 +163,19 @@ public static class PlaygroundStrings {
 
         ["playground.title"] = new("Playground", "Playground"),
         ["playground.lede"] = new(
-            "Construisez une expression en choisissant une méthode à chaque étape.",
-            "Build an expression by choosing a method at each step."),
+            "Découvrez la librairie JustDummies en la testant directement ici.",
+            "Discover the JustDummies library by trying it directly here."),
         ["playground.ledeDetail"] = new(
-            "Tous les générateurs de valeurs simples pris en charge sont ici, chacun avec ses " +
-            "contraintes — pas une poignée choisie pour la démonstration. Les arguments se " +
-            "saisissent directement dans l'appel ; dès la première étape choisie, " +
-            "<code>Générer</code> ci-dessous tire une valeur.",
-            "The supported scalar surface is here, not a hand-picked few. Arguments are typed " +
-            "directly into the call; once at least one step is chosen, <code>Generate</code> " +
-            "below draws a value."),
+            "Choisissez une méthode, renseignez ses arguments, puis enchaînez les étapes pour " +
+            "construire votre expression. Cliquez sur <code>Générer</code> pour voir le résultat.",
+            "Choose a method, fill in its arguments, then chain steps to build your expression. " +
+            "Click <code>Generate</code> to see the result."),
+        ["playground.note"] = new(
+            "Note : le playground utilise la véritable librairie JustDummies. L'interface web " +
+            "est toutefois limitée : toutes les possibilités de la librairie ne sont donc pas " +
+            "proposées ici.",
+            "Note: the playground uses the real JustDummies library. The web interface is " +
+            "limited, though — not everything the library can do is available here."),
         ["playground.generate"]      = new("Générer", "Generate"),
         ["playground.generateAgain"] = new("Générer à nouveau", "Generate again"),
         ["playground.notDrawnYet"]   = new("aucune valeur tirée pour l'instant", "no value drawn yet"),
