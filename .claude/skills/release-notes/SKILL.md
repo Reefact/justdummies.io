@@ -72,7 +72,7 @@ Rules:
 `scripts/release-notes.sh <tag>` reads the section headed exactly `## <tag>` from
 `RELEASE_NOTES-en.md` at tag time and refuses the release — loudly, in CI, before the release
 page is written — rather than falling back to anything commit-derived, if that section does not
-exist (ADR-0016). Because a `release/*` tag here is a UTC timestamp decided at the moment of
+exist (ADR-0017). Because a `release/*` tag here is a UTC timestamp decided at the moment of
 tagging (ADR-0001), not a version chosen in advance, the section has to be titled *after* you
 know the exact tag and *before* you push it:
 

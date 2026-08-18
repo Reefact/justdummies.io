@@ -339,7 +339,7 @@ jobs:
   # this gives it a page describing what changed since the previous one, in the terms a
   # reader would actually use — read verbatim from RELEASE_NOTES-en.md, hand-drafted and
   # reviewed before the tag is ever pushed, never derived from commits or pull requests
-  # (ADR-0016). A CHANGELOG.md would be that same list kept by hand in commit terms
+  # (ADR-0017). A CHANGELOG.md would be that same list kept by hand in commit terms
   # instead of a reader's, and nothing consumes this site, so nobody needs a
   # compatibility note about it either.
   #
@@ -398,7 +398,7 @@ jobs:
           title="$(git for-each-ref "refs/tags/${tag}" --format='%(contents:subject)')"
 
           # Read verbatim from RELEASE_NOTES-en.md, written and reviewed before the tag was
-          # ever pushed — see ADR-0016. Refuses (exit 1) rather than falling back to a
+          # ever pushed — see ADR-0017. Refuses (exit 1) rather than falling back to a
           # commit-derived list when this release's section is missing, which fails this job
           # loudly without touching the deployment `notes` depends on, already live by now.
           ./scripts/release-notes.sh "${tag}" > release-notes.md
