@@ -141,7 +141,7 @@ test.describe('the playground card and the landing page card', () => {
         // The same sentence, not a paraphrase of it — both read it out of the same
         // PlaygroundStrings key, and both fill it from the assembly actually loaded.
         await expect(page.locator('.playground-widget .live')).toHaveText(heroMention);
-        await expect(page.locator('.playground-widget .live')).toHaveText(/running here, JustDummies \S+/);
+        await expect(page.locator('.playground-widget .live')).toHaveText(/Runs locally in your browser with JustDummies \S+/);
         await expect(page.locator('.playground-widget .live')).not.toHaveText(/unknown/);
     });
 
