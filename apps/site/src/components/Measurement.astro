@@ -223,17 +223,28 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
     let expiryCheck: number | undefined;
 
     /**
-     * Declared up here rather than by the rest of the journey tracking below, because
-     * `start()` can now reach into `scenes` and `seenScenes` through `reportHeldScene()` —
-     * and `start()` can run as early as this document's first synchronous pass, from
-     * `applyDecision()` reading a grant already on record. A `const` declared later is
-     * still in its temporal dead zone at that point; reading it there throws, and the
-     * throw happens inside the consent setup, before anything after it — the storage
-     * listener, the journey listeners, the search listeners — ever gets registered.
+     * Every binding `start()` can reach, declared up here rather than beside the journey
+     * tracking it belongs to.
+     *
+     * `start()` can run as early as this document's first synchronous pass, from
+     * `applyDecision()` reading a grant already on record, and it reaches from there into the
+     * journey code through `reportHeldScene()`. A `let` or `const` declared after that point is
+     * still in its temporal dead zone; reading one throws, and the throw lands inside the
+     * consent setup — so everything registered after it, the storage listener above all, never
+     * exists. The tag is already loaded and reporting by then, which makes the cost a
+     * withdrawal that can no longer arrive rather than a measurement that goes missing.
+     *
+     * THE SET IS WHAT `start()` REACHES TRANSITIVELY, and getting that wrong is what this
+     * comment is really for. It first named only `scenes` and the two sets, which was the whole
+     * reachable set on the day it was written — `reportHeldScene()` called `reportScene()`
+     * directly. Making it respect the dwell delay pointed it at `armDwell()` instead, one
+     * review round later, and `armDwell()`'s first statement reads `dwelling`. The hazard was
+     * understood and written down, and the fix for something else walked straight back into it.
      */
     const scenes: HTMLElement[] = Array.from(document.querySelectorAll<HTMLElement>('[data-scene]'));
     const seenScenes = new Set<string>();
     const seenActs = new Set<string>();
+    let dwelling: number | undefined;
 
     /**
      * What `remembered()` falls back to when storage itself is the thing that failed.
@@ -568,9 +579,10 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
      * The ordinal travels as a measured number, which is where GA4 will keep it if it
      * is registered as a metric rather than a dimension — the same separation the
      * collector makes by writing it among its doubles.
+     *
+     * Its one piece of state, `dwelling`, is declared with the rest of what `start()` reaches,
+     * far above — see the comment there for why it cannot live down here.
      */
-    let dwelling: number | undefined;
-
     function sceneOrdinal(name: string | undefined): number {
         return name === undefined ? -1 : scenes.findIndex((scene: HTMLElement) => scene.dataset.scene === name);
     }
