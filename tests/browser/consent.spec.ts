@@ -450,6 +450,59 @@ test.describe('when the stored record disagrees with what just happened', () => 
 });
 
 /**
+ * The two checks above corrupt this tab's own record and then read it back on this same page —
+ * proving the flag guards a stale local write. A second, healthy tab is a different claim: its
+ * write never touches this tab's flag at all, so trusting it has to come from somewhere other
+ * than `remembered()` noticing its own history. That somewhere is the `storage` listener itself,
+ * and only a real second page exercises it — a `clear()` dispatched from inside this same page,
+ * as above, never carries a write this tab did not make.
+ */
+test.describe('when a tab with a stuck reliability flag hears from another', () => {
+    test.use({ consent: 'unasked' });
+
+    test('a fresh cross-tab denial is not discarded for this tab\'s own stale write failure', async ({ page, context }) => {
+        await page.goto('/');
+        await skipWithoutTag(page);
+
+        await page.evaluate(() => {
+            window.localStorage.setItem = () => {
+                throw new DOMException('rejected for this test', 'QuotaExceededError');
+            };
+        });
+
+        await page.locator('[data-consent-accept]').click();
+        await expect(page.locator('[data-consent]')).toBeHidden();
+
+        const deniedCount = () =>
+            page.evaluate(() => {
+                const queue: unknown[] = (window as unknown as { dataLayer?: unknown[] }).dataLayer ?? [];
+
+                return queue
+                    .map((entry: unknown) => Array.from(entry as ArrayLike<unknown>))
+                    .filter(
+                        (entry: unknown[]) =>
+                            entry[0] === 'consent' &&
+                            entry[1] === 'update' &&
+                            (entry[2] as { analytics_storage?: string }).analytics_storage === 'denied',
+                    ).length;
+            });
+
+        const before: number = await deniedCount();
+
+        const other = await context.newPage();
+
+        await other.goto('/privacy/');
+        await other.locator('[data-consent-refuse]').click();
+
+        await expect
+            .poll(deniedCount, 'this tab kept measuring after a healthy tab\'s denial, favouring its own stale write failure')
+            .toBeGreaterThan(before);
+
+        await other.close();
+    });
+});
+
+/**
  * Two ways for `at` to fail to place a record in time, both landing on the same fix. A
  * missing or non-numeric `at` is not "very old" — `Date.now() - NaN` is `NaN`, and
  * `NaN > REMEMBER_FOR_MS` is false. A future `at` fails the opposite way — the subtraction
