@@ -94,9 +94,9 @@
                     type="@InputTypeFor(parameter.TypeKey)"
                     step="@StepFor(parameter.TypeKey)"
                     class="@TokenClassFor(parameter.TypeKey)"
-                    data-width="@FieldWidth(State.Argument(index), parameter.Name)"
-                    placeholder="@parameter.Name"
-                    aria-label="@($"{settled.MethodName} {parameter.Name}")"
+                    data-width="@FieldWidth(State.Argument(index), PlaceholderFor(parameter))"
+                    placeholder="@PlaceholderFor(parameter)"
+                    aria-label="@AriaLabelFor(settled, parameter)"
                     aria-describedby="@(DescribesInput(index) ? ErrorId : null)"
                     aria-invalid="@(DescribesInput(index) ? "true" : null)"
                     value="@State.Argument(index)"
@@ -319,7 +319,15 @@
             : $"{member.MethodName}({string.Join(", ", member.Parameters.Select(p => p.Name))})";
     }
 
-    private static string InputTypeFor(string typeKey) => typeKey switch {
+    /// <summary>
+    ///     Which HTML input a parameter is asked for through — <c>number</c> where one value of a
+    ///     numeric type is wanted, <c>text</c> otherwise.
+    ///
+    ///     A LIST PARAMETER IS ALWAYS TEXT, whatever its elements are: <c>OneOf</c>'s field holds
+    ///     "1, 2, 3", and a <c>number</c> input rejects that outright — the browser would clear it
+    ///     on the first comma and the visitor would be unable to type the second value at all.
+    /// </summary>
+    private static string InputTypeFor(string typeKey) => ArgumentParsing.IsListTypeKey(typeKey) ? "text" : typeKey switch {
         "System.Int16" or "System.UInt16" or "System.Int32" or "System.UInt32" or
         "System.Int64" or "System.UInt64" or "System.Int128" or "System.UInt128" or
         "System.Byte" or "System.SByte" or
@@ -329,20 +337,50 @@
 
     /// <summary>The HTML default <c>step</c> is 1 — without overriding it, a fractional value
     /// like "1.5" parses fine but the browser still flags the control as a step mismatch.
-    /// Integer type keys are left with the (correct) default.</summary>
-    private static string? StepFor(string typeKey) => typeKey switch {
+    /// Integer type keys are left with the (correct) default, and so is every list, which
+    /// <see cref="InputTypeFor" /> always renders as a text input where <c>step</c> means
+    /// nothing.</summary>
+    private static string? StepFor(string typeKey) => ArgumentParsing.IsListTypeKey(typeKey) ? null : typeKey switch {
         "System.Single" or "System.Double" or "System.Half" or "System.Decimal" => "any",
         _ => null,
     };
 
     /// <summary>
+    ///     What an empty argument field shows, and what <see cref="FieldWidth" /> sizes it for: the
+    ///     parameter's own name, so an untouched call reads as its signature.
+    ///
+    ///     A LIST PARAMETER'S NAME GAINS THE SEPARATOR that its field takes — <c>values, …</c>
+    ///     rather than <c>values</c>. The plural name alone says a list is wanted but not how to
+    ///     write one, and finding that out by getting it wrong is a worse first move than reading
+    ///     it off the empty field. Punctuation rather than words, so it needs no translation and
+    ///     stays as short as the field it has to fit in.
+    /// </summary>
+    private static string PlaceholderFor(ParameterDescriptor parameter) =>
+        ArgumentParsing.IsListTypeKey(parameter.TypeKey)
+            ? $"{parameter.Name}{ArgumentParsing.ListSeparator} …"
+            : parameter.Name;
+
+    /// <summary>The field's accessible name. A list parameter says so, because the hint the
+    /// placeholder carries is punctuation — legible to a reader looking at the field, and nothing
+    /// at all to one who is not.</summary>
+    private string AriaLabelFor(MemberDescriptor member, ParameterDescriptor parameter) =>
+        ArgumentParsing.IsListTypeKey(parameter.TypeKey)
+            ? $"{member.MethodName} {parameter.Name}, {PlaygroundStrings.T(LocaleState.Current, "playground.commaSeparated")}"
+            : $"{member.MethodName} {parameter.Name}";
+
+    /// <summary>
     ///     Which of the site's code colours an argument field is drawn in — the same
     ///     <c>.tok-*</c> classes highlight.ts writes onto the site's own snippets, so a value
     ///     typed here is the colour the same value would be in a code block on the landing page.
+    ///
+    ///     A list takes its <em>elements'</em> colour, not the one its own text input would
+    ///     suggest: <c>OneOf(1, 2, 3)</c> is three numbers with commas between them, and the code
+    ///     bar below the card paints them as numbers, so painting the field as a string would make
+    ///     the two readings of one argument disagree on what kind of value it holds.
     /// </summary>
-    private static string TokenClassFor(string typeKey) => typeKey switch {
+    private static string TokenClassFor(string typeKey) => ArgumentParsing.ElementTypeKeyOf(typeKey) switch {
         ArgumentParsing.TypeKeyBoolean => "tok-keyword",
-        _ when InputTypeFor(typeKey) == "number" => "tok-number",
+        var element when InputTypeFor(element) == "number" => "tok-number",
         _ => "tok-string",
     };
 
@@ -384,8 +422,15 @@
     ///     four-word chain in ceremony, so the card shows the value between quotes, which is how
     ///     the visitor typed it and how <c>Parse</c> takes it. The card is the reading of the
     ///     chain; the clipboard is the code. Neither one is lying about the other.
+    ///
+    ///     A LIST TAKES NONE, on that same distinction. Its field holds every value at once, so
+    ///     the one pair of quotes this can draw would go round the lot of them — <c>OneOf("red,
+    ///     green")</c>, which is not three choices but one string that happens to contain commas,
+    ///     the opposite of what the visitor typed. Bare, the card reads <c>OneOf(red, green)</c>:
+    ///     the values, separated the way the field separates them, with the code bar directly
+    ///     below printing the real <c>OneOf("red", "green")</c>.
     /// </summary>
-    private static string? QuoteFor(string typeKey) => typeKey switch {
+    private static string? QuoteFor(string typeKey) => ArgumentParsing.IsListTypeKey(typeKey) ? null : typeKey switch {
         ArgumentParsing.TypeKeyChar    => "'",
         ArgumentParsing.TypeKeyBoolean => null,
         _ when InputTypeFor(typeKey) == "number" => null,

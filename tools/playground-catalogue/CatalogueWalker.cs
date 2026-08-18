@@ -351,7 +351,7 @@ public sealed class CatalogueWalker {
         }
 
         foreach (var parameter in method.GetParameters()) {
-            var parameterReason = ClassifyParameter(parameter.ParameterType);
+            var parameterReason = ClassifyParameter(parameter);
             if (parameterReason is not null) {
                 return (false, parameterReason, ExclusionCause.InterfaceCannotExpress, null);
             }
@@ -360,7 +360,19 @@ public sealed class CatalogueWalker {
         return (true, null, null, method.ReturnType);
     }
 
-    private string? ClassifyParameter(Type parameterType) {
+    /// <summary>
+    ///     Whether one parameter has a shape the playground can ask a visitor for, and the reason
+    ///     it does not when it does not (specification §10.6 — an omission states why).
+    ///
+    ///     A SCALAR IS ONE TEXT INPUT; A <c>params T[]</c> OF SCALARS IS ONE TEXT INPUT TOO,
+    ///     comma-separated (see <c>ArgumentParsing.SplitList</c>). That second form is what brings
+    ///     <c>Except</c> and <c>OneOf</c> into the catalogue — every scalar builder in the library
+    ///     declares both as <c>params</c>, and neither needs anything of the chain but the flat
+    ///     step it already was.
+    /// </summary>
+    private string? ClassifyParameter(ParameterInfo parameter) {
+        var parameterType = parameter.ParameterType;
+
         if (typeof(Delegate).IsAssignableFrom(parameterType)) {
             return "takes a delegate parameter — not expressible through a form input, and forbidden by §10.3 (compiling visitor-submitted code)";
         }
@@ -369,12 +381,27 @@ public sealed class CatalogueWalker {
             return "takes an IAny<T> parameter — composing a nested generator has no flat-chain representation in v1";
         }
 
-        if (parameterType != typeof(string) && (parameterType.IsArray || IsEnumerableType(parameterType))) {
-            return "takes a collection-typed parameter — no v1 form-input shape for a multi-value argument";
+        if (parameterType.IsArray) {
+            var elementType = parameterType.GetElementType()!;
+
+            if (typeof(Delegate).IsAssignableFrom(elementType) || IsAnyOfType(elementType) || elementType.IsArray) {
+                return $"takes an array of '{elementType.Name}' — only an array of scalars has a comma-separated input shape";
+            }
+
+            // The emitted C# spreads the values into the call — OneOf("red", "green") — which is
+            // both what a visitor would write themselves and what the code bar has room to print.
+            // A plain (non-params) array parameter would need `new[] { ... }` instead, so it is
+            // excluded rather than emitted in a second shape: nothing in the library declares one
+            // today, and if that ever changes this report is where it says so.
+            if (!parameter.IsDefined(typeof(ParamArrayAttribute), inherit: false)) {
+                return "takes a non-params array parameter — the catalogue's list form emits a params spread, which a plain array parameter cannot take";
+            }
+        } else if (IsEnumerableType(parameterType)) {
+            return "takes a non-array collection parameter — the catalogue's list form covers params arrays only";
         }
 
         var typeKey = TypeKeyOf(parameterType);
-        if (!ArgumentParsing.KnownTypeKeys.Contains(typeKey)) {
+        if (!ArgumentParsing.IsKnownTypeKey(typeKey)) {
             return $"parameter type '{typeKey}' has no known argument parser";
         }
 

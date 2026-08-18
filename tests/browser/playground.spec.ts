@@ -153,6 +153,47 @@ test.describe('the playground', () => {
     });
 
     /**
+     * `OneOf` and `Except` take `params T[]`, and a chain step draws one field per parameter — so
+     * for as long as a field meant one value, the catalogue had nowhere to put them and excluded
+     * both, on every scalar builder in the library. They are asked for as one comma-separated
+     * field now (ArgumentParsing's list form), and this walks the whole path that makes that work:
+     * the step is offered at all, the field is cut into values, the library is handed a real
+     * `string[]`, and the line the bar hands over spreads those values back into the call the way
+     * a reader would have written it themselves.
+     *
+     * `OneOf` stands in for the pair here — `Except` reaches the identical parser, emitter and
+     * field through the identical catalogue entry shape, differing only in what the library does
+     * with the array once it has it.
+     */
+    test('takes a comma-separated list for a params argument, and spreads it back into the copied line', async ({ page }) => {
+        await page.goto('/playground/');
+
+        await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'String()' });
+
+        const step = page.locator('.chain-link').nth(1);
+        await step.locator('select').selectOption({ label: 'OneOf(values)' });
+
+        // Empty, as every freshly chosen step is — and a list says what it wants in its own
+        // words rather than borrowing its element type's, which for a string list would be "a
+        // text" and would be satisfied by exactly the one value a list is not.
+        const flag = step.locator('.flag');
+        await expect(flag).toHaveAttribute('aria-expanded', 'false');
+        await flag.click();
+        await expect(step.locator('.error')).toHaveText(/one or more values, separated by commas/);
+
+        await step.locator('input').fill('red, green, blue');
+
+        // Three values out of one field, each its own C# literal — and the space a visitor puts
+        // after a comma is them formatting their list, not a character that joins the value.
+        await expect(page.locator('.playground-widget .code-bar .code-text')).toHaveText(
+            'string anyValue = Any.String().OneOf("red", "green", "blue").Generate();',
+        );
+
+        await page.getByRole('button', { name: 'Generate' }).click();
+        await expect(page.locator('.playground-widget .result-bar .value')).toHaveText(/^"(red|green|blue)"$/);
+    });
+
+    /**
      * §9.9's rule, restated for the card: a refusal is the demonstration defending itself, so
      * it is never only behind a control somebody has to press. The step that caused it carries
      * a flag — §13.4's "associated with the zone that provokes it" — and the library's own
