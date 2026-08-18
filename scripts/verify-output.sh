@@ -555,6 +555,43 @@ if [ -f "${dist}/_headers" ]; then
     pass "no analytics tag was built in, and the policy grants Google nothing"
   fi
 
+  # And the artefact against the state it was BUILT FOR, which nothing above can see.
+  #
+  # Every check above derives both of its sides from dist/ — the tag from the documents, the
+  # policy from _headers, which generate-headers.mjs derived from those same documents. So they
+  # agree by construction in either state, and "no tag at all" is a valid outcome to them. That
+  # leaves the switch itself unguarded in the direction that matters: with the repository
+  # variable set to enabled, a tag that stopped rendering — an inverted ternary in
+  # measurement.ts, a dropped component in Measurement.astro, a page on a layout that bypasses
+  # Base.astro — produces a green build that measures nobody. The browser suite cannot catch it
+  # either: consent.spec.ts decides whether to run by looking for the tag in the page, so the
+  # same absence turns all thirty-odd of its checks into skips, invisible in a passing run.
+  #
+  # Guarded on the variable being set rather than run unconditionally, because the deploy job
+  # re-runs this script against a downloaded artefact with no build variables in scope. There
+  # the artefact is genuinely all there is, and the checks above still hold on their own.
+  if [ -n "${PUBLIC_GA_MEASUREMENT_STATE:-}" ]; then
+    case "${PUBLIC_GA_MEASUREMENT_STATE}" in
+      enabled)
+        if [ "${in_documents}" -eq 1 ]; then
+          pass "the lane is switched on, and the artefact carries the tag"
+        else
+          fail "PUBLIC_GA_MEASUREMENT_STATE is enabled, but no document carries the tag — this artefact would measure nobody, and every consent check would skip rather than fail"
+        fi
+        ;;
+      disabled)
+        if [ "${in_documents}" -eq 0 ]; then
+          pass "the lane is switched off, and no document carries the tag"
+        else
+          fail "PUBLIC_GA_MEASUREMENT_STATE is disabled, but a document carries the tag — this artefact measures people the recorded decision says it would not"
+        fi
+        ;;
+      *)
+        fail "PUBLIC_GA_MEASUREMENT_STATE is '${PUBLIC_GA_MEASUREMENT_STATE}', which is neither enabled nor disabled"
+        ;;
+    esac
+  fi
+
   # The three advertising signals are denied permanently and are never updated: since
   # June 2026 ad_storage is the only thing keeping tag data out of Google Ads, so the
   # denial cannot live in a console setting nothing here can read. The tag is inline,
