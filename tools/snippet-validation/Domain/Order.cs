@@ -1,3 +1,5 @@
+using System.Linq;
+
 namespace JustDummies.SnippetValidation.Domain;
 
 /// <summary>
@@ -26,9 +28,16 @@ public sealed record OrderReference {
     public string Value { get; }
 
     // The site shows these guard clauses as they are written here, so their width is part
-    // of what they have to get right. One line each: dedented to the region's own margin
-    // they measure 95 and 101 characters, well inside the 130 the page's measure holds,
-    // and a throw broken in two makes a reader assemble a sentence that always fitted.
+    // of what they have to get right. One line each, dedented to the region's own margin,
+    // well inside the 130 the page's measure holds, and a throw broken in two makes a
+    // reader assemble a sentence that always fitted.
+    //
+    // The third guard is not cosmetic: a real order reference is printable text, the same
+    // way a real one starts with ORD- and stays under 20 characters — nothing a terminal or
+    // a screen would rather not show. Declared here, it is what lets the generator's own
+    // .Printable() (Snippets/Why.cs, Snippets/Hero.cs, Snippets/FactoriesConstrained.cs,
+    // Domain/AnyOrder.cs) remain a fact about this domain rather than a constraint invented
+    // to keep a displayed value readable.
     //
     // Nothing between the markers is commentary. What a reader sees is the method.
     // <snippet:order-reference-invariants>
@@ -41,6 +50,10 @@ public sealed record OrderReference {
 
         if (value.Length > 20) {
             throw new ArgumentException("An order reference cannot exceed 20 characters.", nameof(value));
+        }
+
+        if (!value[4..].All(character => character is >= ' ' and <= '~')) {
+            throw new ArgumentException("An order reference cannot hold a control character after ORD-.", nameof(value));
         }
 
         return new OrderReference(value);

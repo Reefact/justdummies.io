@@ -7,15 +7,16 @@
 // and the site's second act is about that edit.
 //
 // `dum generate Order` marked `reference` as `unread guards`: the domain rejects a string
-// that does not start with "ORD-", and a prefix rule is not in the closed set of guard
-// idioms the tool reads (tool specification §5.3, and §9 names it as a non-goal). It
-// therefore emitted the neutral recipe, said so in as many words, and did not guess — so
-// the file it wrote compiles cleanly and throws on every draw until the missing link is
-// added. Verified: eight consecutive draws, eight AnyGenerationException.
+// that does not start with "ORD-" or that holds a character outside the printable ASCII
+// range past that prefix, and neither rule is in the closed set of guard idioms the tool
+// reads (tool specification §5.3, and §9 names it as a non-goal). It therefore emitted the
+// neutral recipe, said so in as many words, and did not guess — so the file it wrote
+// compiles cleanly and throws on every draw until the missing links are added. Verified:
+// eight consecutive draws, eight AnyGenerationException.
 //
-// The link added below is the chain of the first act, unchanged. That is the point of the
-// second: the tool writes the part nobody wants to write, and stops where the developer
-// already knows the answer.
+// The links added below are the chain of the first act, unchanged. That is the point of
+// the second: the tool writes the part nobody wants to write, and stops where the
+// developer already knows the answer.
 //
 // A re-run with --force would overwrite this file, edit and snippet markers alike. The
 // tool's own header says so on line 2, which is the warning working as intended.
@@ -41,13 +42,14 @@ public sealed partial class AnyOrder : IAny<Order> {
     /// <summary>Creates the generator with a default recipe for every constructor parameter.</summary>
     //
     // On one line, and kept that way on purpose: the whole of the difference with the recipe
-    // the tool wrote is `.StartingWith("ORD-")`, and the page's prose names it. Broken across
-    // three lines it reads as a rewrite of the parameter rather than as a link added to it.
+    // the tool wrote is `.StartingWith("ORD-").Printable()`, and the page's prose names
+    // it. Broken across three lines it reads as a rewrite of the parameter rather than as
+    // the links added to it.
     //
     // No snippet markers: the page publishes the tool's own file, and this one is the edited
     // copy the second act is *about* rather than a figure of its own.
     public AnyOrder()
-        : this(reference:  Any.String().NonEmpty().WithMaxLength(20).StartingWith("ORD-").As(OrderReference.Create),
+        : this(reference:  Any.String().NonEmpty().WithMaxLength(20).StartingWith("ORD-").Printable().As(OrderReference.Create),
                customerId: Any.Guid().NonEmpty().As(CustomerId.Create),
                total:      Any.Decimal().Positive().As(Money.Create),
                status:     Any.Enum<OrderStatus>()) { }

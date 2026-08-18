@@ -14,6 +14,7 @@ public static class AnyOrderReference {
                               .NonEmpty()
                               .WithMaxLength(20)
                               .StartingWith("ORD-")
+                              .Printable()
                               .Generate();
 
         return OrderReference.Create(reference);

@@ -127,9 +127,10 @@ internal static class Categories {
     public const string Collections = "collections";
     public const string Composition = "composition";
     public const string Reproducibility = "reproducibility";
+    public const string PoolInspection = "pool-inspection";
     public const string Exceptions = "exceptions";
 
-    public static readonly string[] Order = [EntryPoint, Primitives, Uris, Collections, Composition, Reproducibility, Exceptions];
+    public static readonly string[] Order = [EntryPoint, Primitives, Uris, Collections, Composition, Reproducibility, PoolInspection, Exceptions];
 }
 
 /// <summary>
@@ -203,6 +204,10 @@ internal sealed class CatalogueBuilder {
         ["AnyOneOf`1"] = Categories.Composition,
 
         ["ReproducibleAttribute"] = Categories.Reproducibility,
+
+        ["DeclaredConstraint"] = Categories.PoolInspection,
+        ["IPoolInspection`1"] = Categories.PoolInspection,
+        ["PoolRejection`1"] = Categories.PoolInspection,
 
         ["DummyException"] = Categories.Exceptions,
         ["ConflictingAnyConstraintException"] = Categories.Exceptions,

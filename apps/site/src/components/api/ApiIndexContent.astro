@@ -11,7 +11,21 @@ import { apiCategory } from '../../apiCatalogue';
 const locale: Locale = localeFromPath(Astro.url.pathname);
 const t = useTranslations(locale);
 
-const slugs = ['entry-point', 'primitives', 'uris', 'collections', 'composition', 'reproducibility', 'exceptions'] as const;
+const slugs = [
+    'entry-point',
+    'primitives',
+    'uris',
+    'collections',
+    'composition',
+    'reproducibility',
+    'pool-inspection',
+    'exceptions',
+] as const;
+
+/** A slug as `apiCatalogue.ts` writes it (`entry-point`) to the camelCase form its i18n keys use (`entryPoint`). */
+function i18nKeyOf(slug: (typeof slugs)[number]): string {
+    return slug.replace(/-([a-z])/g, (_match, letter: string) => letter.toUpperCase());
+}
 ---
 
 <h2>{t('api.index.heading')}</h2>
@@ -24,8 +38,8 @@ const slugs = ['entry-point', 'primitives', 'uris', 'collections', 'composition'
         slugs.map((slug) => (
             <ApiCategoryCard
                 category={apiCategory(slug)}
-                heading={t(`api.${slug === 'entry-point' ? 'entryPoint' : slug}.heading` as UiKey)}
-                lede={t(`api.${slug === 'entry-point' ? 'entryPoint' : slug}.lede` as UiKey)}
+                heading={t(`api.${i18nKeyOf(slug)}.heading` as UiKey)}
+                lede={t(`api.${i18nKeyOf(slug)}.lede` as UiKey)}
                 locale={locale}
             />
         ))

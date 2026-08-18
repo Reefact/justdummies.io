@@ -51,8 +51,13 @@ test.describe('the playground', () => {
 
         await page.getByRole('button', { name: 'Generate' }).click();
 
+        // `[\s\S]` rather than `.`: an unconstrained String() draws from the whole of ASCII
+        // since preview.2 (control characters included), so the free part of the value can
+        // legitimately contain a newline. `.` does not match one, and a value that happened
+        // to draw one would fail this assertion for a reason that has nothing to do with
+        // whether the chain actually ran.
         const value = page.locator('.playground-widget .result-bar .value');
-        await expect(value).toHaveText(/^"ORD-.*"$/);
+        await expect(value).toHaveText(/^"ORD-[\s\S]*"$/);
 
         // Nothing may have 404'd on the way. This is the blank-page defect stated as an
         // assertion: the base href and the copy destination disagree, every asset misses, and

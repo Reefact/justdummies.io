@@ -20,6 +20,7 @@ public static class Hero {
                               .StartingWith("ORD-")
                               .Containing("2026")
                               .WithLength(12)
+                              .Printable()
                               .Generate();
         // </snippet:hero-expression>
 

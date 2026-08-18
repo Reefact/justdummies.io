@@ -20,6 +20,7 @@ public static class Why {
                               .NonEmpty()
                               .WithMaxLength(20)
                               .StartingWith("ORD-")
+                              .Printable()
                               .Generate();
         // </snippet:why-order-reference>
 
