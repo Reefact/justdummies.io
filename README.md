@@ -55,7 +55,7 @@ with `pnpm build:site` and `pnpm build:playground`.
 With `PUBLIC_GA_MEASUREMENT_STATE=disabled` the artefact carries no analytics tag, no consent
 banner, and a content policy that grants Google nothing — `grep -r googletagmanager dist/` returns
 nothing at all. That is the state to build in unless you are deploying. The reasoning is
-[ADR-0015](docs/for-maintainers/adr/0015-the-journey-is-measured-in-a-third-lane-gated-on-consent-en.md);
+[ADR-0018](docs/for-maintainers/adr/0018-the-journey-is-measured-in-a-third-lane-gated-on-consent-en.md);
 turning it on is step 11 of the [deployment guide](docs/for-maintainers/deployment-en.md).
 
 `dist/` is the deployment — the directory uploaded to Cloudflare Workers, exactly as built.

@@ -16,7 +16,7 @@ added. An unread dimension is not free — it is one more thing every later read
 |---|---|---|---|
 | Cloudflare Web Analytics | visits, and whether pages load quickly (§15.1) | not required | everyone |
 | The Worker collector on `/_event` | the dimensioned copy event (§15.2) | not required | everyone |
-| Google Analytics 4 | the journey between the two (ADR-0015) | **required** | those who accept |
+| Google Analytics 4 | the journey between the two (ADR-0018) | **required** | those who accept |
 
 The first two are the totals; the third is the explanation. **Read a rate against lane two, never
 against lane three** — lane three's denominator is the consenting fraction, so a conversion rate
@@ -72,7 +72,7 @@ the same separation by writing the ordinal among its doubles and never among its
 
 * **Enhanced measurement: page views on browser history events must be OFF.** The landing page
   intercepts every in-page anchor click and pushes history state, so left on, each chevron click
-  reports a page view. Nothing in this repository can detect it — see ADR-0015's Risks.
+  reports a page view. Nothing in this repository can detect it — see ADR-0018's Risks.
 * Advertising personalisation off. **Google Signals stays off, which on a new property means leaving
   it alone rather than switching it off** — it ships disabled and offers to be enabled. Since June
   2026 it governs only demographic enrichment, not the flow to Google Ads, and it withholds figures

@@ -1,6 +1,6 @@
-# ADR-0015 | Le parcours est mesuré dans une troisième voie, soumise au consentement
+# ADR-0018 | Le parcours est mesuré dans une troisième voie, soumise au consentement
 
-🌍 🇫🇷 Français (ce fichier) · 🇬🇧 [English](0015-the-journey-is-measured-in-a-third-lane-gated-on-consent-en.md)
+🌍 🇫🇷 Français (ce fichier) · 🇬🇧 [English](0018-the-journey-is-measured-in-a-third-lane-gated-on-consent-en.md)
 
 **Statut :** Accepté
 **Proposé le :** 2026-08-17

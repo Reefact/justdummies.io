@@ -1364,7 +1364,7 @@ de onze à quatorze scènes, et deux périodes mesurées par position ne seraien
 Les étapes 5 et 10 ont donné à §15 ses deux voies : combien de personnes viennent, et combien copient
 une commande d'installation. Aucune ne dit ce qui s'est passé entre les deux — quelles scènes ont été
 lues, où un lecteur s'est arrêté, ce qu'il a comparé d'abord. C'est la voie trois, et
-[ADR-0015](adr/0015-le-parcours-est-mesure-dans-une-troisieme-voie-soumise-au-consentement-fr.md) dit
+[ADR-0018](adr/0018-le-parcours-est-mesure-dans-une-troisieme-voie-soumise-au-consentement-fr.md) dit
 pourquoi elle existe et ce qu'elle coûte.
 
 Contrairement aux deux autres, celle-ci **demande d'abord au visiteur** et ne fait rien du tout tant
@@ -1386,7 +1386,7 @@ Ce n'est ni optionnel ni cosmétique. La page principale intercepte chaque clic 
 et pousse un état d'historique ; laissé actif, **chaque clic de chevron rapporte une page vue** et
 gonfle silencieusement tous les chiffres de la page que l'on veut justement lire. Aucun contrôle de ce
 dépôt ne peut le détecter : aucun paramètre de balise ne le règle, et la suite navigateur répond à la
-balise par un script vide. C'est nommé dans les Risques d'ADR-0015 pour exactement cette raison.
+balise par un script vide. C'est nommé dans les Risques d'ADR-0018 pour exactement cette raison.
 
 **Google Signals : rien à désactiver, et rien à activer.** Il est éteint par défaut sur une propriété
 neuve et se présente comme une invitation à l'activer, non comme un interrupteur déjà mis — donc ne
