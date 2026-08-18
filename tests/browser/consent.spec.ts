@@ -620,6 +620,93 @@ test.describe('when the retention window has quietly closed', () => {
 });
 
 /**
+ * A returning visitor who lands part-way down the narrative, which is the deepest the startup
+ * path ever reaches into this file.
+ *
+ * A grant already on record starts analytics during the script's first synchronous pass, and
+ * `start()` reaches from there into the journey code to catch the scene being read. Everything
+ * on that path therefore has to be declared before the startup call — a `let` or `const` below
+ * it is still in its temporal dead zone, and reading one throws at module top level, which
+ * silently abandons every listener registered after it. The tag is already loaded and
+ * reporting by then, so the failure costs a withdrawal rather than a measurement: this tab
+ * would never hear the `storage` event again.
+ *
+ * Asserted through the storage listener rather than through the absence of an error, because
+ * the listener is what a visitor actually loses, and it is registered after the throw would
+ * happen. The held scene is asserted first: without one across the middle at load the startup
+ * path stops short of the journey code and the check would pass without reaching anything.
+ */
+test.describe('when a stored grant starts reporting on a page opened at a scene', () => {
+    test.use({ consent: 'granted' });
+
+    test('the listeners after the startup call are still registered', async ({ page }) => {
+        const threw: string[] = [];
+
+        page.on('pageerror', (error: Error) => threw.push(error.message));
+
+        /*
+         * The scene has to be across the middle at the instant the deferred module runs, and
+         * arranging that is the whole difficulty of this check. Three ways do not work, and two
+         * of them pass against the very defect this exists for: a fragment in the URL is applied
+         * only after the deferred scripts have run, a scroll performed mid-parse is undone by
+         * the navigation, and no viewport is tall enough to reach the first scene, which always
+         * begins a full screen down whatever the height.
+         *
+         * `readystatechange` to `interactive` is the one moment that qualifies. The parser fires
+         * it after the document is parsed and BEFORE the deferred scripts execute, so a scroll
+         * made here is in place when the consent script runs — which is exactly the state a
+         * returning reader lands in when their browser restores where they had got to.
+         */
+        await page.addInitScript(() => {
+            document.addEventListener('readystatechange', () => {
+                if (document.readyState !== 'interactive') {
+                    return;
+                }
+
+                document.querySelector('[data-scene]')?.scrollIntoView({ block: 'center' });
+            });
+        });
+
+        await page.goto('/');
+        await skipWithoutTag(page);
+
+        const held: boolean = await page.evaluate(() => {
+            const middle: number = window.innerHeight / 2;
+
+            return Array.from(document.querySelectorAll<HTMLElement>('[data-scene]')).some((scene: HTMLElement) => {
+                const box: DOMRect = scene.getBoundingClientRect();
+
+                return box.top <= middle && box.bottom >= middle;
+            });
+        });
+
+        expect(held, 'no scene held the middle at load, so this check never reached the path it guards').toBe(true);
+
+        // Another tab withdrawing. Only the listener registered after the startup call can
+        // carry this, so it is the cheapest proof the script ran to the end.
+        await page.evaluate(() => {
+            window.localStorage.setItem(
+                'jd:analytics-consent',
+                JSON.stringify({ v: 1, choice: 'denied', at: Date.now() }),
+            );
+            window.dispatchEvent(
+                new StorageEvent('storage', { key: 'jd:analytics-consent', storageArea: window.localStorage }),
+            );
+        });
+
+        const disabled: boolean = await page.evaluate(() => {
+            const carrier = document.querySelector<HTMLElement>('[data-jd-analytics]');
+            const id: string = carrier?.dataset.jdAnalytics ?? '';
+
+            return id !== '' && (window as unknown as Record<string, unknown>)[`ga-disable-${id}`] === true;
+        });
+
+        expect(threw, 'the consent script threw while starting up').toEqual([]);
+        expect(disabled, 'a withdrawal made in another tab never reached this one').toBe(true);
+    });
+});
+
+/**
  * Withdrawal has to reach Google, not merely stop the site talking to it.
  *
  * A visitor who withdraws has already accepted, so Google's script is loaded and holds a
