@@ -1,0 +1,230 @@
+# Notes de version — justdummies.io
+
+🌍 🇬🇧 [English](RELEASE_NOTES-en.md) · 🇫🇷 Français (ce fichier)
+
+Ce qui a changé sur justdummies.io, une section par tag `release/*`, en langage clair — pour
+une visiteuse, un contributeur, ou le mainteneur lui-même qui vérifie ce qui est nouveau. Ceci
+n'est pas un journal de commits : on y décrit ce qu'une lectrice remarquerait, pas quelle pull
+request l'a apporté. L'historique technique reste celui du dépôt ; rien ici n'est une note de
+compatibilité, puisque rien ne consomme ce déploiement (voir
+[ADR-0001](docs/for-maintainers/adr/0001-a-release-tag-publishes-not-a-merge-fr.md)).
+
+## Unreleased
+
+_Rien en attente pour l'instant._
+
+## release/2026-08-18T14-49-42Z — 18 août 2026
+
+### ✨ Nouveautés
+- La liste de méthodes du playground affiche désormais les fonctionnalités de la bibliothèque qu'il ne peut pas exécuter (comme les générateurs composites) comme des options grisées avec une explication, plutôt que de les omettre.
+
+### 🐛 Corrections
+- Réécrit le texte d'introduction du playground en anglais et en français — la version française n'avait plus de sens — et ajouté une précision indiquant qu'il s'agit d'une interface plus restreinte que la bibliothèque elle-même.
+- La note à côté du bouton « Generate » indique désormais explicitement que le code s'exécute localement dans le navigateur, au lieu du vague « running here ».
+
+## release/2026-08-18T12-53-33Z — 18 août 2026
+
+### 🙌 Améliorations
+- Remplacé la section « le problème qu'elle résout » de la page why-justdummies par une courte phrase de transition, celle-ci s'étant réduite à peu près à un simple lien.
+
+### 🐛 Corrections
+- Corrigé le paragraphe d'ouverture du playground, dont la taille et la largeur en faisaient un titre plutôt qu'un texte normal.
+- Corrigé le sous-titre anglais de la page d'accueil, qui décrivait les valeurs de test elles-mêmes comme « fluent » au lieu de l'API qui les génère.
+
+## release/2026-08-17T20-58-25Z — 17 août 2026
+
+### 🙌 Améliorations
+- Le playground reprend désormais la carte de code de la page d'accueil : les étapes choisies s'affichent en code coloré, avec un extrait copiable tenant sur une seule ligne pour la chaîne complète.
+
+## release/2026-08-17T20-39-18Z — 17 août 2026
+
+### 🙌 Améliorations
+- Simplifié la section « quand ne pas utiliser JustDummies » de la page why-justdummies, en retirant trois points qui ne tenaient plus.
+
+## release/2026-08-17T19-31-39Z — 17 août 2026
+
+### 🙌 Améliorations
+- Sur la page de comparaison why-justdummies, le tableau récapitulatif apparaît désormais tout en haut de cette section, pour une vue d'ensemble sans rien avoir à déplier.
+- Les définitions des icônes de notation s'affichent désormais en infobulle plutôt que dans une légende séparée, et le haut de la page paraît plus calme, avec moins de couleurs.
+
+### 🐛 Corrections
+- Corrigé le logo et le titre des pages API, qui n'étaient pas alignés avec le reste du site.
+
+## release/2026-08-17T09-26-07Z — 17 août 2026
+
+### 🙌 Améliorations
+- Page de comparaison retravaillée après relecture du mainteneur : ouvrir un critère referme désormais le précédent et garde la position sur la page, le tableau comparatif complet reste toujours visible plutôt que repliable, et les icônes de notation sont maintenant de simples formes en noir et blanc avec infobulle plutôt que codées par couleur.
+
+## release/2026-08-17T07-43-58Z — 17 août 2026
+
+### 🙌 Améliorations
+- Nouvelle refonte de la page de comparaison why-justdummies : une introduction plus simple, des critères que l'on déplie un par un, et un jeu d'icônes coche/clé/tiret pour les notations.
+
+### 🐛 Corrections
+- Corrigé l'exemple de code de la page d'accueil, qui se décalait visiblement quand le widget du playground en direct le remplaçait.
+- Corrigé l'entrée du tableau comparatif sur les contrôles à la compilation, qui sous-estimait ce que les analyseurs intégrés de JustDummies détectent gratuitement.
+- Corrigé une formulation maladroite dans l'accroche française de la page d'accueil.
+
+## release/2026-08-16T19-18-07Z — 16 août 2026
+
+### ✨ Nouveautés
+- Ajout d'une mesure d'audience légère et respectueuse de la vie privée, qui enregistre quelle commande d'installation ou quel lien les visiteurs utilisent, pour orienter les prochaines décisions sur ce qui mène réellement à l'installation (détails sur la page de confidentialité).
+
+### 🙌 Améliorations
+- Retravaillé la page de comparaison why-justdummies pour qu'elle explique chaque critère en langage clair avant de montrer le tableau, et corrigé plusieurs affirmations inexactes sur les outils concurrents.
+
+### 🐛 Corrections
+- Corrigé l'en-tête, le pied de page, les espacements et le paragraphe d'ouverture du playground pour qu'ils correspondent au reste du site, au lieu de ressembler à une application séparée.
+
+## release/2026-08-16T07-42-03Z — 16 août 2026
+
+### ✨ Nouveautés
+- Le playground permet désormais de construire une véritable chaîne de générateurs étape par étape, à partir des méthodes réelles de la bibliothèque, plutôt que de montrer un seul exemple figé.
+
+## release/2026-08-16T06-55-58Z — 16 août 2026
+
+### ✨ Nouveautés
+- Ajout de la page « Why JustDummies », qui compare la bibliothèque à Bogus, AutoFixture et aux données de test écrites à la main sur dix critères.
+- Ajout d'une section de référence API complète documentant chaque méthode de la bibliothèque, générée directement à partir du package publié.
+
+### 🐛 Corrections
+- La page Release notes n'affiche plus d'entrée « Unreleased » vide.
+
+## release/2026-08-16T01-00-35Z — 16 août 2026
+
+### ✨ Nouveautés
+- Ajout d'une page Release notes montrant l'historique du changelog de la bibliothèque, pour chacun de ses packages.
+
+### 🐛 Corrections
+- Corrigé plusieurs décalages visuels dans la démo de code en direct de la page d'accueil, pour qu'elle corresponde à l'exemple statique qu'elle remplace (mise en forme, couleurs, alignement).
+
+## release/2026-08-15T22-12-07Z — 15 août 2026
+
+### ✨ Nouveautés
+- Ajout de pages dédiées « About » et « Privacy », avec un pied de page présent sur tout le site pour y accéder.
+- Le playground est désormais disponible en français comme en anglais, à l'image du reste du site.
+
+### 🙌 Améliorations
+- La page autonome du playground partage désormais le même en-tête et la même identité visuelle que le reste du site.
+
+### 🐛 Corrections
+- Corrigé un contour de focus parasite qui apparaissait autour du titre « Playground » en accédant à cette page.
+- Corrigé le champ de longueur du playground, qui pouvait accepter des valeurs dépassant sa limite annoncée de 64 caractères.
+
+## release/2026-08-15T09-50-18Z — 15 août 2026
+
+### 🐛 Corrections
+- Corrigé un saut de page occasionnel en repliant la vue étendue d'un exemple de code.
+- Corrigé l'exemple de code en direct et la commande d'installation de la page d'accueil, plus étroits que le reste de la page.
+
+## release/2026-08-13T11-42-04Z — 13 août 2026
+
+### 🐛 Corrections
+- Corrigé un léger décalage de mise en page lors du passage d'une page avec barre de défilement à une page sans, qui déplaçait légèrement le contenu.
+- La page « page introuvable » n'affiche plus de barre de défilement superflue, et son message se lit désormais comme une seule légende sous l'illustration, au lieu d'être scindé au-dessus et en dessous.
+
+## release/2026-08-13T09-31-22Z — 13 août 2026
+
+### 🙌 Améliorations
+- La marque JustDummies apparaît désormais exactement à la même position sur chaque page, au lieu de légèrement varier selon la page.
+- Le lien GitHub de l'en-tête s'ouvre désormais dans un nouvel onglet, pour ne pas perdre sa place sur le site ; le lien vers le playground continue de s'ouvrir dans le même onglet.
+- Clarifié, dans la scène d'ouverture du playground, ce que l'étape de préparation de l'exemple laisse de côté.
+
+## release/2026-08-13T08-16-25Z — 13 août 2026
+
+### 🙌 Améliorations
+- Les pages « page introuvable » s'ouvrent désormais sur la marque JustDummies, pour qu'on sache clairement quel site on visite, au lieu d'un simple message « Page not found ».
+- L'illustration des pages « page introuvable » occupe désormais toute la largeur de la page, au lieu d'une petite vignette.
+- L'espacement entre le nom JustDummies et son slogan est désormais identique sur chaque page, au lieu de varier entre la page d'accueil et le reste du site.
+
+### 🐛 Corrections
+- Un exemple de code du playground s'écrit désormais `Any.Order()`, conformément au style de nommage utilisé dans le reste du parcours.
+
+## release/2026-08-12T21-42-23Z — 12 août 2026
+
+### ✨ Nouveautés
+- Ajout d'une page /version montrant la release, le commit et l'heure de build actuels du site.
+- Ajout d'une illustration personnalisée à l'écran « page introuvable ».
+
+## release/2026-08-12T20-33-58Z — 12 août 2026
+
+### 🙌 Améliorations
+- Réduit sensiblement la taille des images d'icône du site, pour un chargement plus rapide de la page.
+
+### 🐛 Corrections
+- Corrigé le bouton « afficher le fichier complet » d'un exemple de code, qui ne pouvait plus se replier une fois déplié.
+
+## release/2026-08-12T14-59-33Z — 12 août 2026
+
+### ✨ Nouveautés
+- Ajout d'une option pour déplier un exemple de code et voir le fichier généré dans son intégralité, plutôt qu'un simple extrait.
+
+### 🙌 Améliorations
+- Réécrit le texte français de la page dans un langage plus simple et plus naturel.
+
+## release/2026-08-12T13-50-58Z — 12 août 2026
+
+### ✨ Nouveautés
+- Ajout de la coloration syntaxique dans les exemples de code (mots-clés, types, chaînes, nombres).
+- Ajout d'un panneau sous un exemple de code montrant l'échec de test réel qu'il produit.
+
+### 🙌 Améliorations
+- Mise à jour d'une figure pour montrer côte à côte les versions avant et après d'un changement de code.
+- Retravaillé plusieurs titres de section et passages explicatifs pour plus de clarté.
+
+### 🐛 Corrections
+- Corrigé une barre de défilement horizontale apparaissant sur certains écrans de bureau.
+
+## release/2026-08-12T11-43-07Z — 12 août 2026
+
+### 🙌 Améliorations
+- Placé le lien de chaque package juste à côté de son nom, pour un accès plus direct.
+- Corrigé une barre de défilement horizontale apparaissant à certaines largeurs d'écran.
+- Corrigé un espacement inégal du premier écran, désormais équilibré.
+- Mis à jour le slogan du site.
+- Simplifié un exemple de code en un seul bloc, plus net.
+- Élargi la colonne de texte pour que les paragraphes ne paraissent plus à l'étroit à côté des titres pleine largeur.
+- Réécrit deux sections du tutoriel dans un langage plus simple, et réordonné l'une d'elles pour rassurer avant de montrer un test qui échoue.
+
+### 🐛 Corrections
+- Corrigé un exemple de code référençant le mauvais espace de noms et qui ne compilait pas.
+
+## release/2026-08-12T10-05-28Z — 12 août 2026
+
+### 🙌 Améliorations
+- Retravaillé la première section du tutoriel pour construire son exemple de code étape par étape.
+- Retiré la numérotation des « actes » au profit d'un intitulé de navigation plus simple.
+- Corrigé des titres de section qui se repliaient maladroitement, et uniformisé l'ombrage de fond à chaque rupture de section.
+- Adouci l'animation de défilement déclenchée par la flèche vers le bas.
+- Le menu de langue se ferme désormais au clic ailleurs ou à la touche Échap.
+- Regroupé les instructions d'installation par outil plutôt que par package, pour que toutes les commandes d'un même outil apparaissent ensemble.
+
+### 🐛 Corrections
+- Corrigé plusieurs endroits où des symboles de mise en forme markdown s'affichaient comme du texte brut au lieu d'être interprétés.
+
+## release/2026-08-12T08-54-47Z — 12 août 2026
+
+### ✨ Nouveautés
+- Ajout d'un sélecteur de langue permettant de basculer entre l'anglais et le français.
+
+### 🙌 Améliorations
+- Réécrit le texte du site dans son ensemble, en anglais comme en français, pour une voix plus claire et plus naturelle.
+- Le contenu se révèle désormais par étapes au défilement plutôt que de tout charger d'un coup, ce qui rend la page nettement plus courte à l'écran.
+
+## release/2026-08-12T02-20-31Z — 12 août 2026
+
+### ✨ Nouveautés
+- Le site existe désormais en anglais et en français, avec un contenu, des métadonnées et une navigation équivalents dans les deux langues.
+- Un récit en trois actes sur la page d'accueil parcourt la bibliothèque — déclarer une valeur contrainte, en générer une automatiquement, puis reproduire un test en échec à partir de sa graine — avec de vrais résultats générés plutôt que des exemples écrits à la main.
+- Un module interactif en tête de page permet aux visiteurs d'exécuter la bibliothèque directement dans leur navigateur et de tirer de nouvelles valeurs en direct, à la demande.
+- Une commande d'installation copiable sur la page d'accueil.
+- Le site a désormais sa propre icône, affichée de façon cohérente sur la page d'accueil et dans le playground.
+
+### 🙌 Améliorations
+- Retravaillé le premier écran : il s'ouvre désormais comme une scène à part entière en pleine hauteur, l'exemple de code occupe toute la largeur et se transforme visuellement scène après scène au défilement, et la commande d'installation est passée derrière des onglets avec un lien séparé vers NuGet.
+- Réduit une bonne partie du texte du récit et retiré une mention interne « en construction » qui restait visible sur la page publique.
+
+### 🐛 Corrections
+- Corrigé un défaut de mise en page qui faisait défiler la page d'accueil horizontalement sur les écrans de téléphone étroits.
+- Corrigé une barre de défilement parasite apparaissant parfois dans la démo en direct au redimensionnement de la fenêtre.
+- Corrigé les onglets de la commande d'installation, qui apparaissaient brièvement, non fonctionnels, avant que le script de la page ait fini de charger.

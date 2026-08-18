@@ -851,6 +851,14 @@ repository secret**. Two entries, exactly these names:
 
 ### ✅ Check
 
+**Before the tag, the release note.** `RELEASE_NOTES-en.md` (and its French twin) is what the
+GitHub Release page reads from — never generated from commits or pull requests — and
+`scripts/release-notes.sh` refuses the release outright if the section for the tag you are about
+to push does not exist yet. Draft or refresh its `## Unreleased` section from what changed since
+the previous release, then retitle it to the exact tag below, commit that to `main`, and let CI
+go green before you tag. The release-notes skill walks through this; [`ADR-0016`](adr/0016-draft-a-releases-github-notes-by-hand-and-refuse-without-them-en.md)
+is why.
+
 **A tag is what publishes.** Put one on the commit you want online. In PowerShell, which is the
 shell this repository's releases are tagged from:
 
@@ -901,10 +909,12 @@ The tag is **annotated** (`-a -m`) rather than lightweight: it carries an author
 date, and a lightweight tag carries neither. That date is what makes the name checkable — it is the
 moment the tag was really made, so the name can be held against it.
 
-The message repeats the name, and says nothing else on purpose. What a release brings is the list of
-commits it embarks, and CI publishes exactly that list on the release page (`--generate-notes`). A
-sentence typed at `git tag -m` restates that list from memory, once, and never again. The GitHub
-release takes its title from the message, so the title is the tag's name too.
+The message repeats the name, and says nothing else on purpose. What a release brings was already
+written, ahead of the tag, in `RELEASE_NOTES-en.md` — read verbatim by the `notes` job, never
+derived from commits or pull requests ([`ADR-0016`](adr/0016-draft-a-releases-github-notes-by-hand-and-refuse-without-them-en.md)).
+A sentence typed at `git tag -m` would restate that from memory, once, and never again, for no
+reader who wasn't already reading the file it repeats. The GitHub release takes its title from the
+message, so the title is the tag's name too; its body comes from the file.
 
 Read the tag back the moment you have pushed it — from WSL on Windows, like everything under
 `scripts/`:
