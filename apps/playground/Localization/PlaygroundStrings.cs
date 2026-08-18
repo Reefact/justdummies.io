@@ -253,7 +253,7 @@ public static class PlaygroundStrings {
 
         ["footer.nav"]          = new("Pied de page", "Footer"),
         ["footer.about"]        = new("À propos", "About"),
-        ["footer.releaseNotes"] = new("Notes de version", "Release notes"),
+        ["footer.releaseNotes"] = new("Release notes", "Release notes"),
         ["footer.privacy"]      = new("Confidentialité", "Privacy"),
         ["footer.repository"]   = new("Code source", "Source code"),
         ["state.newTab"]      = new("ouvre un nouvel onglet", "opens in a new tab"),

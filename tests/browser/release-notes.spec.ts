@@ -10,7 +10,7 @@ import type { Locator, Page, Response } from '@playwright/test';
  */
 const PAGES: ReadonlyArray<{ path: string; heading: string; firstTrain: string }> = [
     { path: '/release-notes', heading: 'Release notes', firstTrain: 'Core library' },
-    { path: '/fr/release-notes', heading: 'Notes de version', firstTrain: 'Bibliothèque principale' },
+    { path: '/fr/release-notes', heading: 'Release notes', firstTrain: 'Bibliothèque principale' },
 ];
 
 for (const { path, heading, firstTrain } of PAGES) {

@@ -1181,7 +1181,7 @@ const fr: Record<UiKey, string> = {
         "Si vous maintenez l'un de ces projets et que cette page le décrit mal, une issue est le moyen le plus rapide d'obtenir une correction.",
     'why.report.label': 'Ouvrir une issue',
 
-    'releaseNotes.heading': 'Notes de version',
+    'releaseNotes.heading': 'Release notes',
     'releaseNotes.lead':
         "Ce qui a changé dans la bibliothèque, et pourquoi — lu dans son propre changelog, un paquet à la fois.",
     'releaseNotes.meta.description': 'Ce qui a changé dans JustDummies, release après release, pour chaque paquet publié.',
@@ -1211,7 +1211,7 @@ const fr: Record<UiKey, string> = {
     'footer.about': 'À propos',
     'footer.privacy': 'Confidentialité',
     'footer.api': 'API',
-    'footer.releaseNotes': 'Notes de version',
+    'footer.releaseNotes': 'Release notes',
     'footer.repository': 'Code source',
 };
 

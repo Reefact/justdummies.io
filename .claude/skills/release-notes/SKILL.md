@@ -65,7 +65,8 @@ Rules:
 * **French follows English**, same section order, same heading depths — `RELEASE_NOTES-fr.md`
   has no automated parity check (unlike the library's `TranslationParityTests`), so this is kept
   by discipline. Product terms travel unchanged (`playground`, `JustDummies`, a URL) — see how
-  `apps/site/src/i18n/ui.ts` treats the same words.
+  `apps/site/src/i18n/ui.ts` treats the same words. `release note`/`release notes` is one of
+  these: the audience is developers, so keep the English term — never "note de version".
 
 ## Before tagging a release
 
