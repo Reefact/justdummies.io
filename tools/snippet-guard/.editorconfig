@@ -6,3 +6,4 @@ root = true
 dotnet_diagnostic.JD020.severity = error
 dotnet_diagnostic.JD022.severity = error
 dotnet_diagnostic.JD024.severity = error
+dotnet_diagnostic.JD029.severity = error

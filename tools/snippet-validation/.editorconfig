@@ -14,10 +14,19 @@ root = true
 # is a stricter bar than a consumer's project would apply, and deliberately: a
 # consumer may reasonably ignore an informational hint, while a page that teaches
 # people how to use the library may not.
+#
+# THIS LIST IS PINNED TO A PACKAGE VERSION AND GOES STALE IN SILENCE. It named exactly
+# the informational-and-on-by-default rules JustDummies 1.0.0-preview.1 shipped;
+# preview.2 shipped two more, JD029 and JD030, and until they were added here the bar
+# this file exists to raise had quietly dropped back to the one it was written to
+# replace. Raising the pinned version in Directory.Packages.props means re-reading the
+# library's own analyzer list against this block — there is no mechanism that does it
+# for you yet.
 [*.cs]
 dotnet_diagnostic.JD020.severity = error
 dotnet_diagnostic.JD022.severity = error
 dotnet_diagnostic.JD024.severity = error
+dotnet_diagnostic.JD029.severity = error
 
 # JD019 — a constant replay seed committed in code — is deliberately NOT raised, and
 # not because it is unimportant.
@@ -27,3 +36,17 @@ dotnet_diagnostic.JD024.severity = error
 # wrong as production code, and the two cannot both be true under one severity. It
 # needs a decision when that scene is written, not a setting chosen in advance by
 # whoever happened to create this file.
+
+# JD030 — a string dummy that declares no length — is the same shape of question, and
+# it is UNDECIDED rather than settled. It arrived with preview.2 and it fires, today, on
+# exactly one published expression: the careless factory of the first act
+# (Snippets/FactoriesCareless.cs), whose whole subject is a call that declares nothing
+# and is refused for it. The rule is right about that snippet, which is why raising it
+# to error here would not improve the page — it would forbid the repository from
+# depicting carelessness at all, and the scene is the argument.
+#
+# Left unraised, and named here so it is a decision on the record rather than a silence:
+# the site's own rule (§14.4) says no published expression triggers one of the library's
+# diagnostics, and this one does. Either that rule wants the careless scene carved out of
+# it in as many words, or the scene wants rewriting. Both are editorial, and neither is a
+# severity to pick here.

@@ -80,6 +80,89 @@ async function openPlayground(page: Page): Promise<void> {
     await expect(page.locator('.playground-widget .card')).toBeVisible();
 }
 
+/**
+ * The links a chain calls, in order.
+ *
+ * Read off `.tok-member`, which both sides already emit: the landing page's figure is run
+ * through `highlight()` at build time and the widget's expression is written in the same
+ * tokens by hand, precisely so the two can be styled by one rule. That makes the method names
+ * comparable without either side parsing C#, and it ignores what the visitor can edit — a
+ * prefix typed into an `<input>` is not a link.
+ */
+async function chainOf(expression: Locator): Promise<string[]> {
+    return expression.locator('.tok-member').allTextContents();
+}
+
+/** Every ASCII character a card can actually show: space (0x20) through `~` (0x7E). */
+const PRINTABLE = /^[\x20-\x7E]*$/;
+
+test.describe('the landing page figure and the live widget behind it', () => {
+
+    /**
+     * The card a visitor reads and the card that replaces it say the same thing.
+     *
+     * WHY THIS IS A TEST AND NOT A COMMENT. The measurements below compare the playground with
+     * the landing page. This compares the landing page against ITSELF, either side of "Run":
+     * `LiveHero.astro` ships a static figure built from the validated snippet
+     * (`tools/snippet-validation/Snippets/Hero.cs`, extracted into `snippets.json`), and on the
+     * press it sets `[data-hero-static]` hidden and drops `/playground/hero` into its place.
+     * The two are one card in the visitor's eyes and two files that never mention each other in
+     * ours — one generated from a compiled snippet, one hand-written Blazor.
+     *
+     * They drifted the day the library's unconstrained draw widened to the whole of ASCII: the
+     * snippet was given the constraint that answers it and the widget was not, so the chain on
+     * screen lost a link the instant the runtime arrived. Nothing was red. This is the
+     * assertion that would have been.
+     */
+    test('run the same chain, link for link', async ({ page }) => {
+        await page.setViewportSize(VIEWPORT);
+        await page.goto('/');
+
+        const published: string[] = await chainOf(page.locator('.hero-expression [data-hero-static] pre code'));
+
+        // The comparison is only worth anything if the figure was found at all: an empty list
+        // on both sides would agree about nothing.
+        expect(published, 'the landing page shows no chain to compare the widget against').not.toEqual([]);
+
+        await page.goto('/playground/hero');
+        await expect(page.locator('.hero-widget .expression')).toBeVisible();
+
+        const live: string[] = await chainOf(page.locator('.hero-widget .expression'));
+
+        expect(
+            live,
+            `the live widget runs ${live.join('.')} where the figure it replaces publishes ${published.join('.')}`,
+        ).toEqual(published);
+    });
+
+    /**
+     * And the value it draws is one the card can render.
+     *
+     * The chain check above states the rule; this states what breaking it looks like. The
+     * widget writes `_value` into `<output>` raw — no quoting, unlike the playground's own
+     * result bar — so a control character reaches the page as a control character: a line
+     * break mid-value, or a glyph that is simply not there. Twelve draws rather than one
+     * because the defect this pins was probabilistic, not constant.
+     */
+    test('never draw a value the card cannot show', async ({ page }) => {
+        await page.setViewportSize(VIEWPORT);
+        await page.goto('/playground/hero');
+
+        const value: Locator = page.locator('.hero-widget .result-bar .value');
+        const generate: Locator = page.locator('.hero-widget .generate');
+
+        // The widget draws once as it initialises, so the reading before the first press is a
+        // draw like any other and is checked like one.
+        await expect(value).toBeVisible();
+
+        for (let press = 0; press < 12; press += 1) {
+            await expect(value, 'the live hero drew a value the card cannot render').toHaveText(PRINTABLE);
+            await generate.click();
+        }
+    });
+
+});
+
 test.describe('the playground card and the landing page card', () => {
 
     test('are the same width, the same distance above their button, on the same ground', async ({ page }) => {

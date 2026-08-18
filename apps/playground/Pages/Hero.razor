@@ -57,6 +57,16 @@
             <span>.<span class="tok-member">StartingWith</span>(<span class="tok-string">"</span><input type="text" class="tok-string" data-width="@FieldWidth(_prefix)" @bind:get="_prefix" @bind:set="SetPrefix" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.prefix")' aria-describedby="@(_capHintOwner == "prefix" ? "cap-hint" : null)" /><span class="tok-string">"</span>)</span>
             <span>.<span class="tok-member">Containing</span>(<span class="tok-string">"</span><input type="text" class="tok-string" data-width="@FieldWidth(_fragment)" @bind:get="_fragment" @bind:set="SetFragment" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.contains")' aria-describedby="@(_capHintOwner == "fragment" ? "cap-hint" : null)" /><span class="tok-string">"</span>)</span>
             <span>.<span class="tok-member">WithLength</span>(<input type="number" class="tok-number" data-width="@FieldWidth(_lengthText)" @bind:get="_lengthText" @bind:set="SetLengthText" @bind:event="oninput" aria-label='@PlaygroundStrings.T(LocaleState.Current, "hero.aria.length")' aria-describedby="@(_capHintOwner == "length" ? "cap-hint" : null)" min="1" max="@MaxLength" />)</span>
+            @*
+                Fixed, like String() and Generate() around it, and for a reason the editable
+                links do not have: the four free characters of a twelve-character reference are
+                drawn from the whole of ASCII, so without this the card shows control characters
+                — a value with holes in it, or a line break through the middle of the result bar.
+                It is also the link the figure this widget replaces already publishes
+                (Snippets/Hero.cs), and the two have to be one chain: a visitor presses "Run" to
+                see the code they were reading come alive, not to watch a link disappear.
+            *@
+            <span>.<span class="tok-member">Printable</span>()</span>
             <span>.<span class="tok-member">Generate</span>();</span>
         </div>
 
@@ -176,6 +186,7 @@
                         .StartingWith(_prefix)
                         .Containing(_fragment)
                         .WithLength(_length.Value)
+                        .Printable()
                         .Generate();
 
             _refusal = null;

@@ -174,6 +174,109 @@ else
   fail "${deferred}"
 fi
 
+# --- the sentence that enumerates the chain enumerates all of it -----------------
+#
+# Two strings promise the reader a complete list. `act1.constraints.body` says "Every
+# business rule becomes a call in the chain:" and then names them; the positioning page's
+# `why.tool.justdummies.concretely` says the same thing in that page's own words. Both sit
+# beside the `factory-constrained` figure, and the figure is generated from a chain compiled
+# against a package that moves on another repository's schedule.
+#
+# So a link added to the figure turns both sentences into undercounts — in two locales, next
+# to a figure that visibly contradicts them, with nothing red. That is not hypothetical: the
+# day the library's unconstrained draw widened to the whole of ASCII, the figure gained
+# `.Printable()` and all four strings went on listing three rules.
+#
+# WHY A PHRASE TABLE RATHER THAN A PARSE. No check can read a French sentence and decide
+# whether it names `WithMaxLength`. What it can do is hold each link to a phrase a person
+# declared for it, in both locales at once — and refuse a link nobody has declared one for,
+# which is the half that catches the next `.Printable()` rather than this one.
+# shellcheck disable=SC2016  # literal JS source in single quotes, not shell interpolation
+enumerated="$(node -e '
+const { readFileSync } = require("node:fs");
+const [generated, strings] = process.argv.slice(1);
+
+// The phrase each link is named by, in either locale — one alternation per link, so the same
+// expectation is applied to English and French without either being special-cased. Loose
+// enough to survive an editorial pass rewording the sentence around it ("not empty" and
+// "never empty" are the same rule named twice), tight enough that only that rule satisfies it.
+const NAMED_BY = {
+    NonEmpty:      /(not|never) empty|(non|jamais) vide/i,
+    WithMaxLength: /twenty characters|vingt caract/i,
+    StartingWith:  /with ORD-|par ORD-/i,
+    Printable:     /printable|imprimable/i,
+};
+
+// The sentences that promise a complete list. Each must exist in both locales.
+const ENUMERATING = ["act1.constraints.body", "why.tool.justdummies.concretely"];
+
+const figure = String(JSON.parse(readFileSync(`${generated}/snippets.json`, "utf8"))["factory-constrained"] ?? "");
+// The fluent links of the published chain: every `.Name(` in the figure, less the three that
+// are not constraints — the entry point, the draw, and the domain factory it is handed to.
+const scaffolding = new Set(["String", "Generate", "Create"]);
+const links = [...figure.matchAll(/\.([A-Za-z][A-Za-z0-9]*)\(/g)]
+    .map((m) => m[1])
+    .filter((name) => !scaffolding.has(name));
+
+const wrong = [];
+
+if (links.length === 0) {
+    wrong.push("the constrained factory figure has no links, so this check is reading it wrong");
+}
+
+// Same line-based read of ui.ts as the positioning-page scan below: comments stripped, a key
+// at the object depth opens an entry, continuation lines belong to the key above them. Both
+// locales declare every key, so each name here yields two entries.
+const lines = readFileSync(strings, "utf8").split(/\r?\n/);
+const entries = [];
+let current = null;
+
+for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("/**") || trimmed.startsWith("*") || trimmed.startsWith("//") || trimmed.startsWith("/*")) {
+        continue;
+    }
+    const keyed = /^ {4}.([a-zA-Z0-9.]+).:\s*(.*)$/.exec(line);
+    if (keyed) {
+        current = { key: keyed[1], text: keyed[2] };
+        entries.push(current);
+    } else if (current !== null) {
+        current.text += " " + trimmed;
+    }
+}
+
+for (const key of ENUMERATING) {
+    const said = entries.filter((entry) => entry.key === key);
+
+    if (said.length !== 2) {
+        wrong.push(`${key} was found ${said.length} time(s), not once per locale — this check is reading ui.ts wrong`);
+        continue;
+    }
+
+    for (const link of links) {
+        const phrase = NAMED_BY[link];
+
+        if (phrase === undefined) {
+            wrong.push(`the figure calls .${link}() and no phrase is declared for it — declare one in NAMED_BY and check ${key} still lists every rule`);
+            continue;
+        }
+        for (const entry of said) {
+            if (!phrase.test(entry.text)) {
+                wrong.push(`${key} promises the whole chain and does not name .${link}(), which the figure beside it calls`);
+            }
+        }
+    }
+}
+
+process.stdout.write([...new Set(wrong)].join("; "));
+' "${root}/apps/site/src/generated" "${strings}")"
+
+if [ -z "${enumerated}" ]; then
+  pass "§9.2 the sentences that enumerate the constrained chain name every link the figure calls"
+else
+  fail "${enumerated}"
+fi
+
 # --- the attribute appears the moment the library draws --------------------------
 #
 # A test on this page that draws its values carries [Reproducible], and one that does not
