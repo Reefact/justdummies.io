@@ -41,7 +41,7 @@ export const openGraphLocales: Record<Locale, string> = {
 
 const en = {
     'brand.tagline': 'Just dummies — but seriously powerful ones.',
-    'brand.subtitle': 'Focused, fluent test values for .NET.',
+    'brand.subtitle': 'Focused test values through a fluent API, for .NET.',
 
     'nav.why': 'Why JustDummies',
     'nav.playground': 'Playground',
