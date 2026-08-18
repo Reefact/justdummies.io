@@ -317,6 +317,16 @@ it is the right place to discover a problem.
 
 ```bash
 pnpm install
+
+# The analytics lane is governed by two variables and the build expects both, so this step
+# fails without them however little you intend to measure. `disabled` measures nothing and
+# never contacts the id — but the id still has to be well formed, because one that has gone
+# missing while the measurement is off is a broken memory, and the day it is switched back
+# on is too late to find that out. The real values are set in step 11; these are for
+# building locally.
+export PUBLIC_GA_MEASUREMENT_STATE=disabled
+export PUBLIC_GA_MEASUREMENT_ID=G-0000000000
+
 pnpm build 2>&1 | tee /tmp/build.log
 ```
 
@@ -1470,6 +1480,7 @@ In order of speed:
 | CI: `Authentication error` | Token absent, expired, or created on another account. |
 | `curl: (6) Could not resolve host` | Zone not **Active** yet, or nameservers unchanged at the registrar. |
 | The domain still serves the old site | Same cause, or a local DNS cache. |
+| `PUBLIC_GA_MEASUREMENT_STATE is not set, and this build expects it` | Both analytics variables are required by every build, including one that measures nothing. Step 1 carries the two `export` lines for a local build; step 11 has the real values. |
 | No beacon in the page, and no audience figures | `PUBLIC_CF_BEACON_TOKEN` was not set when the artefact was built. The build log says which of the two it produced. Rebuilding is required — the tag is rendered at build time, not at request time. |
 | Console reports a policy violation naming `cloudflareinsights` | `_headers` was edited by hand, or a beacon tag was added to a build made without the token. The policy is derived from the artefact; rebuild rather than patch. |
 | `wrangler deploy`: `You need to enable Analytics Engine` `[code: 10089]` | An account setting, not a repository fault — the assets uploaded and the bindings printed before it failed. See step 5. |
