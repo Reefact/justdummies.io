@@ -450,9 +450,12 @@ test.describe('when the stored record disagrees with what just happened', () => 
 });
 
 /**
- * A record with no usable timestamp is not "very old" — `Date.now() - NaN` is `NaN`, and
- * `NaN > REMEMBER_FOR_MS` is false — so treating it the same as a missing or garbled choice
- * is what keeps a corrupted record from being read as a live grant.
+ * Two ways for `at` to fail to place a record in time, both landing on the same fix. A
+ * missing or non-numeric `at` is not "very old" — `Date.now() - NaN` is `NaN`, and
+ * `NaN > REMEMBER_FOR_MS` is false. A future `at` fails the opposite way — the subtraction
+ * stays negative, and therefore under the retention window, for as long as it does, which
+ * would make the six-month re-prompt postponable by however far out it is dated. Both are
+ * treated the same as a missing or garbled choice: not a valid answer at all.
  */
 test.describe('when a stored record carries no usable timestamp', () => {
     test.use({ consent: 'unasked' });
@@ -472,14 +475,36 @@ test.describe('when a stored record carries no usable timestamp', () => {
 
         expect(started, 'a record with no timestamp was trusted as a live grant').toBe(false);
     });
+
+    test('a record dated into the future is not trusted as a live grant', async ({ page }) => {
+        await page.goto('/');
+        await skipWithoutTag(page);
+
+        await page.evaluate(() => {
+            const farFuture = Date.now() + 1000 * 60 * 60 * 24 * 365;
+
+            window.localStorage.setItem(
+                'jd:analytics-consent',
+                JSON.stringify({ v: 1, choice: 'granted', at: farFuture }),
+            );
+            document.dispatchEvent(new Event('visibilitychange'));
+        });
+
+        const started: boolean = await page.evaluate(
+            () => (window as unknown as { jdAnalyticsStarted?: boolean }).jdAnalyticsStarted === true,
+        );
+
+        expect(started, 'a record dated a year into the future was trusted as a live grant').toBe(false);
+    });
 });
 
 /**
- * The six-month retention is otherwise only rechecked on a `storage` event or on becoming
- * visible again — nothing revisits it for a tab that simply never goes anywhere, and
- * scheduling a timer for six months out isn't reliable either, since that delay overflows
- * `setTimeout`'s own limit long before it would fire. `track()` re-validates instead, since
- * every report already passes through it.
+ * The six-month retention is rechecked on a `storage` event, on becoming visible again, on
+ * `applyDecision()`'s own periodic re-arm, and — belt and suspenders — before every site
+ * event `track()` sends. Only the last of those is exercised by staying on one scene: it is
+ * the one path that cannot wait for an external trigger this test controls, which is also
+ * why the periodic re-arm exists at all — nothing here can wait 24 hours for it to prove
+ * itself, so it stands on the reasoning in its own comment rather than on a check of its own.
  */
 test.describe('when the retention window has quietly closed', () => {
     test.use({ consent: 'granted' });
@@ -513,6 +538,31 @@ test.describe('when the retention window has quietly closed', () => {
         });
 
         expect(sceneViews, 'a scene was reported under a grant whose retention had already lapsed').toEqual([]);
+    });
+
+    /**
+     * Enhanced measurement's `scroll` is Google's own script watching the page, not a call
+     * this file makes — `track()` re-validating cannot reach it, only the hard-stop flag
+     * `stop()` raises does. Asserted directly, because "this site sent nothing" does not by
+     * itself say the tag was silenced rather than merely unused.
+     */
+    test('the tag itself is stopped, not only this site\'s own events', async ({ page }) => {
+        await page.goto('/');
+        await skipWithoutTag(page);
+
+        await page.evaluate(() => {
+            window.localStorage.setItem('jd:analytics-consent', JSON.stringify({ v: 1, choice: 'granted', at: 0 }));
+            document.dispatchEvent(new Event('visibilitychange'));
+        });
+
+        const disabled: boolean = await page.evaluate(() => {
+            const carrier = document.querySelector<HTMLElement>('[data-jd-analytics]');
+            const id: string = carrier?.dataset.jdAnalytics ?? '';
+
+            return id !== '' && (window as unknown as Record<string, unknown>)[`ga-disable-${id}`] === true;
+        });
+
+        expect(disabled, 'an expired grant left the tag itself free to keep sending').toBe(true);
     });
 });
 
