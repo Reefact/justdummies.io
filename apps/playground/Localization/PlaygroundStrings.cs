@@ -164,9 +164,10 @@ public static class PlaygroundStrings {
             "Construisez une expression en choisissant une méthode à chaque étape.",
             "Build an expression by choosing a method at each step."),
         ["playground.ledeDetail"] = new(
-            "La surface scalaire prise en charge est proposée ici, pas une poignée choisie à la " +
-            "main. Les arguments se saisissent directement dans l'appel ; une fois au moins une " +
-            "étape choisie, <code>Generate</code> ci-dessous tire une valeur.",
+            "Tous les générateurs de valeurs simples pris en charge sont ici, chacun avec ses " +
+            "contraintes — pas une poignée choisie pour la démonstration. Les arguments se " +
+            "saisissent directement dans l'appel ; dès la première étape choisie, " +
+            "<code>Générer</code> ci-dessous tire une valeur.",
             "The supported scalar surface is here, not a hand-picked few. Arguments are typed " +
             "directly into the call; once at least one step is chosen, <code>Generate</code> " +
             "below draws a value."),
