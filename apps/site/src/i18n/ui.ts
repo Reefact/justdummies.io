@@ -95,7 +95,7 @@ const en = {
 
     'act1.constraints.title': 'Declare the constraints, not the value',
     'act1.constraints.body':
-        'Every business rule becomes a call in the chain: not empty, twenty characters at most, starts with ORD-. The value it produces changes on every run, and it is valid every time. This is where drawing at random makes sense. That value was never the subject of the test, it only had to be valid. Any value that satisfies the rules will do. You describe what the value must satisfy, not what you are going to assert.',
+        'Every business rule becomes a call in the chain: not empty, twenty characters at most, starts with ORD-, printable characters only. The value it produces changes on every run, and it is valid every time. This is where drawing at random makes sense. That value was never the subject of the test, it only had to be valid. Any value that satisfies the rules will do. You describe what the value must satisfy, not what you are going to assert.',
 
     'act1.exit.title': 'Install it now',
     'act1.exit.body':
@@ -385,7 +385,7 @@ const en = {
     'why.tool.justdummies.description':
         'Arbitrary values for everything a test does not check, with the rules they must satisfy written where the value is asked for.',
     'why.tool.justdummies.concretely':
-        'In practice: a reference that is never empty, never longer than twenty characters and always starts with ORD-, drawn fresh on every run.',
+        'In practice: a reference that is never empty, never longer than twenty characters, always starts with ORD- and holds nothing but printable characters, drawn fresh on every run.',
 
     'why.tool.bogus.need': 'I need data that looks real.',
     'why.tool.bogus.description':
@@ -452,7 +452,7 @@ const en = {
     'why.axis.invariants.label': 'Values your own code will accept',
     'why.axis.invariants.question': 'Will the generated value get past my own constructor?',
     'why.axis.invariants.explanation':
-        'Most domain types refuse bad input. OrderReference.Create rejects a string that does not start with ORD-, and rejects one longer than twenty characters. A test that needs any reference still needs one that clears both checks.',
+        'Most domain types refuse bad input. OrderReference.Create rejects a string that does not start with ORD-, one longer than twenty characters, and one carrying a control character. A test that needs any reference still needs one that clears every check.',
     'why.axis.invariants.term': 'business invariant, or precondition in design by contract',
 
     'why.axis.callSite.label': 'Rules stated where the value is asked for',
@@ -715,7 +715,7 @@ const fr: Record<UiKey, string> = {
 
     'act1.constraints.title': 'Déclarez les contraintes, pas la valeur',
     'act1.constraints.body':
-        "Chaque règle métier devient un appel dans la chaîne : non vide, vingt caractères au plus, commence par ORD-. La valeur produite change à chaque exécution, et elle est valide à chaque fois. Le hasard prend son sens ici. Cette valeur n'a jamais été le sujet du test, elle devait seulement être valide. N'importe laquelle qui respecte les règles fait donc l'affaire. Vous décrivez ce que la valeur doit respecter, pas ce que vous allez vérifier.",
+        "Chaque règle métier devient un appel dans la chaîne : non vide, vingt caractères au plus, commence par ORD-, uniquement des caractères imprimables. La valeur produite change à chaque exécution, et elle est valide à chaque fois. Le hasard prend son sens ici. Cette valeur n'a jamais été le sujet du test, elle devait seulement être valide. N'importe laquelle qui respecte les règles fait donc l'affaire. Vous décrivez ce que la valeur doit respecter, pas ce que vous allez vérifier.",
 
     'act1.exit.title': 'Installez-la maintenant',
     'act1.exit.body':
@@ -953,7 +953,7 @@ const fr: Record<UiKey, string> = {
     'why.tool.justdummies.description':
         "Des valeurs arbitraires pour tout ce qu'un test ne vérifie pas, avec les règles qu'elles doivent respecter, écrites là où le test demande la valeur.",
     'why.tool.justdummies.concretely':
-        "Concrètement : une référence jamais vide, jamais plus longue que vingt caractères, commençant toujours par ORD-, et tirée à chaque exécution.",
+        "Concrètement : une référence jamais vide, jamais plus longue que vingt caractères, commençant toujours par ORD-, ne contenant que des caractères imprimables, et tirée à chaque exécution.",
 
     'why.tool.bogus.need': "J'ai besoin de données qui ont l'air vraies.",
     'why.tool.bogus.description':
@@ -1018,7 +1018,7 @@ const fr: Record<UiKey, string> = {
     'why.axis.invariants.label': 'Les valeurs que votre code accepte',
     'why.axis.invariants.question': 'La valeur produite passera-t-elle mon propre constructeur ?',
     'why.axis.invariants.explanation':
-        "La plupart des types du domaine refusent ce qui ne leur convient pas. OrderReference.Create rejette une chaîne qui ne commence pas par ORD-, et rejette celles qui dépassent vingt caractères. Un test qui a besoin d'une référence quelconque a quand même besoin d'une référence qui passe ces deux contrôles.",
+        "La plupart des types du domaine refusent ce qui ne leur convient pas. OrderReference.Create rejette une chaîne qui ne commence pas par ORD-, celles qui dépassent vingt caractères, et celles qui portent un caractère de contrôle. Un test qui a besoin d'une référence quelconque a quand même besoin d'une référence qui passe tous ces contrôles.",
     'why.axis.invariants.term': 'invariant métier, ou précondition en design par contrat',
 
     'why.axis.callSite.label': 'Des règles énoncées sur place',
