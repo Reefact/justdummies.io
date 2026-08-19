@@ -161,6 +161,40 @@ test.describe('the landing page figure and the live widget behind it', () => {
         }
     });
 
+    /**
+     * And the fields stay usable by the visitor the site is half written for.
+     *
+     * `Printable()` is declared on the chain, and the library refuses the declaration when a
+     * required prefix or fragment holds a character the family cannot draw — so once that link
+     * was added, typing `café-` answered *Cannot apply Printable() because the prefix "café-"
+     * contains 'é'* where the same keystrokes had drawn a value the day before.
+     *
+     * That refusal is real, and §9.9 is why refusals are never swallowed here. But it is not
+     * one of those: the contradiction came from a link this page declared, not from anything
+     * the visitor asked for, and this site is bilingual. So the field holds printable ASCII and
+     * says so, which is `Cap`'s existing shape for a rule of the playground's own.
+     */
+    test('keep drawing when a visitor types an accent', async ({ page }) => {
+        await page.setViewportSize(VIEWPORT);
+        await page.goto('/playground/hero');
+
+        const prefix: Locator = page.locator('.hero-widget .expression input[type="text"]').first();
+        await expect(prefix).toBeVisible();
+
+        await prefix.fill('café-');
+        await page.locator('.hero-widget .generate').click();
+
+        await expect(
+            page.locator('.hero-widget .result-bar .refusal'),
+            'an accent in the prefix turned the demonstration into a refusal',
+        ).toHaveCount(0);
+        await expect(page.locator('.hero-widget .result-bar .value')).toHaveText(PRINTABLE);
+
+        // Dropped, but never in silence: the hint is what makes the field honest about it.
+        await expect(prefix).toHaveValue('caf-');
+        await expect(page.locator('.hero-widget #cap-hint')).toContainText(/printable ASCII/i);
+    });
+
 });
 
 test.describe('the playground card and the landing page card', () => {

@@ -275,10 +275,25 @@
     ///     limit landing between them would keep only the lead surrogate: not "one character
     ///     short of ten," but a string no longer valid UTF-16 at all, on a field a visitor can
     ///     paste anything into.
+    ///
+    ///     ANYTHING OUTSIDE PRINTABLE ASCII GOES THE SAME WAY, and for a reason that arrived
+    ///     with the chain's <c>Printable()</c> link. The library refuses the declaration when a
+    ///     required prefix or fragment holds a character the declared family cannot draw, so a
+    ///     visitor typing <c>café-</c> got <i>Cannot apply Printable() because the prefix
+    ///     "café-" contains 'é'</i> where the same keystrokes used to draw a value. That refusal
+    ///     is real and the library is right to make it, but it is not the kind §9.9 protects:
+    ///     the contradiction is one this page introduced by declaring the family, not one the
+    ///     visitor asked for, and on a site that is half in French a field that rejects an
+    ///     accent is a broken field rather than a lesson. So it is this playground's own rule,
+    ///     enforced and explained here the instant it is hit — the same shape as the length cap
+    ///     and the quote strip above, which is where a rule of ours belongs.
     /// </summary>
     private string Cap(string value, int limit, string owner) {
         string sanitized = value.Replace("\"", string.Empty).Replace("\\", string.Empty);
-        StringInfo info = new(sanitized);
+
+        // Before the length cap, so what is counted is what survives.
+        string printable = new(sanitized.Where(character => character is >= ' ' and <= '~').ToArray());
+        StringInfo info = new(printable);
 
         if (info.LengthInTextElements > limit) {
             SetHint(owner, PlaygroundStrings.T(LocaleState.Current, "limit.text", limit));
@@ -286,15 +301,24 @@
             return info.SubstringByTextElements(0, limit);
         }
 
+        // Quotes named first when a keystroke hit both rules: that one is about the expression
+        // on screen staying valid C#, and its absence would make the display lie rather than
+        // merely hold less than was typed.
         if (sanitized != value) {
             SetHint(owner, PlaygroundStrings.T(LocaleState.Current, "limit.quotes"));
 
-            return sanitized;
+            return printable;
+        }
+
+        if (printable != sanitized) {
+            SetHint(owner, PlaygroundStrings.T(LocaleState.Current, "limit.printable"));
+
+            return printable;
         }
 
         ClearHint(owner);
 
-        return sanitized;
+        return printable;
     }
 
     /// <summary>

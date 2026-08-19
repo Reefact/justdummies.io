@@ -135,6 +135,7 @@ public static class PlaygroundStrings {
         ["limit.length"] = "This playground caps the length at {0} characters; the library itself has no such limit.",
         ["limit.text"]   = "This playground caps this field at {0} characters; the library itself has no such limit.",
         ["limit.quotes"] = "This playground strips quotes and backslashes here, so the expression shown stays valid C#.",
+        ["limit.printable"] = "The chain declares Printable(), so this field keeps printable ASCII; the library draws any character you constrain it to.",
 
         ["notFound.title"] = "Not found",
         ["notFound.lede"] =
@@ -243,6 +244,9 @@ public static class PlaygroundStrings {
         ["limit.quotes"] = new(
             "Ce playground retire les guillemets et les antislashs ici, pour que l'expression affichée reste du C# valide.",
             "This playground strips quotes and backslashes here, so the expression shown stays valid C#."),
+        ["limit.printable"] = new(
+            "La chaîne déclare Printable(), donc ce champ conserve l'ASCII imprimable ; la librairie tire n'importe quel caractère que vous lui autorisez.",
+            "The chain declares Printable(), so this field keeps printable ASCII; the library draws any character you constrain it to."),
 
         ["notFound.title"] = new("Introuvable", "Not found"),
         ["notFound.lede"] = new(
