@@ -35,9 +35,25 @@ const dist = join(root, 'dist');
  * contains `<!--` (the pre-HTML5 idiom for hiding source from ancient browsers); no page
  * here uses it, and `verify-output.sh` would fail if one appeared, because the hash it
  * demands would no longer be in the policy.
+ *
+ * THE PASS IS SINGLE AND LEFT-TO-RIGHT ON PURPOSE, and repeating it to a fixed point
+ * would be wrong rather than safer. What this has to agree with is the HTML tokenizer,
+ * which opens a comment at `<!--` and closes it at the *first* `-->`, then reads markup
+ * again — exactly what one non-overlapping global replace does. A second pass would eat
+ * text the browser treats as markup, and could hide a script that really does execute,
+ * leaving its hash out of the policy.
+ *
+ * The tokenizer's other rule is the one a lone replace misses: an *unterminated* `<!--`
+ * comments out the rest of the document. Left in place, a `<script>` after it would be
+ * hashed for a policy the browser never consults, and — the reason CodeQL flags the
+ * lone replace — a `<!--` would survive the strip. Truncating there covers both, and is
+ * what the browser does.
  */
 function withoutComments(html) {
-    return html.replace(/<!--[\s\S]*?-->/g, '');
+    const closed = html.replace(/<!--[\s\S]*?-->/g, '');
+    const unterminated = closed.indexOf('<!--');
+
+    return unterminated === -1 ? closed : closed.slice(0, unterminated);
 }
 
 /**

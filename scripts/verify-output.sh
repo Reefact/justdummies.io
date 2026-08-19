@@ -422,7 +422,9 @@ if [ -f "${dist}/_headers" ]; then
     hash="$(node -e '
       const { createHash } = require("node:crypto");
       const raw = require("node:fs").readFileSync(process.argv[1], "utf8");
-      const html = raw.replace(/<!--[\s\S]*?-->/g, "");
+      const closed = raw.replace(/<!--[\s\S]*?-->/g, "");
+      const unterminated = closed.indexOf("<!--");
+      const html = unterminated === -1 ? closed : closed.slice(0, unterminated);
       for (const m of html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)) {
         if (m[1].length) { console.log(createHash("sha256").update(m[1], "utf8").digest("base64")); }
       }' "${shell}")"
