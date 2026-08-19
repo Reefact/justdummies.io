@@ -1132,7 +1132,17 @@ puisque les analyzers voyagent avec le paquet.
 Une bibliothèque dont la page d'accueil déclencherait ses propres diagnostics perdrait
 plus de crédibilité que n'importe quel argument n'en gagnerait.
 
-L'exception unique est celle de §9.9 : ce qu'un visiteur saisit lui appartient.
+Deux exceptions, et toutes deux nommées quelque part où on les trouve.
+
+La première est celle de §9.9 : ce qu'un visiteur saisit lui appartient.
+
+La seconde est la factory négligente du premier acte, dont la scène **est** un appel qui
+ne déclare rien. Elle déclenche JD030 depuis que la bibliothèque le signale, et la règle a
+raison de le dire — c'est précisément le propos de la scène. Abaisser la règle pour
+l'accommoder la ferait cesser de tenir tous les autres snippets, ce qui est l'essentiel de
+son intérêt ; elle est donc escaladée comme les autres, et cette expression seule en est
+sortie par son nom, dans `tools/snippet-validation/GlobalSuppressions.cs`. Une exception
+qui tient sur une ligne qu'un lecteur peut retrouver vaut mieux qu'une règle qu'on baisse.
 
 ### 14.5 Snippets vérifiables
 
