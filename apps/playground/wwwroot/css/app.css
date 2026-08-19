@@ -1300,3 +1300,64 @@ main {
         display: block;
     }
 }
+
+/*
+ * THE DOWNLOAD FAB (Layout/DownloadFab.razor) — the site's own DownloadFab.astro, to the
+ * token: same position, same shape, same corner, so the control reads as one the two
+ * halves of the product share rather than two that happen to agree today. Unlike the
+ * site's, this one carries no consent banner to share stacking with — the playground
+ * shows no such banner — so it sits at a plain fixed offset instead of the site's
+ * `--jd-consent-height` calculation.
+ */
+.download-fab {
+    position: fixed;
+    right: var(--jd-space-6);
+    bottom: var(--jd-space-6);
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: var(--jd-space-2);
+    color: var(--jd-text-primary);
+    background: var(--jd-surface-raised);
+    border: 1px solid var(--jd-border);
+    border-radius: 999px;
+    padding: var(--jd-space-3) var(--jd-space-4);
+    font-family: var(--jd-font-sans);
+    font-size: var(--jd-text-sm);
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: var(--jd-shadow-raised);
+    transition: border-color var(--jd-duration-fast) var(--jd-ease);
+}
+
+.download-fab:hover {
+    border-color: var(--jd-accent);
+    color: var(--jd-accent);
+}
+
+.download-fab:focus-visible {
+    outline: 2px solid var(--jd-accent);
+    outline-offset: 2px;
+}
+
+.download-fab .icon {
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* The same narrow query as the site's own DownloadFab.astro, and the same number: below
+   it the label goes, the icon alone still says what the control does, and `aria-label`
+   says it to a screen reader either way. */
+@media (max-width: 26rem) {
+    .download-fab .label {
+        display: none;
+    }
+
+    .download-fab {
+        padding: var(--jd-space-3);
+    }
+}
