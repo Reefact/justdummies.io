@@ -10,6 +10,10 @@ consumes this deployment (see [ADR-0001](docs/for-maintainers/adr/0001-a-release
 
 ## Unreleased
 
+_Nothing pending yet._
+
+## release/2026-08-19T11-50-00Z — August 19, 2026
+
 ### ✨ New
 - Added a dedicated download page — one for each package (core library, xUnit adapter, CLI) — reachable from a persistent floating link on every other page, showing both install commands (.NET CLI and Package Manager Console) for the current package at once.
 - The playground's Except and OneOf constraints now accept a comma-separated list of values, for every scalar generator that supports them.

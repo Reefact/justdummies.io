@@ -11,6 +11,10 @@ compatibilité, puisque rien ne consomme ce déploiement (voir
 
 ## Unreleased
 
+_Rien en attente pour l'instant._
+
+## release/2026-08-19T11-50-00Z — 19 août 2026
+
 ### ✨ Nouveautés
 - Ajout d'une page de téléchargement dédiée — une par paquet (bibliothèque principale, adaptateur xUnit, CLI) — accessible depuis un lien flottant persistant sur chaque autre page, montrant les deux commandes d'installation (.NET CLI et Package Manager Console) du paquet courant en même temps.
 - Les contraintes Except et OneOf du playground acceptent désormais une liste de valeurs séparées par des virgules, pour chaque générateur scalaire qui les propose.
