@@ -365,6 +365,8 @@ Exprimée pour une locale, et reproduite à l'identique dans les autres.
 ├── examples
 ├── api
 ├── release-notes
+│   └── {train}
+│       └── v{majeure}
 ├── about
 ├── privacy
 └── 404
@@ -378,6 +380,13 @@ recopier un fait dont ce document n'est pas la source (§1.3).
 La distinction est ce qui fait tenir l'ajout : décider que les règles d'analyzer vivent
 sous `/docs/analyzers` est une décision d'architecture, qui survit à n'importe quel
 changement de la bibliothèque ; écrire combien il y en a n'en est pas une.
+
+`/release-notes` suit la même règle. Les quatre trains de release sont une décision de
+route — ils survivent à n'importe quelle publication de la bibliothèque — et la majeure
+est un segment de route, `v1`, jamais un point dans un chemin. Quelles majeures existent
+à un instant donné vient de l'instantané (§7.5) et ne s'écrit pas ici. `/release-notes`
+elle-même est une page : elle présente les trains et ce que chacun a publié en dernier,
+et ne redirige vers aucun d'eux (ADR-0020).
 
 ### 7.3 Condition de publication d'une route
 
