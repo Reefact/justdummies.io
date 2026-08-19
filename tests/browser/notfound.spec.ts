@@ -59,7 +59,7 @@ for (const { path, home, refusal, claim } of PAGES) {
         const sentence = page.locator('.body');
 
         await expect(image).toBeVisible();
-        await expect(image).toHaveAttribute('src', '/404.png');
+        await expect(image).toHaveAttribute('src', '/dummy-404.png');
         await expect(sentence).toBeVisible();
         await expect(sentence.locator(`a[href="${home}"]`), 'the way out is not part of the sentence').toBeVisible();
 
@@ -84,12 +84,12 @@ for (const { path, home, refusal, claim } of PAGES) {
         // A file that failed to decode reports zero, and an `img` whose source 404s is still
         // "visible" to a layout check — this is what tells the two apart from a picture that
         // actually arrived.
-        expect(natural, 'the drawing did not arrive').toEqual({ width: 1253, height: 637 });
+        expect(natural, 'the drawing did not arrive').toEqual({ width: 1253, height: 626 });
 
         const box = await page.locator('img.crash').boundingBox();
         const ratio: number = box!.width / box!.height;
 
-        expect(ratio, 'the drawing is being stretched').toBeCloseTo(1253 / 637, 1);
+        expect(ratio, 'the drawing is being stretched').toBeCloseTo(1253 / 626, 1);
     });
 
 }
@@ -125,7 +125,7 @@ test('the 404 says what it costs', async ({ page }) => {
     // can honestly do is make the number visible on every run instead of leaving it to be
     // discovered. The landing page's images are budgeted next door, where the figure is the
     // suite's business.
-    console.log(`      /404.html weighs ${(total / 1024).toFixed(0)} KiB, of which the drawing is 710 KiB`);
+    console.log(`      /404.html weighs ${(total / 1024).toFixed(0)} KiB, of which the drawing is 697 KiB`);
 
     expect(total).toBeGreaterThan(0);
 });
