@@ -82,6 +82,10 @@ const t = useTranslations(locale);
         display: grid;
         gap: var(--jd-space-4);
         max-width: 46rem;
+        /* `DownloadTrains.astro`'s own border sits directly above this block; without a
+           margin here the first method's label sits right against that rule instead of
+           reading as the section it opens. */
+        margin-top: var(--jd-space-6);
     }
 
     .method-header {
