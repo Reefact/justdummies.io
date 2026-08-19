@@ -10,7 +10,19 @@ consumes this deployment (see [ADR-0001](docs/for-maintainers/adr/0001-a-release
 
 ## Unreleased
 
-_Nothing pending yet._
+### ✨ New
+- Added a dedicated download page — one for each package (core library, xUnit adapter, CLI) — reachable from a persistent floating link on every other page, showing both install commands (.NET CLI and Package Manager Console) for the current package at once.
+- The playground's Except and OneOf constraints now accept a comma-separated list of values, for every scalar generator that supports them.
+- Published a new release notes section, with one page per package and major version and a table of contents, sourced directly from the library's own release notes in English and French.
+- Added an optional analytics lane, based on Google Analytics, that reports how readers move through the site — it only starts once you accept it in the cookie banner, and stops the moment you withdraw consent.
+- Updated the underlying JustDummies library to 1.0.0-preview.2, adding a "Pool inspection" category to the API reference.
+
+### 🙌 Improvements
+- Corrected the privacy page's description of how long analytics data is kept, and dropped an inaccurate claim that nothing is ever shared with anyone.
+
+### 🐛 Fixes
+- Fixed the French UI translating "release notes" as "Notes de version" instead of keeping the English term.
+- Removed a double punctuation mark in one of the playground's notes.
 
 ## release/2026-08-18T14-49-42Z — August 18, 2026
 

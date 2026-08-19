@@ -11,7 +11,19 @@ compatibilité, puisque rien ne consomme ce déploiement (voir
 
 ## Unreleased
 
-_Rien en attente pour l'instant._
+### ✨ Nouveautés
+- Ajout d'une page de téléchargement dédiée — une par paquet (bibliothèque principale, adaptateur xUnit, CLI) — accessible depuis un lien flottant persistant sur chaque autre page, montrant les deux commandes d'installation (.NET CLI et Package Manager Console) du paquet courant en même temps.
+- Les contraintes Except et OneOf du playground acceptent désormais une liste de valeurs séparées par des virgules, pour chaque générateur scalaire qui les propose.
+- Publication d'une nouvelle section release notes, avec une page par paquet et version majeure ainsi qu'une table des matières, alimentée directement par les release notes de la bibliothèque elle-même, en anglais et en français.
+- Ajout d'une voie d'analyse optionnelle, basée sur Google Analytics, qui mesure le parcours des lectrices et lecteurs sur le site — elle ne démarre qu'après acceptation dans le bandeau de consentement, et s'arrête dès le retrait du consentement.
+- Mise à jour de la bibliothèque JustDummies sous-jacente vers 1.0.0-preview.2, ajoutant une catégorie « Pool inspection » à la référence API.
+
+### 🙌 Améliorations
+- Correction de la description de la page de confidentialité sur la durée de conservation des données d'analyse, et suppression d'une affirmation inexacte selon laquelle rien n'est jamais partagé avec personne.
+
+### 🐛 Corrections
+- Corrigé l'interface française qui traduisait « release notes » par « Notes de version » au lieu de garder le terme anglais.
+- Retiré une double ponctuation dans une des notes du playground.
 
 ## release/2026-08-18T14-49-42Z — 18 août 2026
 
