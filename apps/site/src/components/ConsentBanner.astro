@@ -72,8 +72,10 @@ const privacyPath = pathForLocale('/privacy/', locale);
     .consent {
         position: fixed;
         inset: auto 0 0 0;
-        /* Above the page, below nothing else: the site stacks nothing at all today,
-           so this is the first and only claim on a stacking order. */
+        /* Above the page, and above the download link floating in the corner beneath it
+           (`DownloadFab.astro`, `z-index: 5`) — that control reads its own bottom offset
+           from this banner's published height rather than sharing its layer, so the two
+           never compete for the same pixels and this stays the higher claim. */
         z-index: 10;
         display: flex;
         flex-wrap: wrap;

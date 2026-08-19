@@ -1,0 +1,12 @@
+---
+import DownloadContent from '../../../components/DownloadContent.astro';
+import Page from '../../../layouts/Page.astro';
+import { useTranslations } from '../../../i18n/ui';
+import { site } from '../../../site';
+
+const t = useTranslations('fr');
+---
+
+<Page title={`${t('download.heading')} — ${site.name}`} description={t('download.meta.description')}>
+    <DownloadContent locale="fr" active="lib" />
+</Page>

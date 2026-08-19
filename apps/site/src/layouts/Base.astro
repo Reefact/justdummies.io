@@ -2,6 +2,7 @@
 import '@justdummies/design-tokens/tokens.css';
 import '../styles/base.css';
 
+import DownloadFab from '../components/DownloadFab.astro';
 import Footer from '../components/Footer.astro';
 import LanguageSelector from '../components/LanguageSelector.astro';
 import Measurement from '../components/Measurement.astro';
@@ -158,6 +159,14 @@ const t = useTranslations(locale);
         <slot />
 
         <Footer />
+
+        {/*
+          After the footer rather than beside the header: a fixed-position control does
+          not need to sit early in the document to sit early on screen, and a reader
+          tabbing through the page's own links and the footer's meets this one only once
+          those are behind them — not on every page before the content they came for.
+        */}
+        <DownloadFab />
 
         <script>
             /**
