@@ -23,10 +23,12 @@ root = true
 # library's own analyzer list against this block — there is no mechanism that does it
 # for you yet.
 #
-# What there is: every rule named here has an expression in tools/snippet-guard that must
-# provoke it, and scripts/validate-snippets.sh fails when one stops being reported. That
-# does not tell you a NEW rule exists, but it does mean none of these can be quietly
-# dropped, and it is why adding a line here means adding a guard entry too.
+# What there is, stated exactly, because a checklist that overstates its own coverage is
+# worse than none: JD024, JD029 and JD030 have an expression in tools/snippet-guard that
+# must provoke them, and scripts/validate-snippets.sh fails when one stops being reported.
+# JD020 and JD022 do not. They are escalated here and exercised nowhere, so if either
+# stopped firing this file would go on claiming a bar nothing holds — a gap that predates
+# the two rules added below and is not closed by them.
 [*.cs]
 dotnet_diagnostic.JD020.severity = error
 dotnet_diagnostic.JD022.severity = error

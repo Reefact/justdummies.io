@@ -412,28 +412,17 @@ fi
 # Likewise for the script policy: every inline script in the shipped HTML must be
 # covered by a hash in the policy, or it is blocked at run time.
 #
-# Comments are stripped before the scan, and the same way generate-headers.mjs strips
-# them — the two extract the same set or this check demands a hash the generator never
-# writes. See that file's `withoutComments` for what went wrong while they both matched
-# a `<script>` that only ever appeared inside a comment.
+# The scan is scripts/lib/inline-scripts.mjs, the same module generate-headers.mjs writes
+# the policy from — literally the same code, not a second copy of the same idea. Two copies
+# is what this was, and both were wrong in the same way twice: first hashing a `<script>`
+# that only ever appeared inside a comment, then mangling a script whose body contains
+# `<!--`. A shared implementation can be held to a shared test, which is the check below.
 if [ -f "${dist}/_headers" ]; then
+  node "${root}/scripts/lib/inline-scripts.mjs" --self-test || fail "the inline-script scan no longer obeys the tokenizer"
+
   uncovered=0
   while IFS= read -r shell; do
-    hash="$(node -e '
-      const { createHash } = require("node:crypto");
-      const raw = require("node:fs").readFileSync(process.argv[1], "utf8");
-      let html = "", at = 0;
-      for (;;) {
-        const opened = raw.indexOf("<!--", at);
-        if (opened === -1) { html += raw.slice(at); break; }
-        html += raw.slice(at, opened);
-        const closed = raw.indexOf("-->", opened + 4);
-        if (closed === -1) { break; }
-        at = closed + 3;
-      }
-      for (const m of html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)) {
-        if (m[1].length) { console.log(createHash("sha256").update(m[1], "utf8").digest("base64")); }
-      }' "${shell}")"
+    hash="$(node "${root}/scripts/lib/inline-scripts.mjs" "${shell}")"
     for h in ${hash}; do
       grep -q "sha256-${h}" "${dist}/_headers" || { fail "inline script in ${shell#"${dist}"/} is not covered by a policy hash"; uncovered=1; }
     done
