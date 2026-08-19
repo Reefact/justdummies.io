@@ -1,11 +1,11 @@
 ---
 /**
  * /download's own body: the section heading, the train switcher, and — directly beneath
- * it, no further click required — the one package that train offers, in both install
- * methods (`InstallTabs.astro`'s `packages` prop; see its file header for why a single
- * train reaches for that instead of `offer`).
+ * it, no further click required — the one package that train offers, both install methods
+ * shown at once (`DownloadPackage.astro`; see its file header for why this page never
+ * reaches for `InstallTabs.astro`'s toggle).
  */
-import InstallTabs from './InstallTabs.astro';
+import DownloadPackage from './DownloadPackage.astro';
 import DownloadTrains from './DownloadTrains.astro';
 import { DOWNLOAD_PACKAGES, type DownloadTrainKey } from '../download';
 import { useTranslations, type Locale } from '../i18n/ui';
@@ -17,12 +17,15 @@ interface Props {
 
 const { locale, active } = Astro.props;
 const t = useTranslations(locale);
+const packages = DOWNLOAD_PACKAGES[active];
 ---
 
 <h2 id="download-heading">{t('download.heading')}</h2>
 <p class="lead">{t('download.lead')}</p>
 <DownloadTrains locale={locale} active={active} />
-<InstallTabs placement={`download-${active}`} packages={DOWNLOAD_PACKAGES[active]} />
+<div class="packages">
+    {packages.map((offer) => <DownloadPackage locale={locale} placement={`download-${active}`} offer={offer} />)}
+</div>
 
 <style>
     h2 {
@@ -35,5 +38,10 @@ const t = useTranslations(locale);
         color: var(--jd-text-muted);
         max-width: 46rem;
         margin: 0 0 var(--jd-space-6);
+    }
+
+    .packages {
+        display: grid;
+        gap: var(--jd-space-8);
     }
 </style>
