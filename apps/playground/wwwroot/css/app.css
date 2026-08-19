@@ -1248,3 +1248,55 @@ main {
     color: var(--jd-success);
     border-color: var(--jd-success);
 }
+
+/*
+ * THE MASCOT (Pages/Home.razor) — purely decorative, so it asks for a positioned ancestor
+ * rather than any layout weight of its own: `.playground-widget` is where it visually
+ * belongs, and its own box is untouched by giving it one.
+ *
+ * WHY IT SITS INSIDE THE CARD'S OWN RIGHT EDGE, NOT PAST IT. `.playground-widget` fills
+ * the whole 72rem shell (§9.8's own note on the card above), so there is no free column
+ * beside it to draw into — only the page's own outer margin, and that margin's width
+ * depends on the browser window in a way this file has no way to know ahead of time.
+ * Anchored to the card's own corner instead, the same drawing holds at every width wide
+ * enough to draw it at all.
+ *
+ * AND "WIDE ENOUGH" IS A MEASURED NUMBER, NOT A GUESSED ONE. The robot hangs above the
+ * card, which puts it beside the prose rather than beside anything of the card's — and
+ * that prose is capped at 38rem (`.lede-detail`, `.playground-note`), so the gap it can
+ * fall into only opens once the shell is wider than that cap plus the artwork. Measured
+ * against the rendered line boxes in both locales, the painted robot still crosses the
+ * note at 840px and is clear at 860px; the query below rounds that up to 56rem so the
+ * margin survives a font that renders a little wider. A breakpoint set by eye instead
+ * put the robot over two lines of the note for a whole band of ordinary tablet widths.
+ */
+.playground-widget {
+    position: relative;
+}
+
+/* THE OFFSET IS MEASURED OFF THE ARTWORK, NOT OFF ITS BOX. dummy-driving.png is a square
+   canvas whose painted robot occupies (51,20)-(688,778) of it, so its feet sit at 97% of
+   the box's own height and the transparent remainder below them is what would otherwise
+   rest on the card. -12.6rem would land the feet exactly flush with the card's top edge;
+   -9.5rem lets them cross it, which is what makes the robot read as sitting on the card
+   rather than balanced on its rim. Re-measure both numbers if the artwork is ever
+   recropped. */
+.mascot {
+    display: none;
+    position: absolute;
+    top: -9.5rem;
+    right: 0.5rem;
+    width: 13rem;
+    height: auto;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Hidden by default and drawn only here, rather than drawn by default and hidden below:
+   a decoration that obscures the page's own words is worse than no decoration, so the
+   narrow case is the one that needs no query to get right. */
+@media (min-width: 56rem) {
+    .mascot {
+        display: block;
+    }
+}
