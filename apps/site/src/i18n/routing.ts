@@ -12,6 +12,7 @@
  * list that would go stale on the first page added — the set of routes is read
  * from the page files themselves at build time.
  */
+import { majorSlug, publishedMajors } from '../release-notes';
 import { defaultLocale, locales, type Locale } from './ui';
 
 /**
@@ -22,22 +23,44 @@ import { defaultLocale, locales, type Locale } from './ui';
 const pageModules = import.meta.glob('/src/pages/**/*.{astro,md,mdx}');
 
 /**
- * Known routes, normalised to a leading and trailing slash.
- *
- * Dynamic routes (`[slug].astro`) are not handled: none exist yet, and a
- * parameterised path cannot be resolved from a file name alone. Adding one means
- * teaching this function about it — deliberately, rather than by discovering that
- * a language selector quietly stopped appearing.
+ * The routes a page file spells out on its own — every page whose path is its file
+ * name, which is all of them but the release notes.
  */
-const knownRoutes: ReadonlySet<string> = new Set(
-    Object.keys(pageModules).map(function toRoute(file: string): string {
+const fileRoutes: string[] = Object.keys(pageModules)
+    .filter(function isNotParameterised(file: string): boolean {
+        // `/src/pages/release-notes/[train]/[major].astro` names no route by itself;
+        // the routes it stands for are added below, from the same snapshot its own
+        // `getStaticPaths` reads.
+        return !file.includes('[');
+    })
+    .map(function toRoute(file: string): string {
         const withoutRoot = file.replace(/^\/src\/pages/, '');
         const withoutExtension = withoutRoot.replace(/\.(astro|md|mdx)$/, '');
         const withoutIndex = withoutExtension.replace(/\/index$/, '/');
 
         return withoutIndex.endsWith('/') ? withoutIndex : `${withoutIndex}/`;
-    }),
-);
+    });
+
+/**
+ * The release notes' own routes, one per train and major (ADR-0020), in every locale.
+ *
+ * This is the deliberate teaching the paragraph above used to say a dynamic route would
+ * need: a parameterised path cannot be resolved from a file name, so a section built with
+ * one is invisible to the glob, and what goes missing is not the page — Astro still builds
+ * it — but the language selector, which offers a locale only for a route it knows about
+ * (§7.4). Both locales always exist together here, because the generator refuses a major
+ * whose two languages disagree.
+ */
+const releaseNotesRoutes: string[] = locales.flatMap(function inLocale(locale: Locale): string[] {
+    return publishedMajors.map(function toRoute(published: { train: string; major: number }): string {
+        const route = `/release-notes/${published.train}/${majorSlug(published.major)}/`;
+
+        return locale === defaultLocale ? route : `/${locale}${route}`;
+    });
+});
+
+/** Known routes, normalised to a leading and trailing slash. */
+const knownRoutes: ReadonlySet<string> = new Set([...fileRoutes, ...releaseNotesRoutes]);
 
 function segmentsOf(pathname: string): string[] {
     return pathname.split('/').filter(function isNotEmpty(segment: string): boolean {

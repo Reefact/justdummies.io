@@ -77,9 +77,9 @@ async function settle(page: Page): Promise<void> {
  * `/version` — `/version` is a deliberate orphan nothing links to, while these four are
  * reachable from the site (the sitewide footer, or — for `/why-justdummies` — the header
  * nav), so they get the same automated sweep as everything else a reader can actually
- * reach. `/release-notes` carries its own tab widget besides — the same run-time ARIA the
- * loop below exercises for the install tabs on `/`, checked here in its static, unopened
- * state rather than duplicated into a second interactive pass.
+ * reach. One release notes page of the second kind is in the sweep as well: the section's
+ * front page and a train's own page are two different documents — the second nests a table
+ * of contents beside four heading levels — and only the first would be covered otherwise.
  */
 for (const path of PAGES.concat(
     '/playground/',
@@ -87,6 +87,8 @@ for (const path of PAGES.concat(
     '/fr/about',
     '/release-notes',
     '/fr/release-notes',
+    '/release-notes/lib/v1/',
+    '/fr/release-notes/lib/v1/',
     '/why-justdummies',
     '/fr/why-justdummies',
     '/privacy',

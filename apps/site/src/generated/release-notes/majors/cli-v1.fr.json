@@ -1,0 +1,76 @@
+{
+  "train": "cli",
+  "major": 1,
+  "locale": "fr",
+  "releases": [
+    {
+      "version": "1.1.0-beta.1",
+      "date": "2026-08-13",
+      "maturity": "beta",
+      "anchor": "v1-1-0-beta-1",
+      "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/cli-v1.1.0-beta.1",
+      "summaryHtml": [
+        "<em>Une version mineure, additive de bout en bout : trois nouvelles options, et aucun comportement existant n'a changé. <code>dum generate Order</code> écrit toujours exactement ce qu'il écrivait en 1.0.0-beta.1, octet pour octet.</em>"
+      ],
+      "sections": [
+        {
+          "label": "✨ Nouveautés",
+          "anchor": "v1-1-0-beta-1-new",
+          "items": [
+            "<strong><code>--entry-point</code></strong> — un scaffold peut désormais aussi écrire un point d'entrée, pour atteindre un générateur comme ceux de la bibliothèque. <code>any</code> émet un membre d'extension C# 14, vous donnant <code>Any.Order()</code> à côté de <code>Any.Int32()</code> ; <code>static:&lt;Name&gt;</code> émet une racine <code>partial</code> que vous possédez, vous donnant <code>Dummies.Order()</code>, sans aucune exigence de version de langage. Par défaut : <code>none</code> (<a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0070-emit-an-entry-point-on-request-as-a-file-of-its-own.md\">ADR-0070</a>).",
+            "<strong><code>--entry-point-namespace</code></strong> — place le fichier du point d'entrée dans un espace de noms qui lui est propre, distinct de celui du générateur.",
+            "<strong><code>--format json</code></strong> — une exécution se rapporte comme un seul document JSON sur stdout au lieu du résumé console, pour un appelant qui est un script plutôt qu'un lecteur. Porte ce que le code de sortie ne peut pas — <code>summary.openParameters</code>, et une ligne par paramètre avec son expression et sa provenance. Les codes de sortie eux-mêmes ne bougent pas (<a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0071-report-a-run-as-data-without-moving-the-exit-codes.md\">ADR-0071</a>).",
+            "<strong><code>dum.json</code></strong> — un fichier optionnel à côté du projet fournit des valeurs par défaut pour <code>output</code>, <code>namespace</code>, <code>entryPoint</code>, <code>entryPointNamespace</code> et <code>format</code>. La ligne de commande gagne toujours (<a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0072-read-project-defaults-from-a-file-the-command-line-overrides.md\">ADR-0072</a>)."
+          ]
+        },
+        {
+          "label": "🙌 Améliorations",
+          "anchor": "v1-1-0-beta-1-improvements",
+          "items": [
+            "Quand un scaffold écrit deux fichiers, il écrit désormais les deux ou aucun — un <code>Any{Type}.Entry.cs</code> déjà présent refuse le scaffold entier, et <code>--force</code> couvre les deux.",
+            "Le résumé console nomme maintenant l'appel que le point d'entrée a ouvert."
+          ]
+        },
+        {
+          "label": "🐛 Corrections de bugs",
+          "anchor": "v1-1-0-beta-1-bug-fixes",
+          "items": [
+            "<strong><code>--namespace \"\"</code> et ses quatre équivalents ne pointent plus vers un conseil obsolète</strong> maintenant que <code>dum.json</code> peut fixer la même option — le refus pointe désormais vers le fichier.",
+            "<strong>Un type de paramètre hors de tout espace de noms n'émet plus de <code>using</code> qui ne compile pas.</strong> Le cas le plus fréquent : un paramètre dont le type n'a pas pu être résolu."
+          ]
+        }
+      ]
+    },
+    {
+      "version": "1.0.0-beta.1",
+      "date": "2026-08-10",
+      "maturity": "beta",
+      "anchor": "v1-0-0-beta-1",
+      "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/cli-v1.0.0-beta.1",
+      "summaryHtml": [
+        "<em>Première version publiée — <code>dum</code> atteint nuget.org pour la première fois, en implémentant la spécification du scaffolder dans son intégralité. Une <strong>beta</strong>, pas une preview : un outil ne porte aucun socle d'API publique, sa surface étant la ligne de commande plutôt qu'un ensemble de types, et cette surface n'a pas encore été éprouvée par un projet hors de ce dépôt.</em>"
+      ],
+      "sections": [
+        {
+          "label": "✨ Nouveautés",
+          "anchor": "v1-0-0-beta-1-new",
+          "items": [
+            "<strong><code>dum generate &lt;Type&gt;</code></strong> — écrit le générateur de dummy d'un type, une fois, comme du code ordinaire que vous possédez ensuite.",
+            "<strong>Résolution.</strong> Un paramètre de constructeur devient un générateur via la table de base, puis les clauses de garde du constructeur lui-même (<code>quantity &lt;= 0</code> → <code>.Positive()</code>), puis la composition via une factory ou un <code>Any{Type}</code> déjà scaffoldé.",
+            "<strong>Un paramètre non résolu reste ouvert, bruyamment</strong> — émis comme un identifiant qui n'existe pas, pour que votre propre build le signale à la ligne, avec le type en main (<a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0060-seed-generators-from-constructor-guards.md\">ADR-0060</a>).",
+            "<strong>Un résumé console</strong> indiquant d'où vient chaque expression — table de base, garde, factory, générateur réutilisé, ou rien.",
+            "<strong><code>--project</code>, <code>--output</code>, <code>--namespace</code>, <code>--force</code>, <code>--dry-run</code></strong>, et rien d'autre.",
+            "<strong>Durcissement du package</strong> — SBOM SPDX embarqué, SourceLink, package de symboles, build déterministe, et une attestation de provenance sur l'artefact publié."
+          ]
+        },
+        {
+          "label": "🙌 Améliorations",
+          "anchor": "v1-0-0-beta-1-improvements",
+          "items": [
+            "Nécessite le package <code>JustDummies</code> dans le projet analysé. Aucune dépendance vers lui n'est déclarée dans aucun sens — chaque symbole de la bibliothèque est résolu par son nom dans votre compilation, exactement comme le font les analyseurs (<a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0063-give-the-scaffolder-no-dependency-on-the-package.md\">ADR-0063</a>), si bien que les versions de l'outil et de la bibliothèque ne peuvent jamais diverger."
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "repository": "https://github.com/Reefact/just-dummies",
+  "ref": "catalog-v1.0.0-preview.3",
+  "refUrl": "https://github.com/Reefact/just-dummies/releases/tag/catalog-v1.0.0-preview.3",
+  "refDate": "2026-08-18T22:31:20+02:00",
+  "generatedAt": "2026-08-18T22:54:57.338Z",
+  "trains": [
+    {
+      "key": "lib",
+      "package": "JustDummies",
+      "changelogUrl": "https://github.com/Reefact/just-dummies/blob/catalog-v1.0.0-preview.3/JustDummies/CHANGELOG.md",
+      "majors": [
+        {
+          "major": 1,
+          "releaseCount": 2,
+          "latest": {
+            "version": "1.0.0-preview.2",
+            "date": "2026-08-18",
+            "maturity": "preview"
+          }
+        },
+        {
+          "major": 0,
+          "releaseCount": 1,
+          "latest": {
+            "version": "0.1.0-preview.1",
+            "date": "2026-07-31",
+            "maturity": "preview"
+          }
+        }
+      ]
+    },
+    {
+      "key": "xunit",
+      "package": "JustDummies.Xunit",
+      "changelogUrl": "https://github.com/Reefact/just-dummies/blob/catalog-v1.0.0-preview.3/JustDummies.Xunit/CHANGELOG.md",
+      "majors": [
+        {
+          "major": 1,
+          "releaseCount": 1,
+          "latest": {
+            "version": "1.0.0-preview.1",
+            "date": "2026-08-07",
+            "maturity": "preview"
+          }
+        }
+      ]
+    },
+    {
+      "key": "catalog",
+      "package": "JustDummies.DiagnosticCatalog",
+      "changelogUrl": "https://github.com/Reefact/just-dummies/blob/catalog-v1.0.0-preview.3/JustDummies.DiagnosticCatalog/CHANGELOG.md",
+      "majors": [
+        {
+          "major": 1,
+          "releaseCount": 2,
+          "latest": {
+            "version": "1.0.0-preview.3",
+            "date": "2026-08-18",
+            "maturity": "preview"
+          }
+        }
+      ]
+    },
+    {
+      "key": "cli",
+      "package": "JustDummies.Cli",
+      "changelogUrl": "https://github.com/Reefact/just-dummies/blob/catalog-v1.0.0-preview.3/JustDummies.Cli/CHANGELOG.md",
+      "majors": [
+        {
+          "major": 1,
+          "releaseCount": 2,
+          "latest": {
+            "version": "1.1.0-beta.1",
+            "date": "2026-08-13",
+            "maturity": "beta"
+          }
+        }
+      ]
+    }
+  ]
+}

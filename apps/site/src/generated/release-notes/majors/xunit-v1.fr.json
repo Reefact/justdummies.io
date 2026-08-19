@@ -1,0 +1,35 @@
+{
+  "train": "xunit",
+  "major": 1,
+  "locale": "fr",
+  "releases": [
+    {
+      "version": "1.0.0-preview.1",
+      "date": "2026-08-07",
+      "maturity": "preview",
+      "anchor": "v1-0-0-preview-1",
+      "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/xunit-v1.0.0-preview.1",
+      "summaryHtml": [
+        "<em>Première version publiée — l'adaptateur xUnit v3 atteint nuget.org pour la première fois, au numéro même de la bibliothèque plutôt qu'à <code>0.1.0</code> : c'est l'adaptateur offert pour JustDummies 1.0, pas une esquisse antérieure.</em>"
+      ],
+      "sections": [
+        {
+          "label": "✨ Nouveautés",
+          "anchor": "v1-0-0-preview-1-new",
+          "items": [
+            "<strong><code>[Reproducible]</code></strong> — marquez un test, une classe ou un assembly, et les valeurs arbitraires tirées par son corps proviennent d'une seed épinglée, rapportée uniquement quand le test échoue. Supprime l'enrobage <code>Any.Reproducibly</code> par test, sans changer la façon dont les valeurs sont générées.",
+            "<strong>Un package séparé, délibérément.</strong> <code>JustDummies</code> lui-même reste libre de toute dépendance à un framework de test ; le pont xUnit vit ici et porte la seule dépendance que la bibliothèque ne peut pas porter.",
+            "<strong>Durcissement du package</strong> — SBOM SPDX embarqué, SourceLink, package de symboles, build déterministe, et une attestation de provenance sur l'artefact publié."
+          ]
+        },
+        {
+          "label": "🙌 Améliorations",
+          "anchor": "v1-0-0-preview-1-improvements",
+          "items": [
+            "Nécessite xUnit v3 et un package <code>JustDummies</code> publié depuis ce dépôt. Les deux trains évoluent indépendamment (<a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0047-declare-the-adapters-library-dependency-independently.md\">ADR-0047</a>) : un correctif propre à l'adaptateur est publié seul, sans attendre une nouvelle version de la bibliothèque."
+          ]
+        }
+      ]
+    }
+  ]
+}

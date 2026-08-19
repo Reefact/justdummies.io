@@ -1,0 +1,12 @@
+---
+import ReleaseNotesIndexContent from '../../../components/ReleaseNotesIndexContent.astro';
+import Page from '../../../layouts/Page.astro';
+import { useTranslations } from '../../../i18n/ui';
+import { site } from '../../../site';
+
+const t = useTranslations('fr');
+---
+
+<Page title={`${t('releaseNotes.heading')} — ${site.name}`} description={t('releaseNotes.meta.description')}>
+    <ReleaseNotesIndexContent locale="fr" />
+</Page>

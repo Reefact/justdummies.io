@@ -1,0 +1,257 @@
+---
+/**
+ * The table of contents beside a major version's notes: the train's majors, the releases
+ * inside the one being read, and each release's own rubrics.
+ *
+ * THREE LEVELS, ONLY ONE OF THEM EXPANDED. The major on screen shows its releases and their
+ * rubrics as anchors into the column beside it; the others are a single line each, and a
+ * link, because a different major is a different page (ADR-0020). That is what keeps this
+ * list short as the library ages — a train at twelve majors adds eleven lines here, not
+ * eleven histories.
+ *
+ * NO SCRIPT DECIDES ANYTHING. Every entry is an anchor or a link, so the whole control works
+ * before any script runs, and the browser's own find works on the text it points at — which
+ * it did not while a section folded its bullets past the third. The one script is the
+ * narrow-screen collapse `ApiCategoryNav` already uses, and the `<details>` it drives is
+ * open in the markup, so a reader with no scripting gets the full list rather than a closed
+ * box with no way to open it.
+ *
+ * THE LINKS ARE NOT ORANGE. Accent marks the package being read, once, in the switcher
+ * above; a whole column of it would make a table of contents look like a call to action.
+ * Here the affordance arrives on hover and the current major is held by weight and a rule,
+ * never by colour — and `:focus-visible` stays exactly where base.css puts it, because
+ * "visible on hover" cannot be allowed to mean "invisible to a keyboard".
+ */
+import { pathForLocale } from '../i18n/routing';
+import { useTranslations, type Locale } from '../i18n/ui';
+import { majorSlug, type MajorNotes, type Train } from '../release-notes';
+
+interface Props {
+    locale: Locale;
+    train: Train;
+    /** The major being read; every other one is a link out of this page. */
+    notes: MajorNotes;
+}
+
+const { locale, train, notes } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<details class="contents" open data-release-contents>
+    <summary>
+        {t('releaseNotes.contents')}
+        <svg class="chev" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="m4 6 4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+    </summary>
+    <div class="contents-body">
+        <nav aria-label={t('releaseNotes.contents')}>
+            <ul class="majors">
+                {
+                    train.majors.map((major) =>
+                        major.major === notes.major ? (
+                            <li class="major">
+                                <p class="major-label current" aria-current="true">
+                                    <svg class="marker open" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                                        <path d="m6 4 4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    {t('releaseNotes.majorLabel')} {major.major}
+                                </p>
+                                <ul class="releases">
+                                    {notes.releases.map((release) => (
+                                        <li>
+                                            <a class="release-link" href={`#${release.anchor}`}>
+                                                {t('releaseNotes.majorLabel')} {release.version}
+                                            </a>
+                                            {release.sections.length > 0 && (
+                                                <ul class="rubrics">
+                                                    {release.sections.map((section) => (
+                                                        <li>
+                                                            <a href={`#${section.anchor}`}>{section.label}</a>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            )}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </li>
+                        ) : (
+                            <li class="major">
+                                <a class="major-label" href={pathForLocale(`/release-notes/${train.key}/${majorSlug(major.major)}/`, locale)}>
+                                    <svg class="marker" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                                        <path d="m6 4 4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    {t('releaseNotes.majorLabel')} {major.major}
+                                </a>
+                            </li>
+                        ),
+                    )
+                }
+            </ul>
+        </nav>
+    </div>
+</details>
+
+<script is:inline>
+    (function manageNarrowScreenCollapse() {
+        const details = document.currentScript.previousElementSibling;
+
+        if (!(details instanceof HTMLDetailsElement)) {
+            return;
+        }
+
+        const narrowScreen = window.matchMedia('(max-width: 56rem)');
+
+        if (narrowScreen.matches) {
+            details.open = false;
+        }
+
+        // Widening past the breakpoint hides `summary` (see the media query below), which is
+        // the only control that can reopen a closed `<details>` — so a resize or a rotation
+        // that crosses the breakpoint has to force `open` back on itself, or the whole table
+        // of contents stays stranded closed with nothing left on the page able to reach it.
+        narrowScreen.addEventListener('change', (event) => {
+            if (!event.matches) {
+                details.open = true;
+            }
+        });
+    })();
+</script>
+
+<style>
+    .contents {
+        border-right: 1px solid var(--jd-border);
+    }
+
+    .contents > summary {
+        display: none;
+    }
+
+    .contents-body {
+        position: sticky;
+        top: var(--jd-space-4);
+        max-height: calc(100svh - 2 * var(--jd-space-4));
+        overflow-y: auto;
+        padding: 0 var(--jd-space-4) var(--jd-space-8) 0;
+    }
+
+    ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .majors > li + li {
+        margin-top: var(--jd-space-1);
+    }
+
+    .major-label {
+        display: flex;
+        align-items: center;
+        gap: var(--jd-space-2);
+        margin: 0;
+        padding: var(--jd-space-2) 0;
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+        text-decoration: none;
+    }
+
+    .major-label.current {
+        color: var(--jd-text-primary);
+        font-weight: 600;
+    }
+
+    .marker {
+        width: 12px;
+        height: 12px;
+        flex: none;
+        color: var(--jd-text-muted);
+        transition: transform var(--jd-duration-fast) var(--jd-ease);
+    }
+
+    .marker.open {
+        transform: rotate(90deg);
+    }
+
+    .releases {
+        margin: var(--jd-space-1) 0 var(--jd-space-3);
+        padding-left: var(--jd-space-4);
+        border-left: 1px solid var(--jd-border);
+    }
+
+    .releases > li + li {
+        margin-top: var(--jd-space-3);
+    }
+
+    .rubrics {
+        margin-top: var(--jd-space-1);
+        padding-left: var(--jd-space-3);
+    }
+
+    /* Plain text until it is pointed at: the affordance arrives on hover, in the page's own
+       ink rather than in accent. */
+    .contents a {
+        display: block;
+        padding: 0.15rem 0;
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+        text-decoration: none;
+    }
+
+    .contents a:hover {
+        color: var(--jd-text-primary);
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+    }
+
+    .release-link {
+        font-family: var(--jd-font-mono);
+        color: var(--jd-text-primary);
+    }
+
+    .rubrics a {
+        padding-left: var(--jd-space-1);
+    }
+
+    @media (max-width: 56rem) {
+        .contents {
+            border-right: 0;
+            border-bottom: 1px solid var(--jd-border);
+            margin-bottom: var(--jd-space-6);
+        }
+
+        .contents > summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--jd-space-2);
+            padding: var(--jd-space-3) 0;
+            font-weight: 600;
+            cursor: pointer;
+            list-style: none;
+        }
+
+        .contents > summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .contents > summary .chev {
+            width: 14px;
+            height: 14px;
+            color: var(--jd-text-muted);
+            transition: transform var(--jd-duration-base) var(--jd-ease);
+        }
+
+        .contents[open] > summary .chev {
+            transform: rotate(180deg);
+        }
+
+        .contents-body {
+            position: static;
+            max-height: none;
+            overflow: visible;
+            padding: 0 0 var(--jd-space-4);
+        }
+    }
+</style>

@@ -1,0 +1,83 @@
+{
+  "train": "lib",
+  "major": 1,
+  "locale": "en",
+  "releases": [
+    {
+      "version": "1.0.0-preview.2",
+      "date": "2026-08-18",
+      "maturity": "preview",
+      "anchor": "v1-0-0-preview-2",
+      "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/lib-v1.0.0-preview.2",
+      "summaryHtml": [
+        "<em>Two breaking defaults, both in service of the same idea: an unconstrained dummy should certify something, not just look harmless.</em>"
+      ],
+      "sections": [
+        {
+          "label": "⚠️ Breaking changes",
+          "anchor": "v1-0-0-preview-2-breaking-changes",
+          "items": [
+            "<code>Any.String()</code> and <code>Any.Char()</code> now draw from the whole of ASCII, control characters included, and an unconstrained string spans 0 to 1024 characters — narrow it with <code>NonEmpty()</code>, <code>WithMaxLength(n)</code> or <code>Printable()</code> (<a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0075-draw-characters-from-the-whole-of-ascii.md\">ADR-0075</a>).",
+            "A declared maximum — <code>WithMaxLength</code>, <code>WithLengthBetween</code>, <code>WithMaxCount</code> — now steers the draw instead of composing with the old narrow spread, and a maximum above 1,000,000 is refused (<a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0076-let-a-declared-maximum-steer-the-size-draw.md\">ADR-0076</a>)."
+          ]
+        },
+        {
+          "label": "✨ New",
+          "anchor": "v1-0-0-preview-2-new",
+          "items": [
+            "Five new character families — <code>Punctuation()</code>, <code>Printable()</code>, <code>NonPrintable()</code>, <code>Whitespaces()</code> and <code>Hexadecimal()</code> — plus <code>WithoutAlpha()</code>/<code>WithoutNumeric()</code> to subtract rather than pin, on both <code>Any.String()</code> and <code>Any.Char()</code>.",
+            "<strong><code>IPoolInspection&lt;T&gt;</code> reports what your own constraints left of a pool you supplied</strong> — <code>GetSurvivors()</code>, <code>GetRejections()</code> — on every generator that takes a value set (<a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0067-report-a-filtered-pool-through-an-explicit-interface.md\">ADR-0067</a>, <a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0068-carry-the-pool-inspection-wherever-a-caller-supplies-the-values.md\">ADR-0068</a>).",
+            "JD029 flags, at build time, a value written into a pool that your own constraints can never draw.",
+            "JD030 flags an <code>Any.String()</code> chain that settles no length, as information."
+          ]
+        },
+        {
+          "label": "🙌 Improvements",
+          "anchor": "v1-0-0-preview-2-improvements",
+          "items": [
+            "The packaged readme now documents how to draw a <code>NaN</code> on purpose, since <code>Any.Double()</code>, <code>Any.Single()</code> and <code>Any.Half()</code> refuse one as an argument too.",
+            "JD015 now validates against the new character families, and every value the library prints is escaped against control characters."
+          ]
+        },
+        {
+          "label": "🐛 Bug Fixes",
+          "anchor": "v1-0-0-preview-2-bug-fixes",
+          "items": [
+            "A decimal exclusion declared twice no longer empties a satisfiable grid.",
+            "A conflict on <code>Any.Enum&lt;T&gt;()</code> or <code>Any.Guid()</code> now names the exclusion that caused it.",
+            "A <code>DateTimeOffset</code> pool holding two clocks for the same instant now reaches one verdict regardless of declaration order.",
+            "JD023 and JD024 now read <code>UInt16</code>/<code>UInt32</code>/<code>UInt64</code> constants regardless of the literal's suffix.",
+            "JD015, JD023, JD024 and JD029 now recognise a seeded chain written in one expression."
+          ]
+        }
+      ]
+    },
+    {
+      "version": "1.0.0-preview.1",
+      "date": "2026-08-07",
+      "maturity": "preview",
+      "anchor": "v1-0-0-preview-1",
+      "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/lib-v1.0.0-preview.1",
+      "summaryHtml": [
+        "<em>Not a bigger surface than 0.1.0 — the same one, offered to an outside consumer for the first time, with one new promise attached: your seed.</em>"
+      ],
+      "sections": [
+        {
+          "label": "✨ New",
+          "anchor": "v1-0-0-preview-1-new",
+          "items": [
+            "<strong>A seed now replays across patch and minor versions.</strong> Pin one in a test, and it keeps drawing the same values through every upgrade within <code>1.x</code> (<a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0049-replay-a-seed-across-patch-and-minor-versions.md\">ADR-0049</a>)."
+          ]
+        },
+        {
+          "label": "🙌 Improvements",
+          "anchor": "v1-0-0-preview-1-improvements",
+          "items": [
+            "The package now carries an icon, shared across every package this repository publishes.",
+            "The packaged readme's links point at this repository instead of the one JustDummies was extracted from."
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -2,18 +2,32 @@ import { expect, test } from './support/harness';
 import type { Locator, Page, Response } from '@playwright/test';
 
 /**
- * /release-notes reads a snapshot of the library's own CHANGELOG.md files (see
- * release-notes.ts and scripts/generate-release-notes.mjs), laid out one train at a
- * time behind a tab widget that follows InstallTabs.astro's own pattern — which is
- * what these checks mostly exist to confirm still holds on a second component built
- * the same way.
+ * /release-notes mirrors the library's own release-notes files — one page per train and
+ * major version, the majors themselves a fact of the current snapshot rather than of this
+ * suite (ADR-0019, ADR-0020). So nothing here lists them: the routes under test are read
+ * from the section's own front page, which is also what makes a missing link on that page
+ * a failing test rather than a quiet omission.
  */
-const PAGES: ReadonlyArray<{ path: string; heading: string; firstTrain: string }> = [
+const INDEXES: ReadonlyArray<{ path: string; heading: string; firstTrain: string }> = [
     { path: '/release-notes', heading: 'Release notes', firstTrain: 'Core library' },
     { path: '/fr/release-notes', heading: 'Release notes', firstTrain: 'Bibliothèque principale' },
 ];
 
-for (const { path, heading, firstTrain } of PAGES) {
+async function majorRoutes(page: Page, indexPath: string): Promise<string[]> {
+    await page.goto(indexPath);
+
+    const hrefs: string[] = await page
+        .locator('main a[href*="/release-notes/"]')
+        .evaluateAll((links) => links.map((link) => link.getAttribute('href') ?? ''));
+
+    const routes = [...new Set(hrefs.filter((href) => /\/release-notes\/[a-z]+\/v\d+\/$/.test(href)))];
+
+    expect(routes.length, `${indexPath} offers no train-and-major link at all`).toBeGreaterThan(0);
+
+    return routes;
+}
+
+for (const { path, heading, firstTrain } of INDEXES) {
 
     test(`${path} answers, and wears the site's clothes`, async ({ page }) => {
         const response: Response | null = await page.goto(path);
@@ -25,151 +39,161 @@ for (const { path, heading, firstTrain } of PAGES) {
         await expect(page.locator('.site-footer')).toBeVisible();
     });
 
-    test(`${path} opens on the core library, tab selected and its releases showing`, async ({ page }) => {
+    test(`${path} presents every train, and names the tag it was taken at`, async ({ page }) => {
         await page.goto(path);
 
-        const firstTab = page.locator('[data-tab]').first();
+        // Four trains, each with its own card: the section's front page is the one view of
+        // the four packages at once, which is the reason it is a page and not a redirect.
+        await expect(page.locator('.train')).toHaveCount(4);
+        await expect(page.locator('.train h3').first()).toHaveText(firstTrain);
 
-        await expect(page.locator('[data-tablist]')).toBeVisible();
-        await expect(firstTab).toHaveAttribute('aria-selected', 'true');
-        await expect(firstTab).toHaveText(firstTrain);
-        await expect(page.locator('[data-panel]').first()).toBeVisible();
+        const tag: Locator = page.locator('.snapshot a[href^="https://github.com/Reefact/just-dummies/releases/tag/"]');
+
+        await expect(tag).toBeVisible();
+        await expect(tag).toHaveAttribute('rel', /noopener/);
     });
 
-    test(`${path} needs no script to reach every train`, async ({ browser }) => {
-        const context = await browser.newContext({ javaScriptEnabled: false });
-        const p = await context.newPage();
+    test(`${path} links to a page for every train and major, and each one answers`, async ({ page }) => {
+        const routes = await majorRoutes(page, path);
 
-        await p.goto(path);
+        for (const route of routes) {
+            const response: Response | null = await page.goto(route);
 
-        // ADR-0004, checked the same way content-pages.spec.ts checks it for About and
-        // Privacy: the tablist is a control this reader cannot honour, so it stays
-        // absent, and what it would have hidden is in the page regardless — all four
-        // trains, stacked, not just the one behind the default tab.
-        await expect(p.locator('[data-tablist]:visible')).toHaveCount(0);
-        await expect(p.locator('[data-panel]')).toHaveCount(4);
+            expect(response?.status(), `${route} did not answer`).toBe(200);
 
-        for (const panel of await p.locator('[data-panel]').all()) {
-            await expect(panel).toBeVisible();
+            // Its own content, not a shell: the releases this major published.
+            await expect(page.locator('.release'), `${route} shows no release`).not.toHaveCount(0);
         }
-
-        await expect(p.locator('main')).toBeVisible();
-        await expect(p.locator('.site-footer')).toBeVisible();
-
-        await context.close();
     });
 
 }
 
-test.describe('the train tabs', () => {
+test.describe('a major version page', () => {
 
-    async function trainKeys(page: Page): Promise<string[]> {
-        return page.locator('[data-tab]').evaluateAll((tabs) => tabs.map((tab) => tab.getAttribute('data-tab') ?? ''));
-    }
+    test('opens with its own major expanded and the others one line away', async ({ page }) => {
+        await page.goto('/release-notes/lib/v1/');
 
-    test('switch between trains, and back, showing exactly one at a time', async ({ page }) => {
-        await page.goto('/release-notes');
+        const contents = page.locator('[data-release-contents]');
 
-        const keys = await trainKeys(page);
-        const [lib, xunit] = keys;
+        await expect(contents.locator('.major-label.current')).toHaveText(/1/);
 
-        const libTab = page.locator(`[data-tab="${lib}"]`);
-        const xunitTab = page.locator(`[data-tab="${xunit}"]`);
-        const libPanel = page.locator(`[data-panel="${lib}"]`);
-        const xunitPanel = page.locator(`[data-panel="${xunit}"]`);
+        // The other majors are links out of this page, not anchors into it: a different
+        // major is a different page.
+        const other: Locator = contents.locator('a.major-label');
 
-        await expect(libPanel).toBeVisible();
-        await expect(xunitPanel).toBeHidden();
+        await expect(other).toHaveCount(1);
+        await expect(other).toHaveAttribute('href', '/release-notes/lib/v0/');
 
-        await xunitTab.click();
-
-        await expect(xunitTab).toHaveAttribute('aria-selected', 'true');
-        await expect(libTab).toHaveAttribute('aria-selected', 'false');
-        await expect(xunitPanel).toBeVisible();
-        await expect(libPanel).toBeHidden();
-
-        await libTab.click();
-
-        await expect(libTab).toHaveAttribute('aria-selected', 'true');
-        await expect(libPanel).toBeVisible();
-        await expect(xunitPanel).toBeHidden();
+        // The expanded major carries its releases, and each release its rubrics.
+        await expect(contents.locator('.release-link')).toHaveCount(await page.locator('.release').count());
+        await expect(contents.locator('.rubrics a').first()).toBeVisible();
     });
 
-    test('are announced as tabs, and their panel stops repeating the label, only once they can switch', async ({
-        page,
-    }) => {
-        await page.goto('/release-notes');
+    test('scrolls to the rubric a table-of-contents entry names', async ({ page }) => {
+        await page.goto('/release-notes/lib/v1/');
 
-        const tab = page.locator('[data-tab]').first();
-        const panel = page.locator('[data-panel]').first();
+        const entry: Locator = page.locator('[data-release-contents] .rubrics a').last();
+        const anchor: string = (await entry.getAttribute('href')) ?? '';
 
-        await expect(tab).toHaveAttribute('role', 'tab');
-        await expect(panel).toHaveAttribute('role', 'tabpanel');
-        await expect(panel).toHaveAttribute('aria-labelledby', await tab.getAttribute('id'));
+        await entry.click();
 
-        // The panel's own heading duplicated the tab once scripting could not be relied
-        // on to remove it — see InstallTabs.astro's identical panel-label treatment.
-        await expect(panel.locator('[data-panel-label]')).toBeHidden();
+        // `toHaveURL` retries; reading `page.url()` straight after the click races the
+        // fragment navigation and reports the address the page had a moment earlier.
+        await expect(page).toHaveURL(`/release-notes/lib/v1/${anchor}`);
+        await expect(page.locator(anchor)).toBeInViewport();
     });
 
-    test('every train reachable by keyboard from any other', async ({ page }) => {
-        await page.goto('/release-notes');
+    test('hides nothing behind a fold', async ({ page }) => {
+        await page.goto('/release-notes/lib/v1/');
 
-        const keys = await trainKeys(page);
-        const lastTab = page.locator(`[data-tab="${keys[keys.length - 1]}"]`);
+        // The "+N more" disclosure is gone with the stacked page it existed for: a table of
+        // contents that points at a rubric must point at all of it (ADR-0020).
+        await expect(page.locator('details.more')).toHaveCount(0);
 
-        await page.locator('[data-tab]').first().focus();
-        await page.keyboard.press('ArrowLeft');
-
-        await expect(lastTab).toBeFocused();
-        await expect(lastTab).toHaveAttribute('aria-selected', 'true');
+        for (const bullet of await page.locator('.bullets li').all()) {
+            await expect(bullet).toBeVisible();
+        }
     });
 
-});
+    test('switches package by navigating, with no widget in between', async ({ page }) => {
+        await page.goto('/release-notes/lib/v1/');
 
-test.describe('a section with more than three entries', () => {
+        const current = page.locator('nav a[aria-current="page"]');
 
-    test('folds the rest behind a native disclosure, openable without scripting', async ({ browser }) => {
+        await expect(current).toHaveText('Core library');
+
+        // Links, not tabs: nothing here is built at run time, so nothing announces a role it
+        // cannot honour (ADR-0004, ADR-0020).
+        await expect(page.locator('[role="tab"]')).toHaveCount(0);
+        await expect(page.locator('[role="tabpanel"]')).toHaveCount(0);
+
+        await page.getByRole('link', { name: 'CLI — dum' }).click();
+
+        await expect(page).toHaveURL(/\/release-notes\/cli\/v1\/$/);
+        await expect(page.locator('nav a[aria-current="page"]')).toHaveText('CLI — dum');
+    });
+
+    test('links a release to its own tag on GitHub, safely', async ({ page }) => {
+        await page.goto('/release-notes/lib/v1/');
+
+        const link: Locator = page.locator('.release-foot a').first();
+
+        await expect(link).toHaveAttribute('href', /^https:\/\/github\.com\/Reefact\/just-dummies\/releases\/tag\//);
+        await expect(link).toHaveAttribute('target', '_blank');
+        await expect(link).toHaveAttribute('rel', /noopener/);
+    });
+
+    test('needs no script to be read, navigated or left', async ({ browser }) => {
         const context = await browser.newContext({ javaScriptEnabled: false });
         const page = await context.newPage();
 
-        await page.goto('/release-notes');
+        await page.goto('/release-notes/lib/v1/');
 
-        const count = await page.locator('details.more').count();
-
-        // Whether any section overflows is a fact of the current snapshot, not of this
-        // component — nothing to fold, nothing to check, on a day every section is short.
-        test.skip(count === 0, 'no section in the current snapshot has more than three entries');
-
-        const details = page.locator('details.more').first();
-        const hiddenItem = details.locator('.bullets li').first();
-
-        await expect(hiddenItem).toBeHidden();
-
-        await details.locator('summary').click();
-
-        await expect(hiddenItem).toBeVisible();
+        // Everything this page is made of works before a script could have run: the notes
+        // themselves, the table of contents beside them, and the way out to another train.
+        await expect(page.locator('.release').first()).toBeVisible();
+        await expect(page.locator('[data-release-contents] .release-link').first()).toBeVisible();
+        await expect(page.locator('[data-release-contents] a.major-label').first()).toBeVisible();
+        await expect(page.locator('nav a[aria-current="page"]')).toBeVisible();
+        await expect(page.locator('.site-footer')).toBeVisible();
 
         await context.close();
     });
 
 });
 
-test('a release links to its own tag or comparison on GitHub, safely', async ({ page }) => {
-    await page.goto('/release-notes');
+test.describe('the French pages', () => {
 
-    const link: Locator = page.locator('[data-panel] .release-foot a').first();
+    test('carry the library\'s French prose, not its English', async ({ page }) => {
+        await page.goto('/release-notes/lib/v1/');
 
-    await expect(link).toHaveAttribute('href', /^https:\/\/github\.com\/Reefact\/just-dummies\//);
-    await expect(link).toHaveAttribute('target', '_blank');
-    await expect(link).toHaveAttribute('rel', /noopener/);
-});
+        const english: string[] = await page.locator('.rubric-label').allInnerTexts();
 
-test('the page names the changelog it was read from, and says when', async ({ page }) => {
-    await page.goto('/release-notes');
+        await page.goto('/fr/release-notes/lib/v1/');
 
-    const source = page.locator('.snapshot a');
+        const french: string[] = await page.locator('.rubric-label').allInnerTexts();
 
-    await expect(source).toHaveAttribute('href', 'https://github.com/Reefact/just-dummies');
-    await expect(page.locator('.snapshot time')).toHaveAttribute('datetime', /^\d{4}-\d{2}-\d{2}T/);
+        expect(french.length, 'the French page shows no rubric at all').toBeGreaterThan(0);
+
+        // The rubric headings are the library's own words, taken from its French file rather
+        // than translated here — so the two locales cannot be showing the same strings
+        // (ADR-0019). This is what goes red if the page ever reads the English changelog again.
+        expect(french).not.toEqual(english);
+    });
+
+    test('mark no prose as English, because none of it is', async ({ page }) => {
+        await page.goto('/fr/release-notes/lib/v1/');
+
+        await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
+        await expect(page.locator('main [lang="en"]')).toHaveCount(0);
+    });
+
+    test('offer the same page in the other locale', async ({ page }) => {
+        await page.goto('/fr/release-notes/lib/v1/');
+
+        // The route is built from a parameterised file, which the routing module cannot read
+        // from the file system — so this is what fails if it is ever left untaught.
+        await expect(page.locator('a[hreflang="en"][href="/release-notes/lib/v1/"]')).toHaveCount(1);
+    });
+
 });

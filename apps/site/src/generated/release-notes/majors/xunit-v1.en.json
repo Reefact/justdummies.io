@@ -1,0 +1,35 @@
+{
+  "train": "xunit",
+  "major": 1,
+  "locale": "en",
+  "releases": [
+    {
+      "version": "1.0.0-preview.1",
+      "date": "2026-08-07",
+      "maturity": "preview",
+      "anchor": "v1-0-0-preview-1",
+      "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/xunit-v1.0.0-preview.1",
+      "summaryHtml": [
+        "<em>First published version — the xUnit v3 adapter reaches nuget.org for the first time, at the library's own number rather than at <code>0.1.0</code>: this is the adapter offered for JustDummies 1.0, not an earlier sketch of one.</em>"
+      ],
+      "sections": [
+        {
+          "label": "✨ New",
+          "anchor": "v1-0-0-preview-1-new",
+          "items": [
+            "<strong><code>[Reproducible]</code></strong> — mark a test, a class or an assembly, and the arbitrary values its body draws come from a pinned seed, reported only when the test fails. Removes the per-test <code>Any.Reproducibly</code> wrapping without changing how values are generated.",
+            "<strong>A separate package, deliberately.</strong> <code>JustDummies</code> itself stays free of any test-framework dependency; the xUnit binding lives here and carries the one dependency the library cannot.",
+            "<strong>Package hardening</strong> — embedded SPDX SBOM, SourceLink, symbol package, deterministic build, and a build-provenance attestation on the release artifact."
+          ]
+        },
+        {
+          "label": "🙌 Improvements",
+          "anchor": "v1-0-0-preview-1-improvements",
+          "items": [
+            "Requires xUnit v3 and a <code>JustDummies</code> package published from this repository. The two trains version independently (<a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0047-declare-the-adapters-library-dependency-independently.md\">ADR-0047</a>): an adapter-only fix ships on its own, without waiting on a new library release."
+          ]
+        }
+      ]
+    }
+  ]
+}
