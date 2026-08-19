@@ -74,16 +74,30 @@ Rules:
 `RELEASE_NOTES-en.md` at tag time and refuses the release — loudly, in CI, before the release
 page is written — rather than falling back to anything commit-derived, if that section does not
 exist (ADR-0017). Because a `release/*` tag here is a UTC timestamp decided at the moment of
-tagging (ADR-0001), not a version chosen in advance, the section has to be titled *after* you
-know the exact tag and *before* you push it:
+tagging (ADR-0001), not a version chosen in advance, the section has to be titled *after* the tag
+is known and *before* it is pushed — and, since ADR-0021, the tag is verified against the pull
+request that named it, not against its own creation clock, which is what makes the two-actor
+protocol below trustworthy rather than merely convenient.
+
+**This is now a two-actor protocol: an agent prepares, the maintainer tags.** They do not happen
+in the same breath, and nothing here assumes they will.
 
 1. Review `git log <previous-release-tag>..HEAD` and the merged PRs since the last release, and
    write or refresh `## Unreleased` in both files, following the format above.
-2. Once ready to release: compute the tag exactly as the deployment guide's Step 7 does (read
-   the clock once), then **retitle `## Unreleased` to that exact tag** — `## release/<tag> —
-   <Month> <day>, <year>` — in both files, and add a fresh, empty `## Unreleased` above it for
-   next time.
-3. Commit that to `main` and let CI go green, **then** run the tag-and-push ritual.
+2. Once ready to release: compute the tag — `release/$(date -u +%Y-%m-%dT%H-%M-%SZ)`, read once,
+   right then — and **retitle `## Unreleased` to that exact tag** — `## release/<tag> — <Month>
+   <day>, <year>` — in both files, and add a fresh, empty `## Unreleased` above it for next time.
+3. Commit that, push a branch, and open a pull request titled exactly `ci: prepare <tag>` —
+   ADR-0021's `verify-tag` job matches on this title verbatim, so it is not a style choice.
+4. In the same reply, hand the maintainer the tag commands from the deployment guide's Step 7,
+   filled in with this exact tag string — **one command per code block, never joined with `&&`**,
+   so each is a single copy-paste. Make clear the tag is the one just computed, not something to
+   recompute later: reading the clock again at tag time would produce a different string than the
+   one this PR — and the release note it retitled — already carry, and `verify-tag` would refuse
+   the mismatch.
+5. The maintainer reviews and merges the PR (by rebase, as this repository always merges), then
+   runs the handed-over commands themselves, ending with the tag push. Nothing here does that for
+   them.
 
 **Tagging and pushing stay the maintainer's own action.** This skill prepares the release; it
 does not push a release tag on its own authority.
