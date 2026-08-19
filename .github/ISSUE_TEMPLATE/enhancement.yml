@@ -1,0 +1,73 @@
+name: Enhancement
+description: Suggest an improvement to justdummies.io.
+title: "[Enhancement] "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for UX, UI, content, accessibility, performance, SEO, or maintainability improvements to justdummies.io.
+        Please search the existing issues before submitting a new one.
+
+  - type: input
+    id: url
+    attributes:
+      label: Affected page or area
+      description: Which page or part of the site is concerned?
+      placeholder: https://justdummies.io/... or "site-wide"
+    validations:
+      required: false
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or opportunity
+      description: Describe what could be improved and why it matters.
+      placeholder: What is awkward, unclear, missing, slow, inconsistent, or harder than it should be?
+    validations:
+      required: true
+
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Expected outcome
+      description: Describe the user-visible result you want to achieve.
+      placeholder: What should be better once this is implemented?
+    validations:
+      required: true
+
+  - type: textarea
+    id: direction
+    attributes:
+      label: Proposed direction
+      description: Describe a preferred solution or implementation direction, if you already have one.
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: If known, list the observable conditions that define done.
+      placeholder: |
+        - ...
+        - ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add screenshots, mockups, references, related issues, implementation constraints, or anything else that may help.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: existing
+    attributes:
+      label: Existing issues
+      options:
+        - label: I have searched the existing issues and did not find the same request.
+          required: true

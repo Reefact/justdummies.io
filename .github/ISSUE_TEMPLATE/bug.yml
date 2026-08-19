@@ -1,0 +1,86 @@
+name: Bug report
+description: Report a reproducible problem with justdummies.io.
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem with justdummies.io.
+        Please search the existing issues before submitting a new one.
+
+  - type: input
+    id: url
+    attributes:
+      label: Affected page or URL
+      description: Which page is affected?
+      placeholder: https://justdummies.io/...
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Describe the current behavior and why it is a problem.
+      placeholder: What happens today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: Describe what should happen instead.
+      placeholder: What should happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Provide the smallest reliable sequence that reproduces the problem.
+      placeholder: |
+        1. Open ...
+        2. Click ...
+        3. Observe ...
+    validations:
+      required: false
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser, browser version, operating system, and device when relevant.
+      placeholder: Chrome 151 / Windows 11 / desktop
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: If known, describe the observable conditions that should be true once the issue is fixed.
+      placeholder: |
+        - ...
+        - ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add screenshots, recordings, related issues, implementation notes, or anything else that may help.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: existing
+    attributes:
+      label: Existing issues
+      options:
+        - label: I have searched the existing issues and did not find the same problem.
+          required: true
