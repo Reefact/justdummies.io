@@ -1,5 +1,6 @@
 @page "/"
 @inherits LocalizedComponent
+@using System.Globalization
 @using System.Reflection
 @using JustDummies.Playground.Catalogue
 @using JustDummies.Playground.Localization
@@ -442,9 +443,15 @@
                     }
 
                     var parameter = chosen.Parameters[i];
+                    var argument  = FormatArgumentLiteral(parameter.TypeKey, link.Argument(i));
 
-                    segments.Add(new(FormatArgumentLiteral(parameter.TypeKey, link.Argument(i)),
-                                     LiteralTokenClassFor(parameter.TypeKey)));
+                    // Painted as a value only where a value is what was written. The same
+                    // argument comes back as a Parse call, a cast or a named constant for the
+                    // types and values C# has no literal for, and those keep the block's plain
+                    // colour — which is why the run's colour is asked of the formatted argument
+                    // and not of its type alone (see LiteralTokenClassFor).
+                    segments.Add(new(argument.Text,
+                                     argument.IsLiteral ? LiteralTokenClassFor(parameter.TypeKey) : null));
                 }
 
                 segments.Add(new(")", "tok-punctuation"));
@@ -462,26 +469,36 @@
     ///     Which colour a formatted argument takes in the code bar, or null for the block's
     ///     ordinary text colour.
     ///
-    ///     Only what <see cref="FormatArgumentLiteral" /> emits as an actual literal is coloured
-    ///     as one. Everything else comes out of that method as a <c>Parse(...)</c> call — a type
-    ///     name, a quoted payload and two qualified constants — and painting that whole
-    ///     expression in the string colour would be claiming it is a string. Left plain, it reads
-    ///     as what it is: a call among literals.
+    ///     Only what <see cref="FormatArgumentLiteral" /> actually wrote as a literal is coloured
+    ///     as one, which is what <see cref="FormattedArgument.IsLiteral" /> reports and why the
+    ///     caller asks that before asking this. Everything else comes out of that method as an
+    ///     expression — a <c>Parse(...)</c> call, a cast to <c>Half</c>, a named constant for a
+    ///     NaN or an infinity — and painting a type name and a pair of parentheses in the colour
+    ///     of a value would be claiming they are part of it. Left plain, they read as what they
+    ///     are.
     ///
-    ///     The cases below are exactly the ones <see cref="FormatArgumentLiteral" /> has a literal
-    ///     form for, and no others — <c>Int32</c> alone among the integer types, because every
-    ///     other width goes through <c>Parse</c> there. Adding a type here without adding it there
-    ///     would paint a call in the colour of a value.
+    ///     So this switch names the types that have a literal form <em>at all</em>, rather than
+    ///     the arguments that got one: <c>Int128</c> has a literal for the values a decimal
+    ///     literal reaches and a <c>Parse</c> call above them, and that difference is one only the
+    ///     formatter can see. <c>Half</c> is deliberately absent — every one of its values is
+    ///     written as an expression rather than a literal, a cast or a named constant depending
+    ///     on whether it is finite, so a colour for it would never be right.
     ///
     ///     A list argument takes its elements' colour, since that is what it is made of:
     ///     <c>OneOf("red", "green")</c> emits string literals, so the run is the string colour —
     ///     commas and all, because the whole list is one argument and is drawn as one run.
     /// </summary>
     private static string? LiteralTokenClassFor(string typeKey) => ArgumentParsing.ElementTypeKeyOf(typeKey) switch {
-        ArgumentParsing.TypeKeyString or ArgumentParsing.TypeKeyChar => "tok-string",
-        ArgumentParsing.TypeKeyBoolean                               => "tok-keyword",
-        ArgumentParsing.TypeKeyInt32                                 => "tok-number",
-        _                                                            => null,
+        ArgumentParsing.TypeKeyString or ArgumentParsing.TypeKeyChar   => "tok-string",
+        ArgumentParsing.TypeKeyBoolean                                 => "tok-keyword",
+        ArgumentParsing.TypeKeyByte or ArgumentParsing.TypeKeySByte or
+            ArgumentParsing.TypeKeyInt16 or ArgumentParsing.TypeKeyUInt16 or
+            ArgumentParsing.TypeKeyInt32 or ArgumentParsing.TypeKeyUInt32 or
+            ArgumentParsing.TypeKeyInt64 or ArgumentParsing.TypeKeyUInt64 or
+            ArgumentParsing.TypeKeyInt128 or ArgumentParsing.TypeKeyUInt128 or
+            ArgumentParsing.TypeKeySingle or ArgumentParsing.TypeKeyDouble or
+            ArgumentParsing.TypeKeyDecimal                             => "tok-number",
+        _                                                              => null,
     };
 
     /// <summary>What the copy button puts on the clipboard: <see cref="CodeSegments" /> joined
@@ -561,57 +578,221 @@
         "string" or "char" or "int" or "bool" or "byte" or "sbyte" or "short" or
         "ushort" or "uint" or "long" or "ulong" or "float" or "double" or "decimal";
 
-    /// <summary>Formats one argument the way it would need to read in real C#, so "Copy code"
-    /// produces code that actually compiles rather than the raw text an input held. Only
-    /// <c>string</c> (quoted), <c>char</c> (quoted) and <c>int</c> (a bare literal is already
-    /// valid C#) get special forms; every other supported type is emitted as
-    /// <c>TypeName.Parse("raw", CultureInfo.InvariantCulture)</c> rather than as a bare literal,
-    /// since several of them (Guid, the date/time family, decimal, float, Half,
-    /// Int128/UInt128, large unsigned values) have no bare-literal form, or one that needs a
-    /// type-specific suffix — Parse is correct and uniform for all of them at once. The
-    /// explicit invariant-culture argument matters because ArgumentParsing itself always
-    /// parses in that same culture (specification-adjacent: what the playground accepted must
-    /// still parse the same way once copied out) — a parameterless Parse() would instead use
-    /// whatever culture the pasted code happens to run under.
+    /// <summary>One argument as the copied line writes it: the C# text, and whether that text is
+    /// a literal — a value the language spells out — rather than an expression that produces one.
+    /// Only <see cref="FormatArgumentLiteral" /> knows which of the two it wrote, since for
+    /// several types that depends on the value and not on its type alone, and
+    /// <see cref="CodeSegments" /> has to know before it can colour the run.</summary>
+    private readonly record struct FormattedArgument(string Text, bool IsLiteral);
+
+    /// <summary>
+    ///     Formats one argument the way it would need to read in real C#, so "Copy code" produces
+    ///     code that compiles rather than the raw text an input held — and, wherever the language
+    ///     can spell the value out, the line the reader would have written themselves.
     ///
-    /// A LIST ARGUMENT SPREADS INTO THE CALL — <c>OneOf("red", "green", "blue")</c>, not
-    /// <c>OneOf(new[] { ... })</c> — which is legal because every array parameter the catalogue
-    /// accepts is a <c>params</c> one (tools/playground-catalogue's CatalogueWalker excludes any
-    /// that is not, precisely so this stays true) and is what a reader would have written
-    /// themselves. Its values are cut out of the raw text by <c>ArgumentParsing.SplitList</c>,
-    /// the very function that parsed them, so the line printed here passes exactly the values the
-    /// card above just generated from; each one is then formatted by this same method under its
-    /// element type, and so gets that type's own literal or <c>Parse(...)</c> form.</summary>
-    private static string FormatArgumentLiteral(string typeKey, string raw) {
+    ///     A LITERAL WHEREVER THERE IS ONE. That used to mean <c>string</c>, <c>char</c>,
+    ///     <c>bool</c> and <c>int</c>; every other type went out as
+    ///     <c>TypeName.Parse("raw", CultureInfo.InvariantCulture)</c> — uniform, correct, and
+    ///     nothing anybody writes. <c>Any.Int16().Except(11, 12, 13)</c> came back as three
+    ///     <c>short.Parse(...)</c> calls, which is the playground's own noise rather than the
+    ///     library's, on the one bar whose whole promise is "this is your code". A decimal integer
+    ///     literal converts to every fixed-width integer type by the language's own implicit
+    ///     constant conversion, and the floating-point types have their suffixes, so the value
+    ///     alone compiles at every width.
+    ///
+    ///     FORMATTED FROM THE PARSED VALUE, NOT FROM THE RAW TEXT, which is what makes writing a
+    ///     literal safe at all: the text a field accepts is not always a literal for the value it
+    ///     parsed to, and it misses in two different ways. It can fail to compile — "1e40" in a
+    ///     float field parses to infinity (.NET Core 3.0 onwards) where the literal <c>1e40f</c>
+    ///     is CS0594, and a leading <c>+</c> in a Half field would land in front of that type's
+    ///     cast, where <c>(System.Half)+1.5f</c> reads as an addition rather than a conversion
+    ///     (CS0119). Or it compiles and is still a spelling the value is not written in: a
+    ///     leading <c>+</c> anywhere else, leading zeros, exponent notation. Formatting the value
+    ///     the card just generated from, rather than the characters it was typed as, answers both
+    ///     at once. <c>bool</c> already worked this way, for the same reason.
+    ///
+    ///     WHAT HAS NO LITERAL, AND SO STILL PARSES: <c>Guid</c> and the whole date/time family,
+    ///     plus <c>Int128</c>/<c>UInt128</c> beyond the range an integer literal reaches. An
+    ///     argument this playground could not parse lands there too — <see cref="CodeText" /> is
+    ///     rebuilt on every render whether or not the chain is complete, so this must format
+    ///     something rather than throw, and <see cref="IsWritableAsCode" /> is what keeps that text
+    ///     off the bar and out of the clipboard. The explicit invariant culture on those calls
+    ///     matters for the reason it does in <c>ArgumentParsing</c>: what the playground accepted
+    ///     must parse the same way once copied out, where a parameterless <c>Parse()</c> would
+    ///     follow whatever culture the pasted code runs under.
+    ///
+    ///     A LIST ARGUMENT SPREADS INTO THE CALL — <c>OneOf("red", "green", "blue")</c>, not
+    ///     <c>OneOf(new[] { ... })</c> — which is legal because every array parameter the catalogue
+    ///     accepts is a <c>params</c> one (tools/playground-catalogue's CatalogueWalker excludes any
+    ///     that is not, precisely so this stays true) and is what a reader would have written
+    ///     themselves. Its values are cut out of the raw text by <c>ArgumentParsing.SplitList</c>,
+    ///     the very function that parsed them, so the line printed here passes exactly the values
+    ///     the card above just generated from; each one is then formatted by this same method under
+    ///     its element type, and so gets that type's own literal or <c>Parse(...)</c> form — and the
+    ///     run counts as a literal only if every one of them did.
+    /// </summary>
+    private static FormattedArgument FormatArgumentLiteral(string typeKey, string raw) {
         if (ArgumentParsing.IsListTypeKey(typeKey)) {
             string elementTypeKey = ArgumentParsing.ElementTypeKeyOf(typeKey);
+            var    elements       = ArgumentParsing.SplitList(raw)
+                                                   .Select(value => FormatArgumentLiteral(elementTypeKey, value))
+                                                   .ToList();
 
-            return string.Join(", ", ArgumentParsing.SplitList(raw).Select(value => FormatArgumentLiteral(elementTypeKey, value)));
+            return new FormattedArgument(string.Join(", ", elements.Select(element => element.Text)),
+                                         elements.All(element => element.IsLiteral));
         }
 
-        return typeKey switch {
-        ArgumentParsing.TypeKeyString  => FormatStringLiteral(raw),
-        ArgumentParsing.TypeKeyChar    => $"'{EscapeForCharLiteral(raw)}'",
-        ArgumentParsing.TypeKeyInt32   => raw,
-        // bool.Parse has no Parse(string, IFormatProvider) overload — the uniform Parse(...)
-        // fallback below doesn't compile for it. A bare "true"/"false" literal is valid C#,
-        // but the raw input itself might not be lowercase (bool.TryParse accepts "True"), so
-        // this re-derives the canonical literal rather than trusting the raw text verbatim.
-        // CodeText is rebuilt on every render regardless of whether the chain is complete —
-        // CopyCodeButton only chooses not to offer it while the chain has no step — so an
-        // empty or not-yet-valid argument must format to something rather than throw; TryParse
-        // rather than Parse is what keeps this a pure, non-throwing formatting function.
-        ArgumentParsing.TypeKeyBoolean => bool.TryParse(raw, out var b) && b ? "true" : "false",
-        // decimal.Parse(string, IFormatProvider) alone defaults to NumberStyles.Number, which
-        // excludes AllowExponent — unlike float/double/Half, whose 2-argument Parse already
-        // defaults to NumberStyles.Float. ArgumentParsing itself always parses with
-        // NumberStyles.Float, so a decimal typed in exponent notation (e.g. "1e2") would
-        // generate fine in the playground but throw FormatException in the copied code without
-        // this explicit style.
-        ArgumentParsing.TypeKeyDecimal => $"decimal.Parse(\"{EscapeForStringLiteral(raw)}\", System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture)",
-        _                              => $"{ClrTypeNameFor(typeKey)}.Parse(\"{EscapeForStringLiteral(raw)}\", System.Globalization.CultureInfo.InvariantCulture)",
+        switch (typeKey) {
+            case ArgumentParsing.TypeKeyString:
+                return AsLiteral(FormatStringLiteral(raw));
+            case ArgumentParsing.TypeKeyChar:
+                return AsLiteral($"'{EscapeForCharLiteral(raw)}'");
+            // Re-derived rather than trusted verbatim: the raw text need not be lowercase
+            // (bool.TryParse accepts "True"). bool also has no Parse(string, IFormatProvider)
+            // overload to fall back to — nor has char, and string has no Parse at all, which is
+            // the other reason all three are answered here rather than below.
+            case ArgumentParsing.TypeKeyBoolean:
+                return AsLiteral(bool.TryParse(raw, out bool flag) && flag ? "true" : "false");
+        }
+
+        // An argument still being typed reaches here as often as a finished one, so a failed parse
+        // is an ordinary state rather than an error: it takes the Parse form, which is text like
+        // any other, and IsWritableAsCode — asking this same parser — is what stops the bar
+        // printing it. That is also what keeps this a pure, non-throwing formatting function.
+        if (!ArgumentParsing.TryParse(typeKey, raw, out object? value, out _) || value is null) {
+            return ParseCall(typeKey, raw);
+        }
+
+        return value switch {
+        byte or sbyte or short or ushort or int or uint or long or ulong => AsLiteral(Invariant(value)),
+        // The band is the compiler's, not the type's: an integer literal takes the first of
+        // int/uint/long/ulong that holds it, so bare digits reach ulong.MaxValue upwards and
+        // long.MinValue downwards (that one by the language's own rule for a decimal literal
+        // written directly behind a unary minus), and are CS1021 beyond. A 128-bit value past
+        // the band has no literal at any width, so it keeps its Parse call — which is why a
+        // literal form is a question about the value here, and not about the type.
+        //
+        // No field can hand one over today: ArgumentParsing.SandboxMagnitudeLimit stops every
+        // integer argument at 100 000, well inside the band. The test is here so that what this
+        // line emits rests on the language's own rule rather than on a ceiling set elsewhere,
+        // for an unrelated reason, and free to move.
+        Int128 wide when wide >= long.MinValue && wide <= (Int128)ulong.MaxValue => AsLiteral(Invariant(wide)),
+        UInt128 wide when wide <= (UInt128)ulong.MaxValue                        => AsLiteral(Invariant(wide)),
+        float single                                                            => FormatSingleLiteral(single),
+        double real                                                             => FormatDoubleLiteral(real),
+        Half half                                                               => FormatHalfLiteral(half),
+        // The suffix is what makes it a decimal rather than a double, and decimal's own text is
+        // exact — trailing zeros included, so the scale a visitor typed ("1.50") reaches the
+        // copied line the way the value carries it.
+        decimal number                                                          => AsLiteral($"{Invariant(number)}m"),
+        _                                                                       => ParseCall(typeKey, raw),
         };
     }
+
+    /// <summary>One <c>float</c> argument. The suffix is not decoration: without it the text is a
+    /// <c>double</c> literal, and there is no implicit conversion from one to the other, not even
+    /// for a constant. A value the parser accepted but no literal can carry — NaN and the
+    /// infinities, which <c>float.TryParse</c> reads from "NaN" and "Infinity", and which anything
+    /// out of range saturates to since .NET Core 3.0 — takes the named constant instead.</summary>
+    private static FormattedArgument FormatSingleLiteral(float value) =>
+        NonFiniteName(value, "float") is { } name
+            ? AsExpression(name)
+            : AsLiteral($"{RoundTrip(value)}f");
+
+    /// <summary>
+    ///     One <c>double</c> argument, which needs no suffix: a real literal already is a double,
+    ///     and an integer literal converts to one implicitly.
+    ///
+    ///     "AN INTEGER LITERAL" IS THE TRAP, and the trailing ".0" is what keeps out of it. A
+    ///     whole value comes back from <see cref="RoundTrip" /> as bare digits, and bare digits
+    ///     are an integer literal — a different literal, of a different type, that the compiler
+    ///     then converts.
+    ///
+    ///     Which is not always the same value. "-0" is typeable in any double field and parses to
+    ///     negative zero; written back as the integer literal <c>-0</c> it is folded to <c>0</c>
+    ///     and converted to positive zero, so the copied line would carry a value the card never
+    ///     generated from — the very divergence this method is written from the parsed value to
+    ///     avoid. <c>-0.0</c> is negative zero, and stays it.
+    ///
+    ///     The second reason is a ceiling rather than a value: an integer literal is typed as at
+    ///     most a <c>ulong</c> and refused above that (CS1021), where <c>double</c> itself reaches
+    ///     1e308. Today's formatter turns to exponent notation from 1e17, well below the ceiling,
+    ///     so nothing reaches it through this method — but that is a threshold in somebody else's
+    ///     code, and ".0" is what keeps the line from resting on it.
+    /// </summary>
+    private static FormattedArgument FormatDoubleLiteral(double value) {
+        if (NonFiniteName(value, "double") is { } name) {
+            return AsExpression(name);
+        }
+
+        string text        = RoundTrip(value);
+        bool   readsAsReal = text.Contains('.') || text.Contains('E') || text.Contains('e');
+
+        return AsLiteral(readsAsReal ? text : $"{text}.0");
+    }
+
+    /// <summary>
+    ///     One <c>Half</c> argument — the one numeric type with no literal of its own, written as
+    ///     the cast a reader would write: <c>(System.Half)1.5f</c>, qualified for the same reason
+    ///     everything else here is.
+    ///
+    ///     NOT A BARE VALUE, because <c>Half</c> defines implicit conversions from both
+    ///     <c>byte</c> and <c>sbyte</c>, which makes an integer literal ambiguous rather than
+    ///     narrowing (CS0457). NOT A LITERAL EITHER, whatever it looks like, so it is never
+    ///     painted as one.
+    ///
+    ///     THE PARENTHESES ARE LOAD-BEARING on a negative value: <c>(System.Half)-0.5f</c> is
+    ///     CS0075, the cast reading as a subtraction. They go on the sign rather than on every
+    ///     value, so the ordinary case keeps the shape it would be written in.
+    ///
+    ///     THE ROUND TRIP HOLDS THROUGH <c>float</c>: the shortest text that reads back as this
+    ///     Half is at most five significant digits where a float carries nine, so parsing it as a
+    ///     float and narrowing lands back on the Half it came from — checked over all 63 488 finite
+    ///     values rather than argued from the digit counts.
+    /// </summary>
+    private static FormattedArgument FormatHalfLiteral(Half value) {
+        if (NonFiniteName((double)value, "System.Half") is { } name) {
+            return AsExpression(name);
+        }
+
+        string single  = $"{RoundTrip(value)}f";
+        string operand = single.StartsWith('-') ? $"({single})" : single;
+
+        return AsExpression($"(System.Half){operand}");
+    }
+
+    /// <summary>The named constant a non-finite value has to be written as — C# has no literal for
+    /// a NaN or an infinity, and all three parse — or null when the value is finite and a literal
+    /// is what it takes. <paramref name="typeName" /> is how the type is written in the copied
+    /// line: the keyword where the language has one, qualified where it does not. Taking a
+    /// <c>double</c> serves all three floating-point types at once, since widening to it is exact
+    /// and carries NaN and the infinities across unchanged.</summary>
+    private static string? NonFiniteName(double value, string typeName) =>
+        double.IsNaN(value)                ? $"{typeName}.NaN"
+        : double.IsPositiveInfinity(value) ? $"{typeName}.PositiveInfinity"
+        : double.IsNegativeInfinity(value) ? $"{typeName}.NegativeInfinity"
+        : null;
+
+    /// <summary>The fallback form, for a value C# cannot write down: <c>Guid</c>, the date/time
+    /// family, a 128-bit integer past the literal band — and an argument that does not parse at
+    /// all, which is every argument on its way to being typed.</summary>
+    private static FormattedArgument ParseCall(string typeKey, string raw) =>
+        AsExpression($"{ClrTypeNameFor(typeKey)}.Parse(\"{EscapeForStringLiteral(raw)}\", System.Globalization.CultureInfo.InvariantCulture)");
+
+    private static FormattedArgument AsLiteral(string text) => new(text, true);
+
+    private static FormattedArgument AsExpression(string text) => new(text, false);
+
+    /// <summary>A value as code writes it, which is the invariant culture whatever the visitor's
+    /// own language is: in French a decimal comma would make one argument read as two.</summary>
+    private static string Invariant(object value, string? format = null) =>
+        ((IFormattable)value).ToString(format, CultureInfo.InvariantCulture);
+
+    /// <summary>The shortest text that reads back as exactly this floating-point value. Both ends
+    /// of that trip are correctly rounded — the runtime's formatter here, the compiler's literal
+    /// parser wherever the line is pasted — so what the reader generates is what the card
+    /// generated from.</summary>
+    private static string RoundTrip(object value) => Invariant(value, "R");
 
     /// <summary>
     ///     One <c>string</c> argument as a C# literal — verbatim where that is the form a reader
@@ -670,12 +851,29 @@
         _        => null,
     };
 
+    /// <summary>
+    ///     How a type is written where the copied line names one: the C# keyword the language
+    ///     has, the qualified name where it has none — the same implicit-usings reasoning
+    ///     <see cref="CSharpTypeNameFor" /> is written under.
+    ///
+    ///     TOTAL OVER <c>ArgumentParsing</c>'S TYPE KEYS, and it has to be: every argument that
+    ///     does not parse reaches this through <see cref="ParseCall" />, and every argument is
+    ///     unparsable on its way to being typed. A missing entry is therefore not a wrong literal
+    ///     somewhere — it is an exception thrown while rendering, and a card that empties as the
+    ///     visitor types into it. <c>string</c>, <c>char</c> and <c>bool</c> never actually arrive
+    ///     here, since <see cref="FormatArgumentLiteral" /> answers all three before any parse;
+    ///     they are listed anyway, so this map stands on the parser's own list of types rather
+    ///     than on that reading of another method staying true.
+    /// </summary>
     private static string ClrTypeNameFor(string typeKey) => typeKey switch {
+        ArgumentParsing.TypeKeyString         => "string",
+        ArgumentParsing.TypeKeyChar           => "char",
         ArgumentParsing.TypeKeyBoolean        => "bool",
         ArgumentParsing.TypeKeyByte           => "byte",
         ArgumentParsing.TypeKeySByte          => "sbyte",
         ArgumentParsing.TypeKeyInt16          => "short",
         ArgumentParsing.TypeKeyUInt16         => "ushort",
+        ArgumentParsing.TypeKeyInt32          => "int",
         ArgumentParsing.TypeKeyUInt32         => "uint",
         ArgumentParsing.TypeKeyInt64          => "long",
         ArgumentParsing.TypeKeyUInt64         => "ulong",

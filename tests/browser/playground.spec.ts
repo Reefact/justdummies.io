@@ -645,6 +645,139 @@ test.describe('the playground', () => {
     });
 
     /**
+     * A number is written as a number, at every width the library offers.
+     *
+     * `int` was the only one that was. Every other type went out through the uniform
+     * `Parse(...)` fallback, so the three values a visitor types into `Except` on an `Int16`
+     * generator came back as three `short.Parse("11", System.Globalization.CultureInfo
+     * .InvariantCulture)` calls — on the one bar whose whole promise is "this is your code".
+     * That noise was the playground's own and not the library's: a decimal integer literal
+     * converts to every fixed-width integer type by the language's own implicit constant
+     * conversion, so the digits alone compile at every width.
+     *
+     * The floating-point suffix is the other half, and it is not decoration — `1.5` is a
+     * `double`, and no implicit conversion takes a `double` to a `float`, constant or not.
+     */
+    test('writes a numeric argument as the literal its type has', async ({ page }) => {
+        await page.goto('/playground/');
+
+        const printed = page.locator('.playground-widget .code-bar .code-text');
+
+        await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'Int16()' });
+        await page.locator('.chain-link').nth(1).locator('select').selectOption({ label: 'Except(values)' });
+        await page.locator('.chain-link').nth(1).locator('input').fill('11, 12, 13');
+
+        await expect(printed).toHaveText('short anyValue = Any.Int16().Except(11, 12, 13).Generate();');
+
+        // And painted as a value, which is what it now is: the whole list is one run, commas
+        // included, in the colour the same digits take in the fields above.
+        await expect(printed.locator('.tok-number')).toHaveText('11, 12, 13');
+
+        // A fresh chain rather than a rebuilt one: the point here is the second type, not the
+        // gestures that reach it.
+        await page.goto('/playground/');
+
+        await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'Single()' });
+        await page.locator('.chain-link').nth(1).locator('select').selectOption({ label: 'Between(minimum, maximum)' });
+        await page.locator('.chain-link').nth(1).locator('input').first().fill('0.5');
+        await page.locator('.chain-link').nth(1).locator('input').nth(1).fill('1.5');
+
+        await expect(printed).toHaveText('float anyValue = Any.Single().Between(0.5f, 1.5f).Generate();');
+    });
+
+    /**
+     * The literal says the value the card generated from, not the characters it was typed as —
+     * and the two are not always the same text. Three readings of that rule, in the order they
+     * cost.
+     *
+     * Exponent notation compiles either way. It used to be answered by passing
+     * `NumberStyles.Float` to a `decimal.Parse(...)` in the copied line, since the two-argument
+     * overload would have thrown on the very text the playground had just accepted; a literal for
+     * the value retires that arrangement rather than maintaining it.
+     *
+     * `-0` in a double field is where the raw text compiles to a *different value*: written back
+     * as the integer literal `-0` it is folded to `0` and converted to positive zero, so the line
+     * would hand over a value the card never drew from.
+     *
+     * `1e40` in a float field is where it does not compile at all — it parses to infinity (.NET
+     * Core 3.0 onwards) where the literal `1e40f` is CS0594, a line the bar would have called
+     * compilable and the compiler would have refused. The infinity has no literal of its own
+     * either, so it is written as the named constant — and a named constant is not painted as a
+     * value.
+     */
+    test('formats the value that was parsed, not the text that was typed', async ({ page }) => {
+        await page.goto('/playground/');
+
+        const printed = page.locator('.playground-widget .code-bar .code-text');
+
+        await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'Decimal()' });
+        await page.locator('.chain-link').nth(1).locator('select').selectOption({ label: 'DifferentFrom(value)' });
+        await page.locator('.chain-link').nth(1).locator('input').fill('1e2');
+
+        await expect(printed).toHaveText('decimal anyValue = Any.Decimal().DifferentFrom(100m).Generate();');
+
+        await page.goto('/playground/');
+
+        await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'Double()' });
+        await page.locator('.chain-link').nth(1).locator('select').selectOption({ label: 'DifferentFrom(value)' });
+        await page.locator('.chain-link').nth(1).locator('input').fill('-0');
+
+        await expect(printed).toHaveText('double anyValue = Any.Double().DifferentFrom(-0.0).Generate();');
+
+        await page.goto('/playground/');
+
+        await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'Single()' });
+        await page.locator('.chain-link').nth(1).locator('select').selectOption({ label: 'DifferentFrom(value)' });
+        await page.locator('.chain-link').nth(1).locator('input').fill('1e40');
+
+        await expect(printed).toHaveText(
+            'float anyValue = Any.Single().DifferentFrom(float.PositiveInfinity).Generate();',
+        );
+        await expect(printed.locator('.tok-number')).toHaveCount(0);
+    });
+
+    /**
+     * Where C# has no literal, the `Parse(...)` call stays — and is not painted as though it were
+     * a value.
+     *
+     * `Guid` and the date/time family have no literal form at any value, and `Half` has none
+     * either: it defines implicit conversions from both `byte` and `sbyte`, so a bare `1` is
+     * CS0457 rather than a narrowing, and there is no suffix that says "half". The cast is what a
+     * reader would write, and the parentheses on a negative value are load-bearing — CS0075
+     * otherwise.
+     *
+     * Neither form is a literal, so neither takes a literal's colour: painting a type name and a
+     * pair of parentheses in the colour of a number would be claiming they are part of one.
+     */
+    test('keeps a Parse call, or a cast, where the language has no literal', async ({ page }) => {
+        await page.goto('/playground/');
+
+        const printed = page.locator('.playground-widget .code-bar .code-text');
+
+        await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'Guid()' });
+        await page.locator('.chain-link').nth(1).locator('select').selectOption({ label: 'DifferentFrom(value)' });
+        await page.locator('.chain-link').nth(1).locator('input').fill('3fa85f64-5717-4562-b3fc-2c963f66afa6');
+
+        await expect(printed).toHaveText(
+            'System.Guid anyValue = Any.Guid().DifferentFrom(System.Guid.Parse("3fa85f64-5717-4562-b3fc-2c963f66afa6", ' +
+                'System.Globalization.CultureInfo.InvariantCulture)).Generate();',
+        );
+        await expect(printed.locator('.tok-number')).toHaveCount(0);
+
+        await page.goto('/playground/');
+
+        await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'Half()' });
+        await page.locator('.chain-link').nth(1).locator('select').selectOption({ label: 'Between(minimum, maximum)' });
+        await page.locator('.chain-link').nth(1).locator('input').first().fill('-1.5');
+        await page.locator('.chain-link').nth(1).locator('input').nth(1).fill('2.5');
+
+        await expect(printed).toHaveText(
+            'System.Half anyValue = Any.Half().Between((System.Half)(-1.5f), (System.Half)2.5f).Generate();',
+        );
+        await expect(printed.locator('.tok-number')).toHaveCount(0);
+    });
+
+    /**
      * The declared type follows the chain rather than the entry point's name, and it is a C#
      * keyword where the language has one. `var` is the fallback for a receiver the catalogue does
      * not describe a Generate() for — it compiles, which is the whole reason it is the fallback —
