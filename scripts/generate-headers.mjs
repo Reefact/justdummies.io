@@ -11,89 +11,14 @@
 // disable inline-script protection across the whole site to accommodate one tag, or
 // a hash of that exact tag. This takes the hash, and recomputes it every build
 // because the fingerprints inside it change every build.
-import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { inlineScriptHashes } from './lib/inline-scripts.mjs';
+
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const dist = join(root, 'dist');
-
-/**
- * A page with its HTML comments removed, because a comment that merely *mentions* a
- * script tag is not a script.
- *
- * `ApiCategoryNav.astro` carries one: a comment explaining that the search results are
- * written by "the plain <script> above via innerHTML". The scanner below matched that
- * `<script>` and then ran to the next real `</script>`, so what it hashed was the whole
- * of the page's main content — different on every page, and therefore a distinct hash
- * per page. Eighteen of the twenty-seven hashes the policy carried were that: not
- * scripts, and not protecting anything.
- *
- * A browser never executes a commented-out tag, so nothing is lost by dropping these
- * before the scan. The one shape this would mishandle is a real script whose body
- * contains `<!--` (the pre-HTML5 idiom for hiding source from ancient browsers); no page
- * here uses it, and `verify-output.sh` would fail if one appeared, because the hash it
- * demands would no longer be in the policy.
- *
- * WRITTEN AS A SCAN RATHER THAN A REPLACE, and not to quiet a warning. What this has to
- * agree with is the HTML tokenizer, and the tokenizer has two rules: a comment opens at
- * `<!--` and closes at the *first* `-->`, after which the text is markup again; and an
- * *unterminated* `<!--` comments out the rest of the document. A `replace` expresses the
- * first and misses the second, and repeating it to a fixed point — the usual remedy
- * offered for it — expresses neither: a second pass eats text the browser treats as
- * markup, which could hide a script that really does execute and leave its hash out of
- * the policy.
- *
- * The loop below is that pair of rules and nothing else. It appends only text that ends
- * before the next `<!--` it found, so no comment opener can reach the output — which is
- * also what the "incomplete sanitization" alert on the earlier replace was pointing at,
- * though nothing here is ever emitted as HTML: this reads our own artefact and the
- * result is only ever scanned for script tags.
- */
-function withoutComments(html) {
-    const OPEN = '<!--';
-    const CLOSE = '-->';
-    let kept = '';
-    let at = 0;
-
-    for (;;) {
-        const opened = html.indexOf(OPEN, at);
-
-        if (opened === -1) {
-            return kept + html.slice(at);
-        }
-
-        kept += html.slice(at, opened);
-
-        const closed = html.indexOf(CLOSE, opened + OPEN.length);
-
-        if (closed === -1) {
-            return kept;
-        }
-
-        at = closed + CLOSE.length;
-    }
-}
-
-/**
- * The bytes a browser hashes are exactly those between the script tag and its
- * closing tag — no trimming, no re-indenting.
- */
-function inlineScriptHashes(html) {
-    const pattern = /<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g;
-    const hashes = [];
-
-    for (const match of withoutComments(html).matchAll(pattern)) {
-        const body = match[1];
-        if (body.length === 0) {
-            continue;
-        }
-        hashes.push(`'sha256-${createHash('sha256').update(body, 'utf8').digest('base64')}'`);
-    }
-
-    return hashes;
-}
 
 /** Every HTML document in the artefact, because the policy applies to all of them. */
 function htmlDocuments(directory) {
@@ -187,8 +112,10 @@ let carriesAnalytics = false;
 for (const document of htmlDocuments(dist)) {
     const html = readFileSync(document, 'utf8');
 
+    // Quoted here rather than in the module, which returns the bare base64 the checker
+    // greps for; the source-expression form belongs to the policy that consumes it.
     for (const hash of inlineScriptHashes(html)) {
-        hashes.add(hash);
+        hashes.add(`'sha256-${hash}'`);
     }
 
     if (html.includes('static.cloudflareinsights.com')) {

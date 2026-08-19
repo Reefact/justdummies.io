@@ -49,8 +49,14 @@ public static class MustNotCompile {
     ///     zero to 1024 characters. Also preview.2, also informational, and the one rule of
     ///     the four with a deliberate exception on the published side: the first act's
     ///     careless factory is exactly this expression, and is suppressed there by name
-    ///     (tools/snippet-validation/GlobalSuppressions.cs). This entry is what keeps that
-    ///     exception narrow — the rule still has to fire for everyone else.
+    ///     (tools/snippet-validation/GlobalSuppressions.cs).
+    ///
+    ///     NOT THE ONLY WITNESS, and the comment used to claim otherwise. JD030 also fires on
+    ///     <see cref="GeneratorAsText" /> above, whose <c>Any.String()</c> settles no length
+    ///     either, so validate-snippets.sh's expectation would still hold with this method
+    ///     deleted — measured, not assumed. It is here to name the rule the way every other
+    ///     entry in this file names one, so a reader looking for JD030 finds it rather than
+    ///     inferring it from a scene about JD005.
     /// </summary>
     public static string StringWithoutLength() {
         return Any.String().StartingWith("ORD-").Generate();
