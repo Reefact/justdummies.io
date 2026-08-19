@@ -411,12 +411,18 @@ fi
 
 # Likewise for the script policy: every inline script in the shipped HTML must be
 # covered by a hash in the policy, or it is blocked at run time.
+#
+# Comments are stripped before the scan, and the same way generate-headers.mjs strips
+# them — the two extract the same set or this check demands a hash the generator never
+# writes. See that file's `withoutComments` for what went wrong while they both matched
+# a `<script>` that only ever appeared inside a comment.
 if [ -f "${dist}/_headers" ]; then
   uncovered=0
   while IFS= read -r shell; do
     hash="$(node -e '
       const { createHash } = require("node:crypto");
-      const html = require("node:fs").readFileSync(process.argv[1], "utf8");
+      const raw = require("node:fs").readFileSync(process.argv[1], "utf8");
+      const html = raw.replace(/<!--[\s\S]*?-->/g, "");
       for (const m of html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)) {
         if (m[1].length) { console.log(createHash("sha256").update(m[1], "utf8").digest("base64")); }
       }' "${shell}")"
