@@ -6,6 +6,11 @@
  * asked the only question this page has, and asking a second one to reach a command a
  * reader could just as well be shown outright would be the same "tab that hides a panel"
  * ADR-0004 argues against for a control that has nothing left to gate.
+ *
+ * NO PACKAGE NAME OF ITS OWN. `InstallTabs.astro` prints one because a single panel there
+ * can hold up to three packages at once (§9.3's compound offer) — nothing on this page
+ * ever does. The train switcher above already named the one package this block is about;
+ * repeating it here would answer a question nobody still has.
  */
 import CopyableCommand from './CopyableCommand.astro';
 import { useTranslations, type Locale } from '../i18n/ui';
@@ -23,33 +28,45 @@ const t = useTranslations(locale);
 ---
 
 <div class="package">
-    <div class="package-header">
-        <p class="package-label">{t(offer.label)}</p>
-
-        <a
-            class="nuget"
-            href={offer.nuget}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-placement={placement}
-            data-variant="nuget-link"
-        >
-            {t('install.nuget')}
-            <span class="visually-hidden"> — {t(offer.label)}</span>
-            <svg class="arrow" viewBox="0 0 12 12" width="10" height="10" aria-hidden="true" focusable="false">
-                <path d="M3 9L9 3M4.5 3H9v4.5" />
-            </svg>
-            <span class="visually-hidden">{t('state.newTab')}</span>
-        </a>
-    </div>
-
     <div class="method">
-        <p class="method-label">{t('install.cli')}</p>
+        <div class="method-header">
+            <p class="method-label">{t('install.cli')}</p>
+            <a
+                class="nuget"
+                href={offer.nuget}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-placement={placement}
+                data-variant="nuget-cli-link"
+            >
+                {t('install.nuget')}
+                <svg class="arrow" viewBox="0 0 12 12" width="10" height="10" aria-hidden="true" focusable="false">
+                    <path d="M3 9L9 3M4.5 3H9v4.5" />
+                </svg>
+                <span class="visually-hidden"> ({t('state.newTab')})</span>
+            </a>
+        </div>
         <CopyableCommand command={offer.installCommand} placement={placement} variant="cli" />
     </div>
 
     <div class="method">
-        <p class="method-label">{t('install.packageManager')}</p>
+        <div class="method-header">
+            <p class="method-label">{t('install.packageManager')}</p>
+            <a
+                class="nuget"
+                href={offer.nuget}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-placement={placement}
+                data-variant="nuget-pm-link"
+            >
+                {t('install.nuget')}
+                <svg class="arrow" viewBox="0 0 12 12" width="10" height="10" aria-hidden="true" focusable="false">
+                    <path d="M3 9L9 3M4.5 3H9v4.5" />
+                </svg>
+                <span class="visually-hidden"> ({t('state.newTab')})</span>
+            </a>
+        </div>
         {
             offer.packageManagerCommand !== undefined ? (
                 <CopyableCommand command={offer.packageManagerCommand} placement={placement} variant="pm" />
@@ -67,19 +84,12 @@ const t = useTranslations(locale);
         max-width: 46rem;
     }
 
-    .package-header {
+    .method-header {
         display: flex;
         flex-wrap: wrap;
         align-items: baseline;
         justify-content: space-between;
         gap: 0 var(--jd-space-4);
-    }
-
-    .package-label {
-        font-size: var(--jd-text-sm);
-        font-weight: 600;
-        color: var(--jd-text-primary);
-        margin: 0;
     }
 
     .nuget {
