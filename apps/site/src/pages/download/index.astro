@@ -1,0 +1,16 @@
+---
+/**
+ * /download — one page per train (see `download.ts`), and this is `lib`'s: the address a
+ * reader lands on from the floating link that names no train in particular.
+ */
+import DownloadContent from '../../components/DownloadContent.astro';
+import Page from '../../layouts/Page.astro';
+import { useTranslations } from '../../i18n/ui';
+import { site } from '../../site';
+
+const t = useTranslations('en');
+---
+
+<Page title={`${t('download.heading')} — ${site.name}`} description={t('download.meta.description')}>
+    <DownloadContent locale="en" active="lib" />
+</Page>

@@ -1,0 +1,65 @@
+---
+/**
+ * The three installable packages, as links — one page per train, no client-side switch.
+ *
+ * Same shape and the same reasoning as `ReleaseNotesTrains.astro` (ADR-0020): a link acts
+ * before any script runs, so there is nothing to hide behind `hidden` and nothing for a
+ * reader without scripting to lose. `aria-current="page"` says which train is open, the
+ * same way it does there.
+ */
+import { pathForLocale } from '../i18n/routing';
+import { useTranslations, type Locale } from '../i18n/ui';
+import { DOWNLOAD_TRAINS, DOWNLOAD_TRAIN_LABEL_KEY, downloadPathFor, type DownloadTrainKey } from '../download';
+
+interface Props {
+    locale: Locale;
+    active: DownloadTrainKey;
+}
+
+const { locale, active } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<nav class="trains" aria-label={t('releaseNotes.packages')}>
+    {
+        DOWNLOAD_TRAINS.map((train) => (
+            <a href={pathForLocale(downloadPathFor(train), locale)} aria-current={train === active ? 'page' : undefined}>
+                {t(DOWNLOAD_TRAIN_LABEL_KEY[train])}
+            </a>
+        ))
+    }
+</nav>
+
+<style>
+    .trains {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--jd-space-2);
+        padding-bottom: var(--jd-space-6);
+        border-bottom: 1px solid var(--jd-border);
+    }
+
+    .trains a {
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+        text-decoration: none;
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-sm);
+        padding: var(--jd-space-2) var(--jd-space-3);
+        transition:
+            color var(--jd-duration-fast) var(--jd-ease),
+            border-color var(--jd-duration-fast) var(--jd-ease),
+            background var(--jd-duration-fast) var(--jd-ease);
+    }
+
+    .trains a:hover {
+        color: var(--jd-text-primary);
+        border-color: var(--jd-accent);
+    }
+
+    .trains a[aria-current='page'] {
+        color: var(--jd-accent);
+        background: var(--jd-surface-raised);
+        border-color: var(--jd-accent);
+    }
+</style>

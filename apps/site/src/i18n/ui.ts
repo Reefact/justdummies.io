@@ -650,6 +650,18 @@ const en = {
     'releaseNotes.latestLabel': 'Latest',
     'releaseNotes.readNotes': 'Read the release notes',
 
+    /**
+     * /download — the install commands for every package this site vouches for (`site.ts`,
+     * §14.1's single source), one train at a time, reached from any page through the
+     * floating link `download.cta` names.
+     */
+    'download.heading': 'Download',
+    'download.lead':
+        'Every install command JustDummies offers, in whichever tool you already use — the .NET CLI or the Package Manager Console.',
+    'download.meta.description':
+        'Install commands for JustDummies: the library, the xUnit adapter, and the CLI — in the .NET CLI and the Package Manager Console.',
+    'download.cta': 'Download',
+
     /** The sitewide footer. */
     'footer.nav': 'Footer',
     'footer.about': 'About',
@@ -1205,6 +1217,13 @@ const fr: Record<UiKey, string> = {
 
     'releaseNotes.latestLabel': 'Dernière',
     'releaseNotes.readNotes': 'Lire les release notes',
+
+    'download.heading': 'Téléchargement',
+    'download.lead':
+        "Toutes les commandes d'installation de JustDummies, avec l'outil que vous utilisez déjà — la CLI .NET ou la console du gestionnaire de packages.",
+    'download.meta.description':
+        "Commandes d'installation de JustDummies : la bibliothèque, l'adaptateur xUnit et la CLI — en CLI .NET et en console du gestionnaire de packages.",
+    'download.cta': 'Télécharger',
 
     'footer.nav': 'Pied de page',
     'footer.about': 'À propos',

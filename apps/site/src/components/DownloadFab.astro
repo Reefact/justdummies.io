@@ -1,0 +1,94 @@
+---
+/**
+ * The one destination offered from every page rather than from the page that happens to
+ * be telling that part of the story: the install commands, reachable without scrolling
+ * back up to the header and without knowing which train to ask for first.
+ *
+ * HIDDEN ON /download ITSELF. A control that leads to the page already on screen cannot
+ * act (ADR-0004's own test applied to navigation rather than to a widget) — the reader is
+ * already where it goes.
+ *
+ * SHARES THE CONSENT BANNER'S STACKING, NOT ITS SPACE. `--jd-consent-height` is published
+ * live by the consent script (see `base.css`'s own comment on `body`'s padding) and reused
+ * here rather than duplicated: when the banner is up, this floats above it instead of
+ * behind it, and when it is gone the offset collapses back to nothing on its own. The
+ * banner still owns the single highest claim on the stack — this sits one layer under it.
+ */
+import { pathForLocale, routeWithoutLocale, localeFromPath } from '../i18n/routing';
+import { useTranslations } from '../i18n/ui';
+
+const pathname: string = Astro.url.pathname;
+const locale = localeFromPath(pathname);
+const t = useTranslations(locale);
+const onDownloadPage: boolean = routeWithoutLocale(pathname).startsWith('/download/');
+---
+
+{
+    !onDownloadPage && (
+        <a class="download-fab" href={pathForLocale('/download/', locale)} aria-label={t('download.cta')}>
+            <svg class="icon" viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false">
+                <path d="M10 3v10m0 0l-4-4m4 4l4-4M4 15v1.5a1.5 1.5 0 0 0 1.5 1.5h9a1.5 1.5 0 0 0 1.5-1.5V15" />
+            </svg>
+            {/* `aria-label` above already names the link; this is decoration a sighted
+                reader gets and a narrow screen below can drop without losing anything a
+                screen reader relies on. */}
+            <span class="label" aria-hidden="true">{t('download.cta')}</span>
+        </a>
+    )
+}
+
+<style>
+    .download-fab {
+        position: fixed;
+        right: var(--jd-space-6);
+        bottom: calc(var(--jd-space-6) + var(--jd-consent-height, 0px));
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        gap: var(--jd-space-2);
+        color: var(--jd-text-primary);
+        background: var(--jd-surface-raised);
+        border: 1px solid var(--jd-border);
+        border-radius: 999px;
+        padding: var(--jd-space-3) var(--jd-space-4);
+        font-size: var(--jd-text-sm);
+        font-weight: 600;
+        text-decoration: none;
+        box-shadow: var(--jd-shadow-raised);
+        transition:
+            border-color var(--jd-duration-fast) var(--jd-ease),
+            bottom var(--jd-duration-fast) var(--jd-ease);
+    }
+
+    .download-fab:hover {
+        border-color: var(--jd-accent);
+        color: var(--jd-accent);
+    }
+
+    .download-fab:focus-visible {
+        outline: 2px solid var(--jd-accent);
+        outline-offset: 2px;
+    }
+
+    .icon {
+        flex: none;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    /* The label goes first, on a screen narrow enough that the two together would crowd
+       the corner they float in — the icon alone still says what the control does, and
+       `aria-label` says it to a screen reader either way. */
+    @media (max-width: 26rem) {
+        .label {
+            display: none;
+        }
+
+        .download-fab {
+            padding: var(--jd-space-3);
+        }
+    }
+</style>

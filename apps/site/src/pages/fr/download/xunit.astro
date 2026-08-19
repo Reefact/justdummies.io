@@ -1,0 +1,17 @@
+---
+import DownloadContent from '../../../components/DownloadContent.astro';
+import Page from '../../../layouts/Page.astro';
+import { DOWNLOAD_TRAIN_LABEL_KEY } from '../../../download';
+import { useTranslations } from '../../../i18n/ui';
+import { site } from '../../../site';
+
+const t = useTranslations('fr');
+const label = t(DOWNLOAD_TRAIN_LABEL_KEY.xunit);
+---
+
+<Page
+    title={`${label} — ${t('download.heading')} — ${site.name}`}
+    description={`${label} — ${t('download.meta.description')}`}
+>
+    <DownloadContent locale="fr" active="xunit" />
+</Page>
