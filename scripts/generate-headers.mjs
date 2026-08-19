@@ -36,24 +36,44 @@ const dist = join(root, 'dist');
  * here uses it, and `verify-output.sh` would fail if one appeared, because the hash it
  * demands would no longer be in the policy.
  *
- * THE PASS IS SINGLE AND LEFT-TO-RIGHT ON PURPOSE, and repeating it to a fixed point
- * would be wrong rather than safer. What this has to agree with is the HTML tokenizer,
- * which opens a comment at `<!--` and closes it at the *first* `-->`, then reads markup
- * again — exactly what one non-overlapping global replace does. A second pass would eat
- * text the browser treats as markup, and could hide a script that really does execute,
- * leaving its hash out of the policy.
+ * WRITTEN AS A SCAN RATHER THAN A REPLACE, and not to quiet a warning. What this has to
+ * agree with is the HTML tokenizer, and the tokenizer has two rules: a comment opens at
+ * `<!--` and closes at the *first* `-->`, after which the text is markup again; and an
+ * *unterminated* `<!--` comments out the rest of the document. A `replace` expresses the
+ * first and misses the second, and repeating it to a fixed point — the usual remedy
+ * offered for it — expresses neither: a second pass eats text the browser treats as
+ * markup, which could hide a script that really does execute and leave its hash out of
+ * the policy.
  *
- * The tokenizer's other rule is the one a lone replace misses: an *unterminated* `<!--`
- * comments out the rest of the document. Left in place, a `<script>` after it would be
- * hashed for a policy the browser never consults, and — the reason CodeQL flags the
- * lone replace — a `<!--` would survive the strip. Truncating there covers both, and is
- * what the browser does.
+ * The loop below is that pair of rules and nothing else. It appends only text that ends
+ * before the next `<!--` it found, so no comment opener can reach the output — which is
+ * also what the "incomplete sanitization" alert on the earlier replace was pointing at,
+ * though nothing here is ever emitted as HTML: this reads our own artefact and the
+ * result is only ever scanned for script tags.
  */
 function withoutComments(html) {
-    const closed = html.replace(/<!--[\s\S]*?-->/g, '');
-    const unterminated = closed.indexOf('<!--');
+    const OPEN = '<!--';
+    const CLOSE = '-->';
+    let kept = '';
+    let at = 0;
 
-    return unterminated === -1 ? closed : closed.slice(0, unterminated);
+    for (;;) {
+        const opened = html.indexOf(OPEN, at);
+
+        if (opened === -1) {
+            return kept + html.slice(at);
+        }
+
+        kept += html.slice(at, opened);
+
+        const closed = html.indexOf(CLOSE, opened + OPEN.length);
+
+        if (closed === -1) {
+            return kept;
+        }
+
+        at = closed + CLOSE.length;
+    }
 }
 
 /**
