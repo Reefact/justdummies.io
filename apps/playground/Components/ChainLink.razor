@@ -376,7 +376,10 @@
     ///     A list takes its <em>elements'</em> colour, not the one its own text input would
     ///     suggest: <c>OneOf(1, 2, 3)</c> is three numbers with commas between them, and the code
     ///     bar below the card paints them as numbers, so painting the field as a string would make
-    ///     the two readings of one argument disagree on what kind of value it holds.
+    ///     the two readings of one argument disagree on what kind of value it holds. <c>Half</c>
+    ///     is the one exception on the bar's side — it has no literal form there, so its values
+    ///     are written as casts and take no literal colour — and its field stays a number field
+    ///     regardless, because a number is what it takes.
     /// </summary>
     private static string TokenClassFor(string typeKey) => ArgumentParsing.ElementTypeKeyOf(typeKey) switch {
         ArgumentParsing.TypeKeyBoolean => "tok-keyword",
@@ -416,12 +419,12 @@
     ///     a <c>char</c>, exactly as Home.razor's FormatArgumentLiteral quotes them for the code
     ///     the copy button hands over. A number and a <c>bool</c> are bare there and bare here.
     ///
-    ///     THE REST — Guid, the date/time family, the wide integers — have no bare literal in
-    ///     C# at all, and what the copy button emits for them is a <c>Parse(...)</c> call several
-    ///     times longer than the value inside it. Printing that in the card would bury a
-    ///     four-word chain in ceremony, so the card shows the value between quotes, which is how
-    ///     the visitor typed it and how <c>Parse</c> takes it. The card is the reading of the
-    ///     chain; the clipboard is the code. Neither one is lying about the other.
+    ///     THE REST — Guid and the date/time family — have no literal form in C# at all, and what
+    ///     the copy button emits for them is a <c>Parse(...)</c> call several times longer than
+    ///     the value inside it. Printing that in the card would bury a four-word chain in
+    ///     ceremony, so the card shows the value between quotes, which is how the visitor typed
+    ///     it and how <c>Parse</c> takes it. The card is the reading of the chain; the clipboard
+    ///     is the code. Neither one is lying about the other.
     ///
     ///     A LIST TAKES NONE, on that same distinction. Its field holds every value at once, so
     ///     the one pair of quotes this can draw would go round the lot of them — <c>OneOf("red,
