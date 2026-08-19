@@ -861,41 +861,79 @@ repository secret**. Two entries, exactly these names:
 
 ### ✅ Check
 
-**Before the tag, the release note.** `RELEASE_NOTES-en.md` (and its French twin) is what the
-GitHub Release page reads from — never generated from commits or pull requests — and
-`scripts/release-notes.sh` refuses the release outright if the section for the tag you are about
-to push does not exist yet. Draft or refresh its `## Unreleased` section from what changed since
-the previous release, then retitle it to the exact tag below, commit that to `main`, and let CI
-go green before you tag. The release-notes skill walks through this; [`ADR-0017`](adr/0017-draft-a-releases-github-notes-by-hand-and-refuse-without-them-en.md)
-is why.
+**The tag's name is decided before the tag exists, in a pull request — [`ADR-0021`](adr/0021-a-release-tag-is-verified-against-the-pr-that-named-it-en.md).**
+Ask for a release to be prepared. An agent reads what changed since the previous tag, drafts or
+refreshes `RELEASE_NOTES-en.md`/`fr.md`, computes `release/<UTC timestamp>` at that moment,
+retitles the `## Unreleased` section to it, and opens a pull request titled `ci: prepare <tag>` —
+handing you the tag commands below, filled in with that exact string, one per block. Review and
+merge that PR first, by rebase, as this repository always merges.
+[`ADR-0017`](adr/0017-draft-a-releases-github-notes-by-hand-and-refuse-without-them-en.md) is why
+the release note has to exist before the tag at all.
 
-**A tag is what publishes.** Put one on the commit you want online. In PowerShell, which is the
-shell this repository's releases are tagged from:
+**Then run the commands you were handed. The tag string is the one the PR named — never
+recomputed.** Reading the clock again here would produce a different name than the one the merged
+PR, and the release note it retitled, already carry; the `verify-tag` job refuses a tag that is
+not the merge commit of a pull request titled `ci: prepare <tag>` for that exact name
+([`ADR-0021`](adr/0021-a-release-tag-is-verified-against-the-pr-that-named-it-en.md)). Copy the
+tag from the PR title, or from the `## release/…` heading it added to `RELEASE_NOTES-en.md`, and
+use it literally — do not run `date -u` (or `[DateTime]::UtcNow`) again.
+
+One command per block below, so each is a single copy-paste. In PowerShell, which is the shell
+this repository's releases are tagged from:
 
 ```powershell
-git checkout main; git pull origin main
-$tag = 'release/{0:yyyy-MM-dd}T{0:HH-mm-ss}Z' -f [DateTime]::UtcNow
+git checkout main
+```
+
+```powershell
+git pull origin main
+```
+
+```powershell
+$tag = 'release/2026-08-19T11-50-00Z'   # the exact tag the merged PR named
+```
+
+```powershell
 git tag -a $tag -m $tag
+```
+
+```powershell
 git push origin $tag
 ```
 
-The same four steps in bash, on Linux, macOS or WSL:
+The same, in bash, on Linux, macOS or WSL:
 
 ```bash
-git checkout main && git pull origin main
-tag="release/$(date -u +%Y-%m-%dT%H-%M-%SZ)"
+git checkout main
+```
+
+```bash
+git pull origin main
+```
+
+```bash
+tag="release/2026-08-19T11-50-00Z"   # the exact tag the merged PR named
+```
+
+```bash
 git tag -a "$tag" -m "$tag"
+```
+
+```bash
 git push origin "$tag"
 ```
 
-Both forms read the clock **once** and use the answer three times. Two readings would sit on either
-side of a second sooner or later: two `date` calls on one line disagreed 5 times in 2000 runs here.
-A tag whose name and message disagree looks tampered with, and the last step would push the wrong
-one of the two.
+`git tag -a $tag -m $tag` reuses one variable for the name and the message rather than typing the
+string twice — a tag whose message disagrees with its name looks tampered with, and
+`check-release-tag.sh` refuses it on sight.
 
-The last step pushes **that tag**, not `--tags`. `git push origin --tags` publishes every tag the
-clone holds, including one you made on a branch and never meant to send — which is a mistake this
+The last command pushes **that tag**, not `--tags`. `git push origin --tags` publishes every tag
+the clone holds, including one made on a branch and never meant to send — a mistake this
 repository has already made once.
+
+**A tag pushed without a merged `ci: prepare <tag>` pull request is refused before anything
+deploys.** The `verify-tag` job runs first and gates `build`, `browser-tests`, and `deploy` on it;
+there is no longer a path that tags and publishes without that PR having merged first.
 
 The tag's name is a **UTC timestamp**, not a version number. Nothing consumes this site, so the
 question semver answers — "is this compatible with what I have?" — never arises, while the

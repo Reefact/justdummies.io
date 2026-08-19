@@ -1,29 +1,34 @@
 #!/usr/bin/env bash
-# Check that a release tag tells the truth about itself.
+# Check that a release tag names something that is actually about to be published.
 #
-# A release tag carries a UTC timestamp as its name, and nothing reads that name back. It is
-# therefore the one piece of this repository a maintainer can get wrong in silence — which is
-# exactly what happened. The first eight release tags were named two hours ahead of the moment
-# they were created, because the deployment guide gave a bash command and the maintainer runs
-# PowerShell: `date` resolves there to the `Get-Date` alias, `-u` binds to `-UFormat`, and
-# `-UFormat` formats the local clock while printing the `Z` as an ordinary letter. The command
-# did not fail. It answered, with Paris time, under a suffix claiming UTC.
+# The tag's name is decided before the tag exists: the maintainer asks for a release, an agent
+# drafts RELEASE_NOTES-en.md/fr.md, titles the "Unreleased" section with the tag it computes at
+# that moment, and opens a PR named `ci: prepare <tag>`. The maintainer reviews, merges, then
+# runs the tag commands themselves — often minutes later. Checking the tag object's own creation
+# clock does not survive that gap: release/2026-08-19T11-50-00Z was named at 11:50:00 and the tag
+# was made at 11:54:40, a 280-second difference an honest release under this process produces
+# routinely. A clock check would refuse every release this process makes.
 #
-# So this script reads the tag back. It checks three things, and each one is a mistake that
-# has already been made here:
+# What actually has to hold is narrower, and does not care how much time passed: the commit the
+# tag points at must be exactly the merge commit of the PR that chose its name, and nothing else.
+# If another commit reaches main between that PR merging and the maintainer tagging — a second
+# PR, a Dependabot auto-merge — a `git pull` before tagging picks it up silently, and the tag
+# would publish work nobody reviewed as part of this release. That is the one thing this script
+# refuses, by asking GitHub which merged pull request produced the commit the tag names.
 #
-#   * the tag is annotated — a lightweight tag carries no author and no date, so nothing below
-#     could be checked at all;
-#   * its message repeats its name — the convention, and a message that says anything else is
-#     a tag made by a command other than the documented one;
-#   * its name matches its own creation time in UTC — the two-hour lie, and any other clock
-#     the name might have been read off.
+# It also keeps two checks unrelated to timing:
 #
-# CI runs it on the tag being published, before writing the release page. Run it locally the
-# moment you have tagged, with no argument: it takes the most recent release/* tag.
+#   * the tag is annotated — a lightweight tag carries no message, so there is nothing to
+#     publish as the release's title;
+#   * its message repeats its name — the convention, and a message that says anything else is a
+#     tag made by a command other than the documented one.
+#
+# CI runs it in the `verify-tag` job of build.yml, before build and deploy even start — a tag
+# that fails here blocks the release outright, rather than being cleaned up after the fact. It
+# needs `gh` authenticated (GH_TOKEN) to look up the pull request.
 #
 #   ./scripts/check-release-tag.sh
-#   ./scripts/check-release-tag.sh release/2026-08-12T14-59-33Z
+#   ./scripts/check-release-tag.sh release/2026-08-19T11-50-00Z
 set -euo pipefail
 
 tag="${1:-}"
@@ -46,7 +51,7 @@ fi
 # `commit` for a lightweight one.
 if [ "$(git for-each-ref "refs/tags/${tag}" --format='%(objecttype)')" != "tag" ]; then
   echo "check-release-tag: ${tag} is a lightweight tag." >&2
-  echo "  It carries no author and no date, so nothing can check the moment it was made." >&2
+  echo "  It carries no message, so there is nothing to publish as the release's title." >&2
   echo "  Delete it and tag again with -a, as the deployment guide's command does." >&2
   exit 1
 fi
@@ -69,31 +74,43 @@ if ! printf '%s' "${stamp}" | grep -Eq '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}-[0-
   exit 1
 fi
 
-# The moment the tag object was written, as an epoch. Git stores that instant plus the offset
-# of the clock that produced it, so this is UTC whatever timezone the maintainer sits in — and
-# comparing it against the name is the whole check.
-made="$(git for-each-ref "refs/tags/${tag}" --format='%(taggerdate:unix)')"
+# The commit this tag actually points at.
+tag_commit="$(git rev-parse "refs/tags/${tag}^{commit}")"
 
-# The name read as the UTC instant it claims to be. It is cut apart rather than handed to
-# `date` whole: the name carries hyphens where a timestamp carries colons, because a colon is
-# not legal in a git ref name, and `date -u -d 2026-08-12T14-59-33Z` answers "invalid date".
-claimed="$(date -u -d "${stamp:0:10} ${stamp:11:2}:${stamp:14:2}:${stamp:17:2}" +%s)"
+# The one PR allowed to have named this tag, and the commit its merge produced. Looked up by the
+# commit rather than by searching PR titles: GitHub's commit-to-PR association is exact and
+# immediate once the commit reaches the default branch, where a title search can be fuzzy and
+# briefly unindexed.
+pr_title="ci: prepare ${tag}"
+prs_json="$(gh api "repos/{owner}/{repo}/commits/${tag_commit}/pulls" 2> /dev/null || echo '[]')"
+matches="$(printf '%s' "${prs_json}" | jq --arg title "${pr_title}" '[.[] | select(.title == $title and .merged_at != null)]')"
+match_count="$(printf '%s' "${matches}" | jq 'length')"
 
-drift=$(( made - claimed ))
-[ "${drift}" -lt 0 ] && drift=$(( -drift ))
-
-# A minute, not a second. The name and the tag object are written by the same command, so the
-# honest gap is zero or one second; a minute absorbs a slow machine without letting a clock
-# read off the wrong timezone through — the smallest such lie is a half-hour offset.
-if [ "${drift}" -gt 60 ]; then
-  echo "check-release-tag: ${tag} is not named after the moment it was made." >&2
-  echo "    the name claims: ${stamp}" >&2
-  echo "    the tag was made: $(date -u -d "@${made}" +%Y-%m-%dT%H-%M-%SZ) (UTC)" >&2
-  echo "    difference:       ${drift}s" >&2
-  echo "  A name read off a local clock is the documented trap. Use the guide's command:" >&2
-  echo "    \$tag = 'release/{0:yyyy-MM-dd}T{0:HH-mm-ss}Z' -f [DateTime]::UtcNow   (PowerShell)" >&2
-  echo "    tag=\"release/\$(date -u +%Y-%m-%dT%H-%M-%SZ)\"                          (bash)" >&2
+if [ "${match_count}" -eq 0 ]; then
+  echo "check-release-tag: no merged pull request titled '${pr_title}' produced ${tag_commit}." >&2
+  echo "  A release tag's name is only trustworthy if the PR that chose it exists, merged, and" >&2
+  echo "  is what the tag actually points at — that PR is where RELEASE_NOTES-en.md/fr.md were" >&2
+  echo "  reviewed." >&2
   exit 1
 fi
 
-echo "  ${tag}  annotated, message matches its name, made ${drift}s from the time it claims."
+if [ "${match_count}" -gt 1 ]; then
+  echo "check-release-tag: ${match_count} merged pull requests are titled '${pr_title}'." >&2
+  echo "  A release tag names exactly one PR; this name was reused." >&2
+  exit 1
+fi
+
+merge_commit="$(printf '%s' "${matches}" | jq -r '.[0].merge_commit_sha')"
+
+if [ "${tag_commit}" != "${merge_commit}" ]; then
+  echo "check-release-tag: ${tag} does not point at '${pr_title}''s own merge commit." >&2
+  echo "    tag points at:  ${tag_commit}" >&2
+  echo "    PR merged as:   ${merge_commit}" >&2
+  echo "  Something else reached main between that PR merging and this tag being made — a" >&2
+  echo "  second PR, a Dependabot auto-merge — and this tag would publish it unreviewed." >&2
+  echo "  Retag the PR's own merge commit, or open a fresh 'ci: prepare' PR for what's on main" >&2
+  echo "  now." >&2
+  exit 1
+fi
+
+echo "  ${tag}  annotated, message matches its name, points at '${pr_title}''s own merge commit."

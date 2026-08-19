@@ -26,8 +26,44 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Gate for a release tag: the commit it names must be exactly the merge commit of the PR that
+  # chose that name — `ci: prepare <tag>` — nothing else. See scripts/check-release-tag.sh for
+  # why this replaced a check against the tag's own creation clock, and ADR-0021 for the protocol
+  # this job enforces.
+  #
+  # Runs before build and deploy, not after: a tag that fails here must block the deployment it
+  # would otherwise trigger, not merely the release page describing it — the failure this
+  # session's own release/2026-08-19T11-50-00Z hit landed after Cloudflare had already published.
+  #
+  # Both steps are conditional rather than the job itself: a job skipped by its own `if:` also
+  # skips everything that `needs` it, which would stop build/browser-tests/deploy running at all
+  # on a pull request or a push to main. A job whose steps are conditionally no-ops instead still
+  # reports success, so those stay gated on this one without costing anything off a release tag.
+  verify-tag:
+    name: Verify the release tag
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout
+        if: startsWith(github.ref, 'refs/tags/release/')
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          # The tag object itself, not only the commit it points at: its annotation is asserted
+          # below, and that message does not come with a shallow fetch.
+          fetch-depth: 0
+
+      - name: Check the tag names what it points at
+        if: startsWith(github.ref, 'refs/tags/release/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ./scripts/check-release-tag.sh "${GITHUB_REF_NAME}"
+
   build:
     name: Build and verify the artefact
+    needs: verify-tag
     runs-on: ubuntu-latest
     timeout-minutes: 20
     outputs:
@@ -365,6 +401,10 @@ jobs:
   # secrets are absent, so this would still publish a release for a deployment that
   # announced itself skipped. That branch is dead now that both secrets exist, and
   # making this job read the other's mind would cost more than the case is worth.
+  #
+  # No tag-truthfulness check here: verify-tag already refused this run, before build and
+  # deploy, if the tag did not name its own PR's merge commit — reaching this job at all is
+  # proof that check passed.
   notes:
     name: Release notes
     needs: deploy
@@ -380,14 +420,6 @@ jobs:
           # The tag object itself, not only the commit it points at: its annotation is
           # the release's title, and that message does not come with a shallow fetch.
           fetch-depth: 0
-
-      # The tag's name is a UTC timestamp, and until this step existed nothing read that
-      # name back — which is how the first eight releases came to be named two hours ahead
-      # of the moment they were made. It runs before the release page rather than after: a
-      # tag that lies about itself gets deleted and made again, and a page created for it
-      # would have to be deleted too.
-      - name: Check the tag says the truth about itself
-        run: ./scripts/check-release-tag.sh "${GITHUB_REF_NAME}"
 
       - name: Publish the release
         env:
