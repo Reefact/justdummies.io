@@ -22,14 +22,6 @@
  * the roles are attached by the script, so what a reader without JavaScript gets is the
  * stacked form — every command visible under its own heading — rather than a tab widget
  * that announces itself and does nothing (ADR-0004).
- *
- * `offer` NAMES A NARRATIVE MOMENT — how much of the product the reader has been shown
- * by the time this instance appears — which is exactly right for the home page's own
- * exits and wrong for a page whose whole point is one train's package on its own. The
- * `packages` prop is the escape hatch: given explicitly, it replaces the offer entirely
- * instead of layering on top of it, so a caller that knows exactly which package it means
- * — the download page, one train at a time — never has to reach for a narrative label
- * that would not describe it.
  */
 import CopyableCommand from './CopyableCommand.astro';
 import { localeFromPath } from '../i18n/routing';
@@ -46,12 +38,6 @@ interface Props {
      */
     offer?: 'library' | 'library-and-adapter' | 'everything';
     /**
-     * Given explicitly, this is the row: one entry per package, in this order, and
-     * `offer` is not consulted at all. See the file header for why a caller would reach
-     * for this instead of `offer`.
-     */
-    packages?: readonly PackageOffer[];
-    /**
      * Whether to print the offer's own heading. The first screen needs one, because
      * nothing above it says what the block is for; an exit does not, because the step's
      * own title is already that heading.
@@ -59,7 +45,7 @@ interface Props {
     heading?: boolean;
 }
 
-const { placement, offer = 'library', packages, heading = false } = Astro.props;
+const { placement, offer = 'library', heading = false } = Astro.props;
 
 const t = useTranslations(localeFromPath(Astro.url.pathname));
 
@@ -94,91 +80,59 @@ interface Door {
     commands: Command[];
 }
 
-/** One package, method-agnostic — what `packages` carries instead of `offer`. */
-interface PackageOffer {
-    label: UiKey;
-    nuget: string;
-    installCommand: string;
-    /** Left out for a package with no Package Manager Console equivalent — a global
-     *  .NET tool, today. `instead` is what the panel says in its place. */
-    packageManagerCommand?: string;
-    instead?: UiKey;
+const cli: Command[] = [
+    {
+        label: 'install.library',
+        nuget: site.library.nuget,
+        command: site.library.installCommand,
+        variant: 'dotnet-cli',
+        nugetVariant: 'nuget-link',
+    },
+];
+const packageManager: Command[] = [
+    {
+        label: 'install.library',
+        nuget: site.library.nuget,
+        command: site.library.packageManagerCommand,
+        variant: 'package-manager',
+        nugetVariant: 'nuget-link',
+    },
+];
+
+if (withAdapter) {
+    cli.push({
+        label: 'install.adapter',
+        nuget: site.xunit.nuget,
+        command: site.xunit.installCommand,
+        variant: 'xunit-adapter',
+        nugetVariant: 'nuget-adapter-link',
+    });
+    packageManager.push({
+        label: 'install.adapter',
+        nuget: site.xunit.nuget,
+        command: site.xunit.packageManagerCommand,
+        variant: 'xunit-adapter-pm',
+        nugetVariant: 'nuget-adapter-link',
+    });
 }
 
-let cli: Command[];
-let packageManager: Command[];
-
-if (packages !== undefined) {
-    cli = packages.map((pkg: PackageOffer, index: number) => ({
-        label: pkg.label,
-        nuget: pkg.nuget,
-        command: pkg.installCommand,
-        variant: `cli-${index}`,
-        nugetVariant: `nuget-${index}-link`,
-    }));
-    packageManager = packages.map((pkg: PackageOffer, index: number) => ({
-        label: pkg.label,
-        nuget: pkg.nuget,
-        command: pkg.packageManagerCommand,
-        instead: pkg.packageManagerCommand === undefined ? pkg.instead : undefined,
-        variant: `pm-${index}`,
-        nugetVariant: `nuget-${index}-link`,
-    }));
-} else {
-    cli = [
-        {
-            label: 'install.library',
-            nuget: site.library.nuget,
-            command: site.library.installCommand,
-            variant: 'dotnet-cli',
-            nugetVariant: 'nuget-link',
-        },
-    ];
-    packageManager = [
-        {
-            label: 'install.library',
-            nuget: site.library.nuget,
-            command: site.library.packageManagerCommand,
-            variant: 'package-manager',
-            nugetVariant: 'nuget-link',
-        },
-    ];
-
-    if (withAdapter) {
-        cli.push({
-            label: 'install.adapter',
-            nuget: site.xunit.nuget,
-            command: site.xunit.installCommand,
-            variant: 'xunit-adapter',
-            nugetVariant: 'nuget-adapter-link',
-        });
-        packageManager.push({
-            label: 'install.adapter',
-            nuget: site.xunit.nuget,
-            command: site.xunit.packageManagerCommand,
-            variant: 'xunit-adapter-pm',
-            nugetVariant: 'nuget-adapter-link',
-        });
-    }
-
-    if (withTool) {
-        cli.push({
-            label: 'install.tool',
-            nuget: site.cli.nuget,
-            command: site.cli.installCommand,
-            variant: 'dotnet-tool',
-            nugetVariant: 'nuget-tool-link',
-        });
-        // No command, and none invented: a global .NET tool has no Package Manager Console
-        // equivalent. Saying so is more use than an empty panel or a command that does not work.
-        packageManager.push({
-            label: 'install.tool',
-            nuget: site.cli.nuget,
-            instead: 'install.toolIsCliOnly',
-            variant: 'dotnet-tool-unavailable',
-            nugetVariant: 'nuget-tool-link',
-        });
-    }
+if (withTool) {
+    cli.push({
+        label: 'install.tool',
+        nuget: site.cli.nuget,
+        command: site.cli.installCommand,
+        variant: 'dotnet-tool',
+        nugetVariant: 'nuget-tool-link',
+    });
+    // No command, and none invented: a global .NET tool has no Package Manager Console
+    // equivalent. Saying so is more use than an empty panel or a command that does not work.
+    packageManager.push({
+        label: 'install.tool',
+        nuget: site.cli.nuget,
+        instead: 'install.toolIsCliOnly',
+        variant: 'dotnet-tool-unavailable',
+        nugetVariant: 'nuget-tool-link',
+    });
 }
 
 const doors: Door[] = [

@@ -1,0 +1,121 @@
+---
+/**
+ * One package, both install methods, stacked — never a toggle. `InstallTabs.astro` asks a
+ * reader to pick a tool before it shows anything, which is right when the block is
+ * competing for room with the rest of a scene; here the train switcher above has already
+ * asked the only question this page has, and asking a second one to reach a command a
+ * reader could just as well be shown outright would be the same "tab that hides a panel"
+ * ADR-0004 argues against for a control that has nothing left to gate.
+ */
+import CopyableCommand from './CopyableCommand.astro';
+import { useTranslations, type Locale } from '../i18n/ui';
+import type { PackageOffer } from '../download';
+
+interface Props {
+    locale: Locale;
+    /** Stable, position-independent identifier passed to every command in the block. */
+    placement: string;
+    offer: PackageOffer;
+}
+
+const { locale, placement, offer } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<div class="package">
+    <div class="package-header">
+        <p class="package-label">{t(offer.label)}</p>
+
+        <a
+            class="nuget"
+            href={offer.nuget}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-placement={placement}
+            data-variant="nuget-link"
+        >
+            {t('install.nuget')}
+            <span class="visually-hidden"> — {t(offer.label)}</span>
+            <svg class="arrow" viewBox="0 0 12 12" width="10" height="10" aria-hidden="true" focusable="false">
+                <path d="M3 9L9 3M4.5 3H9v4.5" />
+            </svg>
+            <span class="visually-hidden">{t('state.newTab')}</span>
+        </a>
+    </div>
+
+    <div class="method">
+        <p class="method-label">{t('install.cli')}</p>
+        <CopyableCommand command={offer.installCommand} placement={placement} variant="cli" />
+    </div>
+
+    <div class="method">
+        <p class="method-label">{t('install.packageManager')}</p>
+        {
+            offer.packageManagerCommand !== undefined ? (
+                <CopyableCommand command={offer.packageManagerCommand} placement={placement} variant="pm" />
+            ) : (
+                <p class="unavailable">{t(offer.instead!)}</p>
+            )
+        }
+    </div>
+</div>
+
+<style>
+    .package {
+        display: grid;
+        gap: var(--jd-space-4);
+        max-width: 46rem;
+    }
+
+    .package-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0 var(--jd-space-4);
+    }
+
+    .package-label {
+        font-size: var(--jd-text-sm);
+        font-weight: 600;
+        color: var(--jd-text-primary);
+        margin: 0;
+    }
+
+    .nuget {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--jd-space-1);
+        font-size: var(--jd-text-sm);
+        white-space: nowrap;
+    }
+
+    .arrow {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .method {
+        display: grid;
+        gap: var(--jd-space-2);
+    }
+
+    .method-label {
+        font-size: var(--jd-text-sm);
+        font-weight: 400;
+        color: var(--jd-text-muted);
+        margin: 0;
+    }
+
+    .unavailable {
+        margin: 0;
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+        font-style: italic;
+    }
+
+    /* .visually-hidden is declared once, globally, in base.css. */
+</style>
