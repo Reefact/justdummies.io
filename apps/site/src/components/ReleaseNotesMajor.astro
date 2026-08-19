@@ -206,21 +206,35 @@ const t = useTranslations(locale);
         gap: var(--jd-space-3);
     }
 
+    /* THE INDENT IS THE RUBRIC LABEL'S OWN, and it is in `em` rather than a space token
+       because it is measured from a glyph: every label opens with an emoji whose advance
+       is 1.248em followed by a space, so its first letter lands at 1.595em — in both
+       locales, at every width the fluid --jd-text-base takes. A rem would hold that
+       alignment at one size and lose it at the other. Dots at left: 0 sat under the
+       emoji, which read as the icon column and the text column fighting over one edge;
+       at 1.6em they hang below the words instead, and the icons keep the margin. */
     .bullets li {
-        padding-left: var(--jd-space-4);
+        padding-left: 2.5em;
         position: relative;
         max-width: 58rem;
     }
 
+    /* The dot takes the colour of the words beside it. On --jd-border it was three points
+       of luminosity off the card it was drawn on — present in the markup, invisible on
+       the screen — and six pixels rather than five is the same correction: at this size a
+       marker reads as a speck long before it reads as loud.
+
+       `0.8em` is half a line box (--jd-line-body is 1.6) and the 3px is half the dot, so
+       it centres on the first line whatever size that line is set at. */
     .bullets li::before {
         content: '';
         position: absolute;
-        left: 0;
-        top: 0.65em;
-        width: 5px;
-        height: 5px;
+        left: 1.6em;
+        top: calc(0.8em - 3px);
+        width: 6px;
+        height: 6px;
         border-radius: 50%;
-        background: var(--jd-border);
+        background: var(--jd-text-primary);
     }
 
     .bullets :global(strong) {
