@@ -2,8 +2,9 @@
 
 🌍 🇫🇷 Français (ce fichier) · 🇬🇧 [English](0020-one-release-notes-page-per-train-and-major-en.md)
 
-**Statut :** Proposé
+**Statut :** Accepté
 **Proposé le :** 2026-08-18
+**Accepté le :** 2026-08-19
 **Décideurs :** Reefact
 
 ## Contexte

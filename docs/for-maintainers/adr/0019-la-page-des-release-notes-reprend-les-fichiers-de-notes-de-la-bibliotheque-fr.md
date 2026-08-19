@@ -2,8 +2,9 @@
 
 🌍 🇫🇷 Français (ce fichier) · 🇬🇧 [English](0019-the-release-notes-page-mirrors-the-librarys-release-notes-files-en.md)
 
-**Statut :** Proposé
+**Statut :** Accepté
 **Proposé le :** 2026-08-18
+**Accepté le :** 2026-08-19
 **Décideurs :** Reefact
 
 ## Contexte

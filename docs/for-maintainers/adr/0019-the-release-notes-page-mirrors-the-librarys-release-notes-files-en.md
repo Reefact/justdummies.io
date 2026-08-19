@@ -2,8 +2,9 @@
 
 🌍 🇬🇧 English (this file) · 🇫🇷 [Français](0019-la-page-des-release-notes-reprend-les-fichiers-de-notes-de-la-bibliotheque-fr.md)
 
-**Status:** Proposed
+**Status:** Accepted
 **Proposed:** 2026-08-18
+**Accepted:** 2026-08-19
 **Decision Makers:** Reefact
 
 ## Context

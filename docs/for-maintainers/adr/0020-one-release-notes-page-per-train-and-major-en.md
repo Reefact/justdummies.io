@@ -2,8 +2,9 @@
 
 🌍 🇬🇧 English (this file) · 🇫🇷 [Français](0020-une-page-de-release-notes-par-train-et-par-majeure-fr.md)
 
-**Status:** Proposed
+**Status:** Accepted
 **Proposed:** 2026-08-18
+**Accepted:** 2026-08-19
 **Decision Makers:** Reefact
 
 ## Context
