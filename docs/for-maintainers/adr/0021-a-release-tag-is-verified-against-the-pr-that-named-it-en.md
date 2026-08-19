@@ -2,8 +2,9 @@
 
 🌍 🇬🇧 English (this file) · 🇫🇷 [Français](0021-un-tag-de-release-est-verifie-par-rapport-a-la-pr-qui-la-nomme-fr.md)
 
-**Status:** Proposed
+**Status:** Accepted
 **Proposed:** 2026-08-19
+**Accepted:** 2026-08-19
 **Decision Makers:** Reefact
 
 ## Context

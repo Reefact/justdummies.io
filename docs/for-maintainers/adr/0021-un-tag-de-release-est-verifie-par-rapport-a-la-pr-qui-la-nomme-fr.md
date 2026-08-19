@@ -2,8 +2,9 @@
 
 🌍 🇬🇧 [English](0021-a-release-tag-is-verified-against-the-pr-that-named-it-en.md) · 🇫🇷 Français (ce fichier)
 
-**Statut :** Proposé
+**Statut :** Accepté
 **Proposé le :** 2026-08-19
+**Accepté le :** 2026-08-19
 **Décideurs :** Reefact
 
 ## Contexte
