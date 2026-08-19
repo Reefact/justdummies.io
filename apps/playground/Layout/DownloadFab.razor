@@ -1,0 +1,31 @@
+@inherits LocalizedComponent
+
+@*
+    The playground's counterpart to the site's DownloadFab.astro — the one download
+    destination offered from every page, reachable without scrolling back to the header
+    and without knowing which train to ask for first. Same tokens, same shape, same
+    corner as the site's.
+
+    RENDERED ONLY FROM MainLayout, never BareLayout's /hero — the reason SiteFooter.razor
+    gives for its own placement applies here too: /hero already sits inside a page (the
+    landing page) that carries this control around it, so a second one there would be a
+    duplicate, not a consistency.
+*@
+
+<a class="download-fab" href="@DownloadHref" aria-label='@PlaygroundStrings.T(LocaleState.Current, "download.cta")'>
+    <svg class="icon" viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false">
+        <path d="M10 3v10m0 0l-4-4m4 4l4-4M4 15v1.5a1.5 1.5 0 0 0 1.5 1.5h9a1.5 1.5 0 0 0 1.5-1.5V15" />
+    </svg>
+    @* `aria-label` above already names the link; this is decoration a sighted reader gets
+       and a narrow screen can drop without losing anything a screen reader relies on. *@
+    <span class="label" aria-hidden="true">@PlaygroundStrings.T(LocaleState.Current, "download.cta")</span>
+</a>
+
+@code {
+
+    // The site's own address for this control (DownloadFab.astro) — there is no French
+    // prefix duplicated in the playground's own routing, only the two paths the site
+    // itself serves.
+    private string DownloadHref => LocaleState.Current == Locale.Fr ? "/fr/download/" : "/download/";
+
+}

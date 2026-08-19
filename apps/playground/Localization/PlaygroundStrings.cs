@@ -61,6 +61,10 @@ public static class PlaygroundStrings {
         ["nav.github"]     = "GitHub",
         ["language.label"] = "Language",
 
+        // Mirrors the site's own "download.cta" (ui.ts) — the DownloadFab's visible label
+        // and accessible name alike, same as the site's.
+        ["download.cta"] = "Download",
+
         ["hero.aria.prefix"]    = "prefix",
         ["hero.aria.contains"]  = "contained text",
         ["hero.aria.length"]    = "length",
@@ -167,6 +171,8 @@ public static class PlaygroundStrings {
         ["nav.playground"] = new("Playground", "Playground"),
         ["nav.github"]     = new("GitHub", "GitHub"),
         ["language.label"] = new("Langue", "Language"),
+
+        ["download.cta"] = new("Télécharger", "Download"),
 
         ["hero.aria.prefix"]    = new("préfixe", "prefix"),
         ["hero.aria.contains"]  = new("texte contenu", "contained text"),
