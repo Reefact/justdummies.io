@@ -34,6 +34,13 @@
     coincidence.
 *@
 <div class="playground-widget code-widget">
+    @* Purely decorative — a visitor loses nothing the alt text would have said, so it
+       carries none and stays out of the tab order and out of a screen reader's way. It
+       sits on the card's own top-right corner rather than beside it, and is drawn only
+       once the window is wide enough that it clears the prose above; app.css's own
+       mascot rule carries that width and where it was measured. *@
+    <img class="mascot" src="/dummy-driving.png" alt="" aria-hidden="true" loading="lazy" width="800" height="800" />
+
     <div class="card">
         <div class="expression">
             <div class="chain">
