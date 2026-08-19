@@ -625,7 +625,8 @@ const en = {
      * translated here: what these keys carry is the chrome around it.
      */
     'releaseNotes.heading': 'Release notes',
-    'releaseNotes.lead': 'What shipped in the library, and why — read from its own release notes, one package at a time.',
+    'releaseNotes.lead':
+        "This page tracks what's new and changing in JustDummies, including new features, improvements, bug fixes, and deprecations. Use it to see what shipped in the most recent release, confirm when a capability became available, or review changes before upgrading.",
     'releaseNotes.meta.description': "What changed in JustDummies, release by release, across every package it publishes.",
     'releaseNotes.snapshotLabel': 'Snapshot taken at',
     'releaseNotes.viewSource': 'Read the changelog this came from',
@@ -1184,7 +1185,7 @@ const fr: Record<UiKey, string> = {
 
     'releaseNotes.heading': 'Release notes',
     'releaseNotes.lead':
-        "Ce qui a changé dans la bibliothèque, et pourquoi — lu dans ses propres release notes, un paquet à la fois.",
+        "Cette page recense les nouveautés et les changements de JustDummies : nouvelles fonctionnalités, améliorations, corrections de bugs et dépréciations. Elle sert à voir ce qui a été livré dans la dernière release, à confirmer depuis quand une fonctionnalité est disponible, ou à passer en revue les changements avant de monter de version.",
     'releaseNotes.meta.description': 'Ce qui a changé dans JustDummies, release après release, pour chaque paquet publié.',
     'releaseNotes.snapshotLabel': 'Instantané pris au tag',
     'releaseNotes.viewSource': "Lire le changelog dont ceci provient",
