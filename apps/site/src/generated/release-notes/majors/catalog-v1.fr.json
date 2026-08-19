@@ -1,0 +1,55 @@
+{
+  "train": "catalog",
+  "major": 1,
+  "locale": "fr",
+  "releases": [
+    {
+      "version": "1.0.0-preview.3",
+      "date": "2026-08-18",
+      "maturity": "preview",
+      "anchor": "v1-0-0-preview-3",
+      "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/catalog-v1.0.0-preview.3",
+      "summaryHtml": [
+        "<em>Le catalogue rattrape le jeu de règles que <code>JustDummies 1.0.0-preview.2</code> a livré : deux règles rejoignent les constantes, <code>JD029</code> et <code>JD030</code>.</em>"
+      ],
+      "sections": [
+        {
+          "label": "✨ Nouveautés",
+          "anchor": "v1-0-0-preview-3-new",
+          "items": [
+            "<strong><code>JustDummiesRule.JD029</code></strong> — <em>Une valeur écrite dans un pool qu'une contrainte déclarée refuse</em>, catégorie <code>JustDummies.Constraints</code>.",
+            "<strong><code>JustDummiesRule.JD030</code></strong> — <em>Un dummy de chaîne qui ne déclare aucune longueur</em>, catégorie <code>JustDummies.Constraints</code>."
+          ]
+        }
+      ]
+    },
+    {
+      "version": "1.0.0-preview.2",
+      "date": "2026-08-07",
+      "maturity": "preview",
+      "anchor": "v1-0-0-preview-2",
+      "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/catalog-v1.0.0-preview.2",
+      "summaryHtml": [
+        "<em>Première version publiée — le catalogue atteint nuget.org pour la première fois, au numéro du jeu de règles que JustDummies 1.0 embarque. Il n'existe pas de <code>1.0.0-preview.1</code> : l'exécution de release de ce tag a échoué avant de rien publier, et le numéro est sauté plutôt que réutilisé.</em>"
+      ],
+      "sections": [
+        {
+          "label": "✨ Nouveautés",
+          "anchor": "v1-0-0-preview-2-new",
+          "items": [
+            "<strong><code>JustDummiesRule</code></strong> — les 28 règles d'analyse, de <code>JD001</code> à <code>JD028</code>, chacune portant <code>Id</code>, <code>Category</code>, <code>Title</code> et <code>HelpLinkUri</code> comme constantes de compilation qu'un <code>[SuppressMessage]</code> peut nommer.",
+            "<strong><code>JustDummiesCategory</code></strong> — les quatre catégories qui regroupent ces règles.",
+            "<strong>Une activation cantonnée à votre propre projet</strong> — <code>build/JustDummies.DiagnosticCatalog.props</code> n'active les contrôles que pour le projet qui référence ce catalogue, jamais pour celui qui en dépend seulement indirectement."
+          ]
+        },
+        {
+          "label": "🙌 Améliorations",
+          "anchor": "v1-0-0-preview-2-improvements",
+          "items": [
+            "<strong>Une règle n'est jamais supprimée, un membre jamais renommé.</strong> Une règle retirée du produit est conservée en <code>[Obsolete]</code> à la place, pour qu'une montée de version ne casse jamais un build sur un identifiant de diagnostic."
+          ]
+        }
+      ]
+    }
+  ]
+}

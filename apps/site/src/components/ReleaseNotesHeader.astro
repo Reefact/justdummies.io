@@ -1,0 +1,36 @@
+---
+/**
+ * What sits above the two columns on every release notes page: the section's own heading,
+ * and the package switcher. Its own component so the English and French pages carry the
+ * same head without either of them writing markup twice.
+ */
+import { useTranslations, type Locale } from '../i18n/ui';
+import type { TrainKey } from '../release-notes';
+import ReleaseNotesTrains from './ReleaseNotesTrains.astro';
+
+interface Props {
+    locale: Locale;
+    active: TrainKey;
+}
+
+const { locale, active } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<h2 id="release-notes-heading">{t('releaseNotes.heading')}</h2>
+<p class="lead">{t('releaseNotes.lead')}</p>
+<ReleaseNotesTrains locale={locale} active={active} />
+
+<style>
+    h2 {
+        font-size: var(--jd-text-xl);
+        line-height: var(--jd-line-tight);
+        margin: 0;
+    }
+
+    .lead {
+        color: var(--jd-text-muted);
+        max-width: 46rem;
+        margin: var(--jd-space-2) 0 var(--jd-space-6);
+    }
+</style>

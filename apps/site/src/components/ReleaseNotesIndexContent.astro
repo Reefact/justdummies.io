@@ -1,0 +1,217 @@
+---
+/**
+ * The section's front page: the four trains, and what each of them published last.
+ *
+ * IT IS A PAGE, NOT A REDIRECT. `/release-notes` is in the footer of every page on this
+ * site, so sending it somewhere else would put an extra, uncached hop on the normal path,
+ * and the target would move with every new major — a moving rule inside a hand-written
+ * Cloudflare file whose forty lines exist because its rules were got wrong twice. It also
+ * answers something no per-train page answers: what moved most recently, across all four
+ * packages (ADR-0020).
+ */
+import { pathForLocale } from '../i18n/routing';
+import { useTranslations, type Locale } from '../i18n/ui';
+import { formatReleaseDate, latestMajorOf, majorSlug, releaseNotes, TRAIN_LABEL_KEY } from '../release-notes';
+
+interface Props {
+    locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<section class="release-notes" aria-labelledby="release-notes-heading">
+    <h2 id="release-notes-heading">{t('releaseNotes.heading')}</h2>
+    <p class="lead">{t('releaseNotes.lead')}</p>
+    <p class="snapshot">
+        {t('releaseNotes.snapshotLabel')}{' '}
+        <a href={releaseNotes.refUrl} target="_blank" rel="noopener noreferrer">
+            <code>{releaseNotes.ref}</code>
+            <span class="visually-hidden"> {t('state.newTab')}</span>
+        </a> · <time datetime={releaseNotes.refDate}>{formatReleaseDate(releaseNotes.refDate, locale)}</time>
+    </p>
+
+    <ul class="trains">
+        {
+            releaseNotes.trains.map((train) => (
+                <li class="train">
+                    <h3>
+                        <a href={pathForLocale(`/release-notes/${train.key}/${majorSlug(latestMajorOf(train).major)}/`, locale)}>
+                            {t(TRAIN_LABEL_KEY[train.key])}
+                        </a>
+                    </h3>
+                    <p class="package">
+                        <code>{train.package}</code>
+                    </p>
+
+                    <p class="latest">
+                        <span class="label">{t('releaseNotes.latestLabel')}</span>
+                        <span class="version">{latestMajorOf(train).latest.version}</span>
+                        <span class="pill">{latestMajorOf(train).latest.maturity}</span>
+                        <time datetime={latestMajorOf(train).latest.date}>{formatReleaseDate(latestMajorOf(train).latest.date, locale)}</time>
+                    </p>
+
+                    <ul class="majors">
+                        {train.majors.map((major) => (
+                            <li>
+                                <a href={pathForLocale(`/release-notes/${train.key}/${majorSlug(major.major)}/`, locale)}>
+                                    {t('releaseNotes.majorLabel')} {major.major}
+                                    <span class="count">
+                                        {major.releaseCount} {major.releaseCount === 1 ? t('releaseNotes.releases.one') : t('releaseNotes.releases.many')}
+                                    </span>
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+
+                    <p class="changelog">
+                        <a href={train.changelogUrl} target="_blank" rel="noopener noreferrer">
+                            {t('releaseNotes.viewSource')}
+                            <span class="visually-hidden"> {t('state.newTab')}</span>
+                        </a>
+                    </p>
+                </li>
+            ))
+        }
+    </ul>
+</section>
+
+<style>
+    .release-notes {
+        max-width: 64rem;
+    }
+
+    h2 {
+        font-size: var(--jd-text-xl);
+        line-height: var(--jd-line-tight);
+        margin: 0;
+    }
+
+    .lead {
+        color: var(--jd-text-muted);
+        max-width: 46rem;
+        margin: var(--jd-space-2) 0 var(--jd-space-4);
+    }
+
+    .snapshot {
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+        margin: 0 0 var(--jd-space-8);
+    }
+
+    .snapshot code {
+        font-family: var(--jd-font-mono);
+    }
+
+    .trains {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
+        gap: var(--jd-space-4);
+    }
+
+    .train {
+        background: var(--jd-surface-raised);
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-lg);
+        padding: var(--jd-space-6);
+    }
+
+    .train h3 {
+        margin: 0;
+        font-size: var(--jd-text-lg);
+        line-height: var(--jd-line-tight);
+    }
+
+    .train h3 a {
+        color: var(--jd-text-primary);
+        text-decoration: none;
+    }
+
+    .train h3 a:hover {
+        color: var(--jd-accent);
+    }
+
+    .package {
+        margin: var(--jd-space-1) 0 var(--jd-space-4);
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+    }
+
+    .package code {
+        font-family: var(--jd-font-mono);
+    }
+
+    .latest {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: var(--jd-space-1) var(--jd-space-2);
+        margin: 0 0 var(--jd-space-4);
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+    }
+
+    .latest .label {
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-size: var(--jd-text-sm);
+    }
+
+    .latest .version {
+        font-family: var(--jd-font-mono);
+        color: var(--jd-text-primary);
+    }
+
+    .pill {
+        border: 1px solid var(--jd-border);
+        border-radius: 999px;
+        padding: 0.1em 0.65em;
+        white-space: nowrap;
+    }
+
+    .majors {
+        list-style: none;
+        margin: 0 0 var(--jd-space-4);
+        padding: 0;
+        display: grid;
+        gap: var(--jd-space-1);
+    }
+
+    .majors a {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--jd-space-3);
+        padding: var(--jd-space-2) var(--jd-space-3);
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-sm);
+        color: var(--jd-text-primary);
+        font-size: var(--jd-text-sm);
+        text-decoration: none;
+    }
+
+    .majors a:hover {
+        border-color: var(--jd-accent);
+    }
+
+    .majors .count {
+        color: var(--jd-text-muted);
+    }
+
+    .changelog {
+        margin: 0;
+        font-size: var(--jd-text-sm);
+    }
+
+    .changelog a {
+        color: var(--jd-text-muted);
+    }
+
+    .changelog a:hover {
+        color: var(--jd-accent);
+    }
+</style>

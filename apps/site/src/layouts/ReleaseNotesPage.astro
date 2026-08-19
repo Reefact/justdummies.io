@@ -1,0 +1,79 @@
+---
+/**
+ * The shell a release notes page shares: the brand heading every page carries, the package
+ * switcher, then a table of contents beside the notes themselves.
+ *
+ * A sibling layout on `Base` rather than a mode of `Page`, for the same reason `ApiPage`
+ * is one: `Page`'s 72rem measure is right for the prose pages it was built for, and a
+ * column of release notes with a table of contents next to it needs the wider grid. The
+ * grid itself is `ApiPage`'s, deliberately — the two reference sections of this site should
+ * not each teach a reader a different sidebar.
+ */
+import BrandHeading from '../components/BrandHeading.astro';
+import Base from './Base.astro';
+
+interface Props {
+    title: string;
+    description: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<Base title={title} description={description}>
+    <div class="notes-shell">
+        <div class="shell">
+            <BrandHeading />
+        </div>
+        <div class="notes-head">
+            <slot name="head" />
+        </div>
+        <div class="notes-layout">
+            <slot name="contents" />
+            <main class="notes-main">
+                <slot />
+            </main>
+        </div>
+    </div>
+</Base>
+
+<style>
+    .notes-shell {
+        padding-block: var(--jd-space-8) var(--jd-space-16);
+    }
+
+    .notes-head,
+    .notes-layout {
+        max-width: 88rem;
+        margin-inline: auto;
+        padding-inline: var(--jd-space-4);
+    }
+
+    .notes-head {
+        margin-top: var(--jd-space-8);
+    }
+
+    .notes-layout {
+        display: grid;
+        grid-template-columns: 17rem minmax(0, 1fr);
+        gap: var(--jd-space-8);
+        margin-top: var(--jd-space-6);
+    }
+
+    .notes-main {
+        min-width: 0;
+    }
+
+    @media (max-width: 56rem) {
+        .notes-layout {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+    }
+
+    @media (max-width: 47.99rem), (max-height: 820px) {
+        .notes-shell {
+            padding-block-start: var(--jd-space-4);
+        }
+    }
+</style>

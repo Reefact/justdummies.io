@@ -1,0 +1,75 @@
+---
+/**
+ * The four packages, as links.
+ *
+ * It was a tab widget until ADR-0020: four panels stacked in the markup and a script that
+ * turned them into tabs at run time, because a tab that cannot switch anything is the dead
+ * control ADR-0004 exists to prevent. One page per train and major makes the whole question
+ * go away — a link acts before any script, so there is nothing to hide and nothing to
+ * announce. What is kept is the look: a reader who learned this row as tabs should still
+ * recognise it, and `aria-current` says which package they are reading rather than
+ * `aria-selected` saying which panel is showing.
+ *
+ * Each link lands on the train's newest major, which is the one a visitor almost always
+ * wants; the older ones are one click further, in the table of contents.
+ */
+import { pathForLocale } from '../i18n/routing';
+import { useTranslations, type Locale } from '../i18n/ui';
+import { latestMajorOf, majorSlug, releaseNotes, TRAIN_LABEL_KEY, type TrainKey } from '../release-notes';
+
+interface Props {
+    locale: Locale;
+    /** The train being read, or null on the section's front page. */
+    active: TrainKey | null;
+}
+
+const { locale, active } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<nav class="trains" aria-label={t('releaseNotes.packages')}>
+    {
+        releaseNotes.trains.map((train) => (
+            <a
+                href={pathForLocale(`/release-notes/${train.key}/${majorSlug(latestMajorOf(train).major)}/`, locale)}
+                aria-current={train.key === active ? 'page' : undefined}
+            >
+                {t(TRAIN_LABEL_KEY[train.key])}
+            </a>
+        ))
+    }
+</nav>
+
+<style>
+    .trains {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--jd-space-2);
+        padding-bottom: var(--jd-space-6);
+        border-bottom: 1px solid var(--jd-border);
+    }
+
+    .trains a {
+        font-size: var(--jd-text-sm);
+        color: var(--jd-text-muted);
+        text-decoration: none;
+        border: 1px solid var(--jd-border);
+        border-radius: var(--jd-radius-sm);
+        padding: var(--jd-space-2) var(--jd-space-3);
+        transition:
+            color var(--jd-duration-fast) var(--jd-ease),
+            border-color var(--jd-duration-fast) var(--jd-ease),
+            background var(--jd-duration-fast) var(--jd-ease);
+    }
+
+    .trains a:hover {
+        color: var(--jd-text-primary);
+        border-color: var(--jd-accent);
+    }
+
+    .trains a[aria-current='page'] {
+        color: var(--jd-accent);
+        background: var(--jd-surface-raised);
+        border-color: var(--jd-accent);
+    }
+</style>

@@ -1,0 +1,76 @@
+{
+  "train": "cli",
+  "major": 1,
+  "locale": "en",
+  "releases": [
+    {
+      "version": "1.1.0-beta.1",
+      "date": "2026-08-13",
+      "maturity": "beta",
+      "anchor": "v1-1-0-beta-1",
+      "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/cli-v1.1.0-beta.1",
+      "summaryHtml": [
+        "<em>A minor release, additive throughout: three new options, and not one existing behaviour changed. <code>dum generate Order</code> still writes exactly what it wrote in 1.0.0-beta.1, byte for byte.</em>"
+      ],
+      "sections": [
+        {
+          "label": "✨ New",
+          "anchor": "v1-1-0-beta-1-new",
+          "items": [
+            "<strong><code>--entry-point</code></strong> — a scaffold can now also write an entry point, so a generator is reached the way the library's own are. <code>any</code> emits a C# 14 extension member, giving you <code>Any.Order()</code> beside <code>Any.Int32()</code>; <code>static:&lt;Name&gt;</code> emits a <code>partial</code> root you own, giving you <code>Dummies.Order()</code>, with no language-version requirement at all. Defaults to <code>none</code> (<a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0070-emit-an-entry-point-on-request-as-a-file-of-its-own.md\">ADR-0070</a>).",
+            "<strong><code>--entry-point-namespace</code></strong> — puts the entry-point file in a namespace of its own, apart from the generator.",
+            "<strong><code>--format json</code></strong> — a run reports itself as one JSON document on stdout instead of the console recap, for a caller that is a script rather than a reader. Carries what the exit code cannot — <code>summary.openParameters</code>, and a row per parameter with its expression and provenance. The exit codes themselves do not move (<a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0071-report-a-run-as-data-without-moving-the-exit-codes.md\">ADR-0071</a>).",
+            "<strong><code>dum.json</code></strong> — an optional file beside the project supplies defaults for <code>output</code>, <code>namespace</code>, <code>entryPoint</code>, <code>entryPointNamespace</code> and <code>format</code>. The command line always wins (<a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0072-read-project-defaults-from-a-file-the-command-line-overrides.md\">ADR-0072</a>)."
+          ]
+        },
+        {
+          "label": "🙌 Improvements",
+          "anchor": "v1-1-0-beta-1-improvements",
+          "items": [
+            "Where a scaffold writes two files, it now writes both or neither — an existing <code>Any{Type}.Entry.cs</code> refuses the whole scaffold, and <code>--force</code> covers both.",
+            "The console recap now names the entry-point call it opened."
+          ]
+        },
+        {
+          "label": "🐛 Bug Fixes",
+          "anchor": "v1-1-0-beta-1-bug-fixes",
+          "items": [
+            "<strong><code>--namespace \"\"</code> and its four siblings no longer point at stale advice</strong> now that <code>dum.json</code> can set the same option — the refusal points at the file instead.",
+            "<strong>A parameter type outside any namespace no longer emits a <code>using</code> that fails to parse.</strong> Hit most often by a parameter whose type failed to resolve."
+          ]
+        }
+      ]
+    },
+    {
+      "version": "1.0.0-beta.1",
+      "date": "2026-08-10",
+      "maturity": "beta",
+      "anchor": "v1-0-0-beta-1",
+      "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/cli-v1.0.0-beta.1",
+      "summaryHtml": [
+        "<em>First published version — <code>dum</code> reaches nuget.org for the first time, implementing the scaffolder specification in full. A <strong>beta</strong>, not a preview: a tool carries no public-API baseline, its surface being the command line rather than a set of types, and that surface has not yet been exercised by a project outside this repository.</em>"
+      ],
+      "sections": [
+        {
+          "label": "✨ New",
+          "anchor": "v1-0-0-beta-1-new",
+          "items": [
+            "<strong><code>dum generate &lt;Type&gt;</code></strong> — writes the dummy generator for a type, once, as ordinary code you then own.",
+            "<strong>Resolution.</strong> A constructor parameter becomes a generator through the base table, then the constructor's own guard clauses (<code>quantity &lt;= 0</code> → <code>.Positive()</code>), then composition through a factory or an already-scaffolded <code>Any{Type}</code>.",
+            "<strong>An open parameter is left open, loudly</strong> — emitted as an identifier that does not exist, so your own build reports it at the line, with the type in hand (<a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0060-seed-generators-from-constructor-guards.md\">ADR-0060</a>).",
+            "<strong>A console recap</strong> saying where each expression came from — base table, guard, factory, a reused generator, or nothing.",
+            "<strong><code>--project</code>, <code>--output</code>, <code>--namespace</code>, <code>--force</code>, <code>--dry-run</code></strong>, and nothing else.",
+            "<strong>Package hardening</strong> — embedded SPDX SBOM, SourceLink, symbol package, deterministic build, and a build-provenance attestation on the release artifact."
+          ]
+        },
+        {
+          "label": "🙌 Improvements",
+          "anchor": "v1-0-0-beta-1-improvements",
+          "items": [
+            "Requires the <code>JustDummies</code> package in the analyzed project. No dependency on it is declared in either direction — every library symbol is resolved by name against your compilation, exactly as the analyzers do (<a href=\"https://github.com/Reefact/just-dummies/blob/main/doc/handwritten/for-maintainers/adr/0063-give-the-scaffolder-no-dependency-on-the-package.md\">ADR-0063</a>), so tool and library versions can never skew."
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "train": "lib",
+  "major": 0,
+  "locale": "en",
+  "releases": [
+    {
+      "version": "0.1.0-preview.1",
+      "date": "2026-07-31",
+      "maturity": "preview",
+      "anchor": "v0-1-0-preview-1",
+      "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/lib-v0.1.0-preview.1",
+      "summaryHtml": [
+        "<em>First published version — JustDummies reaches nuget.org for the first time.</em>"
+      ],
+      "sections": [
+        {
+          "label": "✨ New",
+          "anchor": "v0-1-0-preview-1-new",
+          "items": [
+            "<strong>The <code>Any</code> generator surface</strong> — a fluent DSL producing arbitrary yet valid test values. Constraints express the invariants a value must satisfy, never what the test asserts. Scalars, strings, collections, dictionaries, sets, enums, GUIDs, temporal types and URIs, plus composition through <code>As</code>, <code>Combine</code> and <code>OrNull</code>.",
+            "<strong>Fail-fast conflict detection.</strong> Contradictory constraints are refused at declaration, naming both sides, instead of looping or silently drawing a value that satisfies neither.",
+            "<strong>Reproducibility.</strong> <code>Any.Reproducibly</code> pins a seed for the run and reports it when the body throws, so a red test says how to replay itself; <code>Any.ReproduciblyAsync</code> covers <code>async</code> bodies, and <code>Any.UseSeed</code> opens an explicit scope.",
+            "<strong>28 first-party analyzers</strong> (<code>JD001</code>–<code>JD028</code>), bundled in this package, guarding the recipe-versus-value boundary the type system cannot reach on its own.",
+            "<strong>Two target frameworks.</strong> <code>netstandard2.0</code> for the widest reach, and <code>net8.0</code> which additionally carries the generators for <code>DateOnly</code>, <code>TimeOnly</code>, <code>Int128</code>, <code>UInt128</code> and <code>Half</code>. The supported .NET Framework floor is 4.7.2, and CI runs the suites on it.",
+            "<strong>Package hardening</strong> — embedded SPDX SBOM, SourceLink, symbol package, deterministic build, and a build-provenance attestation on the release artifact."
+          ]
+        }
+      ]
+    }
+  ]
+}

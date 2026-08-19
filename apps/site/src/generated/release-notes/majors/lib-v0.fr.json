@@ -1,0 +1,31 @@
+{
+  "train": "lib",
+  "major": 0,
+  "locale": "fr",
+  "releases": [
+    {
+      "version": "0.1.0-preview.1",
+      "date": "2026-07-31",
+      "maturity": "preview",
+      "anchor": "v0-1-0-preview-1",
+      "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/lib-v0.1.0-preview.1",
+      "summaryHtml": [
+        "<em>Première version publiée — JustDummies atteint nuget.org pour la première fois.</em>"
+      ],
+      "sections": [
+        {
+          "label": "✨ Nouveautés",
+          "anchor": "v0-1-0-preview-1-new",
+          "items": [
+            "<strong>La surface de génération <code>Any</code></strong> — un DSL fluide produisant des valeurs de test arbitraires mais valides. Les contraintes expriment les invariants qu'une valeur doit satisfaire, jamais ce que le test vérifie. Scalaires, chaînes, collections, dictionnaires, ensembles, énumérations, GUID, types temporels et URI, plus la composition via <code>As</code>, <code>Combine</code> et <code>OrNull</code>.",
+            "<strong>Détection des conflits en échec rapide.</strong> Des contraintes contradictoires sont refusées dès la déclaration, en nommant les deux côtés, plutôt que de boucler ou de tirer en silence une valeur qui ne satisfait ni l'une ni l'autre.",
+            "<strong>Reproductibilité.</strong> <code>Any.Reproducibly</code> épingle une seed pour l'exécution et la rapporte quand le corps échoue, pour qu'un test rouge indique comment se rejouer ; <code>Any.ReproduciblyAsync</code> couvre les corps <code>async</code>, et <code>Any.UseSeed</code> ouvre une portée explicite.",
+            "<strong>28 analyseurs maison</strong> (<code>JD001</code>–<code>JD028</code>), embarqués dans ce package, qui surveillent la frontière entre recette et valeur, là où le système de types ne peut pas l'atteindre seul.",
+            "<strong>Deux frameworks cibles.</strong> <code>netstandard2.0</code> pour la portée la plus large, et <code>net8.0</code> qui ajoute les générateurs pour <code>DateOnly</code>, <code>TimeOnly</code>, <code>Int128</code>, <code>UInt128</code> et <code>Half</code>. Le plancher .NET Framework supporté est 4.7.2, et la CI exécute les suites dessus.",
+            "<strong>Durcissement du package</strong> — SBOM SPDX embarqué, SourceLink, package de symboles, build déterministe, et une attestation de provenance sur l'artefact publié."
+          ]
+        }
+      ]
+    }
+  ]
+}

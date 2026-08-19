@@ -619,14 +619,15 @@ const en = {
     'why.report.label': 'Open an issue',
 
     /**
-     * /release-notes — a snapshot of the library's own CHANGELOG.md files, one train at
-     * a time. `releaseNotes.category.*` translates the `### Category` headings those
-     * files use, which are always written in English regardless of the reader's locale.
+     * /release-notes — a snapshot of the library's own release-notes files, one train and
+     * one major version per page (ADR-0019, ADR-0020). What a release actually says, rubric
+     * headings included, is the library's prose in the reader's own locale and is never
+     * translated here: what these keys carry is the chrome around it.
      */
     'releaseNotes.heading': 'Release notes',
-    'releaseNotes.lead': 'What shipped in the library, and why — read from its own changelog, one package at a time.',
+    'releaseNotes.lead': 'What shipped in the library, and why — read from its own release notes, one package at a time.',
     'releaseNotes.meta.description': "What changed in JustDummies, release by release, across every package it publishes.",
-    'releaseNotes.snapshotLabel': 'Snapshot taken',
+    'releaseNotes.snapshotLabel': 'Snapshot taken at',
     'releaseNotes.viewSource': 'Read the changelog this came from',
 
     'releaseNotes.train.lib': 'Core library',
@@ -635,18 +636,18 @@ const en = {
     'releaseNotes.train.cli': 'CLI — dum',
 
     'releaseNotes.viewOnGithub': 'View on GitHub',
-    'releaseNotes.more': 'more',
 
-    'releaseNotes.category.added': 'Added',
-    'releaseNotes.category.changed': 'Changed',
-    'releaseNotes.category.fixed': 'Fixed',
-    'releaseNotes.category.deprecated': 'Deprecated',
-    'releaseNotes.category.removed': 'Removed',
-    'releaseNotes.category.security': 'Security',
-    'releaseNotes.category.documentation': 'Documentation',
-    'releaseNotes.category.notes': 'Notes',
-    'releaseNotes.category.requires': 'Requires',
-    'releaseNotes.category.refusedOnPurpose': 'Refused, on purpose',
+    /** The package switcher above the two columns, and the table of contents beside them. */
+    'releaseNotes.packages': 'Packages',
+    'releaseNotes.contents': 'Versions',
+    /** Followed by the major version's own number: "Version 1". */
+    'releaseNotes.majorLabel': 'Version',
+    'releaseNotes.releases.one': 'release',
+    'releaseNotes.releases.many': 'releases',
+
+    /** The section's front page, which is the four trains and what each published last. */
+    'releaseNotes.latestLabel': 'Latest',
+    'releaseNotes.readNotes': 'Read the release notes',
 
     /** The sitewide footer. */
     'footer.nav': 'Footer',
@@ -1183,9 +1184,9 @@ const fr: Record<UiKey, string> = {
 
     'releaseNotes.heading': 'Release notes',
     'releaseNotes.lead':
-        "Ce qui a changé dans la bibliothèque, et pourquoi — lu dans son propre changelog, un paquet à la fois.",
+        "Ce qui a changé dans la bibliothèque, et pourquoi — lu dans ses propres release notes, un paquet à la fois.",
     'releaseNotes.meta.description': 'Ce qui a changé dans JustDummies, release après release, pour chaque paquet publié.',
-    'releaseNotes.snapshotLabel': 'Instantané pris le',
+    'releaseNotes.snapshotLabel': 'Instantané pris au tag',
     'releaseNotes.viewSource': "Lire le changelog dont ceci provient",
 
     'releaseNotes.train.lib': 'Bibliothèque principale',
@@ -1194,18 +1195,15 @@ const fr: Record<UiKey, string> = {
     'releaseNotes.train.cli': 'CLI — dum',
 
     'releaseNotes.viewOnGithub': 'Voir sur GitHub',
-    'releaseNotes.more': 'de plus',
 
-    'releaseNotes.category.added': 'Ajouté',
-    'releaseNotes.category.changed': 'Changé',
-    'releaseNotes.category.fixed': 'Corrigé',
-    'releaseNotes.category.deprecated': 'Déprécié',
-    'releaseNotes.category.removed': 'Retiré',
-    'releaseNotes.category.security': 'Sécurité',
-    'releaseNotes.category.documentation': 'Documentation',
-    'releaseNotes.category.notes': 'Notes',
-    'releaseNotes.category.requires': 'Requiert',
-    'releaseNotes.category.refusedOnPurpose': 'Refusé, volontairement',
+    'releaseNotes.packages': 'Paquets',
+    'releaseNotes.contents': 'Versions',
+    'releaseNotes.majorLabel': 'Version',
+    'releaseNotes.releases.one': 'version',
+    'releaseNotes.releases.many': 'versions',
+
+    'releaseNotes.latestLabel': 'Dernière',
+    'releaseNotes.readNotes': 'Lire les release notes',
 
     'footer.nav': 'Pied de page',
     'footer.about': 'À propos',

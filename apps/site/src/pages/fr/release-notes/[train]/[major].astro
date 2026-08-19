@@ -1,0 +1,43 @@
+---
+/**
+ * One train's one major version. The routes come from the snapshot rather than from a file
+ * per major (ADR-0020): `apps/site/src/i18n/routing.ts` is taught the same list, because a
+ * parameterised path is invisible to the glob it reads its known routes from.
+ */
+import ReleaseNotesContents from '../../../../components/ReleaseNotesContents.astro';
+import ReleaseNotesHeader from '../../../../components/ReleaseNotesHeader.astro';
+import ReleaseNotesMajor from '../../../../components/ReleaseNotesMajor.astro';
+import ReleaseNotesPage from '../../../../layouts/ReleaseNotesPage.astro';
+import { useTranslations } from '../../../../i18n/ui';
+import { majorSlug, notesOf, publishedMajors, trainOf, TRAIN_LABEL_KEY, type TrainKey } from '../../../../release-notes';
+import { site } from '../../../../site';
+
+export function getStaticPaths() {
+    return publishedMajors.map((published) => ({
+        params: { train: published.train, major: majorSlug(published.major) },
+        props: { trainKey: published.train, major: published.major },
+    }));
+}
+
+interface Props {
+    trainKey: TrainKey;
+    major: number;
+}
+
+const { trainKey, major } = Astro.props;
+
+const locale = 'fr';
+const t = useTranslations(locale);
+const train = trainOf(trainKey);
+const notes = notesOf(trainKey, major, locale);
+const label = t(TRAIN_LABEL_KEY[trainKey]);
+---
+
+<ReleaseNotesPage
+    title={`${label} ${majorSlug(major)} — ${t('releaseNotes.heading')} — ${site.name}`}
+    description={`${label} (${train.package}) — ${t('releaseNotes.meta.description')}`}
+>
+    <ReleaseNotesHeader slot="head" locale={locale} active={trainKey} />
+    <ReleaseNotesContents slot="contents" locale={locale} train={train} notes={notes} />
+    <ReleaseNotesMajor locale={locale} train={train} notes={notes} />
+</ReleaseNotesPage>

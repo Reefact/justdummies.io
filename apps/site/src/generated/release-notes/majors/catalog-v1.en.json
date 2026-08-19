@@ -1,0 +1,55 @@
+{
+  "train": "catalog",
+  "major": 1,
+  "locale": "en",
+  "releases": [
+    {
+      "version": "1.0.0-preview.3",
+      "date": "2026-08-18",
+      "maturity": "preview",
+      "anchor": "v1-0-0-preview-3",
+      "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/catalog-v1.0.0-preview.3",
+      "summaryHtml": [
+        "<em>The catalogue catches up with the rule set <code>JustDummies 1.0.0-preview.2</code> shipped: two rules join the constants, <code>JD029</code> and <code>JD030</code>.</em>"
+      ],
+      "sections": [
+        {
+          "label": "✨ New",
+          "anchor": "v1-0-0-preview-3-new",
+          "items": [
+            "<strong><code>JustDummiesRule.JD029</code></strong> — <em>A value written into a pool that a declared constraint refuses</em>, category <code>JustDummies.Constraints</code>.",
+            "<strong><code>JustDummiesRule.JD030</code></strong> — <em>A string dummy that declares no length</em>, category <code>JustDummies.Constraints</code>."
+          ]
+        }
+      ]
+    },
+    {
+      "version": "1.0.0-preview.2",
+      "date": "2026-08-07",
+      "maturity": "preview",
+      "anchor": "v1-0-0-preview-2",
+      "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/catalog-v1.0.0-preview.2",
+      "summaryHtml": [
+        "<em>First published version — the catalogue reaches nuget.org for the first time, at the number of the rule set JustDummies 1.0 ships. There is no <code>1.0.0-preview.1</code>: that tag's release run failed before publishing anything, and the number is skipped rather than reused.</em>"
+      ],
+      "sections": [
+        {
+          "label": "✨ New",
+          "anchor": "v1-0-0-preview-2-new",
+          "items": [
+            "<strong><code>JustDummiesRule</code></strong> — the 28 analyzer rules, <code>JD001</code> to <code>JD028</code>, each carrying <code>Id</code>, <code>Category</code>, <code>Title</code> and <code>HelpLinkUri</code> as compile-time constants a <code>[SuppressMessage]</code> can name.",
+            "<strong><code>JustDummiesCategory</code></strong> — the four categories those rules are grouped under.",
+            "<strong>Opt-in scoped to your own project</strong> — <code>build/JustDummies.DiagnosticCatalog.props</code> switches the checks on only for the project that references this catalogue, never for one that merely depends on it."
+          ]
+        },
+        {
+          "label": "🙌 Improvements",
+          "anchor": "v1-0-0-preview-2-improvements",
+          "items": [
+            "<strong>A rule is never removed and a member is never renamed.</strong> A rule retired from the product is carried forward as <code>[Obsolete]</code> instead, so upgrading never breaks a build over a diagnostic id."
+          ]
+        }
+      ]
+    }
+  ]
+}
