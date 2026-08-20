@@ -119,10 +119,15 @@ const t = useTranslations(current);
         // whatever the attribute currently holds.
         const base: string = link.getAttribute('href') ?? '';
 
+        // Unconditional, on purpose: `base` is written back on every click, hash or
+        // no hash, so a fragment left over from an earlier click that never navigated away
+        // (Ctrl/Cmd-click; a back/forward-cache restore landing on a history entry the
+        // scroll handler pushed without one) is cleared rather than carried forward. A
+        // guard here reading `if (location.hash)` was the earlier version's own mistake: it
+        // fixed the fragment being repeated, but not a stale one being kept once the reader
+        // had genuinely left it behind.
         link.addEventListener('click', () => {
-            if (location.hash) {
-                link.href = base + location.hash;
-            }
+            link.href = base + location.hash;
         });
     }
 
