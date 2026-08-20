@@ -108,10 +108,33 @@ function readTags() {
     }
 }
 
-function maturityOf(version) {
-    const match = /-(preview|beta|alpha|rc)(?:\.|$)/.exec(version);
+/*
+ * The pill is the page's one-word answer to "can I put this in production", and it used to
+ * answer `stable` to anything it did not recognise. `2.0.0-next.1`, `1.0.0-rc1` and
+ * `1.0.0-beta-2` all came back stable, because the old pattern looked for a closed list of
+ * identifiers and read "no match" as "no pre-release" — a guess, and the one guess that runs
+ * in the reassuring direction. Nothing upstream constrains the identifier: versions come from
+ * git tags, not from the notes files this generator otherwise refuses over.
+ *
+ * So the identifier is captured rather than matched, and an unknown one stops the snapshot the
+ * way an unparseable date does. Anchored to the pre-release field — everything up to the first
+ * `-` or `+` is the version core — so build metadata cannot be mistaken for it: `1.0.0+2026-08-18`
+ * has no pre-release at all, and a looser pattern would have captured `2026` out of it.
+ */
+const MATURITIES = ['preview', 'beta', 'alpha', 'rc'];
 
-    return match === null ? 'stable' : match[1];
+function maturityOf(version) {
+    const match = /^[^-+]+-([0-9A-Za-z]+)/.exec(version);
+
+    if (match === null) {
+        return 'stable';
+    }
+
+    if (!MATURITIES.includes(match[1])) {
+        refuse(`${version} carries a pre-release identifier this snapshot has no word for: ${match[1]}. Known: ${MATURITIES.join(', ')}`);
+    }
+
+    return match[1];
 }
 
 /** `1.0.0-preview.2` → `v1-0-0-preview-2`: an id a stylesheet can select and a URL can carry,
@@ -171,7 +194,7 @@ for (const train of TRAINS) {
     // mirror that names one ref and links to another describes two different trees.
     const { releasesOf, isoDateOf } = releaseNotesReader({
         refuse,
-        resolveHref: githubHrefResolver({ repositoryUrl: REPOSITORY_URL, ref: ref.name, relativeTo: `${train.directory}/` }),
+        resolveLink: githubHrefResolver({ repositoryUrl: REPOSITORY_URL, ref: ref.name, relativeTo: `${train.directory}/` }),
     });
 
     for (const major of majors) {
@@ -218,9 +241,17 @@ for (const train of TRAINS) {
                     date: isoDateOf(source.date, english.path),
                     maturity: maturityOf(source.version),
                     anchor,
-                    // Only a tag that exists is linked. The library has pushed a tag whose
-                    // release run then failed before publishing anything (catalog-v1.0.0-preview.1),
-                    // and a link to a number that was skipped is worse than no link.
+                    // Only a tag that exists is linked: a release can be written up in the
+                    // notes file before its tag is cut, and a link to a tag that is not there
+                    // yet is worse than no link.
+                    //
+                    // It does NOT catch what this comment used to claim — a tag pushed whose
+                    // release run then failed, catalog-v1.0.0-preview.1 being the real case.
+                    // That tag exists, so this test passes and the link is emitted; the thing
+                    // that is missing is the GitHub Release, which is not what `refs/tags`
+                    // answers. Querying releases rather than tags is what would close it.
+                    // ADR-0013 records the risk and it stays open, which is worth saying
+                    // plainly rather than leaving a comment that implies otherwise.
                     tagUrl: tagNames.has(tag) ? `${REPOSITORY_URL}/releases/tag/${tag}` : null,
                     summaryHtml: release.summaryHtml,
                     sections: release.sections.map((section, rubric) => ({
