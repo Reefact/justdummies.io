@@ -977,6 +977,39 @@ test.describe('the playground', () => {
     });
 
     /**
+     * Enter answers with the option the visitor has walked to.
+     *
+     * It is the one gesture the check above leaves unfinished. A closed <select> has already
+     * changed its value on each arrow press, so Enter raises no change of its own — there is
+     * nothing left for it to change — and a step that settled only on a change would sit there
+     * as a combo while the visitor pressed the key that means "this one".
+     */
+    test('settles a step on Enter, with the option the keyboard walked to', async ({ page }) => {
+        await page.goto('/playground/');
+
+        const step   = page.locator('.chain-link').nth(0);
+        const select = step.locator('select');
+
+        await select.focus();
+        await select.press('ArrowDown');
+        await expect(select).toBeVisible();
+
+        const walkedTo = await select.inputValue();
+
+        await select.press('Enter');
+
+        await expect(step.locator('select')).toHaveCount(0);
+        await expect(step.locator('.call')).toBeVisible();
+
+        // The step it settled on is the one that was showing, not the one the list opened at.
+        expect(walkedTo).not.toBe('');
+
+        // Enter is a choice like any other, so it hands the focus on like any other: the first
+        // entry a chain can open with takes no arguments, so that is the next step's combo.
+        await expect(page.locator('.chain-link').nth(1).locator('select')).toBeFocused();
+    });
+
+    /**
      * A parameterized step's arguments are reachable by tabbing forward out of a combo that is
      * still standing — which is the state a keyboard user is in for as long as they are walking
      * the option list.

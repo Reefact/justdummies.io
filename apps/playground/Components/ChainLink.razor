@@ -306,6 +306,15 @@
     ///     away keeps the focus they clicked on. Shift+Tab is left alone for the same reason: it
     ///     is going the other way, and there is nothing of this step's behind the select.
     ///
+    ///     AND ENTER IS ANSWERED HERE RATHER THAN BY A CHANGE EVENT, because on a closed
+    ///     <c>&lt;select&gt;</c> it raises none: the value moved on each arrow press long before
+    ///     the visitor pressed the key that means <em>this one</em>, so there is nothing left for
+    ///     it to change. Chromium sends no key-up for it either — measured, not assumed — so the
+    ///     key-down is the whole of what the page is given to act on. Without this branch the one
+    ///     gesture a keyboard user would expect to answer with does nothing at all, and the step
+    ///     stands as a combo until focus leaves, which is the wait this component no longer asks
+    ///     anyone for.
+    ///
     ///     AND EVERY KEYSTROKE THAT REACHES THE SELECT IS RECORDED, for
     ///     <see cref="HandleMethodChosen" /> to read back. The change event carries nothing about
     ///     what provoked it, and keydown runs first, so this is where the two gestures the
@@ -313,7 +322,7 @@
     ///     told apart. Written on the way past rather than guarded, because a key that is not a
     ///     browsing key has to clear the flag just as surely as one that is has to set it.
     /// </summary>
-    private void HandleKeyDown(KeyboardEventArgs e) {
+    private Task HandleKeyDown(KeyboardEventArgs e) {
         if (ShowSelect) {
             _browsing = IsBrowsingKey(e);
         }
@@ -321,13 +330,19 @@
         if (e.Key == "Escape") {
             _errorOpen = false;
 
-            return;
+            return Task.CompletedTask;
+        }
+
+        if (e.Key == "Enter" && ShowSelect && State.Chosen is { } answered) {
+            return Settle(answered);
         }
 
         if (e.Key == "Tab" && !e.ShiftKey && ShowSelect && State.Chosen is { Parameters.Count: > 0 }) {
             _editing            = false;
             _claimFirstArgument = true;
         }
+
+        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -585,15 +600,30 @@
             return Task.CompletedTask;
         }
 
-        var browsing = _browsing;
-        _browsing = false;
+        if (_browsing) {
+            _browsing = false;
 
-        if (!browsing) {
-            _editing            = false;
-            _claimFirstArgument = chosen.Parameters.Count > 0;
+            return OnMethodChosen.InvokeAsync((LinkIndex, chosen, false));
         }
 
-        return OnMethodChosen.InvokeAsync((LinkIndex, chosen, !browsing));
+        return Settle(chosen);
+    }
+
+    /// <summary>
+    ///     Puts this step's combo away and hands on the focus it was holding — the one path out of
+    ///     being a combo, whichever gesture ended it.
+    ///
+    ///     A step with arguments takes that focus itself, on the first of them. One without has
+    ///     nothing to take it with, so <c>Settled</c> travels to Home.razor, which moves it on to
+    ///     the next step's combo. The select is gone from the DOM by the render this provokes, and
+    ///     a focus nobody catches falls back to <c>&lt;body&gt;</c>.
+    /// </summary>
+    private Task Settle(MemberDescriptor chosen) {
+        _browsing           = false;
+        _editing            = false;
+        _claimFirstArgument = chosen.Parameters.Count > 0;
+
+        return OnMethodChosen.InvokeAsync((LinkIndex, chosen, true));
     }
 
     /// <summary>Truncates any argument's raw text to <see cref="ArgumentParsing.SandboxTextLengthHardCeiling" />
