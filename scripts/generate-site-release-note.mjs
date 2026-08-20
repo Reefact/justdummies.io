@@ -32,6 +32,9 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const destination = join(root, 'apps', 'site', 'src', 'generated', 'site-release.json');
 
 const REPOSITORY_URL = 'https://github.com/Reefact/justdummies.io';
+/** Where this site is published — `site` in apps/site/astro.config.mjs. A release note
+ *  linking to one of its own pages is not sending the reader away. */
+const SITE_ORIGIN = 'https://justdummies.io';
 
 /** Both halves of the file, always together: one without the other is what §6.4 forbids. */
 const LOCALES = ['en', 'fr'];
@@ -82,7 +85,7 @@ const { releasesOf, isoDateOf } = releaseNotesReader({
     // intro links to an ADR that way, and a bullet could. Pinned to the release being
     // published rather than to a branch: a note that describes one release and links into
     // another tree is two statements, not one.
-    resolveLink: githubHrefResolver({ repositoryUrl: REPOSITORY_URL, ref: published, relativeTo: '.' }),
+    resolveLink: githubHrefResolver({ repositoryUrl: REPOSITORY_URL, ref: published, relativeTo: '.', siteOrigin: SITE_ORIGIN }),
 });
 
 // Newest first, the order the file already writes them in. Only the first is published, and

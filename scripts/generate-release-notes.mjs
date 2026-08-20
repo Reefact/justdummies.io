@@ -51,6 +51,9 @@ const destination = join(root, 'apps', 'site', 'src', 'generated', 'release-note
 
 const REPOSITORY = 'Reefact/just-dummies';
 const REPOSITORY_URL = `https://github.com/${REPOSITORY}`;
+/** Where this site is published — `site` in apps/site/astro.config.mjs. A release note
+ *  linking to one of its own pages is not sending the reader away. */
+const SITE_ORIGIN = 'https://justdummies.io';
 
 /** One entry per release train, in CONTRIBUTING.md's own scope table order. The tag prefix is
  *  the library's `tools/trains.sh` partition, which is what makes a version a tag again. */
@@ -194,7 +197,7 @@ for (const train of TRAINS) {
     // mirror that names one ref and links to another describes two different trees.
     const { releasesOf, isoDateOf } = releaseNotesReader({
         refuse,
-        resolveLink: githubHrefResolver({ repositoryUrl: REPOSITORY_URL, ref: ref.name, relativeTo: `${train.directory}/` }),
+        resolveLink: githubHrefResolver({ repositoryUrl: REPOSITORY_URL, ref: ref.name, relativeTo: `${train.directory}/`, siteOrigin: SITE_ORIGIN }),
     });
 
     for (const major of majors) {

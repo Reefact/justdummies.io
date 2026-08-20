@@ -267,7 +267,8 @@ const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 
  * written with a trailing slash names a directory, and those live under /tree/, never /blob/.
  *
  * `relativeTo` is the directory the link was written relative to — a train's own folder in
- * the library, or the repository root for this site's notes.
+ * the library, or the repository root for this site's notes. `siteOrigin` is where this site
+ * itself is published, so a link to one of its own pages is not called outbound.
  *
  * AN ABSOLUTE LINK INTO THE SAME REPOSITORY IS PINNED TOO, and that is the half that was
  * missing. Upstream's authoring habit is to write these out in full — all 25 markdown links
@@ -280,11 +281,25 @@ const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 
  * A link to anywhere else is left exactly as written. This knows one repository — its
  * caller's — and has no business editing a stranger's URL.
  */
-export function githubHrefResolver({ repositoryUrl, ref, relativeTo }) {
-    /* `/blob/<ref>/` or `/tree/<ref>/`, capturing the ref so it can be swapped for the
-       pinned one. A ref segment cannot contain a slash in this form, which is what makes the
-       path after it recoverable. */
-    const sameRepository = new RegExp(`^${repositoryUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/(blob|tree)/([^/]+)/(.*)$`);
+export function githubHrefResolver({ repositoryUrl, ref, relativeTo, siteOrigin }) {
+    /* Already at the pinned ref, matched as a whole prefix rather than parsed.
+     *
+     * A ref is not one path segment: this site's own are `release/2026-08-19T11-50-00Z`, with
+     * a slash in the middle, and a URL already pinned to one of those would be read as the ref
+     * `release` followed by a path starting `2026-…`, then "repinned" onto itself — the date
+     * appearing twice and the link pointing at nothing. Asking whether the whole prefix is
+     * already there settles that without having to know where a ref ends. */
+    const pinnedTo = (kind) => `${repositoryUrl}/${kind}/${ref}/`;
+
+    /* `/blob/<ref>/` or `/tree/<ref>/` for a ref that is NOT the pinned one, which is the only
+       case left to rewrite. The ref is taken as a single segment, and that is exact for what
+       these notes actually carry — `main`, which is what all 22 of the library's links name,
+       and what this repository's own authoring rule mandates. It cannot be exact in general:
+       a link written against a branch with a slash in its name, `feature/foo`, is
+       indistinguishable from a one-segment ref followed by a directory, and would be rewritten
+       onto the wrong path. Nothing here can tell the two apart from the URL alone — only the
+       repository's ref list could — so the limit is written down rather than papered over. */
+    const otherRef = new RegExp(`^${repositoryUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/(blob|tree)/([^/]+)/(.*)$`);
 
     return function resolved(href, { absolute } = { absolute: false }) {
         if (!absolute) {
@@ -293,14 +308,25 @@ export function githubHrefResolver({ repositoryUrl, ref, relativeTo }) {
             return { href: `${repositoryUrl}/${kind}/${ref}/${posix.normalize(posix.join(relativeTo, href))}`, external: true };
         }
 
-        const match = sameRepository.exec(href);
+        /* A link to this site is not a link away from it. Without this the note would open
+           its own page in a new tab and tell a screen reader it had left, which is worse than
+           saying nothing: the announcement would be false rather than missing. */
+        if (siteOrigin !== undefined && href.startsWith(`${siteOrigin}/`)) {
+            return { href, external: false };
+        }
+
+        if (href.startsWith(pinnedTo('blob')) || href.startsWith(pinnedTo('tree'))) {
+            return { href, external: true };
+        }
+
+        const match = otherRef.exec(href);
 
         if (match === null) {
             return { href, external: true };
         }
 
-        const [, kind, named, path] = match;
+        const [, kind, , path] = match;
 
-        return { href: named === ref ? href : `${repositoryUrl}/${kind}/${ref}/${path}`, external: true };
+        return { href: `${repositoryUrl}/${kind}/${ref}/${path}`, external: true };
     };
 }
