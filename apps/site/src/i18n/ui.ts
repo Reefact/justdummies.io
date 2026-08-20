@@ -425,7 +425,7 @@ const en = {
     'why.legend.outOfScope':
         'The tool does not do this. Sometimes its authors decided against it, sometimes nobody has built it yet — the note says which.',
     'why.legend.order':
-        'The criteria are grouped under the four questions you arrive with, not ranked by how well JustDummies answers them. On several of them JustDummies is the one that does not try, which is the word just in its name doing its job.',
+        'The criteria are grouped by the questions you might ask in your own tests, not by what JustDummies is good at. And JustDummies deliberately does not try to cover every need: its goal is to do one thing well, generating the arbitrary and constrained values your tests need.',
     'why.legend.definitionsLabel': 'What each answer means',
 
     'why.rating.core': 'Built for this',
@@ -1007,7 +1007,7 @@ const fr: Record<UiKey, string> = {
     'why.legend.outOfScope':
         "L'outil ne le fait pas. Parfois parce que ses auteurs en ont décidé ainsi, parfois parce que personne ne l'a encore écrit — la note précise lequel des deux.",
     'why.legend.order':
-        "Les critères sont regroupés sous les quatre questions qu'on se pose en arrivant, et non classés selon ce que JustDummies y répond. Sur plusieurs d'entre eux, JustDummies est celui qui n'essaie pas : c'est le mot « just » de son nom qui fait son travail.",
+        "Les critères sont regroupés selon les questions que vous pouvez vous poser dans vos tests, pas selon les points forts de JustDummies. Et JustDummies ne cherche volontairement pas à répondre à tous les besoins : son objectif est de bien faire une seule chose, générer les valeurs arbitraires et contraintes dont vos tests ont besoin.",
 
     'why.legend.definitionsLabel': 'Ce que veut dire chaque réponse',
 
