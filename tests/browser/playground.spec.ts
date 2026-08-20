@@ -967,7 +967,7 @@ test.describe('the playground', () => {
 
     /**
      * The playground counts as part of the site, so it carries the same footer — rebuilt
-     * in Blazor (Layout/MainLayout.razor) rather than shared, since Astro and Blazor have
+     * in Blazor (Layout/SiteFooter.razor) rather than shared, since Astro and Blazor have
      * no rendering system in common. What both halves must still agree on is that a link
      * back to the site survives `<base href="/playground/" />`: a bare "about" would
      * resolve to /playground/about, a page that does not exist, so the links are asserted

@@ -22,6 +22,14 @@
     embedded in the landing page's own hero, which is chromeless by design — it already
     sits inside a page that carries the real footer around it, so a second one here would
     be a duplicate, not a consistency.
+
+    The copyright year reads `DateTime.Now.Year`, not a build timestamp: Footer.astro reads
+    its own build's timestamp instead of `Date.now()` so a same-source rebuild cannot show
+    a different year than the one before it, but that discipline has nothing to read from
+    here — this is a WebAssembly app with no build-time value of its own to freeze, and the
+    only candidate, the site's `/version.json`, would turn a footer that renders
+    synchronously into one that waits on a fetch to show a value that is, outside of New
+    Year's Eve, identical either way.
 *@
 
 <footer class="site-footer">
@@ -35,7 +43,7 @@
             <span class="visually-hidden"> @PlaygroundStrings.T(LocaleState.Current, "state.newTab")</span>
         </a>
     </nav>
-    <p class="copyright">© @DateTime.Now.Year REEFACT</p>
+    <p class="copyright">© @DateTime.Now.Year @Entity</p>
 </footer>
 
 @code {
@@ -44,6 +52,11 @@
     // `SiteHeader.razor`'s `RepositoryUrl`, which deliberately points at the library's
     // repository instead.
     private const string RepositoryUrl = "https://github.com/Reefact/justdummies.io";
+
+    // Mirrored from `site.legal.entity` in `site.ts` — the KNOWN DUPLICATION documented
+    // there, restated as a named constant rather than a bare literal so the mirroring is
+    // visible here too, not only in the comment on the other side of it.
+    private const string Entity = "REEFACT";
 
     private string AboutHref => LocaleState.Current == Locale.Fr ? "/fr/about/" : "/about/";
     private string ApiHref => LocaleState.Current == Locale.Fr ? "/fr/api/" : "/api/";
