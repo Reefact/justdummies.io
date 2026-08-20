@@ -178,6 +178,17 @@ const t = useTranslations(locale);
         white-space: nowrap;
     }
 
+    /* Below this width the head wraps — measured, the version and pill together are 248px
+       against a narrower text column than that. `margin-left: auto` is what puts the date at
+       the *right* end of that first line's width even once it has fallen to a line of its
+       own, flush under the pill rather than following it — reading as though it qualified the
+       pill's word rather than naming the release above both. */
+    @media (max-width: 47.99rem) {
+        .release-date {
+            margin-left: 0;
+        }
+    }
+
     .summary {
         color: var(--jd-text-muted);
         margin-bottom: var(--jd-space-6);

@@ -11,15 +11,16 @@ import ReleaseNotesTrains from './ReleaseNotesTrains.astro';
 interface Props {
     locale: Locale;
     active: TrainKey;
+    activeMajor: number;
 }
 
-const { locale, active } = Astro.props;
+const { locale, active, activeMajor } = Astro.props;
 const t = useTranslations(locale);
 ---
 
 <h2 id="release-notes-heading">{t('releaseNotes.heading')}</h2>
 <p class="lead">{t('releaseNotes.lead')}</p>
-<ReleaseNotesTrains locale={locale} active={active} />
+<ReleaseNotesTrains locale={locale} active={active} activeMajor={activeMajor} />
 
 <style>
     h2 {

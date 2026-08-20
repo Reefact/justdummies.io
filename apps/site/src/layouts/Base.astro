@@ -202,7 +202,12 @@ const t = useTranslations(locale);
                 event.preventDefault();
 
                 const start: number = window.scrollY;
-                const end: number = start + target.getBoundingClientRect().top;
+                // The target's own scroll-margin-top exists so a jump lands with air above
+                // it (ReleaseNotesMajor.astro, ADR-0020's table of contents); left out here,
+                // the animation landed the target flush against the viewport's top edge —
+                // 16px short of what the CSS asks for on every release-notes page.
+                const scrollMargin: number = parseFloat(getComputedStyle(target).scrollMarginTop || '0');
+                const end: number = start + target.getBoundingClientRect().top - scrollMargin;
                 const distance: number = end - start;
                 // Long enough to read as travel, short enough not to be a wait. Scaled by
                 // distance so a short hop is not given the same six hundred milliseconds
@@ -224,6 +229,28 @@ const t = useTranslations(locale);
                         // The address bar and the back button expect the anchor to have
                         // been followed; easing the scroll must not quietly cost that.
                         history.pushState(null, '', `#${id}`);
+
+                        /*
+                         * Focus follows the scroll, the way a browser's own anchor navigation
+                         * would have moved it — `preventDefault` above is what stopped that
+                         * from happening on its own. Left alone, activating an entry in a
+                         * column of anchors (the release notes table of contents is the one
+                         * place this site has one) leaves focus behind in the list: the next
+                         * Tab walks the rest of that list rather than the page the reader just
+                         * asked to read, and when it finally leaves, the browser throws them
+                         * back to wherever that list's last focusable neighbour sits — hundreds
+                         * of pixels from where they landed.
+                         *
+                         * `tabindex="-1"` makes an arbitrary element focusable without adding
+                         * it to the normal tab order, which is what a scroll target should be:
+                         * reachable once, by this jump, not a permanent new stop for every
+                         * later Tab through the page.
+                         */
+                        if (!target.hasAttribute('tabindex')) {
+                            target.setAttribute('tabindex', '-1');
+                        }
+
+                        target.focus({ preventScroll: true });
                     }
                 };
 

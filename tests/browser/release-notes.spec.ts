@@ -256,6 +256,16 @@ test.describe('a major version page', () => {
         // fragment navigation and reports the address the page had a moment earlier.
         await expect(page).toHaveURL(`/release-notes/lib/v1/${anchor}`);
         await expect(page.locator(anchor)).toBeInViewport();
+
+        /*
+         * Landing in the viewport is not landing for a keyboard reader: `preventDefault` in
+         * Base.astro's smooth-scroll handler takes the browser's own focus handling with it,
+         * and without this, activating an entry left focus behind in the table of contents —
+         * the next Tab walked the rest of that list rather than the section the reader just
+         * asked to read, and Tabbing out of it threw them 639px back up the page. Landing in
+         * the viewport and being focused are different claims; this is the second one.
+         */
+        await expect(page.locator(anchor)).toBeFocused();
     });
 
     test('hides nothing behind a fold', async ({ page }) => {
