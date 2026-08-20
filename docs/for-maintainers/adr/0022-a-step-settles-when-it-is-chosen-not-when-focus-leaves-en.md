@@ -167,6 +167,21 @@ charges it to every step of every chain.
   option it was already holding and then again on the one actually committed. The end state is the
   method the visitor chose either way; what it costs is a render nobody asked for, and only for a
   visitor who walked the closed list before opening it.
+* **One gesture still settles nothing, and it is left alone deliberately.** A visitor who walks the
+  closed list to an option, then opens the drop-down with the pointer and clicks that same option
+  to confirm it, produces no change event — the value did not move — and does not blur the control
+  either, so the combo stands until they do something else. This is not new: the same sequence
+  behaved the same way under the focus rule. What is new is that the decision above now promises
+  otherwise for a pointer, and this is the one case where it does not deliver.
+
+  It is left alone because no fix for it can be held by a check. The browser suite drives a
+  headless engine, which never opens a native drop-down, so nothing that happens inside one can be
+  asserted — and a click on an option of an open drop-down is precisely what would have to be
+  observed. A repository that requires a decision to come with something that fails when it is
+  broken cannot take a fix whose only evidence would be that it looked right. The visitor is not
+  stuck: the choice is already committed, the card already shows the method's summary and its
+  delete control, and Enter, Tab or any click elsewhere settles the step. Recorded here so the next
+  person meets it as a known cost rather than as a discovery.
 
 ## Follow-up Actions
 
