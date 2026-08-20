@@ -3,11 +3,15 @@
  * The shell a release notes page shares: the brand heading every page carries, the package
  * switcher, then a table of contents beside the notes themselves.
  *
- * A sibling layout on `Base` rather than a mode of `Page`, for the same reason `ApiPage`
- * is one: `Page`'s 72rem measure is right for the prose pages it was built for, and a
- * column of release notes with a table of contents next to it needs the wider grid. The
- * grid itself is `ApiPage`'s, deliberately — the two reference sections of this site should
- * not each teach a reader a different sidebar.
+ * A sibling layout on `Base` rather than a mode of `Page`: `Page` has no grid to give a
+ * table of contents a column of its own, so this still has to lay one out. Its shell holds
+ * `Page`'s 72rem measure rather than `ApiPage`'s 88rem, though — the notes are prose, read
+ * start to end, not a reference table with a signature column that needs the room, and
+ * 88rem's only argument lives on that page, not this one.
+ *
+ * The sidebar's own width still isn't this file's to pick: `--jd-reference-nav` (base.css)
+ * is the one number both reference sections' first column reads, so a reader moving between
+ * /api and here finds the same column even though the page around it is narrower.
  */
 import BrandHeading from '../components/BrandHeading.astro';
 import Base from './Base.astro';
@@ -44,7 +48,7 @@ const { title, description } = Astro.props;
 
     .notes-head,
     .notes-layout {
-        max-width: 88rem;
+        max-width: 72rem;
         margin-inline: auto;
         padding-inline: var(--jd-space-4);
     }
@@ -55,7 +59,7 @@ const { title, description } = Astro.props;
 
     .notes-layout {
         display: grid;
-        grid-template-columns: 17rem minmax(0, 1fr);
+        grid-template-columns: var(--jd-reference-nav) minmax(0, 1fr);
         gap: var(--jd-space-8);
         margin-top: var(--jd-space-6);
     }

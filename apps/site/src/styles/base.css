@@ -214,6 +214,17 @@ kbd {
 }
 
 /*
+ * The width of a reference section's own navigation column — `ApiPage`'s category nav,
+ * `ReleaseNotesPage`'s table of contents. The two layouts already say in prose that they
+ * share one grid; this is the number that promise depends on, so it is declared once
+ * rather than typed twice — a second copy is a second thing to keep in step, and it fell
+ * out of step once already (16rem and 17rem).
+ */
+:root {
+    --jd-reference-nav: 16rem;
+}
+
+/*
  * Visible to a screen reader, absent from the visual design.
  *
  * GLOBAL, NOT PER COMPONENT. Astro scopes a component's styles to that component's own
