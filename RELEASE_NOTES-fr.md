@@ -11,7 +11,8 @@ compatibilité, puisque rien ne consomme ce déploiement (voir
 
 ## Unreleased
 
-_Rien en attente pour l'instant._
+### ✨ Nouveautés
+- La page /version affiche désormais ce qu'a changé la dernière release du site lui-même, en anglais et en français, sous les informations de build qu'elle donnait déjà.
 
 ## release/2026-08-19T11-50-00Z — 19 août 2026
 

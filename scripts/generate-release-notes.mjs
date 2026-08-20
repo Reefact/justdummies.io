@@ -33,11 +33,18 @@
 // file is missing, a release heading that does not name its version and date, or two
 // languages holding different releases all stop it. A page complete in English and short in
 // French is exactly what §6.4 exists to prevent, and it is invisible to everything else here.
+//
+// HOW IT READS THE MARKDOWN is `scripts/lib/release-notes-markdown.mjs`, shared with the
+// generator that reads this repository's own notes: two sources written to one grammar, and
+// one place that knows the grammar. What stays here is everything only a library release
+// has — the trains, the tags, the maturity a semver version carries.
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join, posix } from 'node:path';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { githubHrefResolver, releaseNotesReader } from './lib/release-notes-markdown.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const destination = join(root, 'apps', 'site', 'src', 'generated', 'release-notes');
@@ -101,138 +108,6 @@ function readTags() {
     }
 }
 
-function escapeHtml(text) {
-    return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
-/**
- * The one escape `escapeHtml` does not do, because nothing needed it until an attribute did:
- * a literal quote in a link destination closes a `href="…"` early and lets whatever follows
- * be read as markup or a second attribute.
- */
-function escapeQuotes(text) {
-    return text.replace(/"/g, '&quot;');
-}
-
-/**
- * The inline markdown these files actually use — code spans, bold, italics and links — turned
- * into safe, ready-to-display HTML. Not a markdown parser: it knows nothing about block
- * structure, lists or headings, because splitting on those happens before this is called.
- *
- * `relativeTo` is the train's own directory in the library, which is what a `../doc/…` link
- * would be written relative to. Resolved here, once, against the pinned tag rather than a
- * branch — a mirror that names one ref and links to another describes two different trees.
- */
-function inlineHtml(markdown, relativeTo, ref) {
-    const escaped = escapeHtml(markdown);
-
-    const coded = escaped.replace(/`([^`]+)`/g, (_match, code) => `<code>${code}</code>`);
-    const bolded = coded.replace(/\*\*([^*]+)\*\*/g, (_match, text) => `<strong>${text}</strong>`);
-    // After bold consumes every `**` pair, a remaining single `*…*` is italic.
-    const italicised = bolded.replace(/\*([^*]+)\*/g, (_match, text) => `<em>${text}</em>`);
-
-    return italicised.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, text, href) => {
-        if (/^https?:\/\//.test(href)) {
-            return `<a href="${escapeQuotes(href)}">${text}</a>`;
-        }
-
-        // A source link written with a trailing slash names a directory, and GitHub serves
-        // those under /tree/, never /blob/.
-        const kind = href.endsWith('/') ? 'tree' : 'blob';
-        const resolved = posix.normalize(posix.join(relativeTo, href));
-
-        return `<a href="${escapeQuotes(`${REPOSITORY_URL}/${kind}/${ref}/${resolved}`)}">${text}</a>`;
-    });
-}
-
-/**
- * A paragraph, with the one block-level form these files use handled first: a release's own
- * summary is written as a whole line in italics, `_like this_`. Underscores are read only in
- * that position, never mid-sentence, so an identifier with one in it is left alone.
- */
-function paragraphHtml(paragraph, relativeTo, ref) {
-    const italic = /^_(.+)_$/.exec(paragraph.trim());
-
-    return italic === null ? inlineHtml(paragraph, relativeTo, ref) : `<em>${inlineHtml(italic[1], relativeTo, ref)}</em>`;
-}
-
-/** Blank-line-separated paragraphs, each unwrapped onto one line. */
-function paragraphsOf(lines) {
-    const paragraphs = [];
-    let current = [];
-
-    for (const line of lines) {
-        if (line.trim() === '') {
-            if (current.length > 0) {
-                paragraphs.push(current.join(' '));
-                current = [];
-            }
-        } else {
-            current.push(line.trim());
-        }
-    }
-    if (current.length > 0) {
-        paragraphs.push(current.join(' '));
-    }
-
-    return paragraphs;
-}
-
-/**
- * The items of one `### Rubric` block, in the order they were written — a `- ` line starts a
- * bullet, a blank line ends whatever is open, and any other line extends it. That one rule
- * covers every shape these files use without asking which shape a block is first.
- */
-function blockItemsOf(lines) {
-    const items = [];
-    let current = null;
-
-    for (const line of lines) {
-        const bullet = /^- (.*)/.exec(line);
-
-        if (bullet !== null) {
-            if (current !== null) {
-                items.push(current);
-            }
-            current = bullet[1];
-        } else if (line.trim() === '') {
-            if (current !== null) {
-                items.push(current);
-                current = null;
-            }
-        } else if (current !== null) {
-            current += ` ${line.trim()}`;
-        } else {
-            current = line.trim();
-        }
-    }
-    if (current !== null) {
-        items.push(current);
-    }
-
-    return items;
-}
-
-const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
-
-/**
- * `August 18, 2026` → `2026-08-18`.
- *
- * Read from the English file only, and reused for both languages: the French twin writes the
- * same day as `18 août 2026`, and a page that formats an ISO date with the reader's own
- * locale needs one date, not two spellings of it.
- */
-function isoDateOf(text, file) {
-    const match = /^([A-Za-z]+)\s+(\d{1,2}),\s*(\d{4})$/.exec(text.trim());
-    const month = match === null ? -1 : MONTHS.indexOf(match[1].toLowerCase());
-
-    if (match === null || month === -1) {
-        refuse(`${file} dates a release "${text}", which is not a month, day and year in English`);
-    }
-
-    return `${match[3]}-${String(month + 1).padStart(2, '0')}-${match[2].padStart(2, '0')}`;
-}
-
 function maturityOf(version) {
     const match = /-(preview|beta|alpha|rc)(?:\.|$)/.exec(version);
 
@@ -252,86 +127,6 @@ function rubricSlug(label) {
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
-}
-
-/**
- * One file's releases, newest first — the order the file already writes them in, trusted
- * rather than re-sorted by a semver comparator this repository has no other use for.
- *
- * Everything above the first `## ` is dropped: the file's own title and its paragraph of
- * links back to the changelog and the previous major are the library's navigation, not this
- * site's, and the section this page builds says both things in its own words.
- */
-function releasesOf(markdown, file, relativeTo, ref) {
-    const lines = markdown.split('\n');
-    const releases = [];
-    let heading = null;
-    let body = [];
-
-    function flush() {
-        if (heading === null) {
-            return;
-        }
-
-        const match = /^(\S+)\s+—\s+(.+)$/.exec(heading);
-
-        if (match === null) {
-            refuse(`${file} heads a release "${heading}", where "<version> — <date>" was expected`);
-        }
-
-        const [, version, date] = match;
-        const firstRubric = body.findIndex((line) => /^### /.test(line));
-        const summaryLines = firstRubric === -1 ? body : body.slice(0, firstRubric);
-
-        const sections = [];
-        let current = null;
-
-        for (const line of body) {
-            const rubric = /^### (.+)/.exec(line);
-
-            if (rubric !== null) {
-                current = { label: rubric[1].trim(), lines: [] };
-                sections.push(current);
-            } else if (current !== null) {
-                current.lines.push(line);
-            }
-        }
-
-        if (sections.length === 0 && summaryLines.every((line) => line.trim() === '')) {
-            refuse(`${file} carries a release ${version} with neither a summary nor a rubric`);
-        }
-
-        releases.push({
-            version,
-            date,
-            maturity: maturityOf(version),
-            anchor: versionSlug(version),
-            summaryHtml: paragraphsOf(summaryLines).map((paragraph) => paragraphHtml(paragraph, relativeTo, ref)),
-            sections: sections.map((section) => ({
-                label: section.label,
-                items: blockItemsOf(section.lines).map((item) => inlineHtml(item, relativeTo, ref)),
-            })),
-        });
-    }
-
-    for (const line of lines) {
-        const release = /^## (.+)/.exec(line);
-
-        if (release !== null) {
-            flush();
-            heading = release[1].trim();
-            body = [];
-        } else if (heading !== null) {
-            body.push(line);
-        }
-    }
-    flush();
-
-    if (releases.length === 0) {
-        refuse(`${file} holds no release at all`);
-    }
-
-    return releases;
 }
 
 async function fetchNotes(train, major, locale, ref) {
@@ -371,13 +166,21 @@ for (const train of TRAINS) {
     const majors = [...new Set(versions.map((version) => Number.parseInt(version, 10)))].sort((left, right) => right - left);
     const described = [];
 
+    // One reader per train, because a `../doc/…` link in these notes is written relative to
+    // the train's own directory. Resolved against the pinned tag rather than a branch — a
+    // mirror that names one ref and links to another describes two different trees.
+    const { releasesOf, isoDateOf } = releaseNotesReader({
+        refuse,
+        resolveHref: githubHrefResolver({ repositoryUrl: REPOSITORY_URL, ref: ref.name, relativeTo: `${train.directory}/` }),
+    });
+
     for (const major of majors) {
         const perLocale = {};
 
         for (const locale of LOCALES) {
             const { path, markdown } = await fetchNotes(train, major, locale, ref.name);
 
-            perLocale[locale] = { path, releases: releasesOf(markdown, path, `${train.directory}/`, ref.name) };
+            perLocale[locale] = { path, releases: releasesOf(markdown, path) };
         }
 
         // The two languages are one document in two spellings, and the site joins them on the
@@ -406,12 +209,15 @@ for (const train of TRAINS) {
             const releases = perLocale[locale].releases.map((release, position) => {
                 const source = english.releases[position];
                 const tag = `${train.tagPrefix}${source.version}`;
+                // Everything the reader could not know: a library version's maturity is in its
+                // semver suffix, and an anchor has to be the same string in both locales.
+                const anchor = versionSlug(source.version);
 
                 return {
                     version: source.version,
                     date: isoDateOf(source.date, english.path),
-                    maturity: source.maturity,
-                    anchor: source.anchor,
+                    maturity: maturityOf(source.version),
+                    anchor,
                     // Only a tag that exists is linked. The library has pushed a tag whose
                     // release run then failed before publishing anything (catalog-v1.0.0-preview.1),
                     // and a link to a number that was skipped is worse than no link.
@@ -419,7 +225,7 @@ for (const train of TRAINS) {
                     summaryHtml: release.summaryHtml,
                     sections: release.sections.map((section, rubric) => ({
                         label: section.label,
-                        anchor: `${source.anchor}-${rubricSlug(source.sections[rubric].label)}`,
+                        anchor: `${anchor}-${rubricSlug(source.sections[rubric].label)}`,
                         items: section.items,
                     })),
                 };
@@ -436,7 +242,7 @@ for (const train of TRAINS) {
         described.push({
             major,
             releaseCount: english.releases.length,
-            latest: { version: newest.version, date: isoDateOf(newest.date, english.path), maturity: newest.maturity },
+            latest: { version: newest.version, date: isoDateOf(newest.date, english.path), maturity: maturityOf(newest.version) },
         });
     }
 

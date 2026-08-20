@@ -10,7 +10,8 @@ consumes this deployment (see [ADR-0001](docs/for-maintainers/adr/0001-a-release
 
 ## Unreleased
 
-_Nothing pending yet._
+### ✨ New
+- The /version page now shows what the site's own latest release changed, in English and French, below the build facts it already reported.
 
 ## release/2026-08-19T11-50-00Z — August 19, 2026
 
