@@ -168,6 +168,11 @@
     private readonly List<ChainLinkState> _links = new() { new ChainLinkState() };
     private readonly Dictionary<int, ChainLink> _linkRefs = new();
 
+    /// <summary>The step whose combo should hold the keyboard once the pending render has run,
+    /// or none. Set by whatever has just taken the control the visitor was standing on out of the
+    /// DOM — a deletion, or a choice that settled a parameterless step — and cleared by
+    /// <see cref="OnAfterRenderAsync" />, which is the earliest moment the replacement exists to
+    /// be focused.</summary>
     private int? _focusLinkIndex;
 
     private object? _currentValue;
@@ -283,7 +288,7 @@
         return PlaygroundCatalogue.StepsFor(previous.ReturnTypeKey).Where(m => m.MethodName != "Generate").ToList();
     }
 
-    private void HandleMethodChosen((int LinkIndex, MemberDescriptor Chosen) e) {
+    private void HandleMethodChosen((int LinkIndex, MemberDescriptor Chosen, bool Settled) e) {
         _links[e.LinkIndex].ChooseMethod(e.Chosen);
 
         if (_links.Count > e.LinkIndex + 1) {
@@ -291,6 +296,24 @@
         }
 
         _links.Add(new ChainLinkState());
+
+        // A choice that settles a parameterless step leaves the visitor holding nothing. The
+        // <select> they were on is drawn as code from here on, and the step has no arguments to
+        // hand that focus to the way a parameterized one does — so it would fall back to <body>,
+        // which is the same renavigate-from-the-top HandleDelete below exists to prevent. It goes
+        // to the step this choice has just added instead: the one control the visitor is going to
+        // reach for next, and the only one that did not exist a moment ago to be reached for.
+        //
+        // NOT ON A CHOICE THAT DID NOT SETTLE — an arrowing keyboard user commits an option per
+        // press without meaning any of them, and pulling focus off the list they are reading is
+        // exactly the trap ChainLink's ShowSelect is written to avoid. Nor onto a terminal
+        // method's empty combo: a select with nothing but its placeholder in it is not somewhere
+        // to put anybody.
+        var next = e.LinkIndex + 1;
+        if (e.Settled && e.Chosen.Parameters.Count == 0 && OptionsFor(next).Count > 0) {
+            _focusLinkIndex = next;
+        }
+
         Recompute();
     }
 
@@ -311,6 +334,8 @@
         Recompute();
     }
 
+    /// <summary>Hands the keyboard to the step <see cref="_focusLinkIndex" /> names, now that the
+    /// render which created it has run. A no-op on every other render, which is most of them.</summary>
     protected override async Task OnAfterRenderAsync(bool firstRender) {
         if (_focusLinkIndex is not { } index) {
             return;

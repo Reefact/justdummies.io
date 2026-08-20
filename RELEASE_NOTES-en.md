@@ -13,6 +13,9 @@ consumes this deployment (see [ADR-0001](docs/for-maintainers/adr/0001-a-release
 ### ✨ New
 - The /version page now shows what the site's own latest release changed, in English and French, below the build facts it already reported.
 
+### 🐛 Fixes
+- In the playground, a step turns into code as soon as you pick its method, instead of staying a drop-down until you happen to click somewhere else on the card. The cursor lands where you are going to type next: the step's first argument, or the combo for the step after it.
+
 ## release/2026-08-19T11-50-00Z — August 19, 2026
 
 ### ✨ New

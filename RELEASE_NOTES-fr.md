@@ -14,6 +14,9 @@ compatibilité, puisque rien ne consomme ce déploiement (voir
 ### ✨ Nouveautés
 - La page /version affiche désormais ce qu'a changé la dernière release du site lui-même, en anglais et en français, sous les informations de build qu'elle donnait déjà.
 
+### 🐛 Corrections
+- Dans le playground, une étape se transforme en code dès que sa méthode est choisie, au lieu de rester une liste déroulante jusqu'à ce qu'on clique par hasard ailleurs sur le bloc. Le curseur se pose là où l'on va écrire ensuite : le premier argument de l'étape, ou la combo de l'étape suivante.
+
 ## release/2026-08-19T11-50-00Z — 19 août 2026
 
 ### ✨ Nouveautés
