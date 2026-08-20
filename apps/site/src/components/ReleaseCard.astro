@@ -120,6 +120,10 @@ const t = useTranslations(locale);
                     <svg class="arrow" viewBox="0 0 12 12" width="10" height="10" aria-hidden="true" focusable="false">
                         <path d="M3 9L9 3M4.5 3H9v4.5" />
                     </svg>
+                    {/* One of these per release, so a page with two of them offers the same four words
+                        twice behind two different tags. The version is what tells them apart, and it is
+                        in the card's heading rather than in the link. */}
+                    <span class="visually-hidden"> — {name}</span>
                     <span class="visually-hidden"> {t('state.newTab')}</span>
                 </a>
             </div>
@@ -253,6 +257,23 @@ const t = useTranslations(locale);
         height: 6px;
         border-radius: 50%;
         background: var(--jd-text-primary);
+    }
+
+    /*
+     * FORCED COLOURS REWRITE BACKGROUNDS, AND A MARKER PAINTED ONLY IN BACKGROUND DISAPPEARS.
+     *
+     * The dot is a 6px box whose whole appearance is its `background`. In a High Contrast theme
+     * that resolves to the same colour as the card behind it — measured at 1.00:1 — and
+     * `list-style: none` has already removed the native marker that would otherwise show
+     * through, so the bullets lose their bullets and the text hangs at a 2.5em indent over an
+     * empty margin. `CanvasText` is the system keyword for whatever that theme uses for text,
+     * which is exactly what a marker beside text should be, and it is a keyword rather than a
+     * value so the no-raw-colours rule holds. Nothing changes in the normal theme.
+     */
+    @media (forced-colors: active) {
+        .bullets li::before {
+            background: CanvasText;
+        }
     }
 
     .bullets :global(strong) {

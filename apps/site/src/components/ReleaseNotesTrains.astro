@@ -72,4 +72,19 @@ const t = useTranslations(locale);
         background: var(--jd-surface-raised);
         border-color: var(--jd-accent);
     }
+
+    /*
+     * The current package is told apart by colour alone — accent text on a raised ground — and
+     * forced colours flattens all four chips to the same ink on the same canvas, leaving four
+     * identical labels with nothing to say which page the reader is on. Weight and an underline
+     * survive the transform where colour does not. `aria-current` already carries this to
+     * assistive technology; what is restored here is the sighted High Contrast reader's cue.
+     */
+    @media (forced-colors: active) {
+        .trains a[aria-current='page'] {
+            font-weight: 600;
+            text-decoration: underline;
+            text-underline-offset: 0.2em;
+        }
+    }
 </style>

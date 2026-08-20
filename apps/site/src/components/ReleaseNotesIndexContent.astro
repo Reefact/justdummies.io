@@ -61,6 +61,12 @@ const t = useTranslations(locale);
                                     <span class="count">
                                         {major.releaseCount} {major.releaseCount === 1 ? t('releaseNotes.releases.one') : t('releaseNotes.releases.many')}
                                     </span>
+                                    {/* The train's name is in the card's own heading, outside this <li> and so
+                                        outside this link's accessible name — which left three links on this page
+                                        announcing "Version 1, 2 releases" and going to three different packages.
+                                        Said here, in the link, where a reader listing the page's links will hear
+                                        it. Nothing changes on the screen. */}
+                                    <span class="visually-hidden"> — {t(TRAIN_LABEL_KEY[train.key])}</span>
                                 </a>
                             </li>
                         ))}
@@ -69,6 +75,9 @@ const t = useTranslations(locale);
                     <p class="changelog">
                         <a href={train.changelogUrl} target="_blank" rel="noopener noreferrer">
                             {t('releaseNotes.viewSource')}
+                            {/* Four of these on this page, one per train, all reading the same eight words
+                                and each going to a different CHANGELOG.md. */}
+                            <span class="visually-hidden"> — {t(TRAIN_LABEL_KEY[train.key])}</span>
                             <span class="visually-hidden"> {t('state.newTab')}</span>
                         </a>
                     </p>
