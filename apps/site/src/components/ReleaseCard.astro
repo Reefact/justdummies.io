@@ -22,10 +22,33 @@
  * key. The emoji is also what tells one rubric from another at a glance, which is why no
  * label is coloured — a transcript in six colours starts to look composed (base.css's own
  * words). The only thing this component translates is the "view on GitHub" affordance,
- * which is the site's own word rather than the release's.
+ * which is the site's own word rather than the release's — and the new-tab note below, for
+ * the same reason: the generator knows which links leave the site, this knows the words.
  */
 import { formatReleaseDate } from '../i18n/dates';
 import { useTranslations, type Locale } from '../i18n/ui';
+
+/**
+ * Says out loud, to a reader who cannot see it, that a link opens elsewhere.
+ *
+ * The 79 outbound links the rest of this site draws all carry this note, written into the
+ * markup beside them. The ones inside a release's prose could not: they arrive as finished
+ * HTML from a build script that has no locale, so within a single card a screen reader
+ * announced the tag link and stayed silent on the five links in the bullets above it.
+ *
+ * Regex over HTML, deliberately and narrowly. This is not parsing the web's HTML — it is
+ * matching the output of one function, `inlineHtml` in scripts/lib/release-notes-markdown.mjs,
+ * which emits `target="_blank"` on outbound links and nothing else, escapes every `<` and `"`
+ * in the text it wraps, and cannot nest one anchor inside another. The shape is known because
+ * the same repository writes it.
+ */
+function announceNewTabs(html: string, note: string): string {
+    return html.replace(
+        /(<a [^>]*target="_blank"[^>]*>)(.*?)(<\/a>)/g,
+        (_match, open: string, text: string, close: string) =>
+            `${open}${text}<span class="visually-hidden"> ${note}</span>${close}`,
+    );
+}
 
 /** A `### Rubric` block — `✨ New`, `🐛 Fixes` — with the bullets written under it. */
 export interface Rubric {
@@ -70,7 +93,7 @@ const t = useTranslations(locale);
         summaryHtml.length > 0 && (
             <div class="summary">
                 {summaryHtml.map((paragraph) => (
-                    <p set:html={paragraph} />
+                    <p set:html={announceNewTabs(paragraph, t('state.newTab'))} />
                 ))}
             </div>
         )
@@ -82,7 +105,7 @@ const t = useTranslations(locale);
                 <h4 class="rubric-label">{section.label}</h4>
                 <ul class="bullets">
                     {section.items.map((item) => (
-                        <li set:html={item} />
+                        <li set:html={announceNewTabs(item, t('state.newTab'))} />
                     ))}
                 </ul>
             </section>

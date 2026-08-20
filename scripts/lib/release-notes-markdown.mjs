@@ -26,11 +26,20 @@ import { posix } from 'node:path';
  *
  * `refuse` carries the calling generator's own name into the message, because a maintainer
  * reading a failed build needs to know which snapshot stopped, not merely that some parse
- * did. `resolveHref` is given a relative destination and a hint of whether it names a
- * directory, and answers with the absolute URL to publish — the repository it resolves
- * against and the ref it pins to are the caller's, and the two callers do not share either.
+ * did. `resolveLink` is given EVERY destination these notes carry, absolute ones included,
+ * and answers with the URL to publish and whether it leaves this site — the repository it
+ * resolves against and the ref it pins to are the caller's, and the two callers do not
+ * share either.
+ *
+ * The absolute ones used to bypass it, emitted exactly as written, and that quietly undid
+ * the pinning this whole snapshot exists for: every one of the 22 links in the library's
+ * mirrored prose said `/blob/main/`, on a page whose own line above them named the tag the
+ * snapshot was taken at. A reader following one landed on whatever main had become since —
+ * the drift ADR-0013's atomicity argument names in as many words. Only the caller can tell
+ * its own repository from a stranger's, which is why the branch moved out here rather than
+ * teaching this parser what a GitHub URL looks like.
  */
-export function releaseNotesReader({ refuse, resolveHref }) {
+export function releaseNotesReader({ refuse, resolveLink }) {
     function escapeHtml(text) {
         return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
@@ -59,11 +68,21 @@ export function releaseNotesReader({ refuse, resolveHref }) {
         const italicised = bolded.replace(/\*([^*]+)\*/g, (_match, text) => `<em>${text}</em>`);
 
         return italicised.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, text, href) => {
-            if (/^https?:\/\//.test(href)) {
-                return `<a href="${escapeQuotes(href)}">${text}</a>`;
-            }
+            const link = resolveLink(href, { absolute: /^https?:\/\//.test(href) });
 
-            return `<a href="${escapeQuotes(resolveHref(href))}">${text}</a>`;
+            /*
+             * A link that leaves the site says so, the way every other outbound link here
+             * does — and these were the only ones that did not. Within a single release card
+             * a reader met one link announced and the next silent, because the guard that
+             * enforces the rule is scoped to `.site-nav` rather than to the rule itself.
+             *
+             * `rel` is inert without `target`, so the two are emitted together or not at all.
+             * The words that say it out loud are the site's, not this script's: the component
+             * adds them at build time, where the reader's locale is already known.
+             */
+            const away = link.external ? ' target="_blank" rel="noopener noreferrer"' : '';
+
+            return `<a href="${escapeQuotes(link.href)}"${away}>${text}</a>`;
         });
     }
 
@@ -244,17 +263,44 @@ function blockItemsOf(lines) {
 const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
 
 /**
- * A relative destination resolved against one repository at one ref, the way GitHub serves
- * it: a link written with a trailing slash names a directory, and those live under /tree/,
- * never /blob/.
+ * A destination resolved against one repository at one ref, the way GitHub serves it: a link
+ * written with a trailing slash names a directory, and those live under /tree/, never /blob/.
  *
  * `relativeTo` is the directory the link was written relative to — a train's own folder in
  * the library, or the repository root for this site's notes.
+ *
+ * AN ABSOLUTE LINK INTO THE SAME REPOSITORY IS PINNED TOO, and that is the half that was
+ * missing. Upstream's authoring habit is to write these out in full — all 25 markdown links
+ * in the library's notes are absolute and none is relative — so the relative branch above is
+ * the one that almost never fires, and the branch that does fire was passing `main` through
+ * untouched. Rewriting the ref segment is safe by construction here: the snapshot already
+ * refuses unless every file it reads exists at this ref, and these links name files in that
+ * same tree.
+ *
+ * A link to anywhere else is left exactly as written. This knows one repository — its
+ * caller's — and has no business editing a stranger's URL.
  */
 export function githubHrefResolver({ repositoryUrl, ref, relativeTo }) {
-    return function resolved(href) {
-        const kind = href.endsWith('/') ? 'tree' : 'blob';
+    /* `/blob/<ref>/` or `/tree/<ref>/`, capturing the ref so it can be swapped for the
+       pinned one. A ref segment cannot contain a slash in this form, which is what makes the
+       path after it recoverable. */
+    const sameRepository = new RegExp(`^${repositoryUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/(blob|tree)/([^/]+)/(.*)$`);
 
-        return `${repositoryUrl}/${kind}/${ref}/${posix.normalize(posix.join(relativeTo, href))}`;
+    return function resolved(href, { absolute } = { absolute: false }) {
+        if (!absolute) {
+            const kind = href.endsWith('/') ? 'tree' : 'blob';
+
+            return { href: `${repositoryUrl}/${kind}/${ref}/${posix.normalize(posix.join(relativeTo, href))}`, external: true };
+        }
+
+        const match = sameRepository.exec(href);
+
+        if (match === null) {
+            return { href, external: true };
+        }
+
+        const [, kind, named, path] = match;
+
+        return { href: named === ref ? href : `${repositoryUrl}/${kind}/${ref}/${path}`, external: true };
     };
 }

@@ -53,6 +53,79 @@ for (const { path, heading, firstTrain } of INDEXES) {
         await expect(tag).toHaveAttribute('rel', /noopener/);
     });
 
+    /*
+     * SCOPED TO THE RULE, NOT TO A CLASS, which is the whole reason this exists.
+     *
+     * site-header.spec.ts states the rule — a link that leaves the site opens in a new tab and
+     * says so — and then asserts it against `.site-nav` alone. Every one of the site's other 79
+     * outbound links happened to obey it; the 22 inside the mirrored prose did not, and nothing
+     * looked. They arrive as finished HTML from a generator, so within one release card a screen
+     * reader announced the tag link at the foot and stayed silent on the five links in the
+     * bullets above it.
+     *
+     * This walks whatever `main` actually holds, on whatever majors the snapshot currently
+     * publishes, so a link added by a future release of the library is covered on the day it
+     * lands rather than on the day someone remembers to add it here.
+     */
+    test(`${path} sends every outbound link in a release off-site in a new tab, and says so`, async ({ page }) => {
+        const routes = await majorRoutes(page, path);
+
+        for (const route of routes) {
+            await page.goto(route);
+
+            const outward: Locator = page.locator('main a[href^="http"]');
+            const count: number = await outward.count();
+
+            expect(count, `${route} carries no outbound link at all`).toBeGreaterThan(0);
+
+            for (let index = 0; index < count; index += 1) {
+                const link: Locator = outward.nth(index);
+                const href: string | null = await link.getAttribute('href');
+
+                await expect(link, `${route}: ${href} stays in the reader's tab`).toHaveAttribute('target', '_blank');
+                await expect(link, `${route}: ${href} opens a tab without rel=noopener`).toHaveAttribute('rel', /noopener/);
+                await expect(
+                    link.locator('.visually-hidden'),
+                    `${route}: ${href} opens a new tab without saying so`,
+                ).not.toHaveCount(0);
+            }
+        }
+    });
+
+    /*
+     * The snapshot is pinned to one tag (ADR-0013), and a link is part of the snapshot. Links
+     * written into the library's prose were passed through exactly as authored, which meant all
+     * 22 said `/blob/main/` while the line above them named the tag — so following one landed on
+     * whatever main had become since.
+     */
+    test(`${path} pins every link into the library to the tag the snapshot names`, async ({ page }) => {
+        const routes = await majorRoutes(page, path);
+
+        await page.goto(path);
+
+        const snapshotHref: string | null = await page
+            .locator('.snapshot a[href*="/releases/tag/"]')
+            .first()
+            .getAttribute('href');
+        const ref: string = (snapshotHref ?? '').split('/releases/tag/')[1] ?? '';
+
+        expect(ref, `${path} names no snapshot tag to pin against`).not.toBe('');
+
+        for (const route of routes) {
+            await page.goto(route);
+
+            const refs: string[] = await page
+                .locator('main a[href*="/just-dummies/blob/"], main a[href*="/just-dummies/tree/"]')
+                .evaluateAll((links) =>
+                    links.map((link) => (link.getAttribute('href') ?? '').split(/\/(?:blob|tree)\//)[1]?.split('/')[0] ?? ''),
+                );
+
+            for (const named of refs) {
+                expect(named, `${route} links into the library at ${named}, not at the pinned ${ref}`).toBe(ref);
+            }
+        }
+    });
+
     test(`${path} links to a page for every train and major, and each one answers`, async ({ page }) => {
         const routes = await majorRoutes(page, path);
 

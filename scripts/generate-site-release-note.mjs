@@ -82,7 +82,7 @@ const { releasesOf, isoDateOf } = releaseNotesReader({
     // intro links to an ADR that way, and a bullet could. Pinned to the release being
     // published rather than to a branch: a note that describes one release and links into
     // another tree is two statements, not one.
-    resolveHref: githubHrefResolver({ repositoryUrl: REPOSITORY_URL, ref: published, relativeTo: '.' }),
+    resolveLink: githubHrefResolver({ repositoryUrl: REPOSITORY_URL, ref: published, relativeTo: '.' }),
 });
 
 // Newest first, the order the file already writes them in. Only the first is published, and
