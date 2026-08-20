@@ -13,13 +13,16 @@
  * Each link lands on the train's newest major, which is the one a visitor almost always
  * wants; the older ones are one click further, in the table of contents.
  *
- * `aria-current="page"` IS ONLY TRUE ON THAT NEWEST MAJOR. The chip's own href always points
- * there, so reading an older one — `/release-notes/lib/v0/` — used to mark the chip current
- * while it actually led somewhere else: the token that means "this is the page you are on"
- * on a page it was not. The house already tells the two states apart correctly elsewhere
- * (LanguageSelector.astro, ReleaseNotesContents.astro use `aria-current="true"` for a
- * current item with no link of its own); this is the one place that reached for "page"
- * without checking it was true.
+ * `aria-current="page"` IS ONLY TRUE ON THAT NEWEST MAJOR — but the train being read is true
+ * on every one of its majors, and the chip has to say so on both counts. Reading an older
+ * major used to mark its chip `"page"` while its href led somewhere else: the token that
+ * means "this is the page you are on", on a page it was not. Dropping the attribute there
+ * entirely was worse — a first version of this fix did that, and a screen reader landing on
+ * /release-notes/lib/v0/ then heard nothing at all naming the package it was reading, and a
+ * sighted one saw four identical chips with no accent anywhere. `"true"` is what the house
+ * already uses elsewhere for exactly this shape — LanguageSelector.astro,
+ * ReleaseNotesContents.astro — a current item that is not itself a link to the page on
+ * screen; `"page"` is kept for when it is.
  */
 import { pathForLocale } from '../i18n/routing';
 import { useTranslations, type Locale } from '../i18n/ui';
@@ -43,7 +46,13 @@ const t = useTranslations(locale);
         releaseNotes.trains.map((train) => (
             <a
                 href={pathForLocale(`/release-notes/${train.key}/${majorSlug(latestMajorOf(train).major)}/`, locale)}
-                aria-current={train.key === active && latestMajorOf(train).major === activeMajor ? 'page' : undefined}
+                aria-current={
+                    train.key !== active
+                        ? undefined
+                        : latestMajorOf(train).major === activeMajor
+                          ? 'page'
+                          : 'true'
+                }
             >
                 {t(TRAIN_LABEL_KEY[train.key])}
             </a>
@@ -78,7 +87,7 @@ const t = useTranslations(locale);
         border-color: var(--jd-accent);
     }
 
-    .trains a[aria-current='page'] {
+    .trains a[aria-current] {
         color: var(--jd-accent);
         background: var(--jd-surface-raised);
         border-color: var(--jd-accent);
@@ -92,7 +101,7 @@ const t = useTranslations(locale);
      * assistive technology; what is restored here is the sighted High Contrast reader's cue.
      */
     @media (forced-colors: active) {
-        .trains a[aria-current='page'] {
+        .trains a[aria-current] {
             font-weight: 600;
             text-decoration: underline;
             text-underline-offset: 0.2em;
