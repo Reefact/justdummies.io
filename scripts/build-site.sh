@@ -8,14 +8,19 @@ set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-# Before the site is built, because the site imports what these produce. All five write
-# into apps/site/src/generated/, and all five are committed: what they hold only moves when
+# Before the site is built, because the site imports what these produce. All six write
+# into apps/site/src/generated/, and all six are committed: what they hold only moves when
 # something real moves, so the diff is worth reading rather than noise to skip.
 #
 # Two of them are checks as much as generators. The reproducibility step runs the third act's
 # suite until it goes red and then replays the reported seed three times, and the tool step
 # fails if the scaffolder stops reporting the guard it cannot read. Both would rather stop the
 # build than let the page keep a claim whose evidence has moved.
+#
+# The site's own release note is the one that reads a file rather than a build product. That
+# is what puts it here and keeps its library counterpart out: RELEASE_NOTES-*.md is in this
+# repository, so the same commit always produces the same bytes and CI can hold it to that,
+# while `generate-release-notes.mjs` reads a repository that moves on its own schedule.
 echo "▸ Extracting the validated snippets"
 node "${root}/scripts/extract-snippets.mjs"
 
@@ -31,7 +36,10 @@ echo "▸ Recording what the tool prints"
 echo "▸ Reflecting on the published packages for the API catalogue"
 "${root}/scripts/generate-api-catalogue.sh"
 
-# Also before the build, and the odd one out of the five: it is not committed, because
+echo "▸ Reading this site's own newest release note"
+node "${root}/scripts/generate-site-release-note.mjs"
+
+# Also before the build, and the odd one out of the six: it is not committed, because
 # it changes on every build. It moved here from after the build the day /version had to
 # display it — Astro clears its output directory, so a page cannot read a file written
 # once the build is over. Copied into the artefact below, from this same file, so the

@@ -2,20 +2,20 @@
 /**
  * One major version of one train, in full: every release it published, newest first.
  *
+ * WHAT IT DOES ITSELF is name the package and say where the snapshot came from. Each release
+ * under that is a `ReleaseCard`, which is also what /version draws this site's own release
+ * with — one card, two sources (see that component's header).
+ *
  * NOTHING IS FOLDED. A section used to show three bullets and hide the rest behind a
  * "+N more" disclosure, because the page then held four trains' entire histories at once.
  * A page bounded by one major does not need it, and keeping it would make the table of
  * contents lie: a link that lands on a rubric showing three bullets of eight is a link to
  * something the reader still has to go and find, and the browser's own find never sees the
  * folded half at all (ADR-0020).
- *
- * THE PROSE IS THE LIBRARY'S, ALREADY TRANSLATED. Rubric labels arrive from the snapshot in
- * the reader's own locale, emoji included, so nothing here maps a category to a key — the
- * emoji is also what tells one rubric from another at a glance, which is why no label is
- * coloured: a transcript in six colours starts to look composed (base.css's own words).
  */
+import ReleaseCard from './ReleaseCard.astro';
 import { useTranslations, type Locale } from '../i18n/ui';
-import { formatReleaseDate, releaseNotes, type MajorNotes, type Train } from '../release-notes';
+import { releaseNotes, type MajorNotes, type Train } from '../release-notes';
 
 interface Props {
     locale: Locale;
@@ -44,46 +44,16 @@ const t = useTranslations(locale);
 <div class="releases">
     {
         notes.releases.map((release) => (
-            <article class="release" id={release.anchor}>
-                <div class="release-head">
-                    <h3 class="version">{release.version}</h3>
-                    <span class="pill">{release.maturity}</span>
-                    <span class="release-date">
-                        <time datetime={release.date}>{formatReleaseDate(release.date, locale)}</time>
-                    </span>
-                </div>
-
-                {release.summaryHtml.length > 0 && (
-                    <div class="summary">
-                        {release.summaryHtml.map((paragraph) => (
-                            <p set:html={paragraph} />
-                        ))}
-                    </div>
-                )}
-
-                {release.sections.map((section) => (
-                    <section class="rubric" id={section.anchor}>
-                        <h4 class="rubric-label">{section.label}</h4>
-                        <ul class="bullets">
-                            {section.items.map((item) => (
-                                <li set:html={item} />
-                            ))}
-                        </ul>
-                    </section>
-                ))}
-
-                {release.tagUrl !== null && (
-                    <div class="release-foot">
-                        <a href={release.tagUrl} target="_blank" rel="noopener noreferrer">
-                            {t('releaseNotes.viewOnGithub')}
-                            <svg class="arrow" viewBox="0 0 12 12" width="10" height="10" aria-hidden="true" focusable="false">
-                                <path d="M3 9L9 3M4.5 3H9v4.5" />
-                            </svg>
-                            <span class="visually-hidden"> {t('state.newTab')}</span>
-                        </a>
-                    </div>
-                )}
-            </article>
+            <ReleaseCard
+                locale={locale}
+                name={release.version}
+                date={release.date}
+                anchor={release.anchor}
+                maturity={release.maturity}
+                tagUrl={release.tagUrl}
+                summaryHtml={release.summaryHtml}
+                sections={release.sections}
+            />
         ))
     }
 </div>
@@ -119,169 +89,6 @@ const t = useTranslations(locale);
     .releases {
         display: grid;
         gap: var(--jd-space-6);
-    }
-
-    .release {
-        background: var(--jd-surface-raised);
-        border: 1px solid var(--jd-border);
-        border-radius: var(--jd-radius-lg);
-        padding: var(--jd-space-6);
-        /* So a jump from the table of contents lands with air above it rather than flush
-           against the viewport's top edge. */
-        scroll-margin-top: var(--jd-space-4);
-    }
-
-    .release-head {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: baseline;
-        gap: var(--jd-space-1) var(--jd-space-3);
-        margin-bottom: var(--jd-space-4);
-    }
-
-    .version {
-        font-family: var(--jd-font-mono);
-        font-size: var(--jd-text-lg);
-        font-weight: 600;
-        margin: 0;
-    }
-
-    .pill {
-        font-size: var(--jd-text-sm);
-        color: var(--jd-text-muted);
-        border: 1px solid var(--jd-border);
-        border-radius: 999px;
-        padding: 0.1em 0.65em;
-        white-space: nowrap;
-    }
-
-    .release-date {
-        margin-left: auto;
-        font-family: var(--jd-font-mono);
-        font-size: var(--jd-text-sm);
-        color: var(--jd-text-muted);
-        white-space: nowrap;
-    }
-
-    .summary {
-        color: var(--jd-text-muted);
-        margin-bottom: var(--jd-space-6);
-    }
-
-    .summary p {
-        margin: 0 0 var(--jd-space-3);
-    }
-
-    .summary p:last-child {
-        margin-bottom: 0;
-    }
-
-    .summary :global(strong) {
-        color: var(--jd-text-primary);
-        font-weight: 600;
-    }
-
-    .rubric {
-        margin-bottom: var(--jd-space-6);
-        scroll-margin-top: var(--jd-space-4);
-    }
-
-    .rubric:last-of-type {
-        margin-bottom: 0;
-    }
-
-    .rubric-label {
-        margin: 0 0 var(--jd-space-3);
-        font-size: var(--jd-text-base);
-        font-weight: 600;
-        color: var(--jd-text-primary);
-    }
-
-    .bullets {
-        margin: 0;
-        padding: 0;
-        list-style: none;
-        display: grid;
-        gap: var(--jd-space-3);
-    }
-
-    /* THE INDENT IS THE RUBRIC LABEL'S OWN, and it is in `em` rather than a space token
-       because it is measured from a glyph: every label opens with an emoji whose advance
-       is 1.248em followed by a space, so its first letter lands at 1.595em — in both
-       locales, at every width the fluid --jd-text-base takes. A rem would hold that
-       alignment at one size and lose it at the other. Dots at left: 0 sat under the
-       emoji, which read as the icon column and the text column fighting over one edge;
-       at 1.6em they hang below the words instead, and the icons keep the margin. */
-    .bullets li {
-        padding-left: 2.5em;
-        position: relative;
-        /* A bullet's longest word is a method name — `WithLengthBetween`, `IPoolInspection<T>`
-           — with nowhere to break, and .releases is a grid, whose items do not shrink below
-           their content's min-content width. So that longest token plus this padding is a
-           floor under the whole card, and at 320px the card was already standing on it: the
-           release notes pages went 34px sideways before this change and 55px after it, since
-           the indent is part of the sum. `anywhere` rather than `break-word` on purpose —
-           only `anywhere` lowers the min-content width, which is the number doing the damage
-           (VersionContent.astro's commit hash, §11.7's source chips). */
-        overflow-wrap: anywhere;
-    }
-
-    /* The dot takes the colour of the words beside it. On --jd-border it was three points
-       of luminosity off the card it was drawn on — present in the markup, invisible on
-       the screen — and six pixels rather than five is the same correction: at this size a
-       marker reads as a speck long before it reads as loud.
-
-       `0.8em` is half a line box (--jd-line-body is 1.6) and the 3px is half the dot, so
-       it centres on the first line whatever size that line is set at. */
-    .bullets li::before {
-        content: '';
-        position: absolute;
-        left: 1.6em;
-        top: calc(0.8em - 3px);
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: var(--jd-text-primary);
-    }
-
-    .bullets :global(strong) {
-        color: var(--jd-text-primary);
-        font-weight: 600;
-    }
-
-    .bullets :global(code) {
-        font-family: var(--jd-font-mono);
-        font-size: 0.9em;
-        background: var(--jd-surface-sunken);
-        border: 1px solid var(--jd-border);
-        border-radius: var(--jd-radius-sm);
-        padding: 0.05em 0.35em;
-    }
-
-    .release-foot {
-        margin-top: var(--jd-space-6);
-        padding-top: var(--jd-space-4);
-        border-top: 1px solid var(--jd-border);
-        font-size: var(--jd-text-sm);
-    }
-
-    .release-foot a {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--jd-space-1);
-        color: var(--jd-text-muted);
-    }
-
-    .release-foot a:hover {
-        color: var(--jd-accent);
-    }
-
-    .arrow {
-        fill: none;
-        stroke: currentColor;
-        stroke-width: 1.5;
-        stroke-linecap: round;
-        stroke-linejoin: round;
     }
 
     /* .visually-hidden is declared once, globally, in base.css. */

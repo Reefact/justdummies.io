@@ -1,25 +1,38 @@
 ---
 /**
- * What the deployment says about itself, laid out for a reader.
+ * What the deployment says about itself, laid out for a reader, and what its last release
+ * changed.
  *
- * The three values come from `version.json` — the same file the site serves at
- * /version.json, imported here at build time rather than fetched. Nothing is fetched
- * because nothing needs to be: the document and the file are built together and shipped
- * together, and the artefact's HTML is served `must-revalidate`, so a reader cannot hold
- * a cached page whose figures are older than the file beside it. That also leaves this
- * page with no script at all, which is the strongest form of the rule that a page works
- * without one.
+ * TWO STATEMENTS, TWO SECTIONS, and the separation is the point. The table's three values
+ * come from `version.json` — the same file the site serves at /version.json, imported here
+ * at build time rather than fetched. Nothing is fetched because nothing needs to be: the
+ * document and the file are built together and shipped together, and the artefact's HTML is
+ * served `must-revalidate`, so a reader cannot hold a cached page whose figures are older
+ * than the file beside it. That also leaves this page with no script at all, which is the
+ * strongest form of the rule that a page works without one.
  *
  * A null value prints `#null` rather than an empty cell or a sentence. Both of the two
  * that can be null mean something precise — `release: null` is a build that came from a
  * branch, `commit: null` is a build with no git behind it — and a reader who came to this
  * page came for the raw fact.
+ *
+ * THE NOTE BELOW IS NOT A FOURTH ROW. It is the newest `## release/*` section of
+ * RELEASE_NOTES-<locale>.md, which describes the last release this site published — and
+ * that is a different fact from the one the table states. A build cut from a branch belongs
+ * to no release at all and still displays this note, correctly: the table says what this
+ * build is, the note says what shipped last. Folding the second into the first would make a
+ * branch build claim to have published something.
  */
+import ReleaseCard from './ReleaseCard.astro';
 import { localeFromPath } from '../i18n/routing';
 import { useTranslations } from '../i18n/ui';
+import { siteReleaseIn } from '../site-release';
 import { commitUrl, version } from '../version';
 
-const t = useTranslations(localeFromPath(Astro.url.pathname));
+const locale = localeFromPath(Astro.url.pathname);
+const t = useTranslations(locale);
+
+const latest = siteReleaseIn(locale);
 
 /** What a missing value looks like, everywhere, so it cannot be mistaken for a blank. */
 const NOTHING: string = '#null';
@@ -66,9 +79,31 @@ const NOTHING: string = '#null';
     </table>
 </section>
 
+<section class="latest" aria-labelledby="latest-heading">
+    <h2 id="latest-heading">{t('version.latest.heading')}</h2>
+    <p class="lead">{t('version.latest.lead')}</p>
+
+    <ReleaseCard
+        locale={locale}
+        name={latest.tag}
+        date={latest.date}
+        summaryHtml={latest.summaryHtml}
+        sections={latest.sections}
+    />
+</section>
+
 <style>
-    .build {
+    .build,
+    .latest {
         max-width: 56rem;
+    }
+
+    /* The table and the note are two statements, and this gap is what says so. A step wider
+       than the --jd-space-6 that separates the rubrics inside the card, on purpose: at the
+       same value the card would read as the table's last row rather than as its own claim,
+       which is the one reading this page must not invite. */
+    .latest {
+        margin-top: var(--jd-space-12);
     }
 
     h2 {

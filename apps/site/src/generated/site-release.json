@@ -1,0 +1,62 @@
+{
+  "tag": "release/2026-08-19T11-50-00Z",
+  "date": "2026-08-19",
+  "locales": {
+    "en": {
+      "summaryHtml": [],
+      "sections": [
+        {
+          "label": "✨ New",
+          "items": [
+            "Added a dedicated download page — one for each package (core library, xUnit adapter, CLI) — reachable from a persistent floating link on every other page, showing both install commands (.NET CLI and Package Manager Console) for the current package at once.",
+            "The playground's Except and OneOf constraints now accept a comma-separated list of values, for every scalar generator that supports them.",
+            "Published a new release notes section, with one page per package and major version and a table of contents, sourced directly from the library's own release notes in English and French.",
+            "Added an optional analytics lane, based on Google Analytics, that reports how readers move through the site — it only starts once you accept it in the cookie banner, and stops the moment you withdraw consent.",
+            "Updated the underlying JustDummies library to 1.0.0-preview.2, adding a \"Pool inspection\" category to the API reference."
+          ]
+        },
+        {
+          "label": "🙌 Improvements",
+          "items": [
+            "Corrected the privacy page's description of how long analytics data is kept, and dropped an inaccurate claim that nothing is ever shared with anyone."
+          ]
+        },
+        {
+          "label": "🐛 Fixes",
+          "items": [
+            "Fixed the French UI translating \"release notes\" as \"Notes de version\" instead of keeping the English term.",
+            "Removed a double punctuation mark in one of the playground's notes."
+          ]
+        }
+      ]
+    },
+    "fr": {
+      "summaryHtml": [],
+      "sections": [
+        {
+          "label": "✨ Nouveautés",
+          "items": [
+            "Ajout d'une page de téléchargement dédiée — une par paquet (bibliothèque principale, adaptateur xUnit, CLI) — accessible depuis un lien flottant persistant sur chaque autre page, montrant les deux commandes d'installation (.NET CLI et Package Manager Console) du paquet courant en même temps.",
+            "Les contraintes Except et OneOf du playground acceptent désormais une liste de valeurs séparées par des virgules, pour chaque générateur scalaire qui les propose.",
+            "Publication d'une nouvelle section release notes, avec une page par paquet et version majeure ainsi qu'une table des matières, alimentée directement par les release notes de la bibliothèque elle-même, en anglais et en français.",
+            "Ajout d'une voie d'analyse optionnelle, basée sur Google Analytics, qui mesure le parcours des lectrices et lecteurs sur le site — elle ne démarre qu'après acceptation dans le bandeau de consentement, et s'arrête dès le retrait du consentement.",
+            "Mise à jour de la bibliothèque JustDummies sous-jacente vers 1.0.0-preview.2, ajoutant une catégorie « Pool inspection » à la référence API."
+          ]
+        },
+        {
+          "label": "🙌 Améliorations",
+          "items": [
+            "Correction de la description de la page de confidentialité sur la durée de conservation des données d'analyse, et suppression d'une affirmation inexacte selon laquelle rien n'est jamais partagé avec personne."
+          ]
+        },
+        {
+          "label": "🐛 Corrections",
+          "items": [
+            "Corrigé l'interface française qui traduisait « release notes » par « Notes de version » au lieu de garder le terme anglais.",
+            "Retiré une double ponctuation dans une des notes du playground."
+          ]
+        }
+      ]
+    }
+  }
+}

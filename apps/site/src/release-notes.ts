@@ -155,28 +155,3 @@ export const publishedMajors: ReadonlyArray<{ readonly train: TrainKey; readonly
         });
     },
 );
-
-/**
- * A release's date, written the way the reader's own locale writes one.
- *
- * The snapshot stores one ISO date per release, read from the English file — the French
- * twin spells the same day as "18 août 2026", which is a spelling, not a second fact. The
- * formatter is built once per locale: a page renders one for every release it holds.
- */
-const dateFormats = new Map<Locale, Intl.DateTimeFormat>();
-
-export function formatReleaseDate(iso: string, locale: Locale): string {
-    let format = dateFormats.get(locale);
-
-    if (format === undefined) {
-        format = new Intl.DateTimeFormat(locale === 'fr' ? 'fr-FR' : 'en-US', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-            timeZone: 'UTC',
-        });
-        dateFormats.set(locale, format);
-    }
-
-    return format.format(new Date(iso));
-}

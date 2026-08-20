@@ -67,7 +67,21 @@ const en = {
     'version.commit': 'Commit',
     'version.built': 'Built',
     'version.commitLink': 'Read this commit on GitHub',
-    'version.meta.description': 'The release, the commit and the build time of the site you are reading.',
+    'version.meta.description': 'The release, the commit and the build time of the site you are reading, and what its latest release changed.',
+
+    /**
+     * The note under the table: this site's own newest release, read from RELEASE_NOTES-en.md.
+     *
+     * It is a second heading rather than a fourth row on purpose. The table states what the
+     * build IS, and holds only facts the build itself stamped; this states what the last
+     * release CHANGED, which a build cut from a branch did not do and must not appear to.
+     *
+     * The lead's whole job is to say which product it is about. This site publishes the
+     * library's release notes too, under /release-notes, and a reader who takes one for the
+     * other concludes that a website deployment changed the package they depend on.
+     */
+    'version.latest.heading': 'Latest release',
+    'version.latest.lead': 'What changed on this site when it was last published — the site itself, not the library it documents.',
 
     /**
      * ACT I — validity. The claim is that a value a test does not care about still has
@@ -704,7 +718,12 @@ const fr: Record<UiKey, string> = {
     'version.commit': 'Commit',
     'version.built': 'Construit le',
     'version.commitLink': 'Lire ce commit sur GitHub',
-    'version.meta.description': 'La release, le commit et la date de construction du site que vous lisez.',
+    'version.meta.description':
+        "La release, le commit et la date de construction du site que vous lisez, et ce qu'a changé sa dernière release.",
+
+    'version.latest.heading': 'Dernière release',
+    'version.latest.lead':
+        "Ce qui a changé sur ce site lors de sa dernière publication — le site lui-même, pas la bibliothèque qu'il documente.",
 
     'act1.title': 'La valeur dont votre test se moque',
     'act1.summary': 'Elle doit quand même être valide.',
