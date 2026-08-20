@@ -167,30 +167,36 @@ for (const { path, heading, firstTrain } of INDEXES) {
             // Its own content, not a shell: the releases this major published.
             await expect(page.locator('.release'), `${route} shows no release`).not.toHaveCount(0);
 
-            // One entry per release, one per rubric: a table of contents that lists fewer than
-            // the page holds is the fold this section refused (ADR-0020) arriving by accident.
-            await expect(
-                page.locator('[data-release-contents] .release-link'),
-                `${route} lists a different number of releases than it draws`,
-            ).toHaveCount(await page.locator('.release').count());
-
-            await expect(
-                page.locator('[data-release-contents] .rubrics a'),
-                `${route} lists a different number of rubrics than it draws`,
-            ).toHaveCount(await page.locator('.rubric').count());
-
-            // And every entry lands somewhere. An anchor is the one part of this page a reader
-            // can put in a bookmark or a bug report, and a stale one fails silently: the link
-            // works, the jump does nothing.
-            const dangling: string[] = await page
+            /*
+             * ONE ENTRY PER SECTION AND ONE SECTION PER ENTRY, matched by name rather than counted.
+             *
+             * Counting the two sides and then checking that every entry resolves sounds like the
+             * same thing and is weaker: two entries pointing at one section, with a third section
+             * listed by nobody, keeps both counts equal and leaves no dangling fragment. Comparing
+             * the sets catches that, and names what is missing rather than reporting that a number
+             * was wrong. It subsumes both of the checks it replaces — the fold this section refused
+             * (ADR-0020) arriving by accident, and the stale anchor, which is the failure worth
+             * catching: an anchor is the one part of this page a reader can put in a bookmark or a
+             * bug report, and a stale one fails quietly, the link working and the jump doing
+             * nothing.
+             */
+            const listed: string[] = await page
                 .locator('[data-release-contents] a[href^="#"]')
-                .evaluateAll((links) =>
-                    links
-                        .map((link) => link.getAttribute('href') ?? '')
-                        .filter((href) => href.length > 1 && document.getElementById(href.slice(1)) === null),
-                );
+                .evaluateAll((links) => links.map((link) => (link.getAttribute('href') ?? '').slice(1)));
 
-            expect(dangling, `${route} points its table of contents at ${dangling.join(', ')}, which is not there`).toEqual([]);
+            const drawn: string[] = await page
+                .locator('.release[id], .rubric[id]')
+                .evaluateAll((sections) => sections.map((section) => section.id));
+
+            expect(
+                [...new Set(listed)].length,
+                `${route} lists the same anchor twice: ${listed.filter((f, i) => listed.indexOf(f) !== i).join(', ')}`,
+            ).toBe(listed.length);
+
+            expect(
+                [...listed].sort(),
+                `${route} lists ${listed.length} anchors for ${drawn.length} sections, and the two do not name the same things`,
+            ).toEqual([...drawn].sort());
         }
     });
 
@@ -363,11 +369,11 @@ test.describe('the French pages', () => {
             // pair them rather than list them.
             await page.goto(route.replace('/fr/', '/'));
 
-            const english: string[] = await page.locator('.bullets li').allInnerTexts();
+            const english: string[] = await page.locator('.summary p, .bullets li').allInnerTexts();
 
             await page.goto(route);
 
-            const french: string[] = await page.locator('.bullets li').allInnerTexts();
+            const french: string[] = await page.locator('.summary p, .bullets li').allInnerTexts();
 
             expect(french.length, `${route} shows no release prose at all`).toBeGreaterThan(0);
 
@@ -382,6 +388,11 @@ test.describe('the French pages', () => {
              * heading happened to coincide — a single `### API` on a one-rubric release, say —
              * would fail a snapshot that is perfectly correct. Whole paragraphs of release prose
              * coinciding across two languages is not a case worth designing around.
+             *
+             * Summaries as well as bullets, because a release may legitimately have no rubrics at
+             * all: the parser refuses one with neither a summary nor a rubric, which is to say it
+             * accepts a summary on its own. Reading only the bullets would have failed such a
+             * major for having no prose, on a page whose prose is right there in `.summary`.
              */
             expect(french, `${route} shows the English release prose`).not.toEqual(english);
         }
