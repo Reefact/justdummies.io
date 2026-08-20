@@ -16,6 +16,11 @@
  * open in the markup, so a reader with no scripting gets the full list rather than a closed
  * box with no way to open it.
  *
+ * Its focus ring is declared here rather than inherited: base.css scopes the site's ring to
+ * `a:focus-visible` and `button:focus-visible`, and a `<summary>` is neither — it fell back to
+ * the engine's own outline, the one control on this page that did. LanguageSelector.astro
+ * declares its own for the same reason.
+ *
  * THE LINKS ARE NOT ORANGE. Accent marks the package being read, once, in the switcher
  * above; a whole column of it would make a table of contents look like a call to action.
  * Here the affordance arrives on hover and the current major is held by weight and a rule,
@@ -67,7 +72,14 @@ const t = useTranslations(locale);
                                                 <ul class="rubrics">
                                                     {release.sections.map((section) => (
                                                         <li>
-                                                            <a href={`#${section.anchor}`}>{section.label}</a>
+                                                            <a href={`#${section.anchor}`}>
+                                                                {section.label}
+                                                                {/* Every release publishes the same rubrics, so a
+                                                                    page with two of them lists "✨ New" twice behind
+                                                                    two different anchors. The release it belongs to
+                                                                    is the sibling link above, outside this one. */}
+                                                                <span class="visually-hidden"> — {t('releaseNotes.majorLabel')} {release.version}</span>
+                                                            </a>
                                                         </li>
                                                     ))}
                                                 </ul>
@@ -126,6 +138,14 @@ const t = useTranslations(locale);
        carrying `open` is exempt from that, which is why the scroll clipping moved here too. */
     .contents {
         position: sticky;
+        /* `overflow-y: auto` below forces `overflow-x` off `visible`, which turns this box into
+           a clip box — and a focus ring is drawn OUTSIDE the element it belongs to. The outdented
+           major link sits flush against this edge, so its ring lost its left side to the clip,
+           and left-side overflow cannot be scrolled to in a left-to-right page. Four pixels of
+           padding move the clip box out by exactly the ring's width; the negative margin puts the
+           content back where it was, to the pixel, inside the layout's own inset. */
+        padding-left: 4px;
+        margin-left: -4px;
         top: var(--jd-space-4);
         /* A grid item stretches to its row by default, so this box was as tall as the page and
            then clamped to the viewport by the max-height below — 868px of box around 351px of
@@ -229,6 +249,14 @@ const t = useTranslations(locale);
     }
 
     @media (max-width: 56rem) {
+        /* The site's ring, on the one control base.css cannot reach — and above this breakpoint
+           the summary is `display: none`, so on a phone it is the only keyboard target the
+           table of contents has. */
+        .contents > summary:focus-visible {
+            outline: 2px solid var(--jd-accent);
+            outline-offset: 2px;
+        }
+
         .contents {
             position: static;
             max-height: none;

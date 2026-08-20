@@ -29,15 +29,22 @@ const { title, description } = Astro.props;
         <div class="shell">
             <BrandHeading />
         </div>
-        <div class="notes-head">
-            <slot name="head" />
-        </div>
-        <div class="notes-layout">
-            <slot name="contents" />
-            <main class="notes-main">
-                <slot />
-            </main>
-        </div>
+        {/* `<main>` opens before the heading and the lead, not after them. It used to start at
+            the column below, which left this section's own title outside every landmark on a
+            major-version page while the index one route away kept its title inside — two layouts
+            in one section disagreeing about where the content begins. The inner box keeps its
+            class and every rule that hangs off it; only the element name changes. */}
+        <main>
+            <div class="notes-head">
+                <slot name="head" />
+            </div>
+            <div class="notes-layout">
+                <slot name="contents" />
+                <div class="notes-main">
+                    <slot />
+                </div>
+            </div>
+        </main>
     </div>
 </Base>
 
