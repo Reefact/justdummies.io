@@ -118,16 +118,33 @@
             and a live region whose text did not change reports nothing at all. Keying replaces
             the node instead of editing it, and a node added inside a live region is announced
             whether or not it says something new.
+
+            ONE <output> FOR BOTH OUTCOMES, wearing the class its outcome asks for, rather than
+            one element per branch. It used to be one each, and the two carried the same key: to
+            Blazor's diff, two keyed elements under one key are one element, so it matched them
+            across the branch change and reused the node — taking `class="value"` off and never
+            putting `class="refusal"` on. A chain that went from a drawn value straight to a
+            refusal therefore printed that refusal with no class at all, in the card's own
+            inherited monospace and the page's plain text colour, behind the same "→ produced" a
+            drawn value gets. That is §9.9's refusal neutralised by a rendering accident, and it
+            read as a result the library had handed back.
+
+            WHAT MADE IT LOOK INTERMITTENT is that the node had to be built from scratch to come
+            out red, and only the bar's empty state does that: Generate goes quiet while a chain
+            is refused, so the way back was to delete the offending step — which clears the
+            refusal, drops the <output> for the "nothing drawn yet" line — and choose it again,
+            which inserts a fresh one, correctly classed. White the first time, red the second,
+            with nothing in the chain to explain the difference.
+
+            Single, there is no pairing left for the diff to match on: the class is an ordinary
+            attribute of an element that stays put, and an attribute cannot be lost between two
+            branches that no longer exist.
         *@
         <div class="result-bar" role="status" aria-live="polite">
-            @if (_refusal is not null) {
+            @if (HasResult) {
                 <span class="arrow" aria-hidden="true">→</span>
                 <span class="label">@PlaygroundStrings.T(LocaleState.Current, "hero.produced")</span>
-                <output @key="_drawToken" class="refusal">@_refusal</output>
-            } else if (_generatedValue is not null) {
-                <span class="arrow" aria-hidden="true">→</span>
-                <span class="label">@PlaygroundStrings.T(LocaleState.Current, "hero.produced")</span>
-                <output @key="_drawToken" class="value">@DisplayValue(_generatedValue)</output>
+                <output @key="_drawToken" class="@ResultClass">@ResultText</output>
             } else {
                 <span class="pending">@PlaygroundStrings.T(LocaleState.Current, "playground.notDrawnYet")</span>
             }
@@ -172,6 +189,18 @@
     private bool HasChosenStep => _links.Any(l => l.Chosen is not null);
 
     private bool HasResult => _generatedValue is not null || _refusal is not null;
+
+    /// <summary>Which of the two the result bar is showing, as the class that colours it: the
+    /// generated colour for a drawn value, the error one for the library's refusal. A refusal
+    /// wins over a value because the two are never both current — <see cref="Recompute" /> clears
+    /// one before the other can be set — and because a refusal read in the wrong colour is
+    /// §9.9's refusal neutralised, while a value read in the refusal's is merely alarming.</summary>
+    private string ResultClass => _refusal is not null ? "refusal" : "value";
+
+    /// <summary>What that bar prints, under the class above and in the same order of precedence.
+    /// A refusal is the library's own wording, verbatim and untranslated (§6.4); a value goes
+    /// through <see cref="DisplayValue" />, which is what makes an empty string visible.</summary>
+    private string ResultText => _refusal ?? DisplayValue(_generatedValue);
 
     /// <summary>
     ///     Whether the chain can be written down as C# at all — which is a narrower question than

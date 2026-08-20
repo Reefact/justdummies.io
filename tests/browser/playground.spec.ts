@@ -271,6 +271,61 @@ test.describe('the playground', () => {
     });
 
     /**
+     * The same rule, on the transition that broke it: a refusal arriving where a value already
+     * is.
+     *
+     * The bar used to hold one <output> per outcome, in two branches of the same conditional,
+     * both carrying the same `@key`. Two keyed elements under one key are one element to
+     * Blazor's diff, so it matched them across the branch change and reused the node — taking
+     * `class="value"` off and never putting `class="refusal"` on. The refusal then printed with
+     * no class at all: the card's inherited monospace, the page's plain text colour, sitting
+     * behind the same "→ produced" a drawn value gets. That is §9.9's refusal neutralised, and
+     * it looked like a result the library had handed back. It came out red once the node was
+     * built from scratch — after the offending step was deleted and chosen again, the bar having
+     * passed through its empty state in between — which is what made it read as intermittent.
+     *
+     * The colour is asserted against the token rather than against a literal, so a palette
+     * change moves both together and only a refusal that stops being drawn as one goes red here.
+     */
+    test('keeps a refusal in the error colour when it lands on a value already drawn', async ({ page }) => {
+        await page.goto('/playground/');
+
+        // Drawn first, so the bar is showing a value when the refusal arrives — the state the
+        // defect needed, and the one a visitor reaches by pressing the button before finishing
+        // the chain rather than after.
+        await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'Boolean()' });
+        await page.locator('.chain-link').nth(1).locator('select').selectOption({ label: 'DifferentFrom(value)' });
+        await page.locator('.chain-link').nth(1).locator('input').fill('true');
+        await page.getByRole('button', { name: 'Generate', exact: true }).click();
+
+        await expect(page.locator('.playground-widget .result-bar .value')).toBeVisible();
+
+        // DifferentFrom(true) has already pinned the value to false, so True() is a contradiction
+        // the library refuses — with the value from the press above still on screen.
+        await page.locator('.chain-link').nth(2).locator('select').selectOption({ label: 'True()' });
+
+        const refusal = page.locator('.playground-widget .result-bar .refusal');
+
+        await expect(refusal).toBeVisible();
+        await expect(page.locator('.playground-widget .result-bar .value')).toHaveCount(0);
+
+        // What --jd-error resolves to in this document, asked of the document rather than
+        // written down here: the assertion is that the refusal wears the error colour, not that
+        // the error colour is any particular hue.
+        const errorColour: string = await page.evaluate(() => {
+            const probe: HTMLElement = document.createElement('span');
+            probe.style.color = 'var(--jd-error)';
+            document.body.appendChild(probe);
+            const resolved: string = getComputedStyle(probe).color;
+            probe.remove();
+
+            return resolved;
+        });
+
+        await expect(refusal).toHaveCSS('color', errorColour);
+    });
+
+    /**
      * The other kind of failure, which is this site's own text rather than the library's: an
      * argument that will not parse. That one IS folded behind the flag, and this is the check
      * that folding it did not put it out of reach — of a pointer, of a keyboard, or of a screen
