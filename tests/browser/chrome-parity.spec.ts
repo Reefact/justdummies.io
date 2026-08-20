@@ -136,7 +136,35 @@ async function settled(page: Page): Promise<void> {
     await page.waitForSelector('main h2', { timeout: 30_000 });
 }
 
+/**
+ * The footer's own links, by href and label — not measured as a box in `furniture()`
+ * above, which only compares where the footer sits and how wide it runs. Two footers can
+ * agree on that geometry while disagreeing on what they link to (a link dropped from one
+ * side changes the row's width too, but the failure that reads clearly is "the playground
+ * is missing /api/", not "w=612 vs w=548"). This is what would have caught the playground
+ * footer shipping without its API link.
+ */
+async function footerLinks(page: Page): Promise<string[]> {
+    return page.evaluate(() =>
+        Array.from(document.querySelectorAll<HTMLAnchorElement>('footer.site-footer a')).map(
+            (a: HTMLAnchorElement) => `${a.getAttribute('href')} "${a.textContent?.replace(/\s+/g, ' ').trim()}"`,
+        ),
+    );
+}
+
 for (const pair of PAIRS) {
+
+    test(`the playground's footer links match ${pair.site}`, async ({ page }) => {
+        await page.goto(pair.site);
+        await page.waitForSelector('footer.site-footer');
+        const reference: string[] = await footerLinks(page);
+
+        await page.goto(pair.playground);
+        await page.waitForSelector('footer.site-footer');
+        const measured: string[] = await footerLinks(page);
+
+        expect(measured, `the playground's footer links do not match ${pair.site}`).toEqual(reference);
+    });
 
     for (const window of WINDOWS) {
 

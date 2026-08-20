@@ -148,6 +148,7 @@ public static class PlaygroundStrings {
 
         ["footer.nav"]          = "Footer",
         ["footer.about"]        = "About",
+        ["footer.api"]          = "API",
         ["footer.releaseNotes"] = "Release notes",
         ["footer.privacy"]      = "Privacy",
         ["footer.repository"]   = "Source code",
@@ -263,6 +264,7 @@ public static class PlaygroundStrings {
 
         ["footer.nav"]          = new("Pied de page", "Footer"),
         ["footer.about"]        = new("À propos", "About"),
+        ["footer.api"]          = new("API", "API"),
         ["footer.releaseNotes"] = new("Release notes", "Release notes"),
         ["footer.privacy"]      = new("Confidentialité", "Privacy"),
         ["footer.repository"]   = new("Code source", "Source code"),
