@@ -2,10 +2,20 @@
 
 🌍 🇬🇧 [English](0014-the-playground-builds-inside-the-card-it-reads-en.md) · 🇫🇷 Français (ce fichier)
 
-**Statut :** Acceptée
+**Statut :** Acceptée — remplacée en partie par
+[ADR-0022](0022-une-etape-se-fige-quand-elle-est-choisie-pas-quand-le-focus-part-fr.md)
 **Proposée :** 2026-08-17
 **Acceptée :** 2026-08-17
 **Décideurs :** Reefact
+
+> **Ce que l'ADR-0022 a remplacé, et ce qu'elle n'a pas touché.** La moitié qui est partie est la
+> condition figurant dans *Risques* ci-dessous — *le `<select>` d'une étape en cours de choix
+> survit tant qu'il a le focus* — qui protégeait l'utilisateur au clavier parcourant la liste des
+> options en faisant attendre à tous les autres visiteurs un clic sans rapport avant que leur étape
+> ne devienne du code. Le risque qu'elle nommait est toujours honoré, par une règle qui nomme le
+> parcours lui-même au lieu d'en tenir lieu. La moitié qui tient est celle pour laquelle cet
+> enregistrement a été écrit : la chaîne se construit dans le bloc qu'il donne à lire, et une étape
+> choisie y est dessinée comme du C# et non comme un contrôle de formulaire.
 
 ## Contexte
 

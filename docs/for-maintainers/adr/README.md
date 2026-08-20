@@ -157,7 +157,7 @@ requests, issues, diagrams.
 | [ADR-0011](0011-the-playground-references-the-catalogue-as-a-project-reference-en.md) | The playground references the catalogue as a project reference | Accepted |
 | [ADR-0012](0012-the-site-runs-one-worker-script-for-measurement-en.md) | The site runs one Worker script, and only for measurement | Accepted |
 | [ADR-0013](0013-mirrored-library-content-is-pinned-to-a-release-tag-en.md) | Mirrored library content is pinned to a release tag | Accepted |
-| [ADR-0014](0014-the-playground-builds-inside-the-card-it-reads-en.md) | The playground builds inside the card it reads | Accepted |
+| [ADR-0014](0014-the-playground-builds-inside-the-card-it-reads-en.md) | The playground builds inside the card it reads | Accepted — superseded in part by ADR-0022 |
 | [ADR-0015](0015-the-combo-names-what-the-playground-cannot-offer-en.md) | The combo names what the playground cannot offer | Proposed |
 | [ADR-0016](0016-a-list-argument-is-one-comma-separated-field-en.md) | A list argument is one comma-separated field | Proposed |
 | [ADR-0017](0017-draft-a-releases-github-notes-by-hand-and-refuse-without-them-en.md) | Draft a release's GitHub notes by hand, and refuse without them | Proposed |
@@ -165,6 +165,7 @@ requests, issues, diagrams.
 | [ADR-0019](0019-the-release-notes-page-mirrors-the-librarys-release-notes-files-en.md) | The release notes page mirrors the library's release-notes files | Accepted |
 | [ADR-0020](0020-one-release-notes-page-per-train-and-major-en.md) | One release notes page per train and major | Accepted |
 | [ADR-0021](0021-a-release-tag-is-verified-against-the-pr-that-named-it-en.md) | A release tag is verified against the PR that named it, not its own creation clock | Accepted |
+| [ADR-0022](0022-a-step-settles-when-it-is-chosen-not-when-focus-leaves-en.md) | A step settles when it is chosen, not when it loses focus | Accepted |
 
 **0008 is absent on purpose.** It named a record that was written, merged, then withdrawn: how a
 scene is titled is an editorial principle, which this file sends to the specification rather than
