@@ -120,7 +120,15 @@ const t = useTranslations(locale);
 </script>
 
 <style>
+    /* Sticky lives on the `<details>` itself, not on a child of it. Chromium does not let a
+       `position: sticky` descendant of an open `<details>` stick to the viewport — it renders
+       the computed style as `sticky` but scrolls it as if it were `static`. Only the element
+       carrying `open` is exempt from that, which is why the scroll clipping moved here too. */
     .contents {
+        position: sticky;
+        top: var(--jd-space-4);
+        max-height: calc(100svh - 2 * var(--jd-space-4));
+        overflow-y: auto;
         border-right: 1px solid var(--jd-border);
     }
 
@@ -129,10 +137,6 @@ const t = useTranslations(locale);
     }
 
     .contents-body {
-        position: sticky;
-        top: var(--jd-space-4);
-        max-height: calc(100svh - 2 * var(--jd-space-4));
-        overflow-y: auto;
         padding: 0 var(--jd-space-4) var(--jd-space-8) 0;
     }
 
@@ -216,6 +220,9 @@ const t = useTranslations(locale);
 
     @media (max-width: 56rem) {
         .contents {
+            position: static;
+            max-height: none;
+            overflow: visible;
             border-right: 0;
             border-bottom: 1px solid var(--jd-border);
             margin-bottom: var(--jd-space-6);
@@ -248,9 +255,6 @@ const t = useTranslations(locale);
         }
 
         .contents-body {
-            position: static;
-            max-height: none;
-            overflow: visible;
             padding: 0 0 var(--jd-space-4);
         }
     }
