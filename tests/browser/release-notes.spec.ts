@@ -8,6 +8,10 @@ import type { Locator, Page, Response } from '@playwright/test';
  * from the section's own front page, which is also what makes a missing link on that page
  * a failing test rather than a quiet omission.
  */
+/** Where this site is published — `site` in apps/site/astro.config.mjs. A link on this origin
+ *  is not sending the reader away, whatever protocol it is written with. */
+const SITE_ORIGIN: string = 'https://justdummies.io';
+
 const INDEXES: ReadonlyArray<{ path: string; heading: string; firstTrain: string }> = [
     { path: '/release-notes', heading: 'Release notes', firstTrain: 'Core library' },
     { path: '/fr/release-notes', heading: 'Release notes', firstTrain: 'Bibliothèque principale' },
@@ -73,7 +77,14 @@ for (const { path, heading, firstTrain } of INDEXES) {
         for (const route of routes) {
             await page.goto(route);
 
-            const outward: Locator = page.locator('main a[href^="http"]');
+            /*
+             * "Leaves this site", not "starts with http" — and the difference is a test that
+             * would punish the right behaviour. A note may link to one of this site's own
+             * pages by its full address, and the generator deliberately keeps that in the
+             * reader's tab; asking every http link for `target="_blank"` would turn the day
+             * that happens into a red run.
+             */
+            const outward: Locator = page.locator(`main a[href^="http"]:not([href^="${SITE_ORIGIN}"])`);
             const count: number = await outward.count();
 
             expect(count, `${route} carries no outbound link at all`).toBeGreaterThan(0);
