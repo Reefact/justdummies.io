@@ -217,6 +217,15 @@ const t = useTranslations(locale);
         padding-left: 2.5em;
         position: relative;
         max-width: 58rem;
+        /* A bullet's longest word is a method name — `WithLengthBetween`, `IPoolInspection<T>`
+           — with nowhere to break, and .releases is a grid, whose items do not shrink below
+           their content's min-content width. So that longest token plus this padding is a
+           floor under the whole card, and at 320px the card was already standing on it: the
+           release notes pages went 34px sideways before this change and 55px after it, since
+           the indent is part of the sum. `anywhere` rather than `break-word` on purpose —
+           only `anywhere` lowers the min-content width, which is the number doing the damage
+           (VersionContent.astro's commit hash, §11.7's source chips). */
+        overflow-wrap: anywhere;
     }
 
     /* The dot takes the colour of the words beside it. On --jd-border it was three points
