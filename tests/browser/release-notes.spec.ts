@@ -17,6 +17,27 @@ const INDEXES: ReadonlyArray<{ path: string; heading: string; firstTrain: string
     { path: '/fr/release-notes', heading: 'Release notes', firstTrain: 'Bibliothèque principale' },
 ];
 
+/**
+ * The release prose alone, with every `.visually-hidden` aside stripped out first.
+ *
+ * Those spans exist for a screen reader, not for this comparison: the new-tab note and the
+ * train/version disambiguators (PR #141) are picked by the page's own locale regardless of
+ * which markdown file was actually read, so left in, they can make two arrays of otherwise
+ * identical — wrongly identical — text read as "different" for a reason that has nothing to
+ * do with the release notes themselves.
+ */
+async function proseOf(page: Page): Promise<string[]> {
+    return page.locator('.summary p, .bullets li').evaluateAll((elements) =>
+        elements.map((element) => {
+            const clone = element.cloneNode(true) as HTMLElement;
+
+            clone.querySelectorAll('.visually-hidden').forEach((hidden) => hidden.remove());
+
+            return (clone.textContent ?? '').replace(/\s+/g, ' ').trim();
+        }),
+    );
+}
+
 async function majorRoutes(page: Page, indexPath: string): Promise<string[]> {
     await page.goto(indexPath);
 
@@ -369,11 +390,11 @@ test.describe('the French pages', () => {
             // pair them rather than list them.
             await page.goto(route.replace('/fr/', '/'));
 
-            const english: string[] = await page.locator('.summary p, .bullets li').allInnerTexts();
+            const english: string[] = await proseOf(page);
 
             await page.goto(route);
 
-            const french: string[] = await page.locator('.summary p, .bullets li').allInnerTexts();
+            const french: string[] = await proseOf(page);
 
             expect(french.length, `${route} shows no release prose at all`).toBeGreaterThan(0);
 
@@ -393,6 +414,17 @@ test.describe('the French pages', () => {
              * all: the parser refuses one with neither a summary nor a rubric, which is to say it
              * accepts a summary on its own. Reading only the bullets would have failed such a
              * major for having no prose, on a page whose prose is right there in `.summary`.
+             *
+             * And read through `proseOf`, not `.allInnerTexts()` directly, because a bullet with
+             * an outbound link carries its new-tab note beside the prose — "opens in a new tab" or
+             * "ouvre un nouvel onglet" — and that note is picked by the ROUTE's locale, not by
+             * whichever file actually got read. A route wrongly serving the English markdown
+             * still renders through ReleaseCard.astro with locale="fr", so the note alone would
+             * make the two arrays differ and this check would pass on a page serving the wrong
+             * language — confirmed by reproducing it: English prose with the French note attached
+             * read as "different" under a plain `.allInnerTexts()` read. `proseOf` strips
+             * `.visually-hidden` before reading, which removes that note and the "— {train}" /
+             * "— {version}" disambiguators PR #141 added, none of which is release prose.
              */
             expect(french, `${route} shows the English release prose`).not.toEqual(english);
         }
