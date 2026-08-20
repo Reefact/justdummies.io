@@ -101,7 +101,7 @@ export const site = {
      * middle of a sentence is the same "clipped fragment" this site's copy avoids
      * elsewhere. Raise this object and that prose together, the same way `library.version`
      * above is raised together with `Directory.Packages.props`. The playground's own
-     * footer (`apps/playground/Layout/MainLayout.razor`) restates `entity` a third time,
+     * footer (`apps/playground/Layout/SiteFooter.razor`) restates `entity` a third time,
      * in hard-coded English — TypeScript and C# cannot read each other's constants.
      */
     legal: {
