@@ -137,6 +137,25 @@ for (const { path, heading, firstTrain } of INDEXES) {
         }
     });
 
+    /*
+     * ASKED OF EVERY ROUTE, not of the one that happens to be written down elsewhere.
+     *
+     * This loop already discovers all ten majors from the index, and it used to ask them two
+     * questions: did you answer, and is there a release on you. Every structural assertion in
+     * this file was spent on /release-notes/lib/v1/ and its French twin, so eight of the twelve
+     * routes were covered by "200, and shows at least one card".
+     *
+     * That is thinner than it sounds. The generator writes ten files from four different
+     * upstream changelogs, and a shape only one train's file carries reaches the reader through
+     * routes nobody looks at — a release whose tag was never published renders without its
+     * footer link, and lib is the only train with two majors, so the chip that names the other
+     * major exists on two routes and is asserted on one.
+     *
+     * The three invariants below are the cheap ones, and they hold by construction rather than
+     * by content: the contents lists exactly the releases and rubrics the page draws, and every
+     * entry points at something. They cost no extra page load — the routes are already being
+     * visited here — and they are what turns "it answered" into "it is whole".
+     */
     test(`${path} links to a page for every train and major, and each one answers`, async ({ page }) => {
         const routes = await majorRoutes(page, path);
 
@@ -147,6 +166,31 @@ for (const { path, heading, firstTrain } of INDEXES) {
 
             // Its own content, not a shell: the releases this major published.
             await expect(page.locator('.release'), `${route} shows no release`).not.toHaveCount(0);
+
+            // One entry per release, one per rubric: a table of contents that lists fewer than
+            // the page holds is the fold this section refused (ADR-0020) arriving by accident.
+            await expect(
+                page.locator('[data-release-contents] .release-link'),
+                `${route} lists a different number of releases than it draws`,
+            ).toHaveCount(await page.locator('.release').count());
+
+            await expect(
+                page.locator('[data-release-contents] .rubrics a'),
+                `${route} lists a different number of rubrics than it draws`,
+            ).toHaveCount(await page.locator('.rubric').count());
+
+            // And every entry lands somewhere. An anchor is the one part of this page a reader
+            // can put in a bookmark or a bug report, and a stale one fails silently: the link
+            // works, the jump does nothing.
+            const dangling: string[] = await page
+                .locator('[data-release-contents] a[href^="#"]')
+                .evaluateAll((links) =>
+                    links
+                        .map((link) => link.getAttribute('href') ?? '')
+                        .filter((href) => href.length > 1 && document.getElementById(href.slice(1)) === null),
+                );
+
+            expect(dangling, `${route} points its table of contents at ${dangling.join(', ')}, which is not there`).toEqual([]);
         }
     });
 
@@ -227,6 +271,41 @@ test.describe('a major version page', () => {
         await expect(link).toHaveAttribute('rel', /noopener/);
     });
 
+    /*
+     * THE ONLY SCRIPT ON THIS PAGE, RUN AT A WIDTH WHERE IT DOES SOMETHING.
+     *
+     * The table of contents is a column on a desktop and a closed disclosure on a phone, and
+     * the flip is done by nine lines of script against `(max-width: 56rem)`. Every other test
+     * in this file runs at the one viewport playwright.config.ts declares — Desktop Chrome,
+     * 1280x720 — which is the open side of that transition, so the whole narrow branch and the
+     * `change` handler that returns from it had never been executed by anything.
+     *
+     * The handler is not decoration. A `<details>` closed by script on a phone has only its
+     * `<summary>` to reopen it, and that summary is `display: none` above the breakpoint — so a
+     * reader who closes the list and then rotates, or widens a window, would be left with a
+     * table of contents that is closed, invisible, and impossible to reopen. That is what the
+     * component's own comment says the resize listener exists to prevent, and this is what
+     * proves it still does.
+     */
+    test('folds its contents on a phone, and unfolds them again when the screen grows', async ({ page }) => {
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.goto('/release-notes/lib/v1/');
+
+        const contents: Locator = page.locator('[data-release-contents]');
+
+        // Narrow: closed, and the control that can reopen it is on screen.
+        await expect(contents, 'the contents stayed open on a phone').not.toHaveAttribute('open', /.*/);
+        await expect(contents.locator('> summary'), 'nothing on a phone can open the contents').toBeVisible();
+
+        await page.setViewportSize({ width: 1280, height: 900 });
+
+        // Wide: open again, by the `change` handler rather than by a reload — and the summary
+        // steps aside, which is precisely why the handler has to force `open` back on.
+        await expect(contents, 'the contents stayed folded after the screen grew').toHaveAttribute('open', /.*/);
+        await expect(contents.locator('.release-link').first(), 'the contents did not come back').toBeVisible();
+        await expect(contents.locator('> summary'), 'the phone control is still drawn on a desktop').toBeHidden();
+    });
+
     test('needs no script to be read, navigated or left', async ({ browser }) => {
         const context = await browser.newContext({ javaScriptEnabled: false });
         const page = await context.newPage();
@@ -246,38 +325,97 @@ test.describe('a major version page', () => {
 
 });
 
+/*
+ * EVERY FRENCH MAJOR, not the one that was easiest to name.
+ *
+ * All three checks below used to open '/fr/release-notes/lib/v1/' by hand, fourteen lines under
+ * a header stating the opposite principle and under a helper that already discovers the routes.
+ * The failure they exist to catch — a page served from the English file (ADR-0019) — is silent:
+ * the page renders, the layout is right, only the language is wrong. And the corpus is ten
+ * separate upstream files, so it would appear on one train and not its neighbour, which is
+ * exactly the shape a single hardcoded route cannot see.
+ */
 test.describe('the French pages', () => {
 
     test('carry the library\'s French prose, not its English', async ({ page }) => {
-        await page.goto('/release-notes/lib/v1/');
+        const routes = await majorRoutes(page, '/fr/release-notes');
 
-        const english: string[] = await page.locator('.rubric-label').allInnerTexts();
+        for (const route of routes) {
+            // The English twin of a French route is the same path without the prefix: the two
+            // locales are the same route schema by construction (§6.2), which is what lets this
+            // pair them rather than list them.
+            await page.goto(route.replace('/fr/', '/'));
 
-        await page.goto('/fr/release-notes/lib/v1/');
+            const english: string[] = await page.locator('.rubric-label').allInnerTexts();
 
-        const french: string[] = await page.locator('.rubric-label').allInnerTexts();
+            await page.goto(route);
 
-        expect(french.length, 'the French page shows no rubric at all').toBeGreaterThan(0);
+            const french: string[] = await page.locator('.rubric-label').allInnerTexts();
 
-        // The rubric headings are the library's own words, taken from its French file rather
-        // than translated here — so the two locales cannot be showing the same strings
-        // (ADR-0019). This is what goes red if the page ever reads the English changelog again.
-        expect(french).not.toEqual(english);
+            expect(french.length, `${route} shows no rubric at all`).toBeGreaterThan(0);
+
+            // The rubric headings are the library's own words, taken from its French file rather
+            // than translated here — so the two locales cannot be showing the same strings
+            // (ADR-0019). This is what goes red if the page ever reads the English changelog again.
+            expect(french, `${route} shows the English rubric headings`).not.toEqual(english);
+        }
+    });
+
+    /*
+     * The anchor is the same in both locales on purpose, and until now nothing said so.
+     *
+     * It is derived from the English label in either language, so a deep link survives a reader
+     * switching language mid-page — release-notes.ts and the generator both state that intent,
+     * and neither is a check. It is hard to break by accident today, one shared expression
+     * inside the per-locale loop; it would be easy to break on purpose, and a generator taught
+     * to slug the localised label would strand every deep link in one locale while every other
+     * test in this file stayed green.
+     */
+    test('anchor both locales the same way, so a deep link survives a switch', async ({ page }) => {
+        const routes = await majorRoutes(page, '/fr/release-notes');
+
+        for (const route of routes) {
+            await page.goto(route.replace('/fr/', '/'));
+
+            const english: string[] = await page
+                .locator('[data-release-contents] a[href^="#"]')
+                .evaluateAll((links) => links.map((link) => link.getAttribute('href') ?? ''));
+
+            await page.goto(route);
+
+            const french: string[] = await page
+                .locator('[data-release-contents] a[href^="#"]')
+                .evaluateAll((links) => links.map((link) => link.getAttribute('href') ?? ''));
+
+            expect(french.length, `${route} offers no anchor at all`).toBeGreaterThan(0);
+            expect(french, `${route} anchors its contents differently from its English twin`).toEqual(english);
+        }
     });
 
     test('mark no prose as English, because none of it is', async ({ page }) => {
-        await page.goto('/fr/release-notes/lib/v1/');
+        const routes = await majorRoutes(page, '/fr/release-notes');
 
-        await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
-        await expect(page.locator('main [lang="en"]')).toHaveCount(0);
+        for (const route of routes) {
+            await page.goto(route);
+
+            await expect(page.locator('html'), route).toHaveAttribute('lang', 'fr');
+            await expect(page.locator('main [lang="en"]'), `${route} marks some of its prose English`).toHaveCount(0);
+        }
     });
 
     test('offer the same page in the other locale', async ({ page }) => {
-        await page.goto('/fr/release-notes/lib/v1/');
+        const routes = await majorRoutes(page, '/fr/release-notes');
 
-        // The route is built from a parameterised file, which the routing module cannot read
-        // from the file system — so this is what fails if it is ever left untaught.
-        await expect(page.locator('a[hreflang="en"][href="/release-notes/lib/v1/"]')).toHaveCount(1);
+        for (const route of routes) {
+            await page.goto(route);
+
+            // The route is built from a parameterised file, which the routing module cannot read
+            // from the file system — so this is what fails if it is ever left untaught.
+            await expect(
+                page.locator(`a[hreflang="en"][href="${route.replace('/fr/', '/')}"]`),
+                `${route} offers no English twin`,
+            ).toHaveCount(1);
+        }
     });
 
 });
