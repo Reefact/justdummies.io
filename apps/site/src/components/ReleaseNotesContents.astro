@@ -127,6 +127,16 @@ const t = useTranslations(locale);
     .contents {
         position: sticky;
         top: var(--jd-space-4);
+        /* A grid item stretches to its row by default, so this box was as tall as the page and
+           then clamped to the viewport by the max-height below — 868px of box around 351px of
+           links on lib/v1 at 1280x900. What that cost was the top of the list: scrolled to the
+           foot of the document the box sat at -103px and `Version 1`, the release and the first
+           rubric were above the viewport entirely, with no scrollbar to suggest they were there.
+           The short pages lost them from halfway down. Sized to its own content instead, the box
+           never has a top to lose. The trade-off is the rule at the end of this block: it now
+           stops with the last entry rather than running the column's full height the way
+           ApiCategoryNav.astro's does. */
+        align-self: start;
         max-height: calc(100svh - 2 * var(--jd-space-4));
         overflow-y: auto;
         border-right: 1px solid var(--jd-border);

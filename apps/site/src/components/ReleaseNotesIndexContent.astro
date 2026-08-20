@@ -109,7 +109,15 @@ const t = useTranslations(locale);
         margin: 0;
         padding: 0;
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
+        /* `min(22rem, 100%)` rather than a bare `22rem`, and the difference is the whole page
+           on a phone. `auto-fit` cannot lay a track narrower than the minimum it is given, so
+           a bare 22rem is a 352px floor the grid holds to at any window width — the cards kept
+           that width down to 280px and pushed the document out from under them, 63px of real
+           sideways scroll at 320px and 23px at 360px, with `2 relea…` clipped mid-word inside
+           a card nothing had asked to be that wide (its own min-content is 190px). Wrapped in
+           `min()`, the floor stops applying once the container is narrower than it, and above
+           22rem the computed tracks are unchanged to the pixel. */
+        grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
         gap: var(--jd-space-4);
     }
 
@@ -143,6 +151,10 @@ const t = useTranslations(locale);
 
     .package code {
         font-family: var(--jd-font-mono);
+        /* `JustDummies.DiagnosticCatalog` is one word to a browser, and it is wider than a card
+           on the narrowest phones. Left alone it holds the card open the way the grid floor
+           above did — the same fix the release bullets already carry. */
+        overflow-wrap: anywhere;
     }
 
     .latest {
