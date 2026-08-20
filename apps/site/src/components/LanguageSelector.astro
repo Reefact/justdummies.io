@@ -109,9 +109,19 @@ const t = useTranslations(current);
      * the fragment, which is the whole of what this file used to do.
      */
     for (const link of document.querySelectorAll<HTMLAnchorElement>('.language-selector a[href]')) {
+        // Read once, before any click can mutate it — never from `link.getAttribute('href')`
+        // at click time, which the line below itself rewrites. A click that does not leave
+        // the page (Ctrl/Cmd-click opening a new tab; a back/forward-cache restore) left the
+        // fragmented value sitting in the attribute for the *next* click to read and append
+        // to again, so a second visit to a different section produced '#old#new' rather than
+        // replacing '#old'. `base` is a closure over the one clean value this link was
+        // rendered with, and every click computes from that same constant rather than from
+        // whatever the attribute currently holds.
+        const base: string = link.getAttribute('href') ?? '';
+
         link.addEventListener('click', () => {
             if (location.hash) {
-                link.href = link.getAttribute('href') + location.hash;
+                link.href = base + location.hash;
             }
         });
     }
