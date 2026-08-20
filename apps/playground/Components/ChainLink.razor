@@ -16,9 +16,11 @@
     always did too, so nothing became less reachable when the combo went away, it just takes the
     delete control to get there.
 
-    EXCEPT WHILE THE SELECT HAS FOCUS — see ShowSelect below. A keyboard user browsing the
-    options of a closed `<select>` commits one on every arrow press, and a select that vanished
-    on the first of them could not be arrowed past its first option.
+    EXCEPT WHILE THE VISITOR IS STILL WALKING THE LIST — see ShowSelect below. A keyboard user
+    browsing the options of a closed `<select>` commits one on every arrow press, and a select
+    that vanished on the first of them could not be arrowed past its first option. So an
+    arrowed-to option leaves the combo standing, and a pointed-at or Entered one settles the step
+    where it stands rather than waiting for the visitor to go and click somewhere else.
 
     The method name, its summary and its help link come from the catalogue — the library is
     their source, so they are never translated (§6.4 as corrected: content the library produces,
@@ -51,6 +53,7 @@
     @if (ShowSelect) {
         <select @ref="_select"
                 @onchange="HandleMethodChosen"
+                @onpointerdown="() => _browsing = false"
                 @onfocusin="() => _editing = true"
                 @onfocusout="() => _editing = false"
                 value="@(State.Chosen?.Key ?? "")"
@@ -178,23 +181,40 @@
     [Parameter, EditorRequired] public ChainLinkState State { get; set; } = null!;
     [Parameter, EditorRequired] public string? Error { get; set; }
 
-    [Parameter, EditorRequired] public EventCallback<(int LinkIndex, MemberDescriptor Chosen)> OnMethodChosen { get; set; }
+    /// <summary>Raised for every method this step commits to, including the ones a keyboard user
+    /// only arrows past — a closed <c>&lt;select&gt;</c> raises one per press. <c>Settled</c> is
+    /// what separates them: true when the choice also put the combo away (see
+    /// <see cref="ShowSelect" />), which is the only case where the step's own focus has to be
+    /// handed on to somewhere that still exists.</summary>
+    [Parameter, EditorRequired] public EventCallback<(int LinkIndex, MemberDescriptor Chosen, bool Settled)> OnMethodChosen { get; set; }
     [Parameter, EditorRequired] public EventCallback<(int LinkIndex, int ArgumentIndex, string Value)> OnArgumentChanged { get; set; }
     [Parameter, EditorRequired] public EventCallback<int> OnDelete { get; set; }
 
     private ElementReference _select;
 
-    /// <summary>Whether the visitor's focus is currently in this step's <c>&lt;select&gt;</c> —
-    /// see <see cref="ShowSelect" />, which is the only thing it is for.</summary>
+    /// <summary>Whether this step's <c>&lt;select&gt;</c> is still the visitor's — taken by focus,
+    /// and given back by <see cref="HandleMethodChosen" /> as soon as a choice is committed rather
+    /// than merely arrowed past. See <see cref="ShowSelect" />, which is the only thing it is for.</summary>
     private bool _editing;
+
+    /// <summary>Whether the change events coming out of the <c>&lt;select&gt;</c> are a visitor
+    /// walking the list rather than answering with it — set by the keystroke that provoked one
+    /// (<see cref="IsBrowsingKey" />) and cleared by the pointer, so <see cref="HandleMethodChosen" />
+    /// can tell the two apart. A change with neither behind it came from the drop-down, which
+    /// raises exactly one and only on the entry the visitor settled on.</summary>
+    private bool _browsing;
 
     /// <summary>The step's argument inputs, so the one at index 0 can be focused after a Tab out
     /// of the select — see <see cref="HandleKeyDown" />. Keyed rather than a single field because
     /// the capture happens inside the render loop.</summary>
     private readonly Dictionary<int, ElementReference> _argumentRefs = new();
 
-    /// <summary>Set by a forward Tab out of a chosen select, cleared by the render that acts on
-    /// it. Never set by a click, which is the whole point — see <see cref="HandleKeyDown" />.</summary>
+    /// <summary>Set when the focus the <c>&lt;select&gt;</c> is about to lose has to be handed on
+    /// to this step's first argument — a forward Tab out of it (<see cref="HandleKeyDown" />), or
+    /// the choice that settles the step out from under it (<see cref="HandleMethodChosen" />) —
+    /// and cleared by the render that acts on it. A step with no arguments never sets it: it has
+    /// nothing of its own to hand the focus to, and Home.razor moves it on to the next step's
+    /// combo instead.</summary>
     private bool _claimFirstArgument;
 
     /// <summary>Whether the flag's message is open. Closed by default, and forced closed again
@@ -206,19 +226,35 @@
     /// <summary>
     ///     Whether this step is still drawn as a combo rather than as code.
     ///
-    ///     Unchosen, obviously. Chosen, only while the select still has focus — and that clause
-    ///     is not a nicety. A closed native <c>&lt;select&gt;</c> raises <c>change</c> on every
-    ///     arrow press, so a keyboard user browsing the options commits each one in turn; if the
-    ///     control were replaced by text on the first of those commits, the list could never be
-    ///     arrowed past its first entry, and the only methods reachable without a pointer would
-    ///     be whichever ones happen to sort first. Kept until focus leaves, the browsing works
-    ///     exactly as it does anywhere else and the step settles into code on the way out.
+    ///     Unchosen, obviously. Chosen, only while the visitor is still walking the list — and
+    ///     that clause is not a nicety. A closed native <c>&lt;select&gt;</c> raises <c>change</c>
+    ///     on every arrow press, so a keyboard user browsing the options commits each one in turn;
+    ///     if the control were replaced by text on the first of those commits, the list could
+    ///     never be arrowed past its first entry, and the only methods reachable without a pointer
+    ///     would be whichever ones happen to sort first.
+    ///
+    ///     WHAT HOLDS THE COMBO UP IS THE BROWSING, NOT THE FOCUS. Holding it until focus left was
+    ///     the first answer to that, and it charged the keyboard's problem to the pointer: a
+    ///     visitor who picked from the drop-down went on looking at a combo until they clicked
+    ///     somewhere else, for no reason the card gave them. The two gestures are distinguishable
+    ///     — <see cref="IsBrowsingKey" /> is where — so <see cref="HandleMethodChosen" /> tells
+    ///     them apart instead, and an arrowed-to option leaves the combo standing while a chosen
+    ///     one settles under the gesture that chose it.
     /// </summary>
     private bool ShowSelect => State.Chosen is null || _editing;
 
     protected override void OnParametersSet() {
         if (!HasError) {
             _errorOpen = false;
+        }
+
+        // A component instance is reused for whatever step lands at its index, so a truncation
+        // hands this one a step that has never been browsed. Nothing a visitor can do reaches a
+        // change event without a keystroke or a pointer in front of it to say which gesture it
+        // is, but a flag left over from the step that used to be here would be answering for one
+        // that never happened.
+        if (State.Chosen is null) {
+            _browsing = false;
         }
     }
 
@@ -269,8 +305,19 @@
     ///     <c>relatedTarget</c> to tell the two apart. A keydown does — so a visitor who clicked
     ///     away keeps the focus they clicked on. Shift+Tab is left alone for the same reason: it
     ///     is going the other way, and there is nothing of this step's behind the select.
+    ///
+    ///     AND EVERY KEYSTROKE THAT REACHES THE SELECT IS RECORDED, for
+    ///     <see cref="HandleMethodChosen" /> to read back. The change event carries nothing about
+    ///     what provoked it, and keydown runs first, so this is where the two gestures the
+    ///     <c>&lt;select&gt;</c> conflates — walking the list and picking from it — are still
+    ///     told apart. Written on the way past rather than guarded, because a key that is not a
+    ///     browsing key has to clear the flag just as surely as one that is has to set it.
     /// </summary>
     private void HandleKeyDown(KeyboardEventArgs e) {
+        if (ShowSelect) {
+            _browsing = IsBrowsingKey(e);
+        }
+
         if (e.Key == "Escape") {
             _errorOpen = false;
 
@@ -283,10 +330,32 @@
         }
     }
 
-    /// <summary>Takes the focus Tab was carrying out of the select and puts it on the argument
-    /// that has just been rendered — see <see cref="HandleKeyDown" />. The browser has already
-    /// moved focus past the step by the time this runs, which is why this moves it back rather
-    /// than merely allowing it.</summary>
+    /// <summary>
+    ///     Whether a keystroke on the <c>&lt;select&gt;</c> is the visitor walking the list rather
+    ///     than settling on an entry of it: the arrows and the four keys that jump with them, and
+    ///     the type-ahead a native select does on a bare printable character. Each of those
+    ///     provokes a <c>change</c> the visitor did not mean as an answer, and it is those, not
+    ///     the change event itself, that <see cref="ShowSelect" /> has to survive.
+    ///
+    ///     A MODIFIER TAKES A KEY BACK OUT OF IT. <c>Alt+ArrowDown</c> opens the drop-down instead
+    ///     of stepping through it, and a chord carrying Ctrl or Meta is a shortcut rather than
+    ///     typing — neither is a visitor browsing, and neither raises the change this is read for.
+    /// </summary>
+    private static bool IsBrowsingKey(KeyboardEventArgs e) {
+        if (e.CtrlKey || e.AltKey || e.MetaKey) {
+            return false;
+        }
+
+        return e.Key is "ArrowUp" or "ArrowDown" or "ArrowLeft" or "ArrowRight"
+                     or "Home" or "End" or "PageUp" or "PageDown"
+            || e.Key is { Length: 1 };
+    }
+
+    /// <summary>Takes the focus the select is losing and puts it on the argument that has just
+    /// been rendered — either because Tab was carrying it out (<see cref="HandleKeyDown" />) or
+    /// because a choice settled the step out from under it (<see cref="HandleMethodChosen" />).
+    /// The select is gone from the DOM by the time this runs, so this is a focus that has to be
+    /// placed rather than merely allowed.</summary>
     protected override async Task OnAfterRenderAsync(bool firstRender) {
         if (!_claimFirstArgument) {
             return;
@@ -482,14 +551,49 @@
         return WidthLadder[^1];
     }
 
-    /// <summary>An unavailable option is refused here as well as marked <c>disabled</c> in the
-    /// markup. The attribute is what stops a visitor; this is what stops the chain from ever
-    /// holding a step the dispatch table has no call site for, whatever route the value arrived
-    /// by. The two say the same thing, and only one of them is a promise the runtime keeps.</summary>
+    /// <summary>
+    ///     An unavailable option is refused here as well as marked <c>disabled</c> in the markup.
+    ///     The attribute is what stops a visitor; this is what stops the chain from ever holding a
+    ///     step the dispatch table has no call site for, whatever route the value arrived by. The
+    ///     two say the same thing, and only one of them is a promise the runtime keeps.
+    ///
+    ///     AND THIS IS WHERE A STEP STOPS BEING A COMBO. The change event is the only news a
+    ///     <c>&lt;select&gt;</c> gives, and it gives it for two gestures that mean opposite
+    ///     things: a visitor picking an entry, and a keyboard user arrowing past one on the way
+    ///     to another (a closed select raises one per press). Told apart by what preceded the
+    ///     change — a browsing key, a pointer, or nothing at all — picking settles the step here
+    ///     and now, and arrowing leaves the combo up to be arrowed again.
+    ///
+    ///     AND SETTLING TAKES THE FOCUS WITH IT, because the control the visitor is on is about
+    ///     to leave the DOM and focus would otherwise fall back to <c>&lt;body&gt;</c> — the
+    ///     renavigate-from-the-top that Home.razor's <c>HandleDelete</c> already exists to
+    ///     prevent. This is not the focus-stealing <see cref="HandleKeyDown" /> is careful to
+    ///     avoid: nothing here moves a focus that has somewhere to stay.
+    ///
+    ///     A step with arguments claims that focus itself, on the first of them. One without has
+    ///     nothing to claim it with, and Home.razor moves it on to the next step's combo — which
+    ///     is why <c>Settled</c> travels with the choice rather than being inferred there. The
+    ///     parent cannot see the difference between the two gestures, and a chain rebuilt under
+    ///     an arrowing keyboard user would otherwise pull the focus off the list they are still
+    ///     reading.
+    /// </summary>
     private Task HandleMethodChosen(ChangeEventArgs e) {
-        var key = e.Value as string;
+        var key    = e.Value as string;
         var chosen = Options.FirstOrDefault(o => o.Key == key && o.IsAvailableInPlayground);
-        return chosen is null ? Task.CompletedTask : OnMethodChosen.InvokeAsync((LinkIndex, chosen));
+
+        if (chosen is null) {
+            return Task.CompletedTask;
+        }
+
+        var browsing = _browsing;
+        _browsing = false;
+
+        if (!browsing) {
+            _editing            = false;
+            _claimFirstArgument = chosen.Parameters.Count > 0;
+        }
+
+        return OnMethodChosen.InvokeAsync((LinkIndex, chosen, !browsing));
     }
 
     /// <summary>Truncates any argument's raw text to <see cref="ArgumentParsing.SandboxTextLengthHardCeiling" />

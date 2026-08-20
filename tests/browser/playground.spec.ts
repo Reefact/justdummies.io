@@ -432,9 +432,11 @@ test.describe('the playground', () => {
      * gone once one has been — what is left is the call, in the site's own token colours, and a
      * delete button to take it back out.
      *
-     * The click on the card is not incidental: the select survives as long as it has focus, so
-     * that a keyboard user arrowing through the options is not cut off at the first one (see
-     * ChainLink.razor's ShowSelect). Moving focus off it is what settles the step.
+     * IT IS GONE ON THE CHOICE ITSELF, with nothing else asked of the visitor. This check used to
+     * click the card first, because the combo survived as long as it held focus and a visitor who
+     * picked from the drop-down kept looking at one until they clicked somewhere else. Nothing is
+     * clicked here now, and the absence of the select is asserted immediately: a step that waited
+     * for a blur again would fail on the very next line.
      */
     test('replaces a chosen step’s combo with coloured code, leaving only the delete control', async ({ page }) => {
         await page.goto('/playground/');
@@ -442,7 +444,6 @@ test.describe('the playground', () => {
         const step = page.locator('.chain-link').nth(0);
 
         await step.locator('select').selectOption({ label: 'String()' });
-        await page.locator('.playground-widget .card').click({ position: { x: 5, y: 5 } });
 
         await expect(step.locator('select')).toHaveCount(0);
         await expect(step.locator('.call')).toBeVisible();
@@ -873,45 +874,142 @@ test.describe('the playground', () => {
         await expect(select).toBeFocused();
         await select.selectOption({ label: 'String()' });
 
-        // String() takes no arguments, so the next stops are this step's own delete button and
-        // help link, then the second line's select — proving the keyboard path is unbroken end
-        // to end rather than merely present in the DOM.
-        await page.keyboard.press('Tab');
+        // String() takes no arguments, so the step it settles into has nothing of its own to take
+        // the focus its select was holding, and the choice hands it to the second line's combo —
+        // the one control that did not exist a moment ago to be reached for.
+        const secondSelect = page.locator('.chain-link').nth(1).locator('select');
+        await expect(secondSelect).toBeFocused();
+
+        // The settled step's own controls are behind that, not skipped: the pass is unbroken end
+        // to end, in both directions, rather than merely present in the DOM.
+        await page.keyboard.press('Shift+Tab');
+        await expect(page.locator('.chain-link').nth(0).locator('a.help')).toBeFocused();
+
+        await page.keyboard.press('Shift+Tab');
         await expect(page.locator('.chain-link').nth(0).locator('.delete')).toBeFocused();
 
         await page.keyboard.press('Tab');
-        await expect(page.locator('.chain-link').nth(0).locator('a.help')).toBeFocused();
-
         await page.keyboard.press('Tab');
-        const secondSelect = page.locator('.chain-link').nth(1).locator('select');
         await expect(secondSelect).toBeFocused();
     });
 
     /**
-     * A parameterized step's arguments are reachable by tabbing forward from the select that
-     * chose it.
+     * A CHOICE SETTLES THE STEP IT WAS MADE IN, and nothing else is asked of the visitor.
      *
-     * They were not. The select survives as long as it holds focus, so that arrowing through the
-     * options is not cut off at the first one — but at the moment Tab is pressed the browser
-     * computes the next focusable from the DOM as it stands, and the arguments did not exist in it
-     * yet. Focus went to the delete control, the arguments were then inserted *before* it by the
-     * settling render, and forward tabbing never met them again.
+     * The combo used to survive as long as it held focus, which is right for a keyboard user
+     * walking the list (see the check below) and wrong for everyone else: picking an entry from
+     * the drop-down left the visitor looking at a combo until they happened to click somewhere
+     * else, for no reason the card gave them.
+     *
+     * The focus half is the same defect seen from the other side. Settling takes the control the
+     * visitor is standing on out of the DOM, so something has to catch the focus it drops or it
+     * falls back to <body> and the next Tab restarts from the top of the page. A step with
+     * arguments catches it on the first of them; one without has nothing to catch it with, and
+     * the choice hands it to the step it has just added.
      */
-    test('tabs from a chosen method straight into its first argument', async ({ page }) => {
+    test('settles a parameterized step at once, on its first argument', async ({ page }) => {
         await page.goto('/playground/');
 
         await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'Int32()' });
 
-        const select = page.locator('.chain-link').nth(1).locator('select');
+        const step = page.locator('.chain-link').nth(1);
+        await step.locator('select').selectOption({ label: 'Between(minimum, maximum)' });
+
+        await expect(step.locator('select')).toHaveCount(0);
+        await expect(step.locator('input').first()).toBeFocused();
+
+        // Typed into straight away, which is the point of putting the focus there: no click, no
+        // Tab, nothing between choosing the method and filling it in.
+        await page.keyboard.type('3');
+        await expect(step.locator('input').first()).toHaveValue('3');
+    });
+
+    test('settles a parameterless step at once, on the combo it opens', async ({ page }) => {
+        await page.goto('/playground/');
+
+        const step = page.locator('.chain-link').nth(0);
+        await step.locator('select').selectOption({ label: 'String()' });
+
+        await expect(step.locator('select')).toHaveCount(0);
+        await expect(page.locator('.chain-link').nth(1).locator('select')).toBeFocused();
+    });
+
+    /**
+     * ARROWING THROUGH THE OPTIONS IS NOT CHOOSING ONE, and the step must not settle on the
+     * change events that say otherwise.
+     *
+     * A closed native <select> raises `change` on every arrow press, so a keyboard user walking
+     * the list commits each entry in turn on the way to the one they want. A step that settled on
+     * the first of those could never be arrowed past its first entry, and the only methods
+     * reachable without a pointer would be whichever ones happen to sort first.
+     *
+     * This is the check that goes red when ChainLink's IsBrowsingKey stops telling the two
+     * gestures apart — verified by making it return false, which fails the second press and the
+     * type-ahead both.
+     */
+    test('lets a keyboard user walk the option list instead of settling on its first entry', async ({ page }) => {
+        await page.goto('/playground/');
+
+        const step   = page.locator('.chain-link').nth(0);
+        const select = step.locator('select');
 
         await select.focus();
-        await select.selectOption({ label: 'Between(minimum, maximum)' });
+        await select.press('ArrowDown');
+
+        // The press did commit an entry — the summary is drawn only for a step that has a method —
+        // and the combo is standing anyway, which is the whole of the claim.
+        await expect(step.locator('.doc')).toBeVisible();
+        await expect(select).toBeFocused();
+
+        const firstEntry = await select.inputValue();
+        await select.press('ArrowDown');
+        expect(await select.inputValue()).not.toBe(firstEntry);
+
+        // Type-ahead is the same gesture under another key: a native select jumps to the first
+        // entry beginning with the character typed, raising the same change on the way past.
+        await select.press('S');
+        expect(await select.inputValue()).not.toBe(firstEntry);
+        await expect(select).toBeFocused();
+
+        // And leaving settles it, exactly as picking one from the drop-down would have.
+        await page.locator('.playground-widget .card').click({ position: { x: 5, y: 5 } });
+        await expect(step.locator('select')).toHaveCount(0);
+    });
+
+    /**
+     * A parameterized step's arguments are reachable by tabbing forward out of a combo that is
+     * still standing — which is the state a keyboard user is in for as long as they are walking
+     * the option list.
+     *
+     * They were not. The combo survives while the visitor is browsing it, so that arrowing
+     * through the options is not cut off at the first one — but at the moment Tab is pressed the
+     * browser computes the next focusable from the DOM as it stands, and the arguments did not
+     * exist in it yet. Focus went to the delete control, the arguments were then inserted
+     * *before* it by the settling render, and forward tabbing never met them again.
+     *
+     * Reached by type-ahead rather than from the drop-down, because a choice made from the
+     * drop-down now settles the step where it stands and leaves no combo to tab out of — that
+     * case, and the focus it hands on instead, is the check two above this one.
+     */
+    test('tabs out of a combo being browsed straight into its first argument', async ({ page }) => {
+        await page.goto('/playground/');
+
+        await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'Int32()' });
+
+        const step   = page.locator('.chain-link').nth(1);
+        const select = step.locator('select');
+
+        // "B" reaches Between(minimum, maximum) on this receiver, and typing it is browsing: the
+        // combo is still there, holding the focus Tab is about to carry out of it.
+        await select.focus();
+        await select.press('B');
+        await expect(select).toBeFocused();
 
         await page.keyboard.press('Tab');
-        await expect(page.locator('.chain-link').nth(1).locator('input').first()).toBeFocused();
+        await expect(step.locator('input').first()).toBeFocused();
 
         await page.keyboard.press('Tab');
-        await expect(page.locator('.chain-link').nth(1).locator('input').nth(1)).toBeFocused();
+        await expect(step.locator('input').nth(1)).toBeFocused();
     });
 
     /**
