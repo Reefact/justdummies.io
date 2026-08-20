@@ -2,10 +2,19 @@
 
 🌍 🇬🇧 English (this file) · 🇫🇷 [Français](0014-le-playground-construit-dans-le-bloc-quil-donne-a-lire-fr.md)
 
-**Status:** Accepted
+**Status:** Accepted — superseded in part by
+[ADR-0022](0022-a-step-settles-when-it-is-chosen-not-when-focus-leaves-en.md)
 **Proposed:** 2026-08-17
 **Accepted:** 2026-08-17
 **Decision Makers:** Reefact
+
+> **What ADR-0022 replaced, and what it did not.** The half that is gone is the condition in
+> *Risks* below — *the `<select>` of a step being chosen survives as long as it has focus* — which
+> protected a keyboard user walking the option list by making every other visitor wait for an
+> unrelated click before their step became code. The risk it named is still honoured, by a rule
+> that names the browsing itself rather than standing in for it. The half that stands is the one
+> this record was written for: the chain is built inside the card it gives to read, and a chosen
+> step is drawn as C# rather than as a form control.
 
 ## Context
 
