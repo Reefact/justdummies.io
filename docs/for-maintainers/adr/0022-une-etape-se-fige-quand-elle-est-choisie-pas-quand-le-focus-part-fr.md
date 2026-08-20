@@ -193,7 +193,10 @@ qui veut revenir sur une étape ; l'alternative le facture à chaque étape de c
   de ce qui s'y passe ne peut être affirmé — et c'est précisément un clic sur une option d'une
   liste ouverte qu'il faudrait observer. Un dépôt qui exige qu'une décision vienne avec quelque
   chose qui échoue quand elle est cassée ne peut pas accepter un correctif dont la seule preuve
-  serait qu'il avait l'air juste. La visiteuse n'est pas bloquée : le choix est déjà validé, le bloc
+  serait qu'il avait l'air juste. Le candidat, nommé ici pour que revenir sur cette question soit
+  une lecture et non une enquête : figer sur le clic du select lui-même, quand l'étape tient déjà
+  une méthode et que le dernier geste n'était pas un parcours. C'est une ligne, elle est peut-être
+  juste, et ce qui manque est ce qui le dirait. La visiteuse n'est pas bloquée : le choix est déjà validé, le bloc
   montre déjà le résumé de la méthode et son contrôle de suppression, et Entrée, Tab ou n'importe
   quel clic ailleurs figent l'étape. Consigné ici pour que la personne suivante le rencontre comme
   un coût connu et non comme une découverte.
