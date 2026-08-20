@@ -93,6 +93,29 @@ const t = useTranslations(current);
         document.querySelectorAll<HTMLDetailsElement>('.language-selector details'),
     );
 
+    /*
+     * Carries the reader's place across the switch, which the href alone never could.
+     *
+     * `pathForLocale` is computed once, when Astro renders the page — the fragment a reader
+     * has scrolled to since is not part of that computation, and could not be: on a release
+     * notes page the table of contents changes location.hash as the reader clicks through it,
+     * long after the page (and this link) was rendered. So the fragment is read here, at the
+     * moment of the click, and appended to the href the browser is about to follow — never
+     * written back into the DOM, so a second click reads whatever the hash is by then rather
+     * than a value cached from the first.
+     *
+     * Additive, like the menu-closing behaviour above (ADR-0004): without scripting, the link
+     * is exactly what Astro rendered, and still lands on the equivalent page — only without
+     * the fragment, which is the whole of what this file used to do.
+     */
+    for (const link of document.querySelectorAll<HTMLAnchorElement>('.language-selector a[href]')) {
+        link.addEventListener('click', () => {
+            if (location.hash) {
+                link.href = link.getAttribute('href') + location.hash;
+            }
+        });
+    }
+
     if (menus.length > 0) {
         document.addEventListener('click', (event: MouseEvent) => {
             for (const menu of menus) {

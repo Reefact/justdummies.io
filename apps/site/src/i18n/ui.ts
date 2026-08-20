@@ -647,7 +647,7 @@ const en = {
         "This page tracks what's new and changing in JustDummies, including new features, improvements, bug fixes, and deprecations. Use it to see what shipped in the most recent release, confirm when a capability became available, or review changes before upgrading.",
     'releaseNotes.meta.description': "What changed in JustDummies, release by release, across every package it publishes.",
     'releaseNotes.snapshotLabel': 'Snapshot taken at',
-    'releaseNotes.viewSource': 'Read the changelog this came from',
+    'releaseNotes.viewSource': 'Read the technical changelog',
 
     'releaseNotes.train.lib': 'Core library',
     'releaseNotes.train.xunit': 'xUnit adapter',
@@ -1227,7 +1227,7 @@ const fr: Record<UiKey, string> = {
         "Cette page recense les nouveautés et les changements de JustDummies : nouvelles fonctionnalités, améliorations, corrections de bugs et dépréciations. Elle sert à voir ce qui a été livré dans la dernière release, à confirmer depuis quand une fonctionnalité est disponible, ou à passer en revue les changements avant de monter de version.",
     'releaseNotes.meta.description': 'Ce qui a changé dans JustDummies, release après release, pour chaque paquet publié.',
     'releaseNotes.snapshotLabel': 'Instantané pris au tag',
-    'releaseNotes.viewSource': "Lire le changelog dont ceci provient",
+    'releaseNotes.viewSource': 'Lire le changelog technique',
 
     'releaseNotes.train.lib': 'Bibliothèque principale',
     'releaseNotes.train.xunit': 'Adaptateur xUnit',
@@ -1239,8 +1239,15 @@ const fr: Record<UiKey, string> = {
     'releaseNotes.packages': 'Paquets',
     'releaseNotes.contents': 'Versions',
     'releaseNotes.majorLabel': 'Version',
-    'releaseNotes.releases.one': 'version',
-    'releaseNotes.releases.many': 'versions',
+    /* Not 'version'/'versions' — a card already reads 'Version 1' from majorLabel above, and
+       counting its releases with the same word gave 'Version 1 · 2 versions', one noun for two
+       different things on one row. 'release' is what this repository already calls the other
+       one, in French, everywhere else it says it: the release-notes skill, ADR-0020's French
+       text, and the lead two paragraphs above these cards (ui.ts, releaseNotes.lead). Kept as
+       the English loanword on purpose — b9b2f43 decided this audience reads that word in
+       English — and feminine in that use, agreeing with 'Dernière' below. */
+    'releaseNotes.releases.one': 'release',
+    'releaseNotes.releases.many': 'releases',
 
     'releaseNotes.latestLabel': 'Dernière',
     'releaseNotes.readNotes': 'Lire les release notes',

@@ -2,7 +2,11 @@
 /**
  * One major version of one train, in full: every release it published, newest first.
  *
- * WHAT IT DOES ITSELF is name the package and say where the snapshot came from. Each release
+ * WHAT IT DOES ITSELF is name the package and say where the snapshot came from, and — since
+ * the table of contents that would otherwise say which major this is folds itself away below
+ * 56rem (ReleaseNotesContents.astro) — say the major itself, on the one line every width
+ * keeps: a phone reader on /release-notes/lib/v0/ used to see nothing but "Core library" and
+ * a wall of releases, with the only statement of "v0 rather than v1" sitting in `<title>`. Each release
  * under that is a `ReleaseCard`, which is also what /version draws this site's own release
  * with — one card, two sources (see that component's header).
  *
@@ -28,7 +32,7 @@ const t = useTranslations(locale);
 ---
 
 <p class="package">
-    <code>{train.package}</code>
+    <code>{train.package}</code> · {t('releaseNotes.majorLabel')} {notes.major}
 </p>
 <p class="snapshot">
     {t('releaseNotes.snapshotLabel')}{' '}

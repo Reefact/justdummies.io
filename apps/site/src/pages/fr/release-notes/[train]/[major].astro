@@ -37,7 +37,7 @@ const label = t(TRAIN_LABEL_KEY[trainKey]);
     title={`${label} ${majorSlug(major)} — ${t('releaseNotes.heading')} — ${site.name}`}
     description={`${label} (${train.package}) — ${t('releaseNotes.meta.description')}`}
 >
-    <ReleaseNotesHeader slot="head" locale={locale} active={trainKey} />
+    <ReleaseNotesHeader slot="head" locale={locale} active={trainKey} activeMajor={major} />
     <ReleaseNotesContents slot="contents" locale={locale} train={train} notes={notes} />
     <ReleaseNotesMajor locale={locale} train={train} notes={notes} />
 </ReleaseNotesPage>
