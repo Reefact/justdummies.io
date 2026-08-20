@@ -178,7 +178,10 @@ charges it to every step of every chain.
   headless engine, which never opens a native drop-down, so nothing that happens inside one can be
   asserted — and a click on an option of an open drop-down is precisely what would have to be
   observed. A repository that requires a decision to come with something that fails when it is
-  broken cannot take a fix whose only evidence would be that it looked right. The visitor is not
+  broken cannot take a fix whose only evidence would be that it looked right. The candidate, named
+  here so that revisiting this is a reading rather than an investigation: settle on the select's own
+  click, when the step already holds a method and the last gesture was not a browse. It is one line,
+  it may well be right, and what is missing is anything that would say so. The visitor is not
   stuck: the choice is already committed, the card already shows the method's summary and its
   delete control, and Enter, Tab or any click elsewhere settles the step. Recorded here so the next
   person meets it as a known cost rather than as a discovery.
