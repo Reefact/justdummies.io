@@ -92,6 +92,23 @@ for (const { path, heading, built, latest } of PAGES) {
         }
     });
 
+    test(`${path} links the note to its own release, in a new tab, safely`, async ({ page }) => {
+        await page.goto(path);
+
+        const link = page.locator('.latest .release-foot a');
+        const tag: string = (await page.locator('.latest .version').innerText()).trim();
+
+        // The card names the tag; the link has to name the same one. Built from that string
+        // rather than hard-coded, so a check that passes proves the page agrees with itself
+        // rather than proving both agree with this file.
+        await expect(link).toHaveAttribute('href', `https://github.com/Reefact/justdummies.io/releases/tag/${tag}`);
+        await expect(link).toHaveAttribute('target', '_blank');
+
+        // `noopener` is the half that matters: without it the opened tab keeps a handle on
+        // this one through `window.opener`, and can navigate it.
+        await expect(link).toHaveAttribute('rel', /noopener/);
+    });
+
     test(`${path} keeps the note out of the table's claim`, async ({ page }) => {
         await page.goto(path);
 
