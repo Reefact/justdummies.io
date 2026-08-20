@@ -298,8 +298,13 @@ export function githubHrefResolver({ repositoryUrl, ref, relativeTo, siteOrigin 
        a link written against a branch with a slash in its name, `feature/foo`, is
        indistinguishable from a one-segment ref followed by a directory, and would be rewritten
        onto the wrong path. Nothing here can tell the two apart from the URL alone — only the
-       repository's ref list could — so the limit is written down rather than papered over. */
-    const otherRef = new RegExp(`^${repositoryUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/(blob|tree)/([^/]+)/(.*)$`);
+       repository's ref list could — so the limit is written down rather than papered over.
+
+       The path after the ref is optional. `…/tree/main` names a branch's root, which is an
+       ordinary thing for a note to link to, and requiring a slash after the ref let exactly
+       that form keep pointing at a moving branch — the drift this whole resolver exists to
+       stop, escaping through the shortest URL of the lot. */
+    const otherRef = new RegExp(`^${repositoryUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/(blob|tree)/([^/]+)(?:/(.*))?$`);
 
     return function resolved(href, { absolute } = { absolute: false }) {
         if (!absolute) {
@@ -310,8 +315,11 @@ export function githubHrefResolver({ repositoryUrl, ref, relativeTo, siteOrigin 
 
         /* A link to this site is not a link away from it. Without this the note would open
            its own page in a new tab and tell a screen reader it had left, which is worse than
-           saying nothing: the announcement would be false rather than missing. */
-        if (siteOrigin !== undefined && href.startsWith(`${siteOrigin}/`)) {
+           saying nothing: the announcement would be false rather than missing.
+           The origin on its own counts — `https://justdummies.io` with nothing after it is the
+           site's front page, and a first version of this asked for a trailing slash and so sent
+           exactly that link away with a false announcement attached. */
+        if (siteOrigin !== undefined && (href === siteOrigin || href.startsWith(`${siteOrigin}/`))) {
             return { href, external: false };
         }
 
@@ -327,6 +335,6 @@ export function githubHrefResolver({ repositoryUrl, ref, relativeTo, siteOrigin 
 
         const [, kind, , path] = match;
 
-        return { href: `${repositoryUrl}/${kind}/${ref}/${path}`, external: true };
+        return { href: `${repositoryUrl}/${kind}/${ref}/${path ?? ''}`, external: true };
     };
 }
