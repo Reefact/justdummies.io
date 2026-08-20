@@ -49,17 +49,19 @@ async function footerPosition(page: Page): Promise<string> {
     return page.evaluate(() => getComputedStyle(document.querySelector('.site-footer')!).position);
 }
 
-test('the footer links to About, Release notes, Privacy and this site\'s repository, and scrolls with the page', async ({
+test('the footer links to About, API, Release notes, Privacy and this site\'s repository, and scrolls with the page', async ({
     page,
 }) => {
     await page.goto('/');
 
     const about = page.locator('.site-footer a[href="/about/"]');
+    const api = page.locator('.site-footer a[href="/api/"]');
     const releaseNotes = page.locator('.site-footer a[href="/release-notes/"]');
     const privacy = page.locator('.site-footer a[href="/privacy/"]');
     const repository = page.locator('.site-footer a[href="https://github.com/Reefact/justdummies.io"]');
 
     await expect(about).toBeVisible();
+    await expect(api).toBeVisible();
     await expect(releaseNotes).toBeVisible();
     await expect(privacy).toBeVisible();
     await expect(repository).toBeVisible();
