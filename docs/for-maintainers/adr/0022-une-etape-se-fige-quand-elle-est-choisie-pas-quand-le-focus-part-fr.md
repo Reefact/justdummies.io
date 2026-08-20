@@ -180,6 +180,23 @@ qui veut revenir sur une étape ; l'alternative le facture à chaque étape de c
   validée. L'état final est dans les deux cas la méthode choisie par la visiteuse ; ce que cela
   coûte est un rendu que personne n'a demandé, et seulement pour une visiteuse qui a parcouru la
   liste fermée avant de l'ouvrir.
+* **Un geste ne fige toujours rien, et il est laissé tel quel délibérément.** Une visiteuse qui
+  parcourt la liste fermée jusqu'à une option, puis ouvre la liste déroulante au pointeur et clique
+  sur cette même option pour la confirmer, ne produit aucun événement de changement — la valeur n'a
+  pas bougé — et ne sort pas non plus le contrôle du focus : la combo tient donc jusqu'à ce qu'elle
+  fasse autre chose. Ce n'est pas nouveau : la même séquence se comportait déjà ainsi sous la règle
+  de focus. Ce qui est nouveau, c'est que la décision ci-dessus promet désormais l'inverse à un
+  pointeur, et c'est le seul cas où elle ne tient pas.
+
+  C'est laissé tel quel parce qu'aucun correctif ne peut être tenu par un contrôle. La suite
+  navigateur pilote un moteur sans affichage, qui n'ouvre jamais de liste déroulante native : rien
+  de ce qui s'y passe ne peut être affirmé — et c'est précisément un clic sur une option d'une
+  liste ouverte qu'il faudrait observer. Un dépôt qui exige qu'une décision vienne avec quelque
+  chose qui échoue quand elle est cassée ne peut pas accepter un correctif dont la seule preuve
+  serait qu'il avait l'air juste. La visiteuse n'est pas bloquée : le choix est déjà validé, le bloc
+  montre déjà le résumé de la méthode et son contrôle de suppression, et Entrée, Tab ou n'importe
+  quel clic ailleurs figent l'étape. Consigné ici pour que la personne suivante le rencontre comme
+  un coût connu et non comme une découverte.
 
 ## Actions de suivi
 
