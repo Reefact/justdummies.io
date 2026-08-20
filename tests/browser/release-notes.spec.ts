@@ -337,6 +337,23 @@ test.describe('a major version page', () => {
  */
 test.describe('the French pages', () => {
 
+    /*
+     * DISCOVERY THAT CANNOT QUIETLY LOSE A ROUTE.
+     *
+     * Reading the routes off the index is what keeps this file from listing majors it would then
+     * have to maintain — but a discovered list is only as complete as the page it was read from,
+     * and an index that dropped a link would simply hand back a shorter list and let every check
+     * below pass on what remained. The English index is the independent witness: the two locales
+     * publish the same majors by construction (§6.2), so a route present in one and missing from
+     * the other is a defect in whichever page lost it.
+     */
+    test('offer the same majors as the English index', async ({ page }) => {
+        const french = await majorRoutes(page, '/fr/release-notes');
+        const english = await majorRoutes(page, '/release-notes');
+
+        expect(french.map((route) => route.replace('/fr/', '/')).sort()).toEqual(english.sort());
+    });
+
     test('carry the library\'s French prose, not its English', async ({ page }) => {
         const routes = await majorRoutes(page, '/fr/release-notes');
 
@@ -346,32 +363,47 @@ test.describe('the French pages', () => {
             // pair them rather than list them.
             await page.goto(route.replace('/fr/', '/'));
 
-            const english: string[] = await page.locator('.rubric-label').allInnerTexts();
+            const english: string[] = await page.locator('.bullets li').allInnerTexts();
 
             await page.goto(route);
 
-            const french: string[] = await page.locator('.rubric-label').allInnerTexts();
+            const french: string[] = await page.locator('.bullets li').allInnerTexts();
 
-            expect(french.length, `${route} shows no rubric at all`).toBeGreaterThan(0);
+            expect(french.length, `${route} shows no release prose at all`).toBeGreaterThan(0);
 
-            // The rubric headings are the library's own words, taken from its French file rather
-            // than translated here — so the two locales cannot be showing the same strings
-            // (ADR-0019). This is what goes red if the page ever reads the English changelog again.
-            expect(french, `${route} shows the English rubric headings`).not.toEqual(english);
+            /*
+             * The bullets, not the rubric headings, and the difference matters once this runs on
+             * every major rather than on one.
+             *
+             * The prose is the library's own words, taken from its French file rather than
+             * translated here, so the two locales cannot be showing the same strings (ADR-0019).
+             * Headings were the older proxy for that, and they are a fragile one: nothing upstream
+             * forbids a rubric named for something language-neutral, and a major whose every
+             * heading happened to coincide — a single `### API` on a one-rubric release, say —
+             * would fail a snapshot that is perfectly correct. Whole paragraphs of release prose
+             * coinciding across two languages is not a case worth designing around.
+             */
+            expect(french, `${route} shows the English release prose`).not.toEqual(english);
         }
     });
 
     /*
      * The anchor is the same in both locales on purpose, and until now nothing said so.
      *
-     * It is derived from the English label in either language, so a deep link survives a reader
-     * switching language mid-page — release-notes.ts and the generator both state that intent,
-     * and neither is a check. It is hard to break by accident today, one shared expression
-     * inside the per-locale loop; it would be easy to break on purpose, and a generator taught
-     * to slug the localised label would strand every deep link in one locale while every other
-     * test in this file stayed green.
+     * It is derived from the English label in either language — release-notes.ts and the
+     * generator both state that intent, and neither is a check. It is hard to break by accident
+     * today, one shared expression inside the per-locale loop; it would be easy to break on
+     * purpose, and a generator taught to slug the localised label would strand every deep link
+     * in one locale while every other test in this file stayed green.
+     *
+     * WHAT THIS DOES NOT SAY is that a reader switching language keeps their place. It does not,
+     * today: LanguageSelector.astro builds its destination as `pathForLocale(pathname, locale)`
+     * and never carries the fragment, so the switch lands at the top of the twin page whatever
+     * these anchors agree on. Matching anchors are a precondition for that flow, not evidence of
+     * it, and this test is named for the precondition it actually checks. The flow itself is a
+     * separate defect, in a separate file.
      */
-    test('anchor both locales the same way, so a deep link survives a switch', async ({ page }) => {
+    test('anchor both locales identically, which a deep link across them depends on', async ({ page }) => {
         const routes = await majorRoutes(page, '/fr/release-notes');
 
         for (const route of routes) {
