@@ -14,6 +14,7 @@
  */
 import siteReleaseDocument from './generated/site-release.json';
 import type { Locale } from './i18n/ui';
+import { site } from './site';
 
 /** A `### Rubric` block — `✨ New`, `🐛 Fixes` — as that locale's file writes it. */
 export interface SiteReleaseRubric {
@@ -50,4 +51,21 @@ export interface LocalisedSiteRelease extends SiteReleaseProse {
 
 export function siteReleaseIn(locale: Locale): LocalisedSiteRelease {
     return { tag: siteRelease.tag, date: siteRelease.date, ...siteRelease.locales[locale] };
+}
+
+/**
+ * Where a release of this repository is read on GitHub — `commitUrl` in `version.ts`, for the
+ * other half of the same page.
+ *
+ * COMPUTED RATHER THAN STORED, and unconditionally, which is the one thing worth explaining.
+ * Its counterpart for the library's notes stores a `tagUrl` that can be null, because the
+ * library has pushed a tag whose release run then failed, and a link to a version that was
+ * skipped is worse than no link. That reasoning does not reach here: GitHub answers
+ * /releases/tag/<tag> for any tag it holds, published release or not — measured, on this
+ * repository, at a moment when release/2026-08-19T11-50-00Z was a tag with no release behind
+ * it. The tag is what the link needs, and a `## release/*` section naming one that was never
+ * pushed would be a release note for something that never shipped.
+ */
+export function releaseUrl(tag: string): string {
+    return `${site.siteRepository}/releases/tag/${tag}`;
 }

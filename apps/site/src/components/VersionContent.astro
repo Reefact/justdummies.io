@@ -26,7 +26,7 @@
 import ReleaseCard from './ReleaseCard.astro';
 import { localeFromPath } from '../i18n/routing';
 import { useTranslations } from '../i18n/ui';
-import { siteReleaseIn } from '../site-release';
+import { releaseUrl, siteReleaseIn } from '../site-release';
 import { commitUrl, version } from '../version';
 
 const locale = localeFromPath(Astro.url.pathname);
@@ -87,6 +87,7 @@ const NOTHING: string = '#null';
         locale={locale}
         name={latest.tag}
         date={latest.date}
+        tagUrl={releaseUrl(latest.tag)}
         summaryHtml={latest.summaryHtml}
         sections={latest.sections}
     />
