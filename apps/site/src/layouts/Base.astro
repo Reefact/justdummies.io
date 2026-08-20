@@ -201,6 +201,12 @@ const t = useTranslations(locale);
 
                 event.preventDefault();
 
+                // Captured before the animation starts, so its end can tell "the reader is
+                // still where this jump left them" from "the reader has since moved on" —
+                // pressing Tab during the 320-900ms of travel is not rare, and focusing the
+                // target unconditionally at the end silently reversed that Tab, throwing the
+                // reader back to a control they had already left.
+                const activatedFrom: Element | null = document.activeElement;
                 const start: number = window.scrollY;
                 // The target's own scroll-margin-top exists so a jump lands with air above
                 // it (ReleaseNotesMajor.astro, ADR-0020's table of contents); left out here,
@@ -246,11 +252,17 @@ const t = useTranslations(locale);
                          * reachable once, by this jump, not a permanent new stop for every
                          * later Tab through the page.
                          */
-                        if (!target.hasAttribute('tabindex')) {
-                            target.setAttribute('tabindex', '-1');
-                        }
+                        // Only if the reader is still where this jump left them. A Tab
+                        // pressed mid-animation already moved focus on its own — correctly,
+                        // to wherever the reader's own keystroke sent it — and this must not
+                        // undo that.
+                        if (document.activeElement === activatedFrom) {
+                            if (!target.hasAttribute('tabindex')) {
+                                target.setAttribute('tabindex', '-1');
+                            }
 
-                        target.focus({ preventScroll: true });
+                            target.focus({ preventScroll: true });
+                        }
                     }
                 };
 
