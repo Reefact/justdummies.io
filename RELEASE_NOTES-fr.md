@@ -11,11 +11,31 @@ compatibilité, puisque rien ne consomme ce déploiement (voir
 
 ## Unreleased
 
+_Rien en attente pour l'instant._
+
+## release/2026-08-21T10-08-43Z — 21 août 2026
+
 ### ✨ Nouveautés
-- La page /version affiche désormais ce qu'a changé la dernière release du site lui-même, en anglais et en français, sous les informations de build qu'elle donnait déjà.
+- Le panneau de code du playground affiche désormais un vrai littéral C# pour chaque type d'argument — chaînes, caractères, booléens, tous les entiers, les trois types flottants, et `Half` — au lieu de recourir à un appel de parsing générique pour la plupart d'entre eux.
+- Le playground dispose désormais du même bouton flottant « Télécharger » que le reste du site, sur toutes ses pages.
+- Une petite illustration d'un dummy au volant décore désormais la carte du playground sur très grand écran.
+- La page /version affiche désormais ce qu'a changé la dernière release du site lui-même, en anglais et en français, sous les informations de build qu'elle donnait déjà, avec un lien vers la publication GitHub correspondante.
+
+### 🙌 Améliorations
+- Redessiné l'illustration de la page « page introuvable » pour un meilleur contraste et un visage plus lisible, et basculé son chargement en WebP — environ 80 % plus léger, pour un affichage plus rapide de la page d'erreur.
+- Clarifié le texte expliquant l'ordre des critères sur la page comparative « pourquoi JustDummies ».
+- Changer de langue sur une page de notes de version conserve désormais la position de lecture au lieu de revenir en haut de page.
 
 ### 🐛 Corrections
 - Dans le playground, une étape se transforme en code dès que sa méthode est choisie, au lieu de rester une liste déroulante jusqu'à ce qu'on clique par hasard ailleurs sur le bloc. Le curseur se pose là où l'on va écrire ensuite : le premier argument de l'étape, ou la combo de l'étape suivante.
+- Playground : un refus de la bibliothèque pouvait s'afficher sans sa couleur d'erreur habituelle, ressemblant à une valeur normale.
+- Playground : son pied de page ne comportait pas le lien vers la référence API et affichait une raison sociale écrite en dur au lieu de celle du site.
+- Le bouton flottant « Télécharger », présent sur tout le site, pouvait rester caché derrière du contenu tout en gardant le focus clavier ; il le libère désormais correctement.
+- Notes de version reprises de la bibliothèque : les liens pointaient vers la branche principale mouvante de la bibliothèque plutôt que vers la version publiée, n'étaient pas annoncés comme des liens externes pour les lecteurs d'écran, et certaines versions préliminaires étaient étiquetées à tort comme stables.
+- Pages de notes de version : correction d'une série de défauts de mise en page — puces à peine visibles, icônes de rubrique mal alignées, table des matières qui ne restait pas fixée à l'écran au défilement dans certains navigateurs, page aussi large qu'une page de référence API alors qu'il s'agit de prose, et défilement latéral parasite sur l'index des notes de version et sa table des matières sur petit écran.
+- Pages de notes de version : correction de plusieurs défauts d'accessibilité — liens partageant le même nom pour un lecteur d'écran malgré des destinations différentes, marqueurs invisibles en mode contraste renforcé, anneau de focus par défaut du navigateur au lieu de celui du site, et titre de page situé hors de la zone de contenu principal.
+- Pages de notes de version : correction d'une nouvelle série de défauts — un saut vers une entrée de la table des matières ne déplaçait pas le focus clavier, la mauvaise version était signalée comme « vous êtes ici » sur mobile, le français employait le même mot pour deux notions différentes, un lien « changelog » prétendait mener vers une source qu'il ne lisait pas réellement, et la date de publication pouvait se placer maladroitement sous son badge sur mobile.
+- Notes de version : un span de code mal formé pouvait corrompre le rendu markdown, et une date invalide (comme le 31 novembre) était silencieusement recalée au jour suivant au lieu d'être rejetée.
 
 ## release/2026-08-19T11-50-00Z — 19 août 2026
 

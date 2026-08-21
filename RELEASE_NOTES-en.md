@@ -10,11 +10,31 @@ consumes this deployment (see [ADR-0001](docs/for-maintainers/adr/0001-a-release
 
 ## Unreleased
 
+_Nothing pending yet._
+
+## release/2026-08-21T10-08-43Z — August 21, 2026
+
 ### ✨ New
-- The /version page now shows what the site's own latest release changed, in English and French, below the build facts it already reported.
+- The playground's code panel now prints a genuine C# literal for every argument type — strings, chars, booleans, all integer types, the three floating-point types, and `Half` — instead of falling back to a generic parsing call for most of them.
+- The playground now has the same floating "Download" button as the rest of the site, on every one of its pages.
+- A small "dummy driving" illustration now decorates the playground's card on very large screens.
+- The /version page now shows what the site's own latest release changed, in English and French, below the build facts it already reported, linked to the matching GitHub release.
+
+### 🙌 Improvements
+- Redrew the "page not found" illustration for better contrast and a more readable face, and switched it to WebP — cutting its size by roughly 80%, so the error page loads faster.
+- Clarified the wording explaining how the criteria are ordered on the "why JustDummies" comparison page.
+- Switching language on a release notes page now keeps your place on the page instead of resetting you to the top.
 
 ### 🐛 Fixes
-- In the playground, a step turns into code as soon as you pick its method, instead of staying a drop-down until you happen to click somewhere else on the card. The cursor lands where you are going to type next: the step's first argument, or the combo for the step after it.
+- In the playground, a step turns into code as soon as you pick its method, instead of staying a drop-down until you happen to click somewhere else on the card; the cursor lands where you're going to type next — the step's first argument, or the combo for the step after it.
+- Playground: a refusal from the library could render without its usual error color, making it look like a normal value.
+- Playground: its footer was missing the link to the API reference and showed a hardcoded legal name instead of the site's own.
+- The floating "Download" button, present across the site, could stay hidden behind other content while still holding keyboard focus; it now releases focus properly.
+- Release notes mirrored from the library: links pointed at the library's moving main branch instead of the published version, weren't announced as external links to screen readers, and some pre-release versions were mislabeled as stable.
+- Release notes pages: fixed a run of layout issues — barely visible bullet markers, misaligned section icons, a table of contents that didn't stay in view while scrolling in some browsers, a page laid out as wide as an API reference page instead of prose, and a sideways scroll on the release notes index and its table of contents on narrow screens.
+- Release notes pages: fixed several accessibility issues — links that shared the same name for a screen reader despite pointing elsewhere, markers that disappeared in forced-contrast mode, a browser-default focus outline instead of the site's own, and a page title sitting outside the page's main content region.
+- Release notes pages: fixed a further batch of issues — jumping to a table-of-contents entry didn't move keyboard focus there, the wrong version was flagged as "you are here" on mobile, French used the same word for two different things, a "changelog" link claimed a source it didn't actually read, and the release date could land awkwardly under its badge on mobile.
+- Release notes: a malformed code span could break the page's markdown rendering, and an invalid date (like November 31st) was silently rolled forward to the next day instead of being rejected.
 
 ## release/2026-08-19T11-50-00Z — August 19, 2026
 
