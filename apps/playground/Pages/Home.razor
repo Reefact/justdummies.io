@@ -934,8 +934,13 @@
     ///     keeps its value, which is why nothing failed: it simply reaches the bar and the
     ///     clipboard as a real line break, and the one line that compiles is no longer one line.
     ///
-    ///     ChainLink.razor's OpeningQuoteFor asks this same question of the same value, so the
-    ///     card's block and the bar beneath it open the literal the same way.
+    ///     ChainLink.razor's OpeningQuoteFor asks a near-identical question and deliberately
+    ///     stops short of this one. It draws the field's own value between its quotes, unescaped,
+    ///     so a plain quote in front of a raw backslash would be a CS1009 in the block — the
+    ///     verbatim form is what keeps it valid there, line terminator and all. The bar has the
+    ///     stricter need because it is the line that gets copied. So the two agree everywhere
+    ///     except on a value holding both a backslash and a separator, where agreeing would make
+    ///     one of them wrong.
     /// </summary>
     private static bool CanWriteVerbatim(string raw) =>
         raw.Contains('\\')
