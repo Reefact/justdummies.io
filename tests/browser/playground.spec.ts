@@ -1119,6 +1119,49 @@ test.describe('the playground', () => {
         await expect(step.locator('.call .tok-member')).toHaveText('String');
     });
 
+    /**
+     * A POINTER PUT ON THE COMBO ENDS THE BROWSING THAT PRECEDED IT, and the entry then chosen
+     * settles the step where it stands.
+     *
+     * A visitor is not one input device. Arrowing down the closed list leaves the browsing flag
+     * up — that is what keeps the combo standing to be arrowed again — and the next gesture is
+     * often the mouse: press the control, read the whole list at once, click an entry. Nothing
+     * about that press is a keystroke, so nothing about it clears the flag on its own, and the
+     * change the choice raises would arrive looking like one more browse. The step would stand
+     * as a combo under the very gesture ADR-0022 promises settles it.
+     *
+     * `@onpointerdown` on ChainLink's `<select>` is the whole of that mechanism, and this is the
+     * only check that touches it. Every other choice in this file is made with `selectOption`,
+     * which sets the control's value and dispatches `input` and `change` and no pointer event at
+     * all — so the flag it would have cleared was never up, or a later keystroke had cleared it
+     * already. Deleting the attribute left the suite green.
+     *
+     * Driven with a dispatched `pointerdown` rather than a real click on the control, for the
+     * reason the check above gives: a headless engine draws no native drop-down, so a click here
+     * is a gesture with no second half. The event the browser delivers first is the one the
+     * component listens for, so it is the one sent — followed by the change the closed drop-down
+     * would have raised.
+     */
+    test('settles a step chosen with the pointer after the keyboard walked the list', async ({ page }) => {
+        await page.goto('/playground/');
+
+        const step   = page.locator('.chain-link').nth(0);
+        const select = step.locator('select');
+
+        // Two presses, so the flag is up and the combo is standing on a method the visitor has
+        // not answered with — which is the state the pointer arrives in.
+        await select.focus();
+        await select.press('ArrowDown');
+        await select.press('ArrowDown');
+        await expect(select).toBeVisible();
+
+        await select.dispatchEvent('pointerdown');
+        await select.selectOption({ label: 'String()' });
+
+        await expect(step.locator('select')).toHaveCount(0);
+        await expect(step.locator('.call .tok-member')).toHaveText('String');
+    });
+
 
     /**
      * A parameterized step's arguments are reachable by tabbing forward out of a combo that is

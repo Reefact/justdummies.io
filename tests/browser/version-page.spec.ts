@@ -73,11 +73,57 @@ for (const { path, heading, built, latest } of PAGES) {
         await expect(page.getByRole('heading', { name: latest, exact: true })).toBeVisible();
 
         // The tag names the release, and it is the same string /version.json reports as
-        // `release` on a build cut from that tag. Only its shape is asserted: this page is
-        // built from a branch as often as from a tag, and on a branch the two differ for a
-        // reason — see the check below.
+        // `release` on a build cut from that tag. Only its shape is asserted against this
+        // file: this page is built from a branch as often as from a tag, and on a branch the
+        // two differ for a reason — see the check below.
         await expect(note.locator('.version')).toHaveText(/^release\/\d{4}-\d{2}-\d{2}T/);
         await expect(note.locator('time')).toHaveAttribute('datetime', /^\d{4}-\d{2}-\d{2}$/);
+
+        /*
+         * AND THEN THE CARD IS HELD TO ITSELF, which neither shape above can do.
+         *
+         * A `release/*` tag is a UTC timestamp read off the clock at the moment of tagging
+         * (ADR-0001), and the section it heads is retitled with that same tag and dated the
+         * same day, in one edit — the release-notes skill's step 2. So the day the tag encodes
+         * and the day the card prints are one fact written twice, and the only way they come
+         * apart is that one of them is wrong.
+         *
+         * That is not a hypothetical shape. "November 31, 2026" is a month name, a
+         * one-or-two-digit day and four more digits, so it satisfied the generator's own
+         * pattern and reached this page as `datetime="2026-11-31"` — a day the calendar does
+         * not have, over a line of text reading "December 1", on a page whose whole job is to
+         * say when something shipped. Both regexes above passed it.
+         */
+        const tag: string = (await note.locator('.version').innerText()).trim();
+        const tagged: string = /^release\/(\d{4}-\d{2}-\d{2})T/.exec(tag)?.[1] ?? '';
+        const iso: string = (await note.locator('time').getAttribute('datetime')) ?? '';
+
+        expect(iso, `${path} dates the note ${iso}, under the tag ${tag}, which names ${tagged}`).toBe(tagged);
+
+        /*
+         * And the spelling beside the attribute says the same day the attribute does.
+         *
+         * Not the same assertion re-worded: `datetime` is the machine's copy of the date and
+         * the text is `formatReleaseDate`'s, and everything that can separate the two does it
+         * silently. A formatter that lost its `timeZone: 'UTC'` prints the day before for
+         * every reader west of Greenwich, because an ISO date parses to midnight UTC.
+         *
+         * THE DIGITS, NOT THE SPELLING. "August 19, 2026" and "19 août 2026" are one fact in
+         * two languages, and only the numbers in them are this check's business. Reformatting
+         * `iso` here with `new Date` would prove nothing either: it rolls a day over exactly
+         * the way the page did, so the check and the defect would agree. A month name carries
+         * no digits, so the day and the year are the only numbers the text can hold, and `\D`
+         * on both sides is what keeps the 2 of a day from matching inside 2026.
+         */
+        const [year, , dayOfMonth]: readonly string[] = iso.split('-');
+        const spelled: string = (await note.locator('time').innerText()).trim();
+
+        expect(spelled, `${path} dates the note ${iso} and spells it "${spelled}"`).toMatch(
+            new RegExp(`(^|\\D)${Number(dayOfMonth)}(\\D|$)`),
+        );
+        expect(spelled, `${path} dates the note ${iso} and spells it "${spelled}"`).toMatch(
+            new RegExp(`(^|\\D)${year}(\\D|$)`),
+        );
 
         // A rubric with no bullets under it is what a parser that swallowed a list looks
         // like from here, and it is invisible to a check that only asks whether the section
@@ -125,6 +171,66 @@ for (const { path, heading, built, latest } of PAGES) {
     });
 
 }
+
+/**
+ * The two languages publish one release — the same one, rubric for rubric and bullet for
+ * bullet.
+ *
+ * ONLY A PAIR OF PAGES CAN SAY THIS, which is why it sits outside the loop above rather than
+ * inside it. Each pass of that loop sees one locale and has nothing to hold it against, so a
+ * French card carrying one of the five bullets its English twin carries satisfies every
+ * assertion in it: every rubric still has a label, and every rubric still has a bullet.
+ *
+ * The join is positional all the way down. `site-release.json` holds one release with a locale
+ * key per language, and the card draws whichever list belongs to the reader — so a rubric
+ * written with three bullets in English and one in French renders as a complete page and a
+ * short one, which is the half-translated page §6.4 exists to prevent. The generator refuses
+ * that before it writes the file; this is the same claim asked of the rendered pages, where a
+ * reader is the one who would meet it.
+ *
+ * COUNTS AND THE TAG, NEVER THE WORDS. The rubric labels and the prose are translated, so two
+ * locales showing the same strings would be the defect rather than the proof — that is the
+ * comparison release-notes.spec.ts makes for the library's pages, and it is the opposite of
+ * this one. What has to be identical here is which release is being described, and the shape
+ * of the description.
+ */
+test('/version and /fr/version publish the same release, bullet for bullet', async ({ page }) => {
+    interface Shape {
+        tag: string;
+        date: string | null;
+        bullets: number[];
+    }
+
+    async function shapeOf(path: string): Promise<Shape> {
+        await page.goto(path);
+
+        const note = page.locator('.latest');
+
+        return {
+            tag: (await note.locator('.version').innerText()).trim(),
+            date: await note.locator('time').getAttribute('datetime'),
+            bullets: await note
+                .locator('.rubric')
+                .evaluateAll((rubrics: Element[]) =>
+                    rubrics.map((rubric: Element) => rubric.querySelectorAll('.bullets li').length),
+                ),
+        };
+    }
+
+    const english: Shape = await shapeOf('/version');
+    const french: Shape = await shapeOf('/fr/version');
+
+    expect(english.bullets.length, '/version shows no rubric to compare').toBeGreaterThan(0);
+    expect(french.tag, `/fr/version publishes ${french.tag} where /version publishes ${english.tag}`).toBe(english.tag);
+    expect(
+        french.date,
+        `/fr/version dates ${english.tag} ${french.date}, and /version dates it ${english.date}`,
+    ).toBe(english.date);
+    expect(
+        french.bullets,
+        `/version reads ${english.bullets.join('/')} bullets per rubric and /fr/version reads ${french.bullets.join('/')}`,
+    ).toEqual(english.bullets);
+});
 
 test('the commit links to the commit, in a new tab, safely', async ({ page }) => {
     await page.goto('/version');
