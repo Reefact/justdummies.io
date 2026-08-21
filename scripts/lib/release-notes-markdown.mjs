@@ -60,14 +60,33 @@ export function releaseNotesReader({ refuse, resolveLink }) {
      * called.
      */
     function inlineHtml(markdown) {
-        const escaped = escapeHtml(markdown);
+        /*
+         * WHAT IS BETWEEN BACKTICKS IS A LITERAL, and the only thing that may happen to it is
+         * HTML escaping. Code spans used to be wrapped in place, first of the four passes,
+         * which left their contents in the string for bold, italics and links to read as
+         * markup of their own: ``glob `*.cs` and `*.md` `` came out as
+         * `<code><em>.cs</code> and <code></em>.md</code>` — mis-nested markup on its way into
+         * a `set:html` — and a link written inside a code span came out as a live anchor
+         * pointing wherever it said. No file generated here trips it today, but the library's
+         * notes are mirrored from a repository this one does not control (ADR-0019).
+         *
+         * So each span is lifted out to a numbered hole before the other passes run and put
+         * back after they have. A hole is delimited by NUL, which none of the three regexes
+         * treats as special and which a notes file has no business carrying — it is stripped
+         * from the text first, so a line cannot write a hole that steals another span's
+         * contents. Lifting out rather than splitting on the spans keeps emphasis that spans
+         * one working: `**a `b` c**` is still one `<strong>`.
+         */
+        const escaped = escapeHtml(markdown.replace(/\0/g, ''));
 
-        const coded = escaped.replace(/`([^`]+)`/g, (_match, code) => `<code>${code}</code>`);
+        const codes = [];
+        const coded = escaped.replace(/`([^`]+)`/g, (_match, code) => `\0${codes.push(code) - 1}\0`);
+
         const bolded = coded.replace(/\*\*([^*]+)\*\*/g, (_match, text) => `<strong>${text}</strong>`);
         // After bold consumes every `**` pair, a remaining single `*…*` is italic.
         const italicised = bolded.replace(/\*([^*]+)\*/g, (_match, text) => `<em>${text}</em>`);
 
-        return italicised.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, text, href) => {
+        const linked = italicised.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, text, href) => {
             const link = resolveLink(href, { absolute: /^https?:\/\//.test(href) });
 
             /*
@@ -84,6 +103,8 @@ export function releaseNotesReader({ refuse, resolveLink }) {
 
             return `<a href="${escapeQuotes(link.href)}"${away}>${text}</a>`;
         });
+
+        return linked.replace(/\0(\d+)\0/g, (_match, index) => `<code>${codes[Number(index)]}</code>`);
     }
 
     /**
@@ -195,6 +216,30 @@ export function releaseNotesReader({ refuse, resolveLink }) {
 
         if (match === null || month === -1) {
             refuse(`${file} dates a release "${text}", which is not a month, day and year in English`);
+        }
+
+        const year = Number(match[3]);
+        const day = Number(match[2]);
+
+        /*
+         * The shape above says the parts are a month name, one or two digits and four more.
+         * It does not say the day exists. "November 31, 2026" satisfied it and was written
+         * out as 2026-11-31, which every consumer hands to `new Date` and which `new Date`
+         * rolls over: the page then read "December 1" beneath a `datetime` attribute naming
+         * the 31st — a date the note itself never claimed, on a page whose whole job is to
+         * say when something shipped. "January 99, 2026" satisfied it too and produced an
+         * Invalid Date, which takes the build down inside a component, naming neither the
+         * file nor the text.
+         *
+         * Building the day and asking UTC to hand back the same three parts is the only check
+         * that catches a day the calendar does not have, and it costs one comparison. UTC
+         * rather than local time because the value being checked is a calendar date, not a
+         * moment: a local-time round trip shifts it across a day boundary for half the world.
+         */
+        const built = new Date(Date.UTC(year, month, day));
+
+        if (built.getUTCFullYear() !== year || built.getUTCMonth() !== month || built.getUTCDate() !== day) {
+            refuse(`${file} dates a release "${text}", which is not a day the calendar has`);
         }
 
         return `${match[3]}-${String(month + 1).padStart(2, '0')}-${match[2].padStart(2, '0')}`;
