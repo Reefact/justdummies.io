@@ -200,8 +200,12 @@ charges it to every step of every chain.
 * Watched failing before it was trusted. With the browsing classification stubbed out so that every
   keystroke reads as a choice, both keyboard checks go red and nothing else in the suite moves;
   restored, the suite is green.
-* ADR-0014 keeps its decision and loses one bullet of its *Risks* section. Its status carries the
-  partial supersession, and a block under its header names which half went and which stands.
+* ADR-0014 keeps its decision, and keeps its text: the condition this record replaces stays
+  written where it was written, because an accepted record is a history and not a description of
+  the present. What it gains is the annotation a partial supersession asks for — its status
+  carries the link to this record and the *superseded in part* mark, and a block under its header
+  names which half went and which stands. ADR-0003, annotated the same way by ADR-0005, is the
+  shape followed.
 * No check can see whether the focus lands somewhere a visitor finds *sensible*, as opposed to
   somewhere real and reachable. That one is left to review, and named here rather than left as an
   empty section.

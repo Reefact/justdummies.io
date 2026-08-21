@@ -166,8 +166,11 @@ tag » tout en manquant le point de cette fiche, à savoir qu'un mauvais tag doi
   les notes de release, et ouvre une PR titrée `ci: prepare <tag>` ; la mainteneuse relit,
   fusionne, et exécute elle-même les commandes de tag, remises une par bloc copiable.
 * L'étape 7 du guide de déploiement (les deux langues) est mise à jour pour décrire ce
-  déroulement comme le chemin principal, aux côtés des commandes directes `date -u`/PowerShell
-  qu'il documente déjà pour exécuter la partie tag à la main.
+  déroulement comme le seul chemin documenté : les commandes de tag y sont remises une par bloc,
+  le nom déjà choisi par la pull request de préparation écrit tel quel, et la ligne de lecture
+  d'horloge qui les ouvrait a disparu. Recalculer le nom au moment de taguer en produirait un
+  qu'aucune pull request `ci: prepare <tag>` ne porte, et c'est précisément ce que `verify-tag`
+  refuse désormais.
 * Ce qui échoue quand cette décision est enfreinte : `scripts/check-release-tag.sh`, exécuté par
   le job `verify-tag` à chaque push d'un tag `release/*`, avant que `build`/`browser-tests`/
   `deploy` ne soient autorisés à s'exécuter — voir les Risques ci-dessus pour le seul point sur

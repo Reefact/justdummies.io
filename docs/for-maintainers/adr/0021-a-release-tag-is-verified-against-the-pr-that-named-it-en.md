@@ -151,9 +151,11 @@ alongside a release page for a deployment that already happened.
   protocol this record assumes: an agent computes the tag, drafts and retitles the release notes,
   and opens a PR titled `ci: prepare <tag>`; the maintainer reviews, merges, and runs the tag
   commands themselves, handed over one per copy-pasteable block.
-* Step 7 of the deployment guide (both languages) is updated to describe this flow as the primary
-  path, alongside the direct `date -u`/PowerShell commands it already documents for running the
-  tag side by hand.
+* Step 7 of the deployment guide (both languages) is updated to describe this flow as the only
+  path it documents: the tag commands are handed over one per block with the name the preparing
+  pull request already chose written in literally, and the clock-reading line they used to open
+  with is gone. Recomputing the name at tagging time would produce one no `ci: prepare <tag>`
+  pull request carries, which is exactly what `verify-tag` now refuses.
 * What fails when this decision is broken: `scripts/check-release-tag.sh`, run by the `verify-tag`
   job on every `release/*` tag push, before `build`/`browser-tests`/`deploy` are allowed to run —
   see Risks above for the one respect in which this has not yet been observed to fail correctly on
