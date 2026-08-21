@@ -79,8 +79,19 @@ export function releaseNotesReader({ refuse, resolveLink }) {
          */
         const escaped = escapeHtml(markdown.replace(/\0/g, ''));
 
+        /*
+         * The quote is escaped GOING IN, not coming out, and that is the whole of why this is
+         * safe. A hole is opaque to every pass that follows, including the one that builds an
+         * `href="…"` — so a span lifted out of a link destination would be put back *after*
+         * `escapeQuotes` had already run on that destination, and its contents would land inside
+         * the attribute unescaped. ``[x](foo/`" ping="https://example.test`)`` closed the href on
+         * that quote and turned the rest into real attributes; with an event-handler name it is
+         * the same shape with worse contents, refused by the policy at run time but not by
+         * anything here. Escaping at extraction means a hole is safe wherever it lands, text or
+         * attribute, and `&quot;` inside a `<code>` renders as the quote the author typed.
+         */
         const codes = [];
-        const coded = escaped.replace(/`([^`]+)`/g, (_match, code) => `\0${codes.push(code) - 1}\0`);
+        const coded = escaped.replace(/`([^`]+)`/g, (_match, code) => `\0${codes.push(escapeQuotes(code)) - 1}\0`);
 
         const bolded = coded.replace(/\*\*([^*]+)\*\*/g, (_match, text) => `<strong>${text}</strong>`);
         // After bold consumes every `**` pair, a remaining single `*…*` is italic.
