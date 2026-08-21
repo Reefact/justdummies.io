@@ -23,8 +23,15 @@ const t = useTranslations('en');
       The width and height are the file's own, so the box is reserved before the image
       lands and the sentence below does not jump as it loads. Not lazily loaded: here it
       is above the fold, and deferring it would only move the jump later.
+
+      WebP, at the artwork's own pixel size. It is the largest thing painted on this page
+      and therefore its largest contentful paint, fetched eagerly by a visitor who is on
+      this page by accident — often on the worst connection of their session — so what it
+      weighs is the whole of what the page costs them: the PNG was 697 KiB, this is 150.
+      Not resampled to the 1120 CSS pixels the shell gives it, which would cost sharpness
+      on any screen that draws more device pixels than that and save around 8 KiB.
     */}
-    <img class="crash" src="/dummy-404.png" alt="" width="1253" height="626" decoding="async" />
+    <img class="crash" src="/dummy-404.webp" alt="" width="1253" height="626" decoding="async" />
 
     <p class="body">{t('notfound.body')} <a href="/">{t('notfound.home')}</a></p>
 </Page>
@@ -36,7 +43,7 @@ const t = useTranslations('en');
         max-width: 46rem;
     }
 
-    /* The whole width the page has, which is the shell's 60rem — wider than the prose, on
+    /* The whole width the page has, which is the shell's 72rem — wider than the prose, on
        purpose. It was capped at 36rem first, on the reasoning that a joke should not outsize
        its page; seen on the page, that only made it look like a thumbnail somebody forgot to
        finish. `height: auto` with the intrinsic attributes above keeps the reserved box the

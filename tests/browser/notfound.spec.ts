@@ -12,7 +12,7 @@ import type { Page, Response } from '@playwright/test';
  */
 /** The artwork both 404s draw, named once so the check that weighs it and the check that
  *  asserts its `src` cannot disagree about which file they mean. */
-const DRAWING: string = '/dummy-404.png';
+const DRAWING: string = '/dummy-404.webp';
 
 const PAGES: ReadonlyArray<{ path: string; home: string; refusal: string; claim: RegExp }> = [
     {
