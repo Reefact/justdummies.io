@@ -1,6 +1,6 @@
 {
-  "tag": "release/2026-08-19T11-50-00Z",
-  "date": "2026-08-19",
+  "tag": "release/2026-08-21T10-08-43Z",
+  "date": "2026-08-21",
   "locales": {
     "en": {
       "summaryHtml": [],
@@ -8,24 +8,32 @@
         {
           "label": "✨ New",
           "items": [
-            "Added a dedicated download page — one for each package (core library, xUnit adapter, CLI) — reachable from a persistent floating link on every other page, showing both install commands (.NET CLI and Package Manager Console) for the current package at once.",
-            "The playground's Except and OneOf constraints now accept a comma-separated list of values, for every scalar generator that supports them.",
-            "Published a new release notes section, with one page per package and major version and a table of contents, sourced directly from the library's own release notes in English and French.",
-            "Added an optional analytics lane, based on Google Analytics, that reports how readers move through the site — it only starts once you accept it in the cookie banner, and stops the moment you withdraw consent.",
-            "Updated the underlying JustDummies library to 1.0.0-preview.2, adding a \"Pool inspection\" category to the API reference."
+            "The playground's code panel now prints a genuine C# literal for most argument types — strings, chars, booleans, in-range integers, and finite floating-point values — instead of a generic parsing call; <code>Half</code> prints as an explicit cast instead, since C# has no literal syntax for it, and a few types (<code>Guid</code>, dates and times, out-of-range 128-bit integers) still print as a parsing call.",
+            "The playground now has the same floating \"Download\" button as the rest of the site, on every one of its pages.",
+            "A small \"dummy driving\" illustration now decorates the playground's card on very large screens.",
+            "The /version page now shows what the site's own latest release changed, in English and French, below the build facts it already reported, linked to the matching GitHub release."
           ]
         },
         {
           "label": "🙌 Improvements",
           "items": [
-            "Corrected the privacy page's description of how long analytics data is kept, and dropped an inaccurate claim that nothing is ever shared with anyone."
+            "Redrew the \"page not found\" illustration for better contrast and a more readable face, and switched it to WebP — cutting its size by roughly 80%, so the error page loads faster.",
+            "Clarified the wording explaining how the criteria are ordered on the \"why JustDummies\" comparison page.",
+            "Switching language on a page now keeps a table-of-contents or deep-link position instead of resetting to the top; a plain scroll position without one still lands at the top."
           ]
         },
         {
           "label": "🐛 Fixes",
           "items": [
-            "Fixed the French UI translating \"release notes\" as \"Notes de version\" instead of keeping the English term.",
-            "Removed a double punctuation mark in one of the playground's notes."
+            "In the playground, a step turns into code as soon as you pick its method, instead of staying a drop-down until you happen to click somewhere else on the card; the cursor lands where you're going to type next — the step's first argument, or the combo for the step after it.",
+            "Playground: a refusal from the library could render without its usual error color, making it look like a normal value.",
+            "Playground: its footer was missing the link to the API reference, present in the rest of the site's footer.",
+            "Tabbing through a page could scroll one of its own controls — the playground's Copy button, or the site footer's links — underneath the site's floating Download button; the page now leaves enough room so a focused control never lands there.",
+            "Release notes mirrored from the library: links pointed at the library's moving main branch instead of the published version, weren't announced as external links to screen readers, and some pre-release versions were mislabeled as stable.",
+            "Release notes pages: fixed a run of layout issues — barely visible bullet markers, misaligned section icons, a table of contents that didn't stay in view while scrolling in some browsers, a page laid out as wide as an API reference page instead of prose, and a sideways scroll on the release notes index and its table of contents on narrow screens.",
+            "Release notes pages: fixed several accessibility issues — links that shared the same name for a screen reader despite pointing elsewhere, markers that disappeared in forced-contrast mode, a browser-default focus outline instead of the site's own, and a page title sitting outside the page's main content region.",
+            "Release notes pages: fixed a further batch of issues — jumping to a table-of-contents entry didn't move keyboard focus there, the wrong version was flagged as \"you are here\" on mobile, French used the same word for two different things, a \"changelog\" link claimed a source it didn't actually read, and the release date could land awkwardly under its badge on mobile.",
+            "Release notes: a malformed code span could break the page's markdown rendering, and an invalid date (like November 31st) was silently rolled forward to the next day instead of being rejected."
           ]
         }
       ]
@@ -36,24 +44,32 @@
         {
           "label": "✨ Nouveautés",
           "items": [
-            "Ajout d'une page de téléchargement dédiée — une par paquet (bibliothèque principale, adaptateur xUnit, CLI) — accessible depuis un lien flottant persistant sur chaque autre page, montrant les deux commandes d'installation (.NET CLI et Package Manager Console) du paquet courant en même temps.",
-            "Les contraintes Except et OneOf du playground acceptent désormais une liste de valeurs séparées par des virgules, pour chaque générateur scalaire qui les propose.",
-            "Publication d'une nouvelle section release notes, avec une page par paquet et version majeure ainsi qu'une table des matières, alimentée directement par les release notes de la bibliothèque elle-même, en anglais et en français.",
-            "Ajout d'une voie d'analyse optionnelle, basée sur Google Analytics, qui mesure le parcours des lectrices et lecteurs sur le site — elle ne démarre qu'après acceptation dans le bandeau de consentement, et s'arrête dès le retrait du consentement.",
-            "Mise à jour de la bibliothèque JustDummies sous-jacente vers 1.0.0-preview.2, ajoutant une catégorie « Pool inspection » à la référence API."
+            "Le panneau de code du playground affiche désormais un vrai littéral C# pour la plupart des types d'argument — chaînes, caractères, booléens, entiers dans leur plage, et valeurs flottantes finies — au lieu d'un appel de parsing générique ; <code>Half</code> s'affiche désormais comme un cast explicite, faute de syntaxe de littéral en C#, et quelques types (<code>Guid</code>, dates et heures, entiers 128 bits hors plage) restent affichés comme un appel de parsing.",
+            "Le playground dispose désormais du même bouton flottant « Télécharger » que le reste du site, sur toutes ses pages.",
+            "Une petite illustration d'un dummy au volant décore désormais la carte du playground sur très grand écran.",
+            "La page /version affiche désormais ce qu'a changé la dernière release du site lui-même, en anglais et en français, sous les informations de build qu'elle donnait déjà, avec un lien vers la publication GitHub correspondante."
           ]
         },
         {
           "label": "🙌 Améliorations",
           "items": [
-            "Correction de la description de la page de confidentialité sur la durée de conservation des données d'analyse, et suppression d'une affirmation inexacte selon laquelle rien n'est jamais partagé avec personne."
+            "Redessiné l'illustration de la page « page introuvable » pour un meilleur contraste et un visage plus lisible, et basculé son chargement en WebP — environ 80 % plus léger, pour un affichage plus rapide de la page d'erreur.",
+            "Clarifié le texte expliquant l'ordre des critères sur la page comparative « pourquoi JustDummies ».",
+            "Changer de langue sur une page de release notes conserve désormais une position de table des matières ou de lien profond au lieu de revenir en haut de page ; une simple position de défilement sans ancre y ramène toujours."
           ]
         },
         {
           "label": "🐛 Corrections",
           "items": [
-            "Corrigé l'interface française qui traduisait « release notes » par « Notes de version » au lieu de garder le terme anglais.",
-            "Retiré une double ponctuation dans une des notes du playground."
+            "Dans le playground, une étape se transforme en code dès que sa méthode est choisie, au lieu de rester une liste déroulante jusqu'à ce qu'on clique par hasard ailleurs sur le bloc. Le curseur se pose là où l'on va écrire ensuite : le premier argument de l'étape, ou la combo de l'étape suivante.",
+            "Playground : un refus de la bibliothèque pouvait s'afficher sans sa couleur d'erreur habituelle, ressemblant à une valeur normale.",
+            "Playground : son pied de page ne comportait pas le lien vers la référence API, présent dans le reste du pied de page du site.",
+            "Naviguer au clavier pouvait faire défiler l'un des contrôles d'une page — le bouton Copier du playground, ou les liens du pied de page du site — sous le bouton flottant « Télécharger » du site ; la page laisse désormais assez de marge pour qu'un contrôle focalisé ne s'y retrouve plus.",
+            "Les release notes reprises de la bibliothèque : les liens pointaient vers la branche principale mouvante de la bibliothèque plutôt que vers la version publiée, n'étaient pas annoncés comme des liens externes pour les lecteurs d'écran, et certaines versions préliminaires étaient étiquetées à tort comme stables.",
+            "Pages de release notes : correction d'une série de défauts de mise en page — puces à peine visibles, icônes de rubrique mal alignées, table des matières qui ne restait pas fixée à l'écran au défilement dans certains navigateurs, page aussi large qu'une page de référence API alors qu'il s'agit de prose, et défilement latéral parasite sur l'index des release notes et sa table des matières sur petit écran.",
+            "Pages de release notes : correction de plusieurs défauts d'accessibilité — liens partageant le même nom pour un lecteur d'écran malgré des destinations différentes, marqueurs invisibles en mode contraste renforcé, anneau de focus par défaut du navigateur au lieu de celui du site, et titre de page situé hors de la zone de contenu principal.",
+            "Pages de release notes : correction d'une nouvelle série de défauts — un saut vers une entrée de la table des matières ne déplaçait pas le focus clavier, la mauvaise version était signalée comme « vous êtes ici » sur mobile, le français employait le même mot pour deux notions différentes, un lien « changelog » prétendait mener vers une source qu'il ne lisait pas réellement, et la date de publication pouvait se placer maladroitement sous son badge sur mobile.",
+            "Release notes : un span de code mal formé pouvait corrompre le rendu markdown, et une date invalide (comme le 31 novembre) était silencieusement recalée au jour suivant au lieu d'être rejetée."
           ]
         }
       ]
