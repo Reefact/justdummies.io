@@ -17,10 +17,7 @@ _Rien en attente pour l'instant._
 
 ### 🐛 Corrections
 
-* Le générateur de chaîne du playground n'oppose plus un refus lorsqu'une contrainte de famille
-  de caractères (`AlphaNumeric()` et consorts) est combinée à un littéral ancré comme
-  `StartingWith("ORD-")` — les deux se composent désormais au lieu de lever une erreur à la
-  déclaration, suite à la version 1.0.0-preview.3 de JustDummies.
+- Le générateur de chaîne du playground n'oppose plus un refus lorsqu'une contrainte de famille de caractères (`AlphaNumeric()` et consorts) est combinée à un littéral ancré comme `StartingWith("ORD-")` — les deux se composent désormais au lieu de lever une erreur à la déclaration, suite à la version 1.0.0-preview.3 de JustDummies.
 
 ## release/2026-08-21T10-08-43Z — 21 août 2026
 
