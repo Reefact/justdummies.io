@@ -42,7 +42,7 @@ export const site = {
          */
         status: 'available',
         package: 'JustDummies',
-        version: '1.0.0-preview.2',
+        version: '1.0.0-preview.3',
         nuget: 'https://www.nuget.org/packages/JustDummies',
         /**
          * The prerelease flag is not decoration: every JustDummies package is a
