@@ -23,13 +23,22 @@
     sits inside a page that carries the real footer around it, so a second one here would
     be a duplicate, not a consistency.
 
-    The copyright year reads `DateTime.Now.Year`, not a build timestamp: Footer.astro reads
-    its own build's timestamp instead of `Date.now()` so a same-source rebuild cannot show
-    a different year than the one before it, but that discipline has nothing to read from
-    here — this is a WebAssembly app with no build-time value of its own to freeze, and the
-    only candidate, the site's `/version.json`, would turn a footer that renders
-    synchronously into one that waits on a fetch to show a value that is, outside of New
-    Year's Eve, identical either way.
+    The copyright year reads `DateTime.Now.Year`, not a build timestamp, and that is a real
+    divergence from Footer.astro rather than a rounding of one. Footer.astro reads its own
+    build's timestamp instead of `Date.now()` so that a same-source rebuild cannot show a
+    different year than the one before it — a reproducibility discipline, not an attempt to
+    be right about today's date. This is a WebAssembly app with no build-time value of its
+    own to freeze, and the only candidate, the site's `/version.json`, would turn a footer
+    that renders synchronously into one that waits on a fetch.
+
+    So from the first of January until the next deploy the two footers name different years,
+    and that window is not one evening: this site ships on `release/*` tags rather than on a
+    clock, so it lasts as long as the gap between releases. The site names the year it was
+    built in; the playground names the year the reader is actually in. The playground's is
+    the one that is right, which is why the fetch is not worth paying for — reading
+    `/version.json` would not make the year correct, it would only spread the site's frozen
+    one to a second place. `tests/browser/chrome-parity.spec.ts` compares these two footers
+    and normalises the digits out of the copyright line for exactly this reason.
 *@
 
 <footer class="site-footer">
