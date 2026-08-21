@@ -1,6 +1,7 @@
 import { expect, test } from './support/harness';
 import type { Locator } from '@playwright/test';
 
+import { obscured } from './support/obscured';
 import { watch, type PageComplaints } from './support/watch';
 
 /**
@@ -894,6 +895,51 @@ test.describe('the playground', () => {
     });
 
     /**
+     * WHAT THE FLOATING DOWNLOAD LINK MAY NOT COVER (WCAG 2.2 SC 2.4.11, AA).
+     *
+     * The link is fixed to the bottom-right corner and the copy button is right-aligned in the
+     * code bar, so below the shell's own width the two stand in one column. Measured on the chain
+     * the copy check builds, at 1000x700: the button occupies y=621..653 and the link y=628..676,
+     * with the page unscrolled — and Tab moves neither, because a browser scrolls to what is
+     * outside the viewport and a control under an overlay is inside it. A focused control hidden
+     * entirely is the one thing the criterion names. The same holds at 1280x720.
+     *
+     * Reached by Tab rather than by `focus()`, because only a keyboard arrival is
+     * `:focus-visible`, and that is what the rule under test reads.
+     *
+     * ASSERTED AS BEHAVIOUR, NOT AS A DECLARATION: either the link is not over the focused
+     * control, or it is not drawn. How it gets out of the way is the stylesheet's business.
+     */
+    test('the floating download link never covers the control the keyboard is on', async ({ page }) => {
+        await page.setViewportSize({ width: 1000, height: 700 });
+        await page.goto('/playground/');
+
+        await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'String()' });
+        await page.locator('.chain-link').nth(1).locator('select').selectOption({ label: 'StartingWith(prefix)' });
+
+        const argument = page.locator('.chain-link').nth(1).locator('input');
+        await argument.fill('ORD-');
+
+        const copy = page.getByRole('button', { name: 'Copy code' });
+        await expect(copy).toBeVisible();
+        await expect(page.locator('.download-fab')).toBeAttached();
+
+        // Walked to from the argument the visitor was last typing in, which is where a keyboard
+        // pass actually arrives from. The bound is generous: what matters is reaching the button,
+        // and the count of controls between the two is not this check's subject.
+        await argument.focus();
+        for (let step = 0; step < 12; step += 1) {
+            if (await copy.evaluate((element: Element) => element === document.activeElement)) {
+                break;
+            }
+            await page.keyboard.press('Tab');
+        }
+        await expect(copy).toBeFocused();
+
+        expect(await obscured(page), 'the download link is drawn over the control holding the focus').toBe(false);
+    });
+
+    /**
      * A CHOICE SETTLES THE STEP IT WAS MADE IN, and nothing else is asked of the visitor.
      *
      * The combo used to survive as long as it held focus, which is right for a keyboard user
@@ -1024,6 +1070,79 @@ test.describe('the playground', () => {
         // Enter is a choice like any other, so it hands the focus on like any other: the first
         // entry a chain can open with takes no arguments, so that is the next step's combo.
         await expect(page.locator('.chain-link').nth(1).locator('select')).toBeFocused();
+    });
+
+    /**
+     * Space opens the drop-down. It does not walk it, and what is chosen from it settles.
+     *
+     * The gesture reads as browsing to anything that classifies a keystroke by its length: a
+     * space is one printable character, which is what a native select uses for type-ahead. But
+     * on a closed control it opens the popup instead, walks nothing and raises no change — so a
+     * flag set on the way in stays set for the whole popup session, and the browser delivers
+     * neither a keydown nor a pointerdown while a native popup is open for anything to clear it.
+     * The choice that closed the popup then arrived looking like one more browse, and the step
+     * sat there as a combo under the gesture that chose it.
+     *
+     * Driven as the two halves the platform actually delivers, because a headless browser draws
+     * no native popup: the key that opens it, then the choice, which arrives here as the change
+     * event the popup would have raised. Watched failing before it was trusted — with Space back
+     * in the browsing set, the select is still standing on the line below.
+     */
+    test('settles a step chosen after Space opened the drop-down', async ({ page }) => {
+        await page.goto('/playground/');
+
+        const step   = page.locator('.chain-link').nth(0);
+        const select = step.locator('select');
+
+        await select.focus();
+        await select.press(' ');
+        await select.selectOption({ label: 'String()' });
+
+        await expect(step.locator('select')).toHaveCount(0);
+        await expect(step.locator('.call .tok-member')).toHaveText('String');
+    });
+
+    /**
+     * A POINTER PUT ON THE COMBO ENDS THE BROWSING THAT PRECEDED IT, and the entry then chosen
+     * settles the step where it stands.
+     *
+     * A visitor is not one input device. Arrowing down the closed list leaves the browsing flag
+     * up — that is what keeps the combo standing to be arrowed again — and the next gesture is
+     * often the mouse: press the control, read the whole list at once, click an entry. Nothing
+     * about that press is a keystroke, so nothing about it clears the flag on its own, and the
+     * change the choice raises would arrive looking like one more browse. The step would stand
+     * as a combo under the very gesture ADR-0022 promises settles it.
+     *
+     * `@onpointerdown` on ChainLink's `<select>` is the whole of that mechanism, and this is the
+     * only check that touches it. Every other choice in this file is made with `selectOption`,
+     * which sets the control's value and dispatches `input` and `change` and no pointer event at
+     * all — so the flag it would have cleared was never up, or a later keystroke had cleared it
+     * already. Deleting the attribute left the suite green.
+     *
+     * Driven with a dispatched `pointerdown` rather than a real click on the control, for the
+     * reason the check above gives: a headless engine draws no native drop-down, so a click here
+     * is a gesture with no second half. The event the browser delivers first is the one the
+     * component listens for, so it is the one sent — followed by the change the closed drop-down
+     * would have raised.
+     */
+    test('settles a step chosen with the pointer after the keyboard walked the list', async ({ page }) => {
+        await page.goto('/playground/');
+
+        const step   = page.locator('.chain-link').nth(0);
+        const select = step.locator('select');
+
+        // Two presses, so the flag is up and the combo is standing on a method the visitor has
+        // not answered with — which is the state the pointer arrives in.
+        await select.focus();
+        await select.press('ArrowDown');
+        await select.press('ArrowDown');
+        await expect(select).toBeVisible();
+
+        await select.dispatchEvent('pointerdown');
+        await select.selectOption({ label: 'String()' });
+
+        await expect(step.locator('select')).toHaveCount(0);
+        await expect(step.locator('.call .tok-member')).toHaveText('String');
     });
 
     /**

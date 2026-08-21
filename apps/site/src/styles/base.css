@@ -130,6 +130,43 @@ button:focus-visible {
     outline-offset: 2px;
 }
 
+/*
+ * AND THE FLOATING DOWNLOAD LINK STANDS DOWN WHILE THE KEYBOARD IS ELSEWHERE
+ * (WCAG 2.2 SC 2.4.11, AA).
+ *
+ * `DownloadFab.astro` is fixed to the bottom-right corner of every page but /download, and
+ * the corner it owns is one the content scrolls through. The consent banner below is not the
+ * same case — it is answered and gone, and `body` reserves its height in the meantime; this
+ * control never leaves, so the room it needs cannot be reserved in the layout at all.
+ *
+ * SCROLL PADDING DOES NOT REACH THIS. It applies to focus moves that scroll, and those end
+ * with the control flush against the bottom edge and only partly covered, which the criterion
+ * allows. What fails it is a control already inside the viewport with this drawn over it, and
+ * then no scroll happens for a scroll property to pad.
+ *
+ * HERE RATHER THAN IN THE COMPONENT, because a scoped style cannot say it: Astro writes its
+ * scope attribute on every compound of a selector, so a scoped `body:has(…)` would ask for a
+ * `<body>` carrying the component's own attribute and match nothing. Same reason the code
+ * vocabulary below is global.
+ *
+ * `:focus-visible` rather than `:focus`, so a pointer user clicking a button never sees the
+ * corner blink; `:not(:focus-visible)` so the link is fully drawn on the Tab that reaches it.
+ *
+ * AND IT STAYS DOWN FOR THE WHOLE OF A PRESS, which is not a detail. A mouse click moves the
+ * focus on `mousedown`, and a control focused by a pointer does not match `:focus-visible` — so
+ * a rule written on focus alone lets this control come back between the press and the release.
+ * The release then lands on it instead of on what was pressed, the browser fires `click` on
+ * their common ancestor rather than on the button, and the button never acts. Measured, not
+ * reasoned about: the playground's copy button stopped copying, five runs out of five, and the
+ * browser suite caught it. `body:active` holds the rule on until the button comes back up.
+ * A browser without `:has()` drops the rule and is left where it was.
+ */
+body:has(:focus-visible) .download-fab:not(:focus-visible),
+body:active .download-fab:not(:focus-visible) {
+    opacity: 0;
+    pointer-events: none;
+}
+
 code,
 pre,
 kbd {
