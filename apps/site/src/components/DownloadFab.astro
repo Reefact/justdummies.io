@@ -14,10 +14,10 @@
  * behind it, and when it is gone the offset collapses back to nothing on its own. The
  * banner still owns the single highest claim on the stack — this sits one layer under it.
  *
- * AND IT GETS OUT OF THE KEYBOARD'S WAY, which is a rule `base.css` states rather than this
- * file: what the rule has to name is `<body>`, and a scoped style here would scope that too.
- * The measurement that made it necessary, and why scroll padding does not answer it, are
- * written where the rule is.
+ * AND THE KEYBOARD IS SCROLLED CLEAR OF IT, which `base.css` states rather than this file:
+ * what answers it is `html`'s own scroll padding, and this control's band is added there to
+ * the one the consent banner already claims. The measurement that made it necessary is
+ * written beside that rule.
  */
 import { pathForLocale, routeWithoutLocale, localeFromPath } from '../i18n/routing';
 import { useTranslations } from '../i18n/ui';
@@ -62,8 +62,7 @@ const onDownloadPage: boolean = routeWithoutLocale(pathname).startsWith('/downlo
         box-shadow: var(--jd-shadow-raised);
         transition:
             border-color var(--jd-duration-fast) var(--jd-ease),
-            bottom var(--jd-duration-fast) var(--jd-ease),
-            opacity var(--jd-duration-fast) var(--jd-ease);
+            bottom var(--jd-duration-fast) var(--jd-ease);
     }
 
     .download-fab:hover {

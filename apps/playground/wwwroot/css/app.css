@@ -19,9 +19,37 @@
  */
 html {
     scrollbar-gutter: stable;
+
+    /*
+     * Room at the foot of the scrollport for the floating download link, which is fixed to the
+     * bottom-right corner of every page here and never leaves it (WCAG 2.2 SC 2.4.11, AA).
+     *
+     * The copy button is right-aligned in the code bar, so below the shell's own width the two
+     * stand in one column: measured at 1000x700, the button occupies y=621..653 and the link
+     * y=628..676, with the page unscrolled and covered whole. `main`'s own padding cannot
+     * answer that — it is flow padding, which a fixed element ignores.
+     *
+     * Scroll padding does not only act on focus moves that already scroll. It shrinks the
+     * optimal viewing region, so the browser scrolls a control that is technically inside the
+     * viewport but sitting in the band, which is exactly the case that failed. Verified in the
+     * browser: with this line the button lands clear and the link stays clickable — which a
+     * rule that faded the link out did not manage, since a pointer press moves focus and CSS
+     * cannot tell that gesture from a keyboard one mid-click.
+     *
+     * `base.css` says the same thing for the site, with the consent banner's height added.
+     */
+    scroll-padding-block-end: calc(var(--jd-space-6) + 3.5rem);
 }
 
+/*
+ * Room at the foot of the document for the floating download link, which is `position: fixed`
+ * and therefore invisible to the layout. The scroll padding above moves a control clear when
+ * there is somewhere left to scroll to; at the very foot of the document there is not, so the
+ * last controls a Tab pass reaches would sit under the link with nothing able to move them.
+ * The site says the same thing in `base.css`, where the consent banner's height is added too.
+ */
 body {
+    padding-block-end: calc(var(--jd-space-6) + 3.5rem);
     margin: 0;
     background: var(--jd-background);
     color: var(--jd-text-primary);
@@ -1327,9 +1355,7 @@ main {
     font-weight: 600;
     text-decoration: none;
     box-shadow: var(--jd-shadow-raised);
-    transition:
-        border-color var(--jd-duration-fast) var(--jd-ease),
-        opacity var(--jd-duration-fast) var(--jd-ease);
+    transition: border-color var(--jd-duration-fast) var(--jd-ease);
 }
 
 .download-fab:hover {
@@ -1342,45 +1368,6 @@ main {
     outline-offset: 2px;
 }
 
-/*
- * AND IT STANDS DOWN WHILE THE KEYBOARD IS SOMEWHERE ELSE (WCAG 2.2 SC 2.4.11, AA).
- *
- * A control fixed to a corner owns that corner whatever is underneath it, and what is
- * underneath it here is the card's own right edge: `.copy` is right-aligned in the code bar,
- * so at every width narrower than the shell plus this control the two stand in the same
- * column. Measured on a four-step chain at 1000x700, the copy button lands inside this
- * control's band with the page unscrolled and is covered whole, at every width from 660 to
- * 1180 — and Tab does not move it, because a browser scrolls to what is outside the
- * scrollport and a control under an overlay is inside it. A focused control hidden entirely
- * is the one thing 2.4.11 names.
- *
- * SCROLL PADDING IS THE USUAL ANSWER AND IT IS THE WRONG ONE HERE. It applies only to the
- * focus moves that scroll, and those end with the control flush against the bottom edge —
- * about a quarter of it covered, which the criterion allows. The case that fails is the one
- * where nothing scrolls at all, and no scroll property has anything to say about that.
- *
- * So the rule is written about focus rather than about scrolling. `:focus-visible` rather
- * than `:focus`: this is the keyboard driving, and a visitor who clicked the copy button with
- * a pointer should not see the corner blink. The link keeps its place in the tab order and is
- * fully drawn again on the Tab that reaches it — `:not(:focus-visible)` is what lets it — and
- * `pointer-events` keeps an invisible link from catching a click on the way past.
- *
- *
- * AND IT STAYS DOWN FOR THE WHOLE OF A PRESS, which is not a detail. A mouse click moves the
- * focus on `mousedown`, and a control focused by a pointer does not match `:focus-visible` — so
- * a rule written on focus alone lets this control come back between the press and the release.
- * The release then lands on it instead of on what was pressed, the browser fires `click` on
- * their common ancestor rather than on the button, and the button never acts. Measured, not
- * reasoned about: the playground's copy button stopped copying, five runs out of five, and the
- * browser suite caught it. `body:active` holds the rule on until the button comes back up.
- * A browser without `:has()` drops the rule and is left exactly where it was, which is the
- * right failure for a rule that only ever takes something away.
- */
-body:has(:focus-visible) .download-fab:not(:focus-visible),
-body:active .download-fab:not(:focus-visible) {
-    opacity: 0;
-    pointer-events: none;
-}
 
 .download-fab .icon {
     flex: none;

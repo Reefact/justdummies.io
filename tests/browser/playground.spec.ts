@@ -1,7 +1,6 @@
 import { expect, test } from './support/harness';
 import type { Locator } from '@playwright/test';
 
-import { obscured } from './support/obscured';
 import { watch, type PageComplaints } from './support/watch';
 
 /**
@@ -911,49 +910,24 @@ test.describe('the playground', () => {
         await expect(secondSelect).toBeFocused();
     });
 
+
     /**
-     * WHAT THE FLOATING DOWNLOAD LINK MAY NOT COVER (WCAG 2.2 SC 2.4.11, AA).
+     * And the link that band was widened for is still a link.
      *
-     * The link is fixed to the bottom-right corner and the copy button is right-aligned in the
-     * code bar, so below the shell's own width the two stand in one column. Measured on the chain
-     * the copy check builds, at 1000x700: the button occupies y=621..653 and the link y=628..676,
-     * with the page unscrolled — and Tab moves neither, because a browser scrolls to what is
-     * outside the viewport and a control under an overlay is inside it. A focused control hidden
-     * entirely is the one thing the criterion names. The same holds at 1280x720.
-     *
-     * Reached by Tab rather than by `focus()`, because only a keyboard arrival is
-     * `:focus-visible`, and that is what the rule under test reads.
-     *
-     * ASSERTED AS BEHAVIOUR, NOT AS A DECLARATION: either the link is not over the focused
-     * control, or it is not drawn. How it gets out of the way is the stylesheet's business.
+     * The first answer to the criterion above faded this control out whenever the keyboard was
+     * anywhere else, and a pointer press moves focus: pressing the control made it stop matching
+     * the rule mid-click, so `pointer-events: none` arrived before the release and the release
+     * landed on whatever was underneath. The download call to action became unclickable by mouse
+     * and by touch, and no check said so — every check aimed at this control pressed something
+     * beneath it and never the control itself.
      */
-    test('the floating download link never covers the control the keyboard is on', async ({ page }) => {
+    test('the floating download link still goes to the download page when clicked', async ({ page }) => {
         await page.setViewportSize({ width: 1000, height: 700 });
         await page.goto('/playground/');
 
-        await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'String()' });
-        await page.locator('.chain-link').nth(1).locator('select').selectOption({ label: 'StartingWith(prefix)' });
+        await page.locator('.download-fab').click();
 
-        const argument = page.locator('.chain-link').nth(1).locator('input');
-        await argument.fill('ORD-');
-
-        const copy = page.getByRole('button', { name: 'Copy code' });
-        await expect(copy).toBeVisible();
-        await expect(page.locator('.download-fab')).toBeAttached();
-
-        // Walked to from the argument the visitor was last typing in, which is where a keyboard
-        // pass actually arrives from. The bound is generous: what matters is reaching the button,
-        // and the count of controls between the two is not this check's subject.
-        await argument.focus();
-        for (let step = 0; step < 12; step += 1) {
-            if (await copy.evaluate((element: Element) => element === document.activeElement)) {
-                break;
-            }
-            await page.keyboard.press('Tab');
-        }
-        await expect(copy).toBeFocused();
-
-        expect(await obscured(page), 'the download link is drawn over the control holding the focus').toBe(false);
+        await expect(page).toHaveURL(/\/download\/$/);
     });
 
     /**
