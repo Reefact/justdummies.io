@@ -742,10 +742,7 @@
         float single                                                            => FormatSingleLiteral(single),
         double real                                                             => FormatDoubleLiteral(real),
         Half half                                                               => FormatHalfLiteral(half),
-        // The suffix is what makes it a decimal rather than a double, and decimal's own text is
-        // exact — trailing zeros included, so the scale a visitor typed ("1.50") reaches the
-        // copied line the way the value carries it.
-        decimal number                                                          => AsLiteral($"{Invariant(number)}m"),
+        decimal number                                                          => FormatDecimalLiteral(number),
         _                                                                       => ParseCall(typeKey, raw),
         };
     }
@@ -822,6 +819,37 @@
         return AsExpression($"(System.Half){operand}");
     }
 
+    /// <summary>
+    ///     One <c>decimal</c> argument. The <c>m</c> suffix is what makes it a decimal rather than
+    ///     a double, and decimal's own text is exact — trailing zeros included, so the scale a
+    ///     visitor typed ("1.50") reaches the copied line the way the value carries it.
+    ///
+    ///     THE SIGN OF A ZERO IS THE ONE THING THAT TEXT DROPS. A decimal carries a sign bit of its
+    ///     own and "-0" in any decimal field parses to a zero that has it set, but <c>ToString</c>
+    ///     writes that value as "0" — so the text alone hands back a value the card never generated
+    ///     from, which is the divergence <see cref="FormatDoubleLiteral" /> is written to avoid at
+    ///     the very same input. Putting the sign back in front is enough wherever the value has a
+    ///     scale: <c>-0.0m</c> is a negative zero of scale 1, exactly what "-0.0" parsed to.
+    ///
+    ///     AT SCALE 0 THERE IS NO LITERAL AT ALL, so that one value takes an expression the way a
+    ///     NaN does. <c>-0m</c> is not it, whatever it looks like: the compiler folds a negated
+    ///     constant zero of scale 0 back to <c>decimal.Zero</c>, sign and all, so the literal that
+    ///     reads right compiles to positive zero. <c>decimal.Negate(0m)</c> is a call rather than a
+    ///     constant, runs where the line is pasted, and lands on the value itself — and, not being
+    ///     a literal, is not painted as one.
+    /// </summary>
+    private static FormattedArgument FormatDecimalLiteral(decimal value) {
+        string text = Invariant(value);
+
+        // Every other value already carries its own sign: ToString drops it for a zero and for
+        // nothing else, so this is the whole of the special case.
+        if (!decimal.IsNegative(value) || value != 0m) {
+            return AsLiteral($"{text}m");
+        }
+
+        return value.Scale > 0 ? AsLiteral($"-{text}m") : AsExpression("decimal.Negate(0m)");
+    }
+
     /// <summary>The named constant a non-finite value has to be written as — C# has no literal for
     /// a NaN or an infinity, and all three parse — or null when the value is finite and a literal
     /// is what it takes. <paramref name="typeName" /> is how the type is written in the copied
@@ -883,9 +911,35 @@
     ///     backslash is routine, so the common case is the one that gets the exact form.
     /// </summary>
     private static string FormatStringLiteral(string raw) =>
-        raw.Contains('\\') && !raw.Contains('"')
+        CanWriteVerbatim(raw)
             ? $"@\"{raw}\""
             : $"\"{EscapeForStringLiteral(raw)}\"";
+
+    /// <summary>
+    ///     Whether a value is one the verbatim form prints exactly as the field shows it: it
+    ///     carries a backslash, which is what buys the form at all, and none of the characters
+    ///     that form cannot print as themselves.
+    ///
+    ///     That second set is the enclosing quote — which a verbatim literal would have to
+    ///     double, showing <c>""</c> where the field shows <c>"</c> — plus every character C#
+    ///     counts as a line terminator, which it would carry into the source as itself and split
+    ///     the bar's one line in two. Which is to say: exactly the characters
+    ///     <see cref="EscapeForStringLiteral" /> answers, less the backslash the verbatim form
+    ///     exists to leave alone.
+    ///
+    ///     CR and LF never actually arrive — a single-line <c>&lt;input&gt;</c>'s own value
+    ///     sanitisation strips those two and only those two — but NEL, LINE SEPARATOR and
+    ///     PARAGRAPH SEPARATOR are ordinary characters to a browser and to this playground's
+    ///     parsers, so a pasted pattern can carry one. Inside a verbatim literal it compiles and
+    ///     keeps its value, which is why nothing failed: it simply reaches the bar and the
+    ///     clipboard as a real line break, and the one line that compiles is no longer one line.
+    ///
+    ///     ChainLink.razor's OpeningQuoteFor asks this same question of the same value, so the
+    ///     card's block and the bar beneath it open the literal the same way.
+    /// </summary>
+    private static bool CanWriteVerbatim(string raw) =>
+        raw.Contains('\\')
+        && !raw.Any(c => c is '"' or '\r' or '\n' or '\u0085' or '\u2028' or '\u2029');
 
     /// <summary>Escapes <paramref name="raw" /> for embedding in a regular (non-verbatim) C#
     /// string literal. Beyond backslash and the enclosing quote, this must also escape every

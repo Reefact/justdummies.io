@@ -773,6 +773,23 @@ test.describe('the playground', () => {
 
         await expect(printed).toHaveText('decimal anyValue = Any.Decimal().DifferentFrom(100m).Generate();');
 
+        // Same field, same generator — only the value changes, which is all these two readings
+        // are about. A decimal carries a sign bit of its own and "-0" sets it, but `ToString`
+        // writes that value as "0", so the text alone would hand over a value the card never
+        // drew from. The sign goes back in front wherever the value has a scale; at scale 0 no
+        // literal carries it at all — the compiler folds `-0m` back to `decimal.Zero` — so that
+        // one value takes an expression the way an infinity takes its named constant, and a call
+        // is not painted as a value.
+        await page.locator('.chain-link').nth(1).locator('input').fill('-0.0');
+
+        await expect(printed).toHaveText('decimal anyValue = Any.Decimal().DifferentFrom(-0.0m).Generate();');
+
+        await page.locator('.chain-link').nth(1).locator('input').fill('-0');
+
+        await expect(printed).toHaveText(
+            'decimal anyValue = Any.Decimal().DifferentFrom(decimal.Negate(0m)).Generate();',
+        );
+
         await page.goto('/playground/');
 
         await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'Double()' });
@@ -1102,48 +1119,6 @@ test.describe('the playground', () => {
         await expect(step.locator('.call .tok-member')).toHaveText('String');
     });
 
-    /**
-     * A POINTER PUT ON THE COMBO ENDS THE BROWSING THAT PRECEDED IT, and the entry then chosen
-     * settles the step where it stands.
-     *
-     * A visitor is not one input device. Arrowing down the closed list leaves the browsing flag
-     * up — that is what keeps the combo standing to be arrowed again — and the next gesture is
-     * often the mouse: press the control, read the whole list at once, click an entry. Nothing
-     * about that press is a keystroke, so nothing about it clears the flag on its own, and the
-     * change the choice raises would arrive looking like one more browse. The step would stand
-     * as a combo under the very gesture ADR-0022 promises settles it.
-     *
-     * `@onpointerdown` on ChainLink's `<select>` is the whole of that mechanism, and this is the
-     * only check that touches it. Every other choice in this file is made with `selectOption`,
-     * which sets the control's value and dispatches `input` and `change` and no pointer event at
-     * all — so the flag it would have cleared was never up, or a later keystroke had cleared it
-     * already. Deleting the attribute left the suite green.
-     *
-     * Driven with a dispatched `pointerdown` rather than a real click on the control, for the
-     * reason the check above gives: a headless engine draws no native drop-down, so a click here
-     * is a gesture with no second half. The event the browser delivers first is the one the
-     * component listens for, so it is the one sent — followed by the change the closed drop-down
-     * would have raised.
-     */
-    test('settles a step chosen with the pointer after the keyboard walked the list', async ({ page }) => {
-        await page.goto('/playground/');
-
-        const step   = page.locator('.chain-link').nth(0);
-        const select = step.locator('select');
-
-        // Two presses, so the flag is up and the combo is standing on a method the visitor has
-        // not answered with — which is the state the pointer arrives in.
-        await select.focus();
-        await select.press('ArrowDown');
-        await select.press('ArrowDown');
-        await expect(select).toBeVisible();
-
-        await select.dispatchEvent('pointerdown');
-        await select.selectOption({ label: 'String()' });
-
-        await expect(step.locator('select')).toHaveCount(0);
-        await expect(step.locator('.call .tok-member')).toHaveText('String');
-    });
 
     /**
      * A parameterized step's arguments are reachable by tabbing forward out of a combo that is

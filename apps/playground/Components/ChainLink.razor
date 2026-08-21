@@ -484,7 +484,8 @@
 
     /// <summary>
     ///     What opens the literal drawn to the left of an argument field: <c>@"</c> where the
-    ///     value carries a backslash, <c>"</c> otherwise, <c>'</c> for a char, nothing for a bare
+    ///     value carries a backslash and nothing the verbatim form cannot print as itself,
+    ///     <c>"</c> otherwise, <c>'</c> for a char, nothing for a bare
     ///     one. The closing side is always <see cref="QuoteFor" />'s plain character — a verbatim
     ///     literal opens with two marks and closes with one.
     ///
@@ -499,12 +500,23 @@
     ///
     ///     Home.razor's FormatStringLiteral makes the same choice on the same condition, so the
     ///     block and the bar under it print the same literal rather than two readings of one.
+    ///     That condition has a second half, and it is the bar's need rather than this block's: a
+    ///     verbatim literal carries a line terminator instead of escaping it, so a pasted pattern
+    ///     holding NEL, LINE SEPARATOR or PARAGRAPH SEPARATOR would reach the clipboard as two
+    ///     lines. Those fall back here too, so the two readings stay one.
     /// </summary>
     private static string? OpeningQuoteFor(string typeKey, string raw) =>
         QuoteFor(typeKey) switch {
-            "\"" when raw.Contains('\\') && !raw.Contains('"') => "@\"",
-            var quote                                        => quote,
+            "\"" when CanWriteVerbatim(raw) => "@\"",
+            var quote                        => quote,
         };
+
+    /// <summary>Whether the verbatim form prints this value exactly as the field shows it — the
+    ///     same question Home.razor's <c>CanWriteVerbatim</c> asks, kept in step by hand because
+    ///     the two components share no code, only the answer they have to agree on.</summary>
+    private static bool CanWriteVerbatim(string raw) =>
+        raw.Contains('\\')
+        && !raw.Any(c => c is '"' or '\r' or '\n' or '\u0085' or '\u2028' or '\u2029');
 
     /// <summary>
     ///     The quote character drawn either side of an argument field, or <c>null</c> for one
