@@ -62,9 +62,13 @@ Rules:
   renders a lone newline there as a literal line break, not as the collapsed space a repository
   file's CommonMark rendering gives it. Let the editor soft-wrap on display; do not insert the
   newline into the file yourself.
-* **French follows English**, same section order, same heading depths — `RELEASE_NOTES-fr.md`
-  has no automated parity check (unlike the library's `TranslationParityTests`), so this is kept
-  by discipline. Product terms travel unchanged (`playground`, `JustDummies`, a URL) — see how
+* **French follows English**, same section order, same heading depths. Part of that is now
+  checked: `generate-site-release-note.mjs` refuses to publish a release whose two halves name
+  different versions, carry different numbers of rubrics, or fill any one rubric with different
+  numbers of bullets — and it runs in the build, so a half-translated newest release stops a
+  pull request rather than reaching /version. What it does not check is that a bullet says the
+  same thing as its twin, or that anything older than the newest release stayed in step; those
+  are kept by discipline. Product terms travel unchanged (`playground`, `JustDummies`, a URL) — see how
   `apps/site/src/i18n/ui.ts` treats the same words. `release note`/`release notes` is one of
   these: the audience is developers, so keep the English term — never "note de version".
 
@@ -87,15 +91,22 @@ in the same breath, and nothing here assumes they will.
 2. Once ready to release: compute the tag — `release/$(date -u +%Y-%m-%dT%H-%M-%SZ)`, read once,
    right then — and **retitle `## Unreleased` to that exact tag** — `## release/<tag> — <Month>
    <day>, <year>` — in both files, and add a fresh, empty `## Unreleased` above it for next time.
-3. Commit that, push a branch, and open a pull request titled exactly `ci: prepare <tag>` —
-   ADR-0021's `verify-tag` job matches on this title verbatim, so it is not a style choice.
-4. In the same reply, hand the maintainer the tag commands from the deployment guide's Step 7,
+3. Run `node scripts/generate-site-release-note.mjs`. It reads both files into
+   `apps/site/src/generated/site-release.json`, which is committed, and which CI checks is
+   current on every pull request — so retitling a section without regenerating it opens a
+   pull request that goes red on *Generated content is stale*, and that is the very pull
+   request `verify-tag` is waiting for. (`pnpm build` does the same thing among everything
+   else; this is the one step of it these two files can change.)
+4. Commit all three — both notes files and `apps/site/src/generated/site-release.json` —
+   push a branch, and open a pull request titled exactly `ci: prepare <tag>` — ADR-0021's
+   `verify-tag` job matches on this title verbatim, so it is not a style choice.
+5. In the same reply, hand the maintainer the tag commands from the deployment guide's Step 7,
    filled in with this exact tag string — **one command per code block, never joined with `&&`**,
    so each is a single copy-paste. Make clear the tag is the one just computed, not something to
    recompute later: reading the clock again at tag time would produce a different string than the
    one this PR — and the release note it retitled — already carry, and `verify-tag` would refuse
    the mismatch.
-5. The maintainer reviews and merges the PR (by rebase, as this repository always merges), then
+6. The maintainer reviews and merges the PR (by rebase, as this repository always merges), then
    runs the handed-over commands themselves, ending with the tag push. Nothing here does that for
    them.
 
