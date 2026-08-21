@@ -355,6 +355,17 @@
     ///     A MODIFIER TAKES A KEY BACK OUT OF IT. <c>Alt+ArrowDown</c> opens the drop-down instead
     ///     of stepping through it, and a chord carrying Ctrl or Meta is a shortcut rather than
     ///     typing — neither is a visitor browsing, and neither raises the change this is read for.
+    ///
+    ///     SO DOES SPACE, for the same reason and by a route that is easier to miss: it is a
+    ///     printable character one unit long, so it read as type-ahead, but on a closed
+    ///     <c>&lt;select&gt;</c> it opens the drop-down rather than walking anything. Nothing was
+    ///     browsed and no change was raised, so the flag it set stayed set for the whole of the
+    ///     popup session — and the browser delivers neither a keydown nor a pointerdown while a
+    ///     native popup is open, which is the platform fact this component already leans on
+    ///     elsewhere, so nothing cleared it either. The choice that closed the popup then arrived
+    ///     with the flag still up and was read as a browse: the step did not settle under the
+    ///     gesture that chose it, which is exactly what ADR-0022 decided it must do. Type-ahead on
+    ///     a space matches no entry anyway, so nothing is lost by taking it back out.
     /// </summary>
     private static bool IsBrowsingKey(KeyboardEventArgs e) {
         if (e.CtrlKey || e.AltKey || e.MetaKey) {
@@ -363,7 +374,7 @@
 
         return e.Key is "ArrowUp" or "ArrowDown" or "ArrowLeft" or "ArrowRight"
                      or "Home" or "End" or "PageUp" or "PageDown"
-            || e.Key is { Length: 1 };
+            || (e.Key is { Length: 1 } && e.Key != " ");
     }
 
     /// <summary>Takes the focus the select is losing and puts it on the argument that has just
