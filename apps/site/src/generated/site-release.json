@@ -8,7 +8,7 @@
         {
           "label": "🐛 Fixes",
           "items": [
-            "* The playground's chain builder no longer refuses a character-family constraint (<code>AlphaNumeric()</code> and friends) together with an anchored literal like <code>StartingWith(&quot;ORD-&quot;)</code> — the two now compose instead of throwing at declaration, following JustDummies' 1.0.0-preview.3 release."
+            "The playground's chain builder no longer refuses a character-family constraint (<code>AlphaNumeric()</code> and friends) together with an anchored literal like <code>StartingWith(&quot;ORD-&quot;)</code> — the two now compose instead of throwing at declaration, following JustDummies' 1.0.0-preview.3 release."
           ]
         }
       ]
@@ -19,7 +19,7 @@
         {
           "label": "🐛 Corrections",
           "items": [
-            "* Le générateur de chaîne du playground n'oppose plus un refus lorsqu'une contrainte de famille de caractères (<code>AlphaNumeric()</code> et consorts) est combinée à un littéral ancré comme <code>StartingWith(&quot;ORD-&quot;)</code> — les deux se composent désormais au lieu de lever une erreur à la déclaration, suite à la version 1.0.0-preview.3 de JustDummies."
+            "Le générateur de chaîne du playground n'oppose plus un refus lorsqu'une contrainte de famille de caractères (<code>AlphaNumeric()</code> et consorts) est combinée à un littéral ancré comme <code>StartingWith(&quot;ORD-&quot;)</code> — les deux se composent désormais au lieu de lever une erreur à la déclaration, suite à la version 1.0.0-preview.3 de JustDummies."
           ]
         }
       ]
