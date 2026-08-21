@@ -12,6 +12,14 @@ consumes this deployment (see [ADR-0001](docs/for-maintainers/adr/0001-a-release
 
 _Nothing pending yet._
 
+## release/2026-08-21T22-42-04Z — August 21, 2026
+
+### 🐛 Fixes
+
+* The playground's chain builder no longer refuses a character-family constraint (`AlphaNumeric()`
+  and friends) together with an anchored literal like `StartingWith("ORD-")` — the two now
+  compose instead of throwing at declaration, following JustDummies' 1.0.0-preview.3 release.
+
 ## release/2026-08-21T10-08-43Z — August 21, 2026
 
 ### ✨ New
