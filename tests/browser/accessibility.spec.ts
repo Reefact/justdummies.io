@@ -3,6 +3,7 @@ import { expect, test } from './support/harness';
 import type { Page } from '@playwright/test';
 import type { AxeResults, Result } from 'axe-core';
 
+import { obscured } from './support/obscured';
 import { PAGES } from './support/watch';
 
 /**
@@ -132,4 +133,43 @@ test('breaks no rule with every control open', async ({ page }) => {
     const results: AxeResults = await scan(page);
 
     expect(results.violations.length, `\n${readable(results)}\n`).toBe(0);
+});
+
+/**
+ * The site's half of WCAG 2.2 SC 2.4.11, which axe has no rule for.
+ *
+ * `DownloadFab.astro` is fixed to the bottom-right corner of every page but /download, and the
+ * corner it owns is one the content scrolls through — so at ordinary window sizes a control the
+ * keyboard has reached sits underneath it, drawn over rather than scrolled to, which is the one
+ * thing the criterion names.
+ *
+ * Walked rather than aimed at a chosen control. The failure is a property of the corner and not
+ * of any one element, so what is checked is every stop of a real Tab pass: the page is asked
+ * after each press whether the link is drawn over whatever now holds the focus. A narrow window
+ * because that is where the shell stops keeping the content clear of the corner on its own.
+ */
+test('the floating download link never covers the control the keyboard is on', async ({ page }) => {
+    await page.setViewportSize({ width: 700, height: 600 });
+    await page.goto('/');
+    await settle(page);
+
+    // The banner is answered first: it owns the highest claim on the stack and the link's own
+    // offset tracks its height, so a pass driven under it would be measuring the wrong corner.
+    const banner = page.locator('[data-consent]');
+
+    if (await banner.isVisible()) {
+        await page.locator('[data-consent-accept]').click();
+        await expect(banner).toBeHidden();
+    }
+
+    await expect(page.locator('.download-fab')).toBeAttached();
+
+    for (let step = 0; step < 40; step += 1) {
+        await page.keyboard.press('Tab');
+
+        expect(
+            await obscured(page),
+            `the download link is drawn over the control holding the focus, ${step + 1} tab(s) in`,
+        ).toBe(false);
+    }
 });
