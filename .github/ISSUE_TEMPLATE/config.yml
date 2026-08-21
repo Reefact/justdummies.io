@@ -1,1 +1,22 @@
+# The two forms beside this file cover a defect and an improvement, and blank issues stay off so
+# that every request arrives carrying the fields a maintainer needs to act on it. The links below
+# exist for the two things neither form should ever receive.
 blank_issues_enabled: false
+
+contact_links:
+  # A vulnerability MUST NOT arrive as a bug report. The bug form is public from the moment it is
+  # submitted, it labels the report `bug` and titles it "[Bug] " — that is a disclosure wearing a
+  # report's clothes. This points at SECURITY.md, which GitHub renders on the Security tab and
+  # which names the private route in its own words. A contact link only signposts: it cannot stop
+  # someone choosing the bug form anyway, which is why the policy repeats the warning rather than
+  # relying on this line.
+  - name: Report a security vulnerability
+    url: https://github.com/Reefact/justdummies.io/security/policy
+    about: Report it privately instead — never open a public issue for a vulnerability.
+
+  # This repository is the website. A question about the library the playground runs — a
+  # generator's behaviour, a constraint, a package version — is answered where the library lives,
+  # by whoever reads that tracker rather than this one.
+  - name: Ask about the JustDummies library
+    url: https://github.com/Reefact/just-dummies/issues
+    about: The library has its own repository. Questions about generators or constraints belong there.
