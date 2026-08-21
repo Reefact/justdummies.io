@@ -10,6 +10,10 @@ import type { Page, Response } from '@playwright/test';
  * addresses. A 404 that stopped being served, or stopped carrying its picture, would look
  * fine everywhere except where it is met.
  */
+/** The artwork both 404s draw, named once so the check that weighs it and the check that
+ *  asserts its `src` cannot disagree about which file they mean. */
+const DRAWING: string = '/dummy-404.png';
+
 const PAGES: ReadonlyArray<{ path: string; home: string; refusal: string; claim: RegExp }> = [
     {
         path: '/404.html',
@@ -59,7 +63,7 @@ for (const { path, home, refusal, claim } of PAGES) {
         const sentence = page.locator('.body');
 
         await expect(image).toBeVisible();
-        await expect(image).toHaveAttribute('src', '/dummy-404.png');
+        await expect(image).toHaveAttribute('src', DRAWING);
         await expect(sentence).toBeVisible();
         await expect(sentence.locator(`a[href="${home}"]`), 'the way out is not part of the sentence').toBeVisible();
 
@@ -105,11 +109,13 @@ test('an address that does not exist is answered by that page', async ({ page })
 });
 
 test('the 404 says what it costs', async ({ page }) => {
-    const bytes: number[] = [];
+    const bytes: Map<string, number> = new Map();
 
     page.on('response', async (response: Response) => {
         try {
-            bytes.push((await response.body()).length);
+            const path: string = new URL(response.url()).pathname;
+
+            bytes.set(path, (bytes.get(path) ?? 0) + (await response.body()).length);
         } catch {
             // A response the browser kept no body for.
         }
@@ -118,14 +124,26 @@ test('the 404 says what it costs', async ({ page }) => {
     await page.goto('/404.html');
     await page.waitForLoadState('networkidle');
 
-    const total: number = bytes.reduce((sum: number, length: number) => sum + length, 0);
+    const total: number = [...bytes.values()].reduce((sum: number, length: number) => sum + length, 0);
+    const drawing: number = bytes.get(DRAWING) ?? 0;
 
     // Printed rather than budgeted, and the difference is deliberate. The drawing is a
     // supplied file and its weight is the maintainer's call, not this suite's; what a check
     // can honestly do is make the number visible on every run instead of leaving it to be
     // discovered. The landing page's images are budgeted next door, where the figure is the
     // suite's business.
-    console.log(`      /404.html weighs ${(total / 1024).toFixed(0)} KiB, of which the drawing is 697 KiB`);
+    //
+    // The drawing's share used to be a number typed into this line beside the file it
+    // described, and it went stale the moment the artwork was swapped — the figure said 710
+    // KiB, then 697, each hand-edited, neither read from anything. It is weighed by name now,
+    // which is also what lets the assertion below say something: the response accumulator was
+    // a flat list summed to one total, and `total > 0` is satisfied by the HTML alone, so the
+    // drawing could 404 outright and this check would still pass while printing a number that
+    // looked like it had arrived.
+    console.log(
+        `      /404.html weighs ${(total / 1024).toFixed(0)} KiB, ` +
+            `of which the drawing is ${(drawing / 1024).toFixed(0)} KiB`,
+    );
 
-    expect(total).toBeGreaterThan(0);
+    expect(drawing, `the 404 drawing (${DRAWING}) did not arrive`).toBeGreaterThan(0);
 });

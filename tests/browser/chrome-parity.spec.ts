@@ -137,33 +137,53 @@ async function settled(page: Page): Promise<void> {
 }
 
 /**
- * The footer's own links, by href and label — not measured as a box in `furniture()`
- * above, which only compares where the footer sits and how wide it runs. Two footers can
- * agree on that geometry while disagreeing on what they link to (a link dropped from one
- * side changes the row's width too, but the failure that reads clearly is "the playground
- * is missing /api/", not "w=612 vs w=548"). This is what would have caught the playground
- * footer shipping without its API link.
+ * The footer's own contents — every link by href and label, then the copyright line — not
+ * measured as a box in `furniture()` above, which only compares where the footer sits and
+ * how wide it runs. Two footers can agree on that geometry while disagreeing on what they
+ * link to (a link dropped from one side changes the row's width too, but the failure that
+ * reads clearly is "the playground is missing /api/", not "w=612 vs w=548"). This is what
+ * would have caught the playground footer shipping without its API link.
+ *
+ * THE COPYRIGHT LINE IS COMPARED TOO, because it was the one element of the footer nothing
+ * in this repository asserted anything about. It is also the element most likely to drift:
+ * the entity is a named constant on the site and a second named constant hand-copied into
+ * the Blazor component, the KNOWN DUPLICATION `site.ts` documents. Editing one of them
+ * alone shipped a playground footer naming a different company, with a green build, under
+ * a check whose name reads as though it covered the footer.
+ *
+ * The year is normalised out of it. The two sides reach it differently on purpose — the
+ * site freezes its own build's year so a rebuild cannot change the page, the playground
+ * reads the browser's clock because a WebAssembly app has no build-time value to freeze —
+ * so comparing the digits would fail every first of January for a reason that is not this
+ * check's subject.
  */
-async function footerLinks(page: Page): Promise<string[]> {
-    return page.evaluate(() =>
-        Array.from(document.querySelectorAll<HTMLAnchorElement>('footer.site-footer a')).map(
-            (a: HTMLAnchorElement) => `${a.getAttribute('href')} "${a.textContent?.replace(/\s+/g, ' ').trim()}"`,
-        ),
-    );
+async function footerParts(page: Page): Promise<string[]> {
+    return page.evaluate(() => {
+        const links: string[] = Array.from(
+            document.querySelectorAll<HTMLAnchorElement>('footer.site-footer a'),
+        ).map((a: HTMLAnchorElement) => `${a.getAttribute('href')} "${a.textContent?.replace(/\s+/g, ' ').trim()}"`);
+
+        const copyright: string = (document.querySelector('footer.site-footer .copyright')?.textContent ?? '')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .replace(/\b\d{4}\b/, '<year>');
+
+        return [...links, `copyright "${copyright}"`];
+    });
 }
 
 for (const pair of PAIRS) {
 
-    test(`the playground's footer links match ${pair.site}`, async ({ page }) => {
+    test(`the playground's footer matches ${pair.site}`, async ({ page }) => {
         await page.goto(pair.site);
         await page.waitForSelector('footer.site-footer');
-        const reference: string[] = await footerLinks(page);
+        const reference: string[] = await footerParts(page);
 
         await page.goto(pair.playground);
         await page.waitForSelector('footer.site-footer');
-        const measured: string[] = await footerLinks(page);
+        const measured: string[] = await footerParts(page);
 
-        expect(measured, `the playground's footer links do not match ${pair.site}`).toEqual(reference);
+        expect(measured, `the playground's footer does not match ${pair.site}`).toEqual(reference);
     });
 
     for (const window of WINDOWS) {
