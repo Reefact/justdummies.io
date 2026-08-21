@@ -1,7 +1,12 @@
 ---
 /**
- * The sitewide footer: About, Privacy, the site's own repository, and a copyright
- * line. Rendered once, from `Base.astro`, after `<slot />` — every page that goes
+ * The sitewide footer: a row of links to the site's own pages, an outbound link to the
+ * site's own repository, and a copyright line. The links are deliberately not named
+ * here — the row has already grown once (API, then Release notes) without this sentence
+ * growing with it, and a prose list nothing reads is a list that rots. The markup below
+ * is the enumeration; `tests/browser/chrome-parity.spec.ts` is the one that is enforced,
+ * comparing the row href by href and label by label against the playground's copy.
+ * Rendered once, from `Base.astro`, after `<slot />` — every page that goes
  * through the Astro layout carries it, in the normal flow of the document. It is
  * never pinned to the viewport: a footer fixed in place for the whole of the landing
  * page's three-act scroll would compete with the install bar already pinned to the
