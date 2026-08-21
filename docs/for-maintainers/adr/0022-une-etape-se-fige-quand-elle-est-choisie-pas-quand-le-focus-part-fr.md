@@ -216,9 +216,12 @@ qui veut revenir sur une étape ; l'alternative le facture à chaque étape de c
 * Vu échouer avant d'être cru. Avec la classification du parcours neutralisée de façon à ce que
   toute frappe se lise comme un choix, les deux contrôles clavier passent au rouge et rien d'autre
   ne bouge dans la suite ; rétablie, la suite est verte.
-* L'ADR-0014 garde sa décision et perd une puce de sa section *Risques*. Son statut porte la
-  supersession partielle, et un bloc sous son en-tête nomme quelle moitié est partie et laquelle
-  tient.
+* L'ADR-0014 garde sa décision, et garde son texte : la condition que cet enregistrement remplace
+  reste écrite là où elle l'a été, parce qu'un enregistrement accepté consigne une histoire et ne
+  décrit pas le présent. Ce qu'elle gagne est l'annotation qu'appelle une supersession partielle :
+  son statut porte le lien vers cet enregistrement et la mention *remplacée en partie*, et un bloc
+  sous son en-tête nomme quelle moitié est partie et laquelle tient. L'ADR-0003, annotée de la même
+  façon par l'ADR-0005, est la forme suivie.
 * Aucun contrôle ne peut voir si le focus se pose là où une visiteuse trouve cela *sensé*, par
   opposition à un endroit réel et atteignable. Celui-là est laissé à la relecture, et nommé ici
   plutôt que laissé en section vide.
