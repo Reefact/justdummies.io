@@ -16,6 +16,14 @@
     that exact name, so a tag computed fresh here — from `[DateTime]::UtcNow` or otherwise — has
     no matching PR and is rejected before anything deploys.
 
+    That rejection is why this script asks GitHub the same question before it tags anything,
+    instead of letting CI ask it first. `verify-tag` can only refuse a tag that already exists on
+    the remote, and undoing one means deleting it on both sides by hand. The question is the one
+    `scripts/check-release-tag.sh` asks of a tag — which merged pull requests produced this
+    commit, and is exactly one of them titled `ci: prepare <tag>` — asked here of `HEAD`, which is
+    the commit the tag is about to be put on. It needs `gh` on PATH and authenticated; without
+    one the check cannot be made, and this stops rather than tagging blind.
+
     Only the tag itself is pushed, never `--tags`: this clone may hold other tags (one made on a
     branch and never meant to ship, for instance), and `--tags` would publish all of them.
 
@@ -58,6 +66,15 @@ function Fail([string]$Message) {
 
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     Fail "git is not on PATH."
+}
+
+# `gh` is not optional here. The check below — that HEAD is the merge commit of the merged
+# `ci: prepare <tag>` pull request — is the one property CI rejects a tag on, and asking GitHub
+# is the only way to answer it. Skipping it whenever `gh` happens to be absent would mean the
+# answer arrives from `verify-tag` instead, with the tag already on the remote, which is the
+# whole situation this check exists to avoid.
+if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
+    Fail "gh is not on PATH, so the 'ci: prepare <tag>' pull request cannot be checked - and that is the one thing CI's verify-tag job refuses a release tag for, by which point the tag is on the remote and has to be deleted from both sides by hand. Install the GitHub CLI and run 'gh auth login', or tag by hand with the commands in docs/for-maintainers/deployment-en.md, step 7."
 }
 
 # Resolved from the script's own location, not the caller's working directory — this must
@@ -103,6 +120,59 @@ try {
     $originMainSha = git rev-parse origin/main
     if ($headSha -ne $originMainSha) {
         Fail "main is ahead of origin/main. Push main first (git push origin main), then re-run."
+    }
+
+    # ADR-0021's rule, asked here rather than discovered from CI. The fast-forward above is what
+    # walks into the gap that record describes: anything that reached main between the
+    # `ci: prepare <tag>` pull request merging and this run — a second pull request, a Dependabot
+    # auto-merge — has just been pulled in silently, so HEAD is that commit and not the one the
+    # release note was reviewed against. The shape checked at the top of this script cannot see
+    # it, because the tag's name is still perfectly well formed.
+    #
+    # Deliberately the same question `scripts/check-release-tag.sh` asks, in the same terms, so
+    # the two cannot disagree about what a good tag is: which merged pull requests produced this
+    # commit, and is exactly one of them titled for this tag? Asked of HEAD rather than of a tag,
+    # since the tag does not exist yet. Looked up by commit rather than by searching titles, for
+    # the reason that script gives — GitHub's commit-to-PR association is exact and immediate
+    # once the commit is on the default branch, where a title search is fuzzy and briefly
+    # unindexed.
+    $prTitle = "ci: prepare $Tag"
+
+    # `{owner}` and `{repo}` are gh's own placeholders, filled from origin — left literal because
+    # PowerShell interpolates `$`, never braces. The output is joined back into one string first:
+    # a native command hands PowerShell one array element per line, and ConvertFrom-Json reads a
+    # whole document rather than a line at a time.
+    $pullsJson = (gh api "repos/{owner}/{repo}/commits/$headSha/pulls" 2>$null) -join "`n"
+
+    # $ErrorActionPreference does not cover native commands, so gh failing to reach GitHub — or
+    # running unauthenticated — returns here quietly. $LASTEXITCODE is the only thing that says
+    # so, and a lookup that never got an answer must not be read as an answer of "no such pull
+    # request".
+    if ($LASTEXITCODE -ne 0) {
+        Fail "gh api repos/{owner}/{repo}/commits/$headSha/pulls failed. Run 'gh auth login' and try again - a lookup that never got an answer is not the same as a pull request that is not there."
+    }
+
+    # The shell script's `|| echo '[]'`: an empty body is no pull requests, not a parse error.
+    if (-not $pullsJson) {
+        $pullsJson = '[]'
+    }
+
+    # @() keeps a single match an array. A one-item pipeline unrolls to the item itself, and
+    # .Count on a lone object answers a different question than the one being asked.
+    $preparePrs = @(($pullsJson | ConvertFrom-Json) | Where-Object { $_.title -eq $prTitle -and $null -ne $_.merged_at })
+
+    if ($preparePrs.Count -eq 0) {
+        Fail "No merged pull request titled '$prTitle' produced HEAD ($headSha). A release tag's name is only trustworthy if the pull request that chose it exists, merged, and is what the tag points at - that PR is where RELEASE_NOTES-en.md/fr.md were reviewed. CI's verify-tag job refuses the tag for exactly this, once it is already on the remote."
+    }
+
+    if ($preparePrs.Count -gt 1) {
+        Fail "$($preparePrs.Count) merged pull requests are titled '$prTitle'. A release tag names exactly one pull request; this name was reused."
+    }
+
+    $mergeCommit = $preparePrs[0].merge_commit_sha
+
+    if ($headSha -ne $mergeCommit) {
+        Fail "HEAD is not the merge commit of the '$prTitle' pull request - HEAD is $headSha, that PR merged as $mergeCommit. Something else reached main between the PR merging and now, and tagging here would publish it unreviewed. Tag that merge commit by hand, or ask for a fresh 'ci: prepare' pull request for what is on main now."
     }
 
     # $Tag came from the caller (the 'ci: prepare <tag>' PR), validated above — not computed
