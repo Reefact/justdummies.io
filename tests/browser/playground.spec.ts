@@ -994,7 +994,24 @@ test.describe('the playground', () => {
         await select.press('ArrowDown');
         await expect(select).toBeVisible();
 
-        const walkedTo = await select.inputValue();
+        /*
+         * What the closed select is showing, read as the method it names. The label a native
+         * select displays for its current option is the whole signature — `Between(minimum,
+         * maximum)`, `String()` — so the method name is what stands before the parenthesis,
+         * which is also what the settled call prints in its `.tok-member`.
+         *
+         * This used to be read as the option's *value* and then asserted only to be non-empty,
+         * which is a thing it can never be: the placeholder is disabled, so the first arrow
+         * press always lands on a real entry. Settling on any other descriptor left every
+         * assertion in this test green, and ADR-0022 names this check as what goes red when the
+         * decision breaks.
+         */
+        const walkedTo: string = await select.evaluate(
+            (element: HTMLSelectElement) => element.selectedOptions[0]?.textContent?.trim() ?? '',
+        );
+        const method: string = walkedTo.replace(/\(.*$/, '').trim();
+
+        expect(method, 'the arrow press walked to no option at all').not.toBe('');
 
         await select.press('Enter');
 
@@ -1002,7 +1019,7 @@ test.describe('the playground', () => {
         await expect(step.locator('.call')).toBeVisible();
 
         // The step it settled on is the one that was showing, not the one the list opened at.
-        expect(walkedTo).not.toBe('');
+        await expect(step.locator('.call .tok-member')).toHaveText(method);
 
         // Enter is a choice like any other, so it hands the focus on like any other: the first
         // entry a chain can open with takes no arguments, so that is the next step's combo.
