@@ -91,25 +91,48 @@ html {
     scrollbar-gutter: stable;
     /*
      * So an anchor jump lands above the consent banner rather than under it, for as long as
-     * there is one. Set from the same measurement as the padding below.
+     * there is one — and above the floating download link, which never leaves.
+     *
+     * THE LINK'S BAND IS THE WCAG 2.2 SC 2.4.11 (AA) HALF. `DownloadFab.astro` is fixed to a
+     * corner the content scrolls through, so a control the keyboard reaches can sit under it,
+     * drawn over rather than scrolled to — and a focused control hidden entirely is the one
+     * thing the criterion names. Measured on the playground's copy button at 1000x700 before
+     * this band existed: covered whole, at every width from 660 to 1180.
+     *
+     * It was not obvious that this would answer it, and the first attempt did not: a rule that
+     * faded the link out while the keyboard was elsewhere broke the copy button and then the
+     * link itself, because a pointer press moves focus and CSS cannot tell the two gestures
+     * apart mid-click. What settles it is that scroll padding does NOT only act on focus moves
+     * that already scroll — it shrinks the optimal viewing region, so the browser scrolls a
+     * control that is technically visible but sitting inside the band. Verified in the browser:
+     * with this alone the button lands clear and the link stays clickable.
+     *
+     * The consent banner's height rides along because the link's own offset does — one band,
+     * measured the same way in both places.
      */
-    scroll-padding-bottom: var(--jd-consent-height, 0px);
+    scroll-padding-bottom: calc(var(--jd-consent-height, 0px) + var(--jd-space-6) + 3.5rem);
 }
 
 /*
- * Room at the foot of the document for the consent banner, which is `position: fixed` and
- * therefore invisible to the layout — the page ends where it always did and the banner simply
- * lies on top of it. What that covered was the footer: About, API, Release notes and the
- * repository link could not be clicked at all while the question was unanswered, and a keyboard
- * reader could still Tab to them behind an opaque panel with the focus ring hidden.
+ * Room at the foot of the document for the two things fixed over it, which are invisible to the
+ * layout — the page ends where it always did and they simply lie on top of it.
  *
- * The height is measured and published by the consent script rather than guessed at here,
- * because the banner wraps to two lines at some widths and three at others, and a constant
- * would be wrong at every width but one. It is `0px` until there is a banner up, which is every
- * page of a build with the lane switched off and every page after the question is answered.
+ * THE CONSENT BANNER covered the footer: About, API, Release notes and the repository link
+ * could not be clicked at all while the question was unanswered, and a keyboard reader could
+ * still Tab to them behind an opaque panel with the focus ring hidden. Its height is measured
+ * and published by the consent script rather than guessed at here, because the banner wraps to
+ * two lines at some widths and three at others, and a constant would be wrong at every width
+ * but one. It is `0px` until there is a banner up.
+ *
+ * THE FLOATING DOWNLOAD LINK never leaves, and its band is why the scroll padding above is not
+ * enough on its own. Scroll padding moves a control clear when there is somewhere left to
+ * scroll to; at the very foot of the document there is not, so the last controls a Tab pass
+ * reaches — the footer's own links, again — sat under the link with nothing able to move them.
+ * Measured: twelve tabs into the landing page at 700x600. Reserving the band here is what gives
+ * the scroll somewhere to go, and it is the same answer the banner above already gets.
  */
 body {
-    padding-bottom: var(--jd-consent-height, 0px);
+    padding-bottom: calc(var(--jd-consent-height, 0px) + var(--jd-space-6) + 3.5rem);
     margin: 0;
     background: var(--jd-background);
     color: var(--jd-text-primary);
@@ -128,43 +151,6 @@ a:focus-visible,
 button:focus-visible {
     outline: 2px solid var(--jd-text-primary);
     outline-offset: 2px;
-}
-
-/*
- * AND THE FLOATING DOWNLOAD LINK STANDS DOWN WHILE THE KEYBOARD IS ELSEWHERE
- * (WCAG 2.2 SC 2.4.11, AA).
- *
- * `DownloadFab.astro` is fixed to the bottom-right corner of every page but /download, and
- * the corner it owns is one the content scrolls through. The consent banner below is not the
- * same case — it is answered and gone, and `body` reserves its height in the meantime; this
- * control never leaves, so the room it needs cannot be reserved in the layout at all.
- *
- * SCROLL PADDING DOES NOT REACH THIS. It applies to focus moves that scroll, and those end
- * with the control flush against the bottom edge and only partly covered, which the criterion
- * allows. What fails it is a control already inside the viewport with this drawn over it, and
- * then no scroll happens for a scroll property to pad.
- *
- * HERE RATHER THAN IN THE COMPONENT, because a scoped style cannot say it: Astro writes its
- * scope attribute on every compound of a selector, so a scoped `body:has(…)` would ask for a
- * `<body>` carrying the component's own attribute and match nothing. Same reason the code
- * vocabulary below is global.
- *
- * `:focus-visible` rather than `:focus`, so a pointer user clicking a button never sees the
- * corner blink; `:not(:focus-visible)` so the link is fully drawn on the Tab that reaches it.
- *
- * AND IT STAYS DOWN FOR THE WHOLE OF A PRESS, which is not a detail. A mouse click moves the
- * focus on `mousedown`, and a control focused by a pointer does not match `:focus-visible` — so
- * a rule written on focus alone lets this control come back between the press and the release.
- * The release then lands on it instead of on what was pressed, the browser fires `click` on
- * their common ancestor rather than on the button, and the button never acts. Measured, not
- * reasoned about: the playground's copy button stopped copying, five runs out of five, and the
- * browser suite caught it. `body:active` holds the rule on until the button comes back up.
- * A browser without `:has()` drops the rule and is left where it was.
- */
-body:has(:focus-visible) .download-fab:not(:focus-visible),
-body:active .download-fab:not(:focus-visible) {
-    opacity: 0;
-    pointer-events: none;
 }
 
 code,
