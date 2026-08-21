@@ -4,6 +4,36 @@
   "locale": "en",
   "releases": [
     {
+      "version": "1.0.0-preview.3",
+      "date": "2026-08-21",
+      "maturity": "preview",
+      "anchor": "v1-0-0-preview-3",
+      "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/lib-v1.0.0-preview.3",
+      "summaryHtml": [
+        "<em>A fixed-prefix, restricted-alphabet format — <code>ORD-</code> followed by alphanumerics — is finally one chain instead of a workaround.</em>"
+      ],
+      "sections": [
+        {
+          "label": "✨ New",
+          "anchor": "v1-0-0-preview-3-new",
+          "items": [
+            "A character family, a subtraction or a casing now governs only the characters the generator draws — never a prefix, suffix or contained value you wrote. <code>Any.String().StartingWith(&quot;ORD-&quot;).AlphaNumeric()</code> no longer throws at declaration, and yields <code>ORD-</code> followed by alphanumerics only (<a href=\"https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0079-constrain-what-a-dummy-draws-never-the-literals-it-was-given.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0079</a>). No chain that worked before stops working, and no generated value changes shape.",
+            "New rule JD033 — names an anchored literal the declared characters cannot draw, at the call site, without refusing the chain. Information only, on by default.",
+            "New rule JD031 — points a chain declaring both inclusive bounds separately (<code>WithMinLength(8).WithMaxLength(20)</code>) at the range form the same generator exposes (<code>WithLengthBetween(8, 20)</code>). Information only.",
+            "New rule JD032 — warns when a bound is declared twice and the looser call silently loses, whichever order the two were written in."
+          ]
+        },
+        {
+          "label": "🙌 Improvements",
+          "anchor": "v1-0-0-preview-3-improvements",
+          "items": [
+            "JD015 now reports, as a warning, a value set every declared constraint empties — until now this surfaced only as two information-level JD029 notes.",
+            "JD024 and JD015 narrow to stay in step with the changes above: JD024 no longer reports a bound JD032 now owns, and JD015 keeps only its length-budget check, so neither refuses at build time what the library now honours at run time."
+          ]
+        }
+      ]
+    },
+    {
       "version": "1.0.0-preview.2",
       "date": "2026-08-18",
       "maturity": "preview",
@@ -17,8 +47,8 @@
           "label": "⚠️ Breaking changes",
           "anchor": "v1-0-0-preview-2-breaking-changes",
           "items": [
-            "<code>Any.String()</code> and <code>Any.Char()</code> now draw from the whole of ASCII, control characters included, and an unconstrained string spans 0 to 1024 characters — narrow it with <code>NonEmpty()</code>, <code>WithMaxLength(n)</code> or <code>Printable()</code> (<a href=\"https://github.com/Reefact/just-dummies/blob/catalog-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0075-draw-characters-from-the-whole-of-ascii.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0075</a>).",
-            "A declared maximum — <code>WithMaxLength</code>, <code>WithLengthBetween</code>, <code>WithMaxCount</code> — now steers the draw instead of composing with the old narrow spread, and a maximum above 1,000,000 is refused (<a href=\"https://github.com/Reefact/just-dummies/blob/catalog-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0076-let-a-declared-maximum-steer-the-size-draw.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0076</a>)."
+            "<code>Any.String()</code> and <code>Any.Char()</code> now draw from the whole of ASCII, control characters included, and an unconstrained string spans 0 to 1024 characters — narrow it with <code>NonEmpty()</code>, <code>WithMaxLength(n)</code> or <code>Printable()</code> (<a href=\"https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0075-draw-characters-from-the-whole-of-ascii.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0075</a>).",
+            "A declared maximum — <code>WithMaxLength</code>, <code>WithLengthBetween</code>, <code>WithMaxCount</code> — now steers the draw instead of composing with the old narrow spread, and a maximum above 1,000,000 is refused (<a href=\"https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0076-let-a-declared-maximum-steer-the-size-draw.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0076</a>)."
           ]
         },
         {
@@ -26,7 +56,7 @@
           "anchor": "v1-0-0-preview-2-new",
           "items": [
             "Five new character families — <code>Punctuation()</code>, <code>Printable()</code>, <code>NonPrintable()</code>, <code>Whitespaces()</code> and <code>Hexadecimal()</code> — plus <code>WithoutAlpha()</code>/<code>WithoutNumeric()</code> to subtract rather than pin, on both <code>Any.String()</code> and <code>Any.Char()</code>.",
-            "<strong><code>IPoolInspection&lt;T&gt;</code> reports what your own constraints left of a pool you supplied</strong> — <code>GetSurvivors()</code>, <code>GetRejections()</code> — on every generator that takes a value set (<a href=\"https://github.com/Reefact/just-dummies/blob/catalog-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0067-report-a-filtered-pool-through-an-explicit-interface.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0067</a>, <a href=\"https://github.com/Reefact/just-dummies/blob/catalog-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0068-carry-the-pool-inspection-wherever-a-caller-supplies-the-values.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0068</a>).",
+            "<strong><code>IPoolInspection&lt;T&gt;</code> reports what your own constraints left of a pool you supplied</strong> — <code>GetSurvivors()</code>, <code>GetRejections()</code> — on every generator that takes a value set (<a href=\"https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0067-report-a-filtered-pool-through-an-explicit-interface.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0067</a>, <a href=\"https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0068-carry-the-pool-inspection-wherever-a-caller-supplies-the-values.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0068</a>).",
             "JD029 flags, at build time, a value written into a pool that your own constraints can never draw.",
             "JD030 flags an <code>Any.String()</code> chain that settles no length, as information."
           ]
@@ -66,7 +96,7 @@
           "label": "✨ New",
           "anchor": "v1-0-0-preview-1-new",
           "items": [
-            "<strong>A seed now replays across patch and minor versions.</strong> Pin one in a test, and it keeps drawing the same values through every upgrade within <code>1.x</code> (<a href=\"https://github.com/Reefact/just-dummies/blob/catalog-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0049-replay-a-seed-across-patch-and-minor-versions.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0049</a>)."
+            "<strong>A seed now replays across patch and minor versions.</strong> Pin one in a test, and it keeps drawing the same values through every upgrade within <code>1.x</code> (<a href=\"https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0049-replay-a-seed-across-patch-and-minor-versions.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0049</a>)."
           ]
         },
         {
