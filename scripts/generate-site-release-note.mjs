@@ -48,14 +48,31 @@ function refuse(message) {
 }
 
 /**
- * A `## ` heading that is not a release — `## Unreleased`, and nothing else today.
+ * A `## ` heading that is not a release — `## Unreleased`, and nothing else.
  *
- * Declined here rather than refused, because a file carrying an Unreleased section is a
- * correct file: it is where the next release is drafted. What the parser refuses is a
- * heading that claims to be a release and then names no version.
+ * Declined rather than refused, because a file carrying an Unreleased section is a correct
+ * file: it is where the next release is drafted. What the parser refuses is a heading that
+ * claims to be a release and then names no version.
+ *
+ * THE DECLINED SET IS NAMED, NOT INFERRED. This used to read `!heading.startsWith('release/')`,
+ * which declined the one heading it meant to and every mistyping of a release heading along
+ * with it. A capital that slipped — `## Release/2026-08-20T00-00-00Z — …` — was dropped as
+ * silently as `## Unreleased` is, and /version went on publishing the release before it,
+ * under the tag before it, linking into the tree before it. Nothing downstream could catch
+ * that: the generated file stays consistent with itself, so CI's freshness check passes, and
+ * the browser check reads only the tag's shape. A heading that is neither the drafting
+ * surface nor a release now stops the build, where it is still one character to fix.
  */
-function notARelease(heading) {
-    return !heading.startsWith('release/');
+function notARelease(heading, file) {
+    if (heading === 'Unreleased') {
+        return true;
+    }
+
+    if (!heading.startsWith('release/')) {
+        refuse(`${file} heads a section "${heading}", which is neither "Unreleased" nor a release/ tag`);
+    }
+
+    return false;
 }
 
 /**
@@ -91,7 +108,10 @@ const { releasesOf, isoDateOf } = releaseNotesReader({
 // Newest first, the order the file already writes them in. Only the first is published, and
 // the rest are read purely to get past them.
 const releases = Object.fromEntries(
-    LOCALES.map((locale) => [locale, releasesOf(markdowns[locale], fileOf(locale), { skip: notARelease })[0]]),
+    LOCALES.map((locale) => [
+        locale,
+        releasesOf(markdowns[locale], fileOf(locale), { skip: (heading) => notARelease(heading, fileOf(locale)) })[0],
+    ]),
 );
 
 // The two languages are one document in two spellings, and the page joins them on the
@@ -107,6 +127,24 @@ if (releases.fr.sections.length !== releases.en.sections.length) {
             `${releases.en.sections.length} rubric(s) against ${releases.fr.sections.length}`,
     );
 }
+
+// Counting the rubrics was not enough. The join is positional all the way down — the page
+// puts the English bullet and the French bullet of the same rubric on the same line of the
+// same release — so a rubric written with three bullets in English and one in French passes
+// a rubric count and then renders exactly the half-translated page this file's own header
+// says §6.4 exists to prevent. The bullets are the unit a reader misses, so they are the
+// unit that is counted.
+releases.en.sections.forEach((section, index) => {
+    const twin = releases.fr.sections[index];
+
+    if (twin.items.length !== section.items.length) {
+        refuse(
+            `${fileOf('en')} and ${fileOf('fr')} disagree on ${releases.en.version}, rubric ${index + 1} ` +
+                `("${section.label}" against "${twin.label}"): ` +
+                `${section.items.length} bullet(s) against ${twin.items.length}`,
+        );
+    }
+});
 
 const document = {
     tag: releases.en.version,
