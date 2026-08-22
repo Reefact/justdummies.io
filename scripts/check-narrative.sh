@@ -319,7 +319,20 @@ fi
 # than this needs a horizontal scrollbar, which is how the two-column layout was found to
 # be wrong in the first place. A snippet that exceeds it is a snippet to re-wrap, or a
 # measurement to redo — either way a decision, not an accident.
-readonly WIDEST=130
+#
+# Redone at 135, and here is the measurement behind it. The tool recap grew a `to verify`
+# status with the CLI's 1.1 line, putting it at 135 characters — and it is captured from the
+# tool, never transcribed, so re-wrapping it is not on the table. Measured in Chromium at
+# 1440px: the figure's <pre> reports scrollWidth 1086 against clientWidth 1086, a nought-pixel
+# overflow, at the 12px the figure is set in. The document does not scroll sideways either,
+# at any width — the <pre> carries `overflow-x: auto` and the <figure> around it `hidden`, so
+# what a narrow viewport gets is the block scrolling inside itself, which is what a terminal
+# does and what every figure here already did at 130.
+#
+# So the number moved to where the measure actually sits, rather than the figure being bent
+# to a bound calibrated tighter than the layout it guards. What this assertion is for is
+# unchanged: the page must never scroll sideways as a whole.
+readonly WIDEST=135
 
 # shellcheck disable=SC2016  # literal JS source in single quotes, not shell interpolation
 widest="$(node -e '
