@@ -53,8 +53,8 @@ jobs:
             --data "$BODY" \
             "https://analyticsdata.googleapis.com/v1beta/properties/${GA4_PROPERTY_ID}:runReport")"
           status="$(tail -n1 <<<"$response")"
-          body="$(sed '$d' <<<"$response")"
-          echo "$body" > result.json
+          response_body="$(sed '$d' <<<"$response")"
+          echo "$response_body" > result.json
 
           {
             echo "### Request body"
