@@ -151,7 +151,6 @@ public static class PlaygroundStrings {
         ["footer.api"]          = "API",
         ["footer.releaseNotes"] = "Release notes",
         ["footer.privacy"]      = "Privacy",
-        ["footer.repository"]   = "Source code",
         ["state.newTab"]      = "opens in a new tab",
 
         // The one piece of the pre-boot shell (wwwroot/index.html) that still has to be
@@ -267,7 +266,6 @@ public static class PlaygroundStrings {
         ["footer.api"]          = new("API", "API"),
         ["footer.releaseNotes"] = new("Release notes", "Release notes"),
         ["footer.privacy"]      = new("Confidentialité", "Privacy"),
-        ["footer.repository"]   = new("Code source", "Source code"),
         ["state.newTab"]      = new("ouvre un nouvel onglet", "opens in a new tab"),
 
         ["errorBanner.message"] = new("Une erreur est survenue.", "Something went wrong."),

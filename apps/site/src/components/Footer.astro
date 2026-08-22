@@ -35,14 +35,11 @@ const year: number = new Date(version.built).getFullYear();
 
 <footer class="site-footer">
     <nav class="footer-nav" aria-label={t('footer.nav')}>
-        <a href={pathForLocale('/about', locale)}>{t('footer.about')}</a>
         <a href={pathForLocale('/api', locale)}>{t('footer.api')}</a>
         <a href={pathForLocale('/release-notes', locale)}>{t('footer.releaseNotes')}</a>
+        <span class="divider" aria-hidden="true"></span>
+        <a href={pathForLocale('/about', locale)}>{t('footer.about')}</a>
         <a href={pathForLocale('/privacy', locale)}>{t('footer.privacy')}</a>
-        <a href={site.siteRepository} target="_blank" rel="noopener noreferrer">
-            {t('footer.repository')}
-            <span class="visually-hidden"> {t('state.newTab')}</span>
-        </a>
     </nav>
     <p class="copyright">© {year} {site.legal.entity}</p>
 </footer>
@@ -74,6 +71,13 @@ const year: number = new Date(version.built).getFullYear();
 
     .footer-nav a:hover {
         color: var(--jd-text-primary);
+    }
+
+    .divider {
+        width: 1px;
+        align-self: stretch;
+        min-height: 1rem;
+        background: var(--jd-border);
     }
 
     .copyright {
