@@ -183,19 +183,26 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
      * there is no element for a screen reader to announce, which is the right answer for a
      * drawing that says nothing the page has not already said.
      *
-     * WHERE THE NUMBERS COME FROM, measured on the built page in both locales:
+     * ONE SIZE, AND IT NEVER CHANGES. The figure used to take the box's growth with it,
+     * between 208 and 352 pixels, and that was one behaviour too many: a drawing whose
+     * size depends on the window is a drawing whose size nobody knows. It is 300 pixels
+     * on every window that draws it at all, and on the ones that cannot hold 300 it is
+     * absent rather than smaller.
      *
-     *     window height    1080    1120    1200    1440
-     *     free box          240     260     300     420
+     * WHERE THE THRESHOLD COMES FROM, measured on the built page in both locales:
      *
-     * the box being the gap plus the 165-pixel block under it. It grows by one pixel for
-     * every two of window past 1000, and the figure takes that growth at the same rate
-     * from 208, stopping at 352 — where the 518x717 artwork reaches the column's 384.
+     *     window height    1200    1280    1306    1440
+     *     free box          300     340     353     420
      *
-     * THE QUERY STARTS AT 1120, NOT AT THE 1080 WHERE 208 FIRST FITS, because the card
-     * above can grow after the first paint: pressing Run replaces the static figure with
-     * the live one, and the library's refusal is a line or two taller than a value. Those
-     * 40 pixels are that line.
+     * the box being the gap plus the 165-pixel block under it, and growing by exactly one
+     * pixel for every two of window past 1000. At 1200 the figure would touch the card;
+     * 1280 is where 40 pixels of air open above its head, and that is the cliff. Nothing
+     * between the two states exists, which is the point.
+     *
+     * THOSE 40 PIXELS ARE ALSO THE CARD'S ROOM TO GROW after the first paint: pressing Run
+     * replaces the static figure with the live one, and the library's refusal is a line
+     * taller than a value. A refusal at the threshold leaves the head some 15 pixels of
+     * air rather than none — narrow, and never negative, which is what matters.
      *
      * IN PIXELS RATHER THAN REM, alone on this screen. Every number above came off a
      * viewport measured in pixels. In `rem` the figure would grow with the reader's font
@@ -214,14 +221,14 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
         display: none;
     }
 
-    @media (min-width: 75rem) and (min-height: 1120px) {
+    @media (min-width: 75rem) and (min-height: 1280px) {
         .mascot {
             display: block;
             position: absolute;
             right: 0;
             bottom: 0;
             z-index: -1;
-            height: clamp(208px, calc(208px + (100vh - 1120px) / 2), 352px);
+            height: 300px;
             aspect-ratio: 518 / 717;
             background: url('/dummy-look-at-this.webp') no-repeat center bottom / contain;
             pointer-events: none;

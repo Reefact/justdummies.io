@@ -24,17 +24,26 @@ import { expect, test } from './support/harness';
 /** The artwork's file name, as the media query asks for it. */
 const ARTWORK: string = 'dummy-look-at-this.webp';
 
-/** Windows with no room: too short for the figure, or too narrow for the column it stands in. */
+/** The one height the figure is ever drawn at. It does not scale; below its room it is absent. */
+const FIGURE: number = 300;
+
+/**
+ * Windows with no room: too short for the figure, or too narrow for the column it stands in.
+ * 1920x1200 is here on purpose — it is a large desktop by any measure, and its free box is
+ * exactly 300 pixels, which would put the figure's head on the card. A window can be big and
+ * still not be big enough, and that is the case a threshold picked by eye gets wrong.
+ */
 const CRAMPED: ReadonlyArray<readonly [number, number]> = [
     [1440, 900],
     [1920, 1080],
+    [1920, 1200],
     [1199, 1400],
 ];
 
-/** Windows the query draws on: the threshold itself, an ordinary large desktop, and a 1440p screen. */
+/** Windows the query draws on: the threshold itself, a 1440p screen's real viewport, and a full 1440. */
 const ROOMY: ReadonlyArray<readonly [number, number]> = [
-    [1200, 1120],
-    [1920, 1200],
+    [1200, 1280],
+    [2560, 1306],
     [2560, 1440],
 ];
 
@@ -126,6 +135,14 @@ for (const path of ['/', '/fr/']) {
             expect(fetched(), `${ARTWORK} was not downloaded at ${width}x${height}, where it is drawn`).toBe(true);
 
             const mascot: Box = screen.mascot!;
+
+            /*
+             * ONE SIZE, ON EVERY WINDOW THAT DRAWS IT. This is the promise the earlier
+             * `clamp()` broke: between 1280 and 1440 the box grows by 80 pixels, and none of
+             * them reach the figure. Asserted as an exact number rather than a range, because
+             * "it did not shrink" is the whole claim and a range would let it shrink a little.
+             */
+            expect(mascot.bottom - mascot.top, 'the dummy changed size with the window').toBe(FIGURE);
 
             /*
              * Clear of the expression above it. The stylesheet budgets 40 of these pixels for
