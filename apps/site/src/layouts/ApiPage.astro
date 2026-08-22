@@ -32,12 +32,14 @@ const locale: Locale = localeFromPath(Astro.url.pathname);
             <p class="api-version">
                 API v{apiLibraryVersion}
                 {/*
-                  Only `[Reproducible]` (declared on this one page) comes off
-                  `JustDummies.Xunit` rather than `JustDummies` itself — naming just
-                  `apiLibraryVersion` here would tell a reader chasing that attribute
-                  the wrong package version.
+                  `[Reproducible]` comes off `JustDummies.Xunit` rather than `JustDummies`
+                  itself — naming just `apiLibraryVersion` here would tell a reader chasing
+                  that attribute the wrong package version. It appears on its own category
+                  page, and by name on the overview's card for that category
+                  (`ApiCategoryCard` previews the first three entry names), so both pages
+                  carry the Xunit version too.
                 */}
-                {activeSlug === 'reproducibility' && <> · JustDummies.Xunit v{apiXunitVersion}</>}
+                {(activeSlug === 'reproducibility' || activeSlug === '') && <> · JustDummies.Xunit v{apiXunitVersion}</>}
             </p>
         </div>
         <div class="api-layout">
