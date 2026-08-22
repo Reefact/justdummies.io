@@ -195,6 +195,21 @@ const t = useTranslations(locale);
         // know the nesting explicitly.
         const intersecting = new Set<HTMLElement>();
 
+        // A jump — a click, a direct fragment URL, `history.back()` — names its target
+        // precisely and outranks the band until the dust settles. Pinned rather than
+        // applied once: `Base.astro`'s own anchor script animates the scroll over up to
+        // 900ms with `history.pushState` (which fires no `hashchange` to catch here), and
+        // a short rubric can land outside the band entirely — either of which would
+        // otherwise have the very next intersection callback overwrite the jump with
+        // whatever the band happens to see mid-flight or at rest.
+        const PIN_MS = 1000;
+        let pinnedUntil = 0;
+
+        function pin(link: HTMLAnchorElement): void {
+            setCurrent(link);
+            pinnedUntil = Date.now() + PIN_MS;
+        }
+
         const observer = new IntersectionObserver(
             (entries) => {
                 for (const entry of entries) {
@@ -203,6 +218,10 @@ const t = useTranslations(locale);
                     } else {
                         intersecting.delete(entry.target as HTMLElement);
                     }
+                }
+
+                if (Date.now() < pinnedUntil) {
+                    return;
                 }
 
                 let winner: { link: HTMLAnchorElement; height: number } | undefined;
@@ -216,7 +235,14 @@ const t = useTranslations(locale);
                     }
                 }
 
-                setCurrent(winner?.link);
+                // Leaves the last-known entry alone rather than clearing it: the band is a
+                // 10% sliver, and a fast scroll can cross a gap between two targets with
+                // neither one in it for a frame. That is not the reader having left every
+                // section — it is the geometry blinking, and the entry from a moment ago is
+                // still the better answer than none.
+                if (winner !== undefined) {
+                    setCurrent(winner.link);
+                }
             },
             { rootMargin: BAND },
         );
@@ -225,21 +251,20 @@ const t = useTranslations(locale);
             observer.observe(el);
         }
 
-        // The band above only ever answers "what is scrolled to the middle of the
-        // viewport", so it never fires for a target that a jump — a direct fragment URL,
-        // or a reduced-motion reader's click — lands at the top of the viewport instead of
-        // scrolling past. The hash always names that target precisely, so this reads it
-        // directly rather than waiting on geometry it may never cross.
-        function setCurrentFromHash(): void {
+        for (const { link } of targets) {
+            link.addEventListener('click', () => pin(link));
+        }
+
+        function pinFromHash(): void {
             const id = decodeURIComponent(location.hash.slice(1));
             const target = targets.find((candidate) => candidate.el.id === id);
             if (target) {
-                setCurrent(target.link);
+                pin(target.link);
             }
         }
 
-        window.addEventListener('hashchange', setCurrentFromHash);
-        setCurrentFromHash();
+        window.addEventListener('hashchange', pinFromHash);
+        pinFromHash();
     }
 </script>
 
