@@ -99,6 +99,19 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
      * drawing's rows, 18 at the size it is drawn — the far foot lands on the rule and the near
      * one crosses it, which is what standing on a step looks like. Re-measure both if the
      * artwork is ever recropped.
+     *
+     * AND IT IS `top`, NOT A MARGIN, WHICH IS NOT A DETAIL. A margin moves the float's box, and
+     * a box reaching into the footer's own band is a box the footer will not pass under: the
+     * footer establishes its own formatting context, so it was laid out *beside* the float
+     * instead — narrowed to what was left, then re-centred inside it by its own `margin: 0
+     * auto`. The whole footer shifted 515 pixels left and its rule stopped short of the
+     * drawing. Relative positioning moves what is painted and leaves the box where the layout
+     * put it, which is the half everything else depends on.
+     *
+     * The exclusion therefore keeps the box's position, 18 pixels above the ink it was traced
+     * from. That is the harmless direction: the silhouette leans left as it descends, so the
+     * shape at any height is further left than the drawing is there, and the text stops that
+     * much sooner rather than that much later.
      */
     .mascot {
         display: none;
@@ -129,7 +142,8 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
             float: right;
             width: 317px;
             height: 626px;
-            margin-top: 18px;
+            position: relative;
+            top: 18px;
             margin-right: -224px;
             shape-outside: polygon(
                     71% 0%,
