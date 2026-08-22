@@ -223,6 +223,24 @@ const searchIndex: SearchEntry[] = allApiCategories().flatMap((category) =>
 
 <style>
     .api-nav {
+        /*
+         * `position: sticky` lives here, on the `<details>` itself, rather than on
+         * `.api-nav-body` below it. Chromium wraps everything a `<details>` holds besides
+         * `<summary>` in an internal `::details-content` box (added to animate open/close),
+         * and a sticky descendant of that box never sticks — its offset keeps tracking the
+         * scroll instead of clamping at `top`. Sticking the `<details>` element itself sits
+         * outside that wrapper and behaves normally.
+         *
+         * `align-self: start` for a second, unrelated reason: `.api-layout`'s grid stretches
+         * every item to the row's height by default, and the row is as tall as `.api-main` —
+         * thousands of pixels on a long reference page. A sticky element stretched to match
+         * its own containing block has no slack to hold position in: its box already spans
+         * the block's full scrollable range, so it just tracks the scroll instead of
+         * clamping. Sizing the item to its own content restores the room sticky needs.
+         */
+        position: sticky;
+        top: var(--jd-space-4);
+        align-self: start;
         border-right: 1px solid var(--jd-border);
     }
 
@@ -231,8 +249,6 @@ const searchIndex: SearchEntry[] = allApiCategories().flatMap((category) =>
     }
 
     .api-nav-body {
-        position: sticky;
-        top: var(--jd-space-4);
         padding: 0 var(--jd-space-4) var(--jd-space-8) 0;
     }
 
@@ -314,6 +330,7 @@ const searchIndex: SearchEntry[] = allApiCategories().flatMap((category) =>
 
     @media (max-width: 56rem) {
         .api-nav {
+            position: static;
             border-right: 0;
             border-bottom: 1px solid var(--jd-border);
             margin-bottom: var(--jd-space-6);
@@ -346,7 +363,6 @@ const searchIndex: SearchEntry[] = allApiCategories().flatMap((category) =>
         }
 
         .api-nav-body {
-            position: static;
             padding: 0 0 var(--jd-space-4);
         }
     }
