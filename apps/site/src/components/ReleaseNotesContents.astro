@@ -206,20 +206,50 @@ const t = useTranslations(locale);
         let pinnedUntil = 0;
         let pinTimer: ReturnType<typeof setTimeout> | undefined;
 
+        // How many pixels of the band itself a target actually covers — not how close its
+        // own centre is to the viewport's, which a target far taller than the viewport
+        // (extending well above and below it) can lose even while it fills the band
+        // entirely, to a short peer whose whole span happens to sit nearer the middle.
+        function bandCoverage(el: HTMLElement): number {
+            const rect = el.getBoundingClientRect();
+            const bandTop = window.innerHeight * 0.45;
+            const bandBottom = window.innerHeight * 0.55;
+            return Math.max(0, Math.min(rect.bottom, bandBottom) - Math.max(rect.top, bandTop));
+        }
+
         // Reads whatever the band currently sees, independent of the pin above — called
         // both from the observer once nothing is pinned, and once the pin itself expires,
         // so a reader who scrolled on to a different section *during* that second is not
         // left stranded on the jump's original target for want of a further boundary
         // crossing to report it.
         function applyBandWinner(): void {
-            let winner: { link: HTMLAnchorElement; height: number } | undefined;
+            let winner: { link: HTMLAnchorElement; el: HTMLElement } | undefined;
             for (const target of targets) {
                 if (!intersecting.has(target.el)) {
                     continue;
                 }
-                const height = target.el.getBoundingClientRect().height;
-                if (winner === undefined || height < winner.height) {
-                    winner = { link: target.link, height };
+                if (winner === undefined) {
+                    winner = target;
+                    continue;
+                }
+                if (target.el.contains(winner.el)) {
+                    // The current winner is the more specific one already — a rubric
+                    // inside the release just found, say. Containment, not height: two
+                    // adjacent rubrics never contain each other, so this never mistakes
+                    // "shorter" for "more specific" between peers the way a bare height
+                    // comparison did — the gap between rubrics is narrower than the band,
+                    // so a short one barely touching its edge could out-measure one still
+                    // covering the centre.
+                    continue;
+                }
+                if (winner.el.contains(target.el)) {
+                    winner = target;
+                    continue;
+                }
+                // Peers, neither containing the other — whichever covers more of the band
+                // is the one in front of the reader.
+                if (bandCoverage(target.el) > bandCoverage(winner.el)) {
+                    winner = target;
                 }
             }
 
