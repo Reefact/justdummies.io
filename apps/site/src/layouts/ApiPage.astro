@@ -11,6 +11,7 @@ import BrandHeading from '../components/BrandHeading.astro';
 import ApiCategoryNav from '../components/ApiCategoryNav.astro';
 import { localeFromPath } from '../i18n/routing';
 import type { Locale } from '../i18n/ui';
+import { apiLibraryVersion } from '../apiCatalogue';
 import Base from './Base.astro';
 
 interface Props {
@@ -28,6 +29,7 @@ const locale: Locale = localeFromPath(Astro.url.pathname);
     <div class="api-shell">
         <div class="shell">
             <BrandHeading />
+            <p class="api-version">API v{apiLibraryVersion}</p>
         </div>
         <div class="api-layout">
             <ApiCategoryNav locale={locale} activeSlug={activeSlug} />
@@ -41,6 +43,13 @@ const locale: Locale = localeFromPath(Astro.url.pathname);
 <style>
     .api-shell {
         padding-block: var(--jd-space-8) var(--jd-space-16);
+    }
+
+    .api-version {
+        margin: calc(-1 * var(--jd-space-2)) 0 0;
+        color: var(--jd-text-muted);
+        font-family: var(--jd-font-mono);
+        font-size: var(--jd-text-sm);
     }
 
     .api-layout {
