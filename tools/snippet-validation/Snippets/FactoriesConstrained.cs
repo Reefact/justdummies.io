@@ -10,11 +10,13 @@ using JustDummies;
 public static class AnyOrderReference {
 
     public static OrderReference Generate() {
+        const string alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-";
+
         string reference = Any.String()
-                              .NonEmpty()
+                              .WithMinLength(8)
                               .WithMaxLength(20)
                               .StartingWith("ORD-")
-                              .Printable()
+                              .WithChars(alphabet)
                               .Generate();
 
         return OrderReference.Create(reference);

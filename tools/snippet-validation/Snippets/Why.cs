@@ -16,11 +16,13 @@ public static class Why {
     /// </summary>
     public static string OrderReference() {
         // <snippet:why-order-reference>
+        const string alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-";
+
         string reference = Any.String()
-                              .NonEmpty()
+                              .WithMinLength(8)
                               .WithMaxLength(20)
                               .StartingWith("ORD-")
-                              .Printable()
+                              .WithChars(alphabet)
                               .Generate();
         // </snippet:why-order-reference>
 

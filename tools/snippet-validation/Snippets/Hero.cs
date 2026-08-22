@@ -16,11 +16,13 @@ public static class Hero {
 
     public static string PreFilledExpression() {
         // <snippet:hero-expression>
+        const string alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-";
+
         string reference = Any.String()
                               .StartingWith("ORD-")
                               .Containing("2026")
                               .WithLength(12)
-                              .Printable()
+                              .WithChars(alphabet)
                               .Generate();
         // </snippet:hero-expression>
 

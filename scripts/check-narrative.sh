@@ -202,9 +202,10 @@ const [generated, strings] = process.argv.slice(1);
 // "never empty" are the same rule named twice), tight enough that only that rule satisfies it.
 const NAMED_BY = {
     NonEmpty:      /(not|never) empty|(non|jamais) vide/i,
+    WithMinLength: /eight characters|huit caract/i,
     WithMaxLength: /twenty characters|vingt caract/i,
     StartingWith:  /with ORD-|par ORD-/i,
-    Printable:     /printable|imprimable/i,
+    WithChars:     /letters, digits and hyphens|lettres.*chiffres.*tirets/i,
 };
 
 // The sentences that promise a complete list. Each must exist in both locales.

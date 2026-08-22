@@ -21,7 +21,7 @@ public sealed partial class AnyOrder : IAny<Order> {
 
     /// <summary>Creates the generator with a default recipe for every constructor parameter.</summary>
     public AnyOrder()
-        : this(reference:  Any.String().NonEmpty().WithMaxLength(20).As(OrderReference.Create),
+        : this(reference:  Any.String().NonEmpty().WithMinLength(8).WithMaxLength(20).As(OrderReference.Create),
                customerId: Any.Guid().NonEmpty().As(CustomerId.Create),
                total:      Any.Decimal().Positive().As(Money.Create),
                status:     Any.Enum<OrderStatus>()) { }
