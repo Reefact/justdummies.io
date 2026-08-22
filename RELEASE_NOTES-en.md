@@ -14,6 +14,7 @@ consumes this deployment (see [ADR-0001](docs/for-maintainers/adr/0001-a-release
 
 - The /version page now has a "Previous releases" section, showing the 5 releases this site published just before its latest one, with a single link to see further releases on GitHub.
 - A dummy now stands beside the install command on the home page's first screen, on windows large enough to have room for it.
+- The About page is now signed by a dummy leaning at the end of the text, on wide windows: the prose's right edge follows his lean instead of running past him.
 
 ### 🙌 Improvements
 

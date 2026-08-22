@@ -15,6 +15,7 @@ compatibilité, puisque rien ne consomme ce déploiement (voir
 
 - La page /version dispose désormais d'une section « Releases précédentes », montrant les 5 releases publiées par ce site juste avant la dernière, avec un lien unique pour voir les releases suivantes sur GitHub.
 - Un dummy se tient désormais à côté de la commande d'installation sur le premier écran de la page d'accueil, sur les fenêtres assez grandes pour lui faire de la place.
+- La page À propos est désormais signée par un dummy adossé en fin de texte, sur les fenêtres larges : le bord droit de la prose épouse son inclinaison au lieu de lui passer dessus.
 
 ### 🙌 Améliorations
 

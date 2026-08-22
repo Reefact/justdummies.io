@@ -262,6 +262,34 @@ Modalités, qui sont des exigences d'accessibilité autant que d'honnêteté :
   la version n'est pas résoluble fait échouer le build. C'est ce contrôle qui fait la
   différence entre une règle et une intention.
 
+### 5.8 Le dummy est la figure de la maison, jamais le sujet
+
+Le mannequin de crash-test est l'objet que le nom du produit désigne. Il peut donc revenir
+d'une page à l'autre sans contredire §5.2 : ce que §5.2 refuse, c'est qu'une direction
+graphique repose sur des images empruntées — développeurs souriants, robots génériques,
+cubes 3D —, pas qu'un produit montre la chose qu'il nomme.
+
+La distinction n'est pas un jeu de mots, c'est elle qui décide si les dessins du site sont
+une identité ou une facilité. Les modalités ci-dessous sont ce qui garde la première
+réponse vraie.
+
+- **Un seul par page.** Deux dessins sur un même écran, et la page parle d'eux.
+- **Seulement là où la page n'a rien à montrer** : une 404, une marge que la mise en page
+  laisse vide, une colonne que la mesure du texte n'atteint pas. Jamais sur un écran qui
+  démontre quelque chose (§5.4).
+- **Jamais devant du texte ni devant du code.** Il passe derrière, ou il n'est pas là. La
+  seule proximité permise est celle que le texte a choisie : sur /about, la prose longe sa
+  silhouette parce que la mise en page le lui demande, et ne le touche jamais.
+- **Il disparaît plutôt que de rétrécir.** En dessous de la place qu'il lui faut, il n'est
+  pas dessiné du tout : une figure dont la taille dépend de la fenêtre est une figure dont
+  personne ne connaît la taille.
+- **Une seule famille graphique** — même origine, même palette, même lumière. Un dessin
+  d'une autre facture ferait de la série une collection.
+- **Contrôlé en intégration continue** : un second dessin sur une même page, ou un dessin
+  qu'une ligne de texte touche, fait échouer la suite navigateur. Les deux premières
+  modalités cessent ainsi d'être des intentions. Les autres relèvent de la relecture, et
+  ce paragraphe est l'endroit où elles sont écrites plutôt que supposées.
+
 ---
 
 ## 6. Langues
