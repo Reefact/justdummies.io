@@ -82,9 +82,15 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
      * over the measure. `border-box` on the shape is not decoration: a negative margin shrinks
      * the margin box, which is what the percentages would otherwise be resolved against.
      *
-     * 500 PIXELS, AND THE ENGLISH PAGE IS WHAT FIXES IT. Measured from the heading to the
-     * links: 562 pixels in French, 507 in English. A figure taller than the shorter of the two
-     * would hang below its own text and push the footer down on one locale only.
+     * HIS FEET ARE ON THE FOOTER'S RULE, not on the last line of the text, and that is what
+     * decides his height rather than any judgement about size. From the top of the heading to
+     * that rule is 626 pixels, measured; he is 626 tall and stands at the top of the text, so
+     * the page reads as something he is leaning at the end of. Anchored to the prose instead —
+     * which is what the first version did — he ended a hundred pixels short of the line, and
+     * looked like a drawing that had been dropped in the margin.
+     *
+     * The 64 pixels he overflows his own section by are the gap above the footer, which holds
+     * nothing. A float overflows without pushing anything, and the footer clears nothing.
      */
     .mascot {
         display: none;
@@ -96,12 +102,26 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
      * a float with a shape in a narrow measure turns a paragraph into a staircase.
      */
     @media (min-width: 75rem) {
+        /*
+         * THE TWO LOCALES ARE MADE THE SAME HEIGHT, and that is what lets one figure stand on
+         * the rule in both. The French block runs 562 pixels and the English one 507, so the
+         * footer's rule sits 55 pixels higher in English — and a figure tall enough to reach it
+         * in French would cross it there, into the row that carries the copyright.
+         *
+         * The floor is the taller of the two, measured. It costs the English page 55 pixels of
+         * air under its links, which is the price of the two pages ending on the same line;
+         * re-measure it if either text is rewritten, since nothing here can know that it moved.
+         */
+        .about {
+            min-height: 562px;
+        }
+
         .mascot {
             display: block;
             float: right;
-            width: 253px;
-            height: 500px;
-            margin-right: -184px;
+            width: 317px;
+            height: 626px;
+            margin-right: -224px;
             shape-outside: polygon(
                     71% 0%,
                     100% 0%,
