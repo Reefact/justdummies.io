@@ -84,7 +84,7 @@ export const site = {
         package: 'JustDummies.Cli',
         /** The command typed, which is not the package installed. */
         command: 'dum',
-        version: '1.0.0-beta.1',
+        version: '1.1.0-beta.2',
         nuget: 'https://www.nuget.org/packages/JustDummies.Cli',
         installCommand: 'dotnet tool install --global JustDummies.Cli --prerelease',
         example: 'dum generate Order',
