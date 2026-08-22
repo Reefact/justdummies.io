@@ -71,6 +71,10 @@ function memberEntries(entry: ApiEntry, categorySlug: string): SearchEntry[] {
     }));
 }
 
+/** The active category's own entries, or null off it (the overview, or a slug with none). Drives the nav's one expanded sub-list — the sidebar stays a category list everywhere else. */
+const activeCategoryEntries: readonly ApiEntry[] | null =
+    allApiCategories().find((category) => category.slug === activeSlug)?.entries ?? null;
+
 const searchIndex: SearchEntry[] = allApiCategories().flatMap((category) =>
     category.entries.flatMap((entry: ApiEntry): SearchEntry[] => [
         {
@@ -116,6 +120,15 @@ const searchIndex: SearchEntry[] = allApiCategories().flatMap((category) =>
                         <a href={apiPath(slug)} aria-current={activeSlug === slug ? 'page' : undefined}>
                             {label}
                         </a>
+                        {slug === activeSlug && activeCategoryEntries !== null && (
+                            <ul class="api-nav-sublist">
+                                {activeCategoryEntries.map((entry) => (
+                                    <li>
+                                        <a href={`${apiPath(slug)}#${entry.id}`}>{entry.name}</a>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </li>
                 ))
             }
@@ -326,6 +339,32 @@ const searchIndex: SearchEntry[] = allApiCategories().flatMap((category) =>
         border-color: var(--jd-accent);
         background: color-mix(in srgb, var(--jd-accent) 8%, transparent);
         font-weight: 600;
+    }
+
+    /* The active category's own entries — one level down, so it reads as belonging to the
+       category above it rather than as a sibling in the same list. */
+    .api-nav-sublist {
+        list-style: none;
+        margin: 0.125rem 0 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.125rem;
+    }
+
+    .api-nav-sublist a {
+        display: block;
+        padding: var(--jd-space-1) var(--jd-space-3) var(--jd-space-1) calc(var(--jd-space-3) + var(--jd-space-4));
+        border-left: 2px solid transparent;
+        border-radius: 0 var(--jd-radius-sm) var(--jd-radius-sm) 0;
+        color: var(--jd-text-muted);
+        font-family: var(--jd-font-mono);
+        font-size: var(--jd-text-sm);
+        text-decoration: none;
+    }
+
+    .api-nav-sublist a:hover {
+        color: var(--jd-text-primary);
     }
 
     @media (max-width: 56rem) {
