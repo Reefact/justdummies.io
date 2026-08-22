@@ -29,9 +29,11 @@
  *
  * THE SECOND HEADING'S 5 CARDS CARRY NO LINK OF THEIR OWN. A "Voir sur GitHub" repeated
  * identically five times would be five copies of the same fact, so one link closes the
- * section instead, naming how many releases it opens and anchored on the release right past
- * the last one shown — a reader who keeps going on GitHub picks up exactly where this page's
- * own listing stops.
+ * section instead, anchored on the release right past the last one shown — a reader who keeps
+ * going on GitHub picks up exactly where this page's own listing stops. That link's words
+ * don't count what is past that point: this page shows exactly 5, but GitHub's own list keeps
+ * going well beyond them, and a label promising "5 more" would be wrong the moment a reader
+ * followed it.
  */
 import ReleaseCard from './ReleaseCard.astro';
 import { localeFromPath } from '../i18n/routing';
@@ -117,7 +119,7 @@ const NOTHING: string = '#null';
 
     <p class="view-all">
         <a href={releaseUrl(siteRelease.moreTag)} target="_blank" rel="noopener noreferrer">
-            {t('version.previous.viewAllPrefix')} {previous.length} {t('version.previous.viewAllSuffix')}
+            {t('version.previous.viewMoreOnGithub')}
             <svg class="arrow" viewBox="0 0 12 12" width="10" height="10" aria-hidden="true" focusable="false">
                 <path d="M3 9L9 3M4.5 3H9v4.5" />
             </svg>

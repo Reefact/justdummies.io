@@ -192,11 +192,10 @@ for (const { path, heading, built, previousHeading } of PAGES) {
 
         const link = page.locator('.previous .view-all a');
 
-        // Named the way "5 releases" is named elsewhere on this site (releaseNotes.releases),
-        // so the count in the sentence and the number of cards above it can't drift apart
-        // silently — a page showing 5 cards and a link saying "4 more" would satisfy every
-        // other check here.
-        expect(await link.innerText()).toMatch(/5/);
+        // No count in the words: GitHub's own list keeps going well past the 5 cards this
+        // page shows, so a label naming a number here would be wrong the moment a reader
+        // followed it.
+        expect(await link.innerText()).not.toMatch(/\d/);
 
         // Anchored past the last of the 5 cards shown, not at the GitHub releases page's top —
         // a reader who keeps going lands exactly where this page's own listing stops.

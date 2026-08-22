@@ -96,14 +96,39 @@ const markdowns = Object.fromEntries(LOCALES.map((locale) => [locale, readFileSy
 
 const published = newestTagOf(markdowns.en, fileOf('en'));
 
-const { releasesOf, isoDateOf } = releaseNotesReader({
-    refuse,
-    // Relative links in these notes are written from the repository root — the file's own
-    // intro links to an ADR that way, and a bullet could. Pinned to the release being
-    // published rather than to a branch: a note that describes one release and links into
-    // another tree is two statements, not one.
-    resolveLink: githubHrefResolver({ repositoryUrl: REPOSITORY_URL, ref: published, relativeTo: '.', siteOrigin: SITE_ORIGIN }),
-});
+// `isoDateOf` never touches a link, so it does not need a resolver bound to any particular
+// tag — unlike `releasesOf`, which is created fresh per tag below (`releasesPinnedTo`).
+const { isoDateOf } = releaseNotesReader({ refuse, resolveLink: () => ({ href: '', external: false }) });
+
+/**
+ * A release, read from both files, with every relative link inside it resolved against ITS
+ * OWN tag rather than the newest one.
+ *
+ * Reading a release once per tag rather than once per file — as this used to, before the
+ * "previous releases" section existed — is what that requires. A single `releaseNotesReader`
+ * bound to one `ref` resolves every relative link it meets against that same ref, which was
+ * exactly right when only the newest release was ever read (its own tag and `published` are
+ * the same tag). A previous release's relative link, resolved the same way, would point into
+ * the newest release's tree instead of its own — a note that describes one release and links
+ * into another repository state is two statements, not one, the same reasoning `resolveLink`'s
+ * own comment below already carries for the newest release. Re-parsing the whole file per tag
+ * costs nothing that matters here: these are small files read at build time, not a hot path.
+ */
+function releasesPinnedTo(tag) {
+    const { releasesOf } = releaseNotesReader({
+        refuse,
+        // Relative links in these notes are written from the repository root — the file's own
+        // intro links to an ADR that way, and a bullet could.
+        resolveLink: githubHrefResolver({ repositoryUrl: REPOSITORY_URL, ref: tag, relativeTo: '.', siteOrigin: SITE_ORIGIN }),
+    });
+
+    return Object.fromEntries(
+        LOCALES.map((locale) => [
+            locale,
+            releasesOf(markdowns[locale], fileOf(locale), { skip: (heading) => notARelease(heading, fileOf(locale)) }),
+        ]),
+    );
+}
 
 /**
  * How many releases before the latest one /version's "previous releases" section shows in
@@ -115,13 +140,10 @@ const PREVIOUS_COUNT = 5;
 
 // Newest first, the order the file already writes them in — every release, not just the
 // latest: the "previous releases" section needs PREVIOUS_COUNT more of them, plus one further
-// tag to link past them (moreTag, below).
-const allReleases = Object.fromEntries(
-    LOCALES.map((locale) => [
-        locale,
-        releasesOf(markdowns[locale], fileOf(locale), { skip: (heading) => notARelease(heading, fileOf(locale)) }),
-    ]),
-);
+// tag to link past them (moreTag, below). Pinned to `published` only to discover that order
+// and each release's own tag and date, neither of which any resolver choice can change — the
+// content each release actually publishes is read again below, pinned to its own tag.
+const allReleases = releasesPinnedTo(published);
 
 function releaseAt(index) {
     return { en: allReleases.en[index], fr: allReleases.fr[index] };
@@ -167,12 +189,22 @@ function releaseDocumentOf(index) {
 
     checkAgree(en, fr);
 
+    // Re-read this one release, pinned to its own tag rather than `published` — see
+    // `releasesPinnedTo`'s comment. `en`/`fr` above are already checked and still hold the
+    // right `version`/`date` (a resolver choice cannot change either), only the resolved
+    // prose is replaced.
+    const pinned = releasesPinnedTo(en.version);
+    const own = { en: pinned.en[index], fr: pinned.fr[index] };
+
     return {
         tag: en.version,
         // One ISO date for both languages, read from the English file: the French twin
         // spells the same day as "19 août 2026", which is a spelling, not a second fact.
         date: isoDateOf(en.date, fileOf('en')),
-        locales: { en: { summaryHtml: en.summaryHtml, sections: en.sections }, fr: { summaryHtml: fr.summaryHtml, sections: fr.sections } },
+        locales: {
+            en: { summaryHtml: own.en.summaryHtml, sections: own.en.sections },
+            fr: { summaryHtml: own.fr.summaryHtml, sections: own.fr.sections },
+        },
     };
 }
 
