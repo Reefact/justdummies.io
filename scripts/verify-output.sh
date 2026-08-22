@@ -432,9 +432,10 @@ fi
 
 # --- What the measurement may not lose (§15) --------------------------------------
 #
-# Every element that reports itself carries a placement and a variant, and §15 puts
-# two rules on that pair. Neither is visible by reading a component: both are
-# properties of the whole built page, which is why they are checked here.
+# Every element that reports itself carries a placement, and the ones with a door to
+# choose between carry a variant too (ADR-0023). §15 puts two rules on that pair, and
+# neither is visible by reading a component: both are properties of the whole built
+# page, which is why they are checked here.
 #
 # One node pass rather than a grep, because both attributes have to come off the same
 # tag and their order in the markup is the author's, not a guarantee.
@@ -443,6 +444,10 @@ measurement="$(node -e '
   const { readFileSync } = require("node:fs");
   for (const page of process.argv.slice(1)) {
     const html = readFileSync(page, "utf8");
+    // The locale this document is served in, which every locale-bearing address on it
+    // is prefixed with (§7.2). Read off the document rather than from a list, so a
+    // third locale needs nothing added here.
+    const lang = html.match(/<html[^>]*\blang="([a-z]{2})"/);
     for (const match of html.matchAll(/<[a-zA-Z][^>]*>/g)) {
       const tag = match[0];
       const placement = tag.match(/\bdata-placement="([^"]*)"/);
@@ -451,7 +456,14 @@ measurement="$(node -e '
       // What the element actually does, which is how the pair is judged below: the
       // command a button copies, or the address a link opens.
       const payload = tag.match(/\bdata-command="([^"]*)"/) ?? tag.match(/\bhref="([^"]*)"/);
-      console.log([page, placement[1], variant ? variant[1] : "", payload ? payload[1] : ""].join("\t"));
+      let door = payload ? payload[1] : "";
+      // A route is the same in every locale but its prefix (§7.2), so the French twin of
+      // a page is the same door as the English one and must not read as a second thing
+      // the pair means. The dataset separates the two anyway: the collector writes the
+      // locale in a blob of its own. Only a prefix matching this document is dropped, so
+      // an address that merely starts with two letters is left alone.
+      if (lang && door.startsWith("/" + lang[1] + "/")) { door = door.slice(lang[1].length + 1); }
+      console.log([page, placement[1], variant ? variant[1] : "", door].join("\t"));
     }
   }' $(find "${dist}" -name '*.html') 2> /dev/null || true)"
 
@@ -495,6 +507,36 @@ else
   else
     fail "one placement and variant pair covers two different commands or links, so the dashboard cannot separate them: ${ambiguous}"
   fi
+fi
+
+# The floating download control reports, on every page that draws one.
+#
+# THIS IS THE DEFECT IT EXISTS FOR, not a shape rule like the two above. That control
+# shipped standing on every page with no measurement of any kind on it, in all three
+# lanes at once (#161) — an exit nobody was watching, and nothing anywhere went red
+# about it. What makes the omission catchable is that the control's markup is what says
+# it reports: lose the placement and the click still works, still leads to the same
+# page, and stops being counted silently. So the artefact is asked directly.
+#
+# PER PAGE, unlike the checks above. The control is deliberately absent from /download/
+# itself (ADR-0004 applied to navigation), so what is asserted is a conditional — a page
+# that draws one must mark it — rather than a count.
+# shellcheck disable=SC2046  # deliberate: each HTML path becomes its own argv entry for node's process.argv.slice(1)
+unmarked="$(node -e '
+  const { readFileSync } = require("node:fs");
+  for (const page of process.argv.slice(1)) {
+    const html = readFileSync(page, "utf8");
+    for (const match of html.matchAll(/<a\b[^>]*>/g)) {
+      const tag = match[0];
+      if (!/\bclass="[^"]*\bdownload-fab\b[^"]*"/.test(tag)) { continue; }
+      if (!/\bdata-placement="[^"]*"/.test(tag)) { console.log(page); }
+    }
+  }' $(find "${dist}" -name '*.html') 2> /dev/null || true)"
+
+if [ -z "${unmarked}" ]; then
+  pass "every page drawing the download control marks it with a placement"
+else
+  fail "the download control is drawn without a placement, so its clicks are recorded nowhere: $(printf '%s\n' "${unmarked}" | sed "s#^${dist}/##" | paste -sd' ' -)"
 fi
 
 # The audience beacon and the policy that has to admit it, checked against each other
