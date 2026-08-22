@@ -11,7 +11,14 @@ compatibilité, puisque rien ne consomme ce déploiement (voir
 
 ## Unreleased
 
-_Rien en attente pour l'instant._
+### ✨ Nouveautés
+
+- La page /version dispose désormais d'une section « Releases précédentes », montrant les 5 releases publiées par ce site juste avant la dernière, avec un lien unique pour voir les releases suivantes sur GitHub.
+
+### 🙌 Améliorations
+
+- Les deux titres de la page /version qui disaient la même chose (« Ce build » et « Dernière release ») n'en forment plus qu'un, « Dernière release ».
+- Chaque lien « Voir sur GitHub » de la page /version ouvre désormais la liste des releases de GitHub à l'endroit de la release qu'il nomme, plutôt que la page propre à cette release.
 
 ## release/2026-08-21T22-42-04Z — 21 août 2026
 

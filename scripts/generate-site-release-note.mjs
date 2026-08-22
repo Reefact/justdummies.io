@@ -105,58 +105,92 @@ const { releasesOf, isoDateOf } = releaseNotesReader({
     resolveLink: githubHrefResolver({ repositoryUrl: REPOSITORY_URL, ref: published, relativeTo: '.', siteOrigin: SITE_ORIGIN }),
 });
 
-// Newest first, the order the file already writes them in. Only the first is published, and
-// the rest are read purely to get past them.
-const releases = Object.fromEntries(
+/**
+ * How many releases before the latest one /version's "previous releases" section shows in
+ * full. Not a refusal-worthy fact if a file has fewer than this many behind the latest —
+ * this repository's history is long past that point, and the moment it wasn't is not one
+ * this generator has to survive gracefully.
+ */
+const PREVIOUS_COUNT = 5;
+
+// Newest first, the order the file already writes them in — every release, not just the
+// latest: the "previous releases" section needs PREVIOUS_COUNT more of them, plus one further
+// tag to link past them (moreTag, below).
+const allReleases = Object.fromEntries(
     LOCALES.map((locale) => [
         locale,
-        releasesOf(markdowns[locale], fileOf(locale), { skip: (heading) => notARelease(heading, fileOf(locale)) })[0],
+        releasesOf(markdowns[locale], fileOf(locale), { skip: (heading) => notARelease(heading, fileOf(locale)) }),
     ]),
 );
 
-// The two languages are one document in two spellings, and the page joins them on the
-// position of a rubric inside the release. A file that translated a different release, or
-// gained a rubric, breaks that join silently — so it stops here instead, where the message
-// can name both files.
-if (releases.fr.version !== releases.en.version) {
-    refuse(`${fileOf('en')} publishes ${releases.en.version} and ${fileOf('fr')} publishes ${releases.fr.version}`);
-}
-if (releases.fr.sections.length !== releases.en.sections.length) {
-    refuse(
-        `${fileOf('en')} and ${fileOf('fr')} disagree on ${releases.en.version}: ` +
-            `${releases.en.sections.length} rubric(s) against ${releases.fr.sections.length}`,
-    );
+function releaseAt(index) {
+    return { en: allReleases.en[index], fr: allReleases.fr[index] };
 }
 
-// Counting the rubrics was not enough. The join is positional all the way down — the page
-// puts the English bullet and the French bullet of the same rubric on the same line of the
-// same release — so a rubric written with three bullets in English and one in French passes
-// a rubric count and then renders exactly the half-translated page this file's own header
-// says §6.4 exists to prevent. The bullets are the unit a reader misses, so they are the
-// unit that is counted.
-releases.en.sections.forEach((section, index) => {
-    const twin = releases.fr.sections[index];
-
-    if (twin.items.length !== section.items.length) {
-        refuse(
-            `${fileOf('en')} and ${fileOf('fr')} disagree on ${releases.en.version}, rubric ${index + 1} ` +
-                `("${section.label}" against "${twin.label}"): ` +
-                `${section.items.length} bullet(s) against ${twin.items.length}`,
-        );
+/**
+ * The two languages are one document in two spellings, and the page joins them on the
+ * position of a rubric inside the release. A file that translated a different release, or
+ * gained a rubric, breaks that join silently — so it stops here instead, where the message
+ * can name both files.
+ */
+function checkAgree(en, fr) {
+    if (fr.version !== en.version) {
+        refuse(`${fileOf('en')} publishes ${en.version} and ${fileOf('fr')} publishes ${fr.version}`);
     }
-});
+    if (fr.sections.length !== en.sections.length) {
+        refuse(`${fileOf('en')} and ${fileOf('fr')} disagree on ${en.version}: ${en.sections.length} rubric(s) against ${fr.sections.length}`);
+    }
 
-const document = {
-    tag: releases.en.version,
-    // One ISO date for both languages, read from the English file: the French twin spells the
-    // same day as "19 août 2026", which is a spelling, not a second fact.
-    date: isoDateOf(releases.en.date, fileOf('en')),
-    locales: Object.fromEntries(
-        LOCALES.map((locale) => [locale, { summaryHtml: releases[locale].summaryHtml, sections: releases[locale].sections }]),
-    ),
-};
+    // Counting the rubrics was not enough. The join is positional all the way down — the page
+    // puts the English bullet and the French bullet of the same rubric on the same line of the
+    // same release — so a rubric written with three bullets in English and one in French passes
+    // a rubric count and then renders exactly the half-translated page this file's own header
+    // says §6.4 exists to prevent. The bullets are the unit a reader misses, so they are the
+    // unit that is counted.
+    en.sections.forEach((section, index) => {
+        const twin = fr.sections[index];
+
+        if (twin.items.length !== section.items.length) {
+            refuse(
+                `${fileOf('en')} and ${fileOf('fr')} disagree on ${en.version}, rubric ${index + 1} ` +
+                    `("${section.label}" against "${twin.label}"): ` +
+                    `${section.items.length} bullet(s) against ${twin.items.length}`,
+            );
+        }
+    });
+}
+
+/** One release, checked and shaped for `site-release.json` — used for both the latest release
+ *  and each of the `previous` ones, which carry exactly the same shape. */
+function releaseDocumentOf(index) {
+    const { en, fr } = releaseAt(index);
+
+    checkAgree(en, fr);
+
+    return {
+        tag: en.version,
+        // One ISO date for both languages, read from the English file: the French twin
+        // spells the same day as "19 août 2026", which is a spelling, not a second fact.
+        date: isoDateOf(en.date, fileOf('en')),
+        locales: { en: { summaryHtml: en.summaryHtml, sections: en.sections }, fr: { summaryHtml: fr.summaryHtml, sections: fr.sections } },
+    };
+}
+
+const latest = releaseDocumentOf(0);
+const previous = Array.from({ length: PREVIOUS_COUNT }, (_unused, offset) => releaseDocumentOf(offset + 1));
+
+// moreTag names the release right after `previous`'s last entry — where the section's closing
+// link lands. Only its tag is ever shown, so only its tag needs to agree between languages.
+const moreRelease = releaseAt(PREVIOUS_COUNT + 1);
+
+if (moreRelease.fr.version !== moreRelease.en.version) {
+    refuse(`${fileOf('en')} names its 7th-newest release ${moreRelease.en.version} and ${fileOf('fr')} names ${moreRelease.fr.version}`);
+}
+
+const document = { ...latest, previous, moreTag: moreRelease.en.version };
 
 writeFileSync(destination, `${JSON.stringify(document, null, 2)}\n`);
 
 console.log(`  ${document.tag}  (${document.date})`);
+console.log(`  + ${previous.length} previous release(s), more at ${document.moreTag}`);
 console.log('  apps/site/src/generated/site-release.json');

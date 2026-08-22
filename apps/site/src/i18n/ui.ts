@@ -60,8 +60,17 @@ const en = {
      * /version — what the deployment says about itself. The three labels name the three
      * fields of version.json, which the page reads at build time out of the same file the
      * site serves.
+     *
+     * ONE HEADING OVER TWO STATEMENTS. The table below states what this build IS, and holds
+     * only facts the build itself stamped; the release note under it states what the last
+     * release CHANGED, which a build cut from a branch did not do and must not appear to. Two
+     * separate headings once said this out loud, but a reader saw "This build" immediately
+     * followed by "Latest release" and read them as two words for one idea — on this site a
+     * build IS a release, so the distinction was invisible where it mattered and only added
+     * noise. The two blocks keep their own lead sentence each, which is where that distinction
+     * still lives.
      */
-    'version.heading': 'This build',
+    'version.heading': 'Latest release',
     'version.lead': 'The site is serving this build.',
     'version.release': 'Release',
     'version.commit': 'Commit',
@@ -70,18 +79,22 @@ const en = {
     'version.meta.description': 'The release, the commit and the build time of the site you are reading, and what its latest release changed.',
 
     /**
-     * The note under the table: this site's own newest release, read from RELEASE_NOTES-en.md.
-     *
-     * It is a second heading rather than a fourth row on purpose. The table states what the
-     * build IS, and holds only facts the build itself stamped; this states what the last
-     * release CHANGED, which a build cut from a branch did not do and must not appear to.
-     *
      * The lead's whole job is to say which product it is about. This site publishes the
      * library's release notes too, under /release-notes, and a reader who takes one for the
      * other concludes that a website deployment changed the package they depend on.
      */
-    'version.latest.heading': 'Latest release',
     'version.latest.lead': 'What changed on this site when it was last published — the site itself, not the library it documents.',
+
+    /**
+     * The second heading: the 5 releases published just before the one above, read from the
+     * same RELEASE_NOTES-en.md. Their cards carry no link of their own — a single link closes
+     * the section instead, naming how many releases it opens (`version.previous.viewAllPrefix`
+     * / `viewAllSuffix`, split around the count the way `releaseNotes.releases.one`/`.many` are).
+     */
+    'version.previous.heading': 'Previous releases',
+    'version.previous.lead': "The 5 releases this site published just before its latest one, for the same reason as above — its own history, not the library's.",
+    'version.previous.viewAllPrefix': 'See the',
+    'version.previous.viewAllSuffix': 'other previous releases on GitHub',
 
     /**
      * ACT I — validity. The claim is that a value a test does not care about still has
@@ -712,7 +725,7 @@ const fr: Record<UiKey, string> = {
     'home.meta.description':
         "JustDummies produit des valeurs de test arbitraires qui respectent les contraintes que vous déclarez. Vos tests ne disent plus que ce dont ils parlent.",
 
-    'version.heading': 'Ce build',
+    'version.heading': 'Dernière release',
     'version.lead': 'Le site sert ce build.',
     'version.release': 'Release',
     'version.commit': 'Commit',
@@ -721,9 +734,14 @@ const fr: Record<UiKey, string> = {
     'version.meta.description':
         "La release, le commit et la date de construction du site que vous lisez, et ce qu'a changé sa dernière release.",
 
-    'version.latest.heading': 'Dernière release',
     'version.latest.lead':
         "Ce qui a changé sur ce site lors de sa dernière publication — le site lui-même, pas la bibliothèque qu'il documente.",
+
+    'version.previous.heading': 'Releases précédentes',
+    'version.previous.lead':
+        "Les 5 releases publiées par ce site juste avant la dernière, pour la même raison qu'au-dessus — son histoire à lui, pas celle de la bibliothèque.",
+    'version.previous.viewAllPrefix': 'Voir les',
+    'version.previous.viewAllSuffix': 'autres releases précédentes sur GitHub',
 
     'act1.title': 'La valeur dont votre test se moque',
     'act1.summary': 'Elle doit quand même être valide.',
