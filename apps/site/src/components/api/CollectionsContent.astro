@@ -4,6 +4,7 @@
  * generator for its elements.
  */
 import ApiEntryCard from '../ApiEntryCard.astro';
+import ApiEnglishNote from './ApiEnglishNote.astro';
 import ApiPagination from '../ApiPagination.astro';
 import { localeFromPath } from '../../i18n/routing';
 import { useTranslations, type Locale } from '../../i18n/ui';
@@ -16,6 +17,8 @@ const category = apiCategory('collections');
 
 <h2>{t('api.collections.heading')}</h2>
 <p class="lede">{t('api.collections.lede')}</p>
+
+<ApiEnglishNote locale={locale} />
 
 {category.entries.map((entry) => <ApiEntryCard entry={entry} locale={locale} />)}
 

@@ -4,6 +4,7 @@
  * instead of a mystery that looks different on every run.
  */
 import ApiEntryCard from '../ApiEntryCard.astro';
+import ApiEnglishNote from './ApiEnglishNote.astro';
 import ApiPagination from '../ApiPagination.astro';
 import { localeFromPath } from '../../i18n/routing';
 import { useTranslations, type Locale } from '../../i18n/ui';
@@ -16,6 +17,8 @@ const category = apiCategory('reproducibility');
 
 <h2>{t('api.reproducibility.heading')}</h2>
 <p class="lede">{t('api.reproducibility.lede')}</p>
+
+<ApiEnglishNote locale={locale} />
 
 {category.entries.map((entry) => <ApiEntryCard entry={entry} locale={locale} />)}
 

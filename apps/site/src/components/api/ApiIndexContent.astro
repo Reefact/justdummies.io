@@ -31,8 +31,6 @@ function i18nKeyOf(slug: (typeof slugs)[number]): string {
 <h2>{t('api.index.heading')}</h2>
 <p class="lede">{t('api.index.lede')}</p>
 
-{locale === 'fr' && <p class="english-note">{t('api.english.note')}</p>}
-
 <div class="api-category-grid">
     {
         slugs.map((slug) => (
@@ -68,15 +66,6 @@ function i18nKeyOf(slug: (typeof slugs)[number]): string {
         max-width: 62ch;
         color: var(--jd-text-muted);
         font-size: var(--jd-text-lg);
-    }
-
-    .english-note {
-        margin: var(--jd-space-4) 0 0;
-        max-width: 62ch;
-        color: var(--jd-text-muted);
-        font-size: var(--jd-text-sm);
-        border-left: 2px solid var(--jd-generated);
-        padding-left: var(--jd-space-3);
     }
 
     .api-category-grid {
