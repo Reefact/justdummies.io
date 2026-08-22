@@ -36,6 +36,10 @@ jobs:
         with:
           credentials_json: ${{ secrets.GA4_SERVICE_ACCOUNT_KEY }}
           token_format: access_token
+          # runReport requires the analytics(.readonly) OAuth scope specifically —
+          # property-level Viewer access does not substitute for it, and the action's
+          # default cloud-platform scope does not cover the Analytics Data API.
+          access_token_scopes: https://www.googleapis.com/auth/analytics.readonly
 
       - name: Run report against the Analytics Data API
         env:
