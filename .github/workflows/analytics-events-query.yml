@@ -3,6 +3,9 @@ name: Analytics events query
 # Manual, on-demand read of the justdummies_measurement Analytics Engine
 # dataset (see wrangler.jsonc and worker/index.ts §15.2/§15.3 for the schema:
 # blob1=event, blob2=placement, blob3=variant, blob4=locale, double1=ordinal).
+# blob3 is empty for an event that has no door to choose between — the download
+# control's clicks, ADR-0023 — so the default query below groups by it anyway and
+# shows them under a blank variant rather than dropping them.
 # Results land in the run's job summary (truncated) and as a downloadable
 # artifact (full), never in a committed file.
 on:
