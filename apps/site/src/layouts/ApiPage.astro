@@ -11,7 +11,7 @@ import BrandHeading from '../components/BrandHeading.astro';
 import ApiCategoryNav from '../components/ApiCategoryNav.astro';
 import { localeFromPath } from '../i18n/routing';
 import type { Locale } from '../i18n/ui';
-import { apiLibraryVersion } from '../apiCatalogue';
+import { apiLibraryVersion, apiXunitVersion } from '../apiCatalogue';
 import Base from './Base.astro';
 
 interface Props {
@@ -29,7 +29,16 @@ const locale: Locale = localeFromPath(Astro.url.pathname);
     <div class="api-shell">
         <div class="shell">
             <BrandHeading />
-            <p class="api-version">API v{apiLibraryVersion}</p>
+            <p class="api-version">
+                API v{apiLibraryVersion}
+                {/*
+                  Only `[Reproducible]` (declared on this one page) comes off
+                  `JustDummies.Xunit` rather than `JustDummies` itself — naming just
+                  `apiLibraryVersion` here would tell a reader chasing that attribute
+                  the wrong package version.
+                */}
+                {activeSlug === 'reproducibility' && <> · JustDummies.Xunit v{apiXunitVersion}</>}
+            </p>
         </div>
         <div class="api-layout">
             <ApiCategoryNav locale={locale} activeSlug={activeSlug} />

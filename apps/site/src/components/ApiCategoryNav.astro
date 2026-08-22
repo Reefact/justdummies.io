@@ -250,10 +250,19 @@ const searchIndex: SearchEntry[] = allApiCategories().flatMap((category) =>
          * its own containing block has no slack to hold position in: its box already spans
          * the block's full scrollable range, so it just tracks the scroll instead of
          * clamping. Sizing the item to its own content restores the room sticky needs.
+         *
+         * `max-height` + `overflow-y: auto` for a third reason, the same one
+         * `ReleaseNotesContents.astro`'s `.contents` already carries: the active category's
+         * expanded sub-list (§ below) can hold more entries than a short viewport has room
+         * for, and a sticky box taller than the viewport pins its own top while its lower
+         * links sit below the fold for the rest of the scroll. Capping it to the viewport
+         * and letting it scroll independently keeps every link reachable.
          */
         position: sticky;
         top: var(--jd-space-4);
         align-self: start;
+        max-height: calc(100svh - 2 * var(--jd-space-4));
+        overflow-y: auto;
         border-right: 1px solid var(--jd-border);
     }
 
@@ -370,6 +379,8 @@ const searchIndex: SearchEntry[] = allApiCategories().flatMap((category) =>
     @media (max-width: 56rem) {
         .api-nav {
             position: static;
+            max-height: none;
+            overflow: visible;
             border-right: 0;
             border-bottom: 1px solid var(--jd-border);
             margin-bottom: var(--jd-space-6);
