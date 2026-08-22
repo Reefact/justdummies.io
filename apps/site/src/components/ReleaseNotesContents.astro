@@ -204,10 +204,40 @@ const t = useTranslations(locale);
         // whatever the band happens to see mid-flight or at rest.
         const PIN_MS = 1000;
         let pinnedUntil = 0;
+        let pinTimer: ReturnType<typeof setTimeout> | undefined;
+
+        // Reads whatever the band currently sees, independent of the pin above — called
+        // both from the observer once nothing is pinned, and once the pin itself expires,
+        // so a reader who scrolled on to a different section *during* that second is not
+        // left stranded on the jump's original target for want of a further boundary
+        // crossing to report it.
+        function applyBandWinner(): void {
+            let winner: { link: HTMLAnchorElement; height: number } | undefined;
+            for (const target of targets) {
+                if (!intersecting.has(target.el)) {
+                    continue;
+                }
+                const height = target.el.getBoundingClientRect().height;
+                if (winner === undefined || height < winner.height) {
+                    winner = { link: target.link, height };
+                }
+            }
+
+            // Leaves the last-known entry alone rather than clearing it: the band is a
+            // 10% sliver, and a fast scroll can cross a gap between two targets with
+            // neither one in it for a frame. That is not the reader having left every
+            // section — it is the geometry blinking, and the entry from a moment ago is
+            // still the better answer than none.
+            if (winner !== undefined) {
+                setCurrent(winner.link);
+            }
+        }
 
         function pin(link: HTMLAnchorElement): void {
             setCurrent(link);
             pinnedUntil = Date.now() + PIN_MS;
+            clearTimeout(pinTimer);
+            pinTimer = setTimeout(applyBandWinner, PIN_MS);
         }
 
         const observer = new IntersectionObserver(
@@ -220,28 +250,8 @@ const t = useTranslations(locale);
                     }
                 }
 
-                if (Date.now() < pinnedUntil) {
-                    return;
-                }
-
-                let winner: { link: HTMLAnchorElement; height: number } | undefined;
-                for (const target of targets) {
-                    if (!intersecting.has(target.el)) {
-                        continue;
-                    }
-                    const height = target.el.getBoundingClientRect().height;
-                    if (winner === undefined || height < winner.height) {
-                        winner = { link: target.link, height };
-                    }
-                }
-
-                // Leaves the last-known entry alone rather than clearing it: the band is a
-                // 10% sliver, and a fast scroll can cross a gap between two targets with
-                // neither one in it for a frame. That is not the reader having left every
-                // section — it is the geometry blinking, and the entry from a moment ago is
-                // still the better answer than none.
-                if (winner !== undefined) {
-                    setCurrent(winner.link);
+                if (Date.now() >= pinnedUntil) {
+                    applyBandWinner();
                 }
             },
             { rootMargin: BAND },
@@ -252,7 +262,16 @@ const t = useTranslations(locale);
         }
 
         for (const { link } of targets) {
-            link.addEventListener('click', () => pin(link));
+            // A modified click — the middle button, Ctrl/Cmd, opening the target in a new
+            // tab — is exactly what `Base.astro`'s own anchor script leaves alone (same
+            // checks, mirrored here): this document never scrolls, so this entry must not
+            // pin as current either.
+            link.addEventListener('click', (event) => {
+                if (event.button !== 0 || event.metaKey || event.ctrlKey) {
+                    return;
+                }
+                pin(link);
+            });
         }
 
         function pinFromHash(): void {
