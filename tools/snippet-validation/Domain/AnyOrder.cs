@@ -7,8 +7,8 @@
 // and the site's second act is about that edit.
 //
 // `dum generate Order` marked `reference` as `unread guards`: the domain rejects a string
-// that does not start with "ORD-" or that holds a character outside the printable ASCII
-// range past that prefix, and neither rule is in the closed set of guard idioms the tool
+// that does not start with "ORD-" or that holds a character other than a letter, a digit or
+// a hyphen past that prefix, and neither rule is in the closed set of guard idioms the tool
 // reads (tool specification §5.3, and §9 names it as a non-goal). It therefore emitted the
 // neutral recipe, said so in as many words, and did not guess — so the file it wrote
 // compiles cleanly and throws on every draw until the missing links are added. Verified:
@@ -39,17 +39,29 @@ public sealed partial class AnyOrder : IAny<Order> {
     private readonly IAny<Money>          _total;
     private readonly IAny<OrderStatus>    _status;
 
+    // Every letter and digit, plus the hyphen the prefix itself needs: WithChars restricts
+    // the whole string, not just what comes after the prefix, so the pool has to admit ORD-'s
+    // own dash or the two constraints would contradict each other before a single value is
+    // drawn (ConflictingAnyConstraintException).
+    private const string ReferenceAlphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-";
+
     /// <summary>Creates the generator with a default recipe for every constructor parameter.</summary>
     //
-    // On one line, and kept that way on purpose: the whole of the difference with the recipe
-    // the tool wrote is `.StartingWith("ORD-").Printable()`, and the page's prose names
-    // it. Broken across three lines it reads as a rewrite of the parameter rather than as
-    // the links added to it.
+    // The whole of the difference with the recipe the tool wrote is the two links named in
+    // the page's prose: `.StartingWith("ORD-")` and `.WithChars(ReferenceAlphabet)`. The
+    // chain no longer fits the one line that used to make that difference visible by itself,
+    // so the prose is what carries it now.
     //
     // No snippet markers: the page publishes the tool's own file, and this one is the edited
     // copy the second act is *about* rather than a figure of its own.
     public AnyOrder()
-        : this(reference:  Any.String().NonEmpty().WithMaxLength(20).StartingWith("ORD-").Printable().As(OrderReference.Create),
+        : this(reference:  Any.String()
+                               .NonEmpty()
+                               .WithMinLength(8)
+                               .WithMaxLength(20)
+                               .StartingWith("ORD-")
+                               .WithChars(ReferenceAlphabet)
+                               .As(OrderReference.Create),
                customerId: Any.Guid().NonEmpty().As(CustomerId.Create),
                total:      Any.Decimal().Positive().As(Money.Create),
                status:     Any.Enum<OrderStatus>()) { }

@@ -32,12 +32,12 @@ public sealed record OrderReference {
     // well inside the 130 the page's measure holds, and a throw broken in two makes a
     // reader assemble a sentence that always fitted.
     //
-    // The third guard is not cosmetic: a real order reference is printable text, the same
-    // way a real one starts with ORD- and stays under 20 characters — nothing a terminal or
-    // a screen would rather not show. Declared here, it is what lets the generator's own
-    // .Printable() (Snippets/Why.cs, Snippets/Hero.cs, Snippets/FactoriesConstrained.cs,
-    // Domain/AnyOrder.cs) remain a fact about this domain rather than a constraint invented
-    // to keep a displayed value readable.
+    // The last guard is not cosmetic: a real order reference holds nothing but letters,
+    // digits and hyphens, the same way a real one starts with ORD- and stays between 8 and
+    // 20 characters — nothing a barcode scanner or a phone number field would choke on.
+    // Declared here, it is what lets the generator's own .WithChars(...) (Snippets/Why.cs,
+    // Snippets/Hero.cs, Snippets/FactoriesConstrained.cs, Domain/AnyOrder.cs) remain a fact
+    // about this domain rather than a constraint invented to keep a displayed value legible.
     //
     // Nothing between the markers is commentary. What a reader sees is the method.
     // <snippet:order-reference-invariants>
@@ -48,12 +48,16 @@ public sealed record OrderReference {
             throw new ArgumentException("An order reference must start with ORD-.", nameof(value));
         }
 
+        if (value.Length < 8) {
+            throw new ArgumentException("An order reference cannot be shorter than 8 characters.", nameof(value));
+        }
+
         if (value.Length > 20) {
             throw new ArgumentException("An order reference cannot exceed 20 characters.", nameof(value));
         }
 
-        if (!value[4..].All(character => character is >= ' ' and <= '~')) {
-            throw new ArgumentException("An order reference cannot hold a control character after ORD-.", nameof(value));
+        if (!value[4..].All(character => char.IsAsciiLetterOrDigit(character) || character == '-')) {
+            throw new ArgumentException("An order reference only holds letters, digits and hyphens after ORD-.", nameof(value));
         }
 
         return new OrderReference(value);
