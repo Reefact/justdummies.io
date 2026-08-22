@@ -91,6 +91,14 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
      *
      * The 64 pixels he overflows his own section by are the gap above the footer, which holds
      * nothing. A float overflows without pushing anything, and the footer clears nothing.
+     *
+     * THE 18 PIXELS DOWN ARE ONE FOOT, NOT A NUDGE. The two feet do not end level: in the
+     * artwork the near one reaches row 952 and the far one stops at 925, and a figure whose
+     * lowest ink is flush with the rule is therefore standing on its near foot alone, with the
+     * other hanging above the line. Dropped by the difference between them — 27 of the
+     * drawing's rows, 18 at the size it is drawn — the far foot lands on the rule and the near
+     * one crosses it, which is what standing on a step looks like. Re-measure both if the
+     * artwork is ever recropped.
      */
     .mascot {
         display: none;
@@ -121,6 +129,7 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
             float: right;
             width: 317px;
             height: 626px;
+            margin-top: 18px;
             margin-right: -224px;
             shape-outside: polygon(
                     71% 0%,
