@@ -32,6 +32,14 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
     */}
     <div class="offer">
         <InstallTabs placement="hero" />
+
+        {/*
+          The dummy, on the windows tall enough to have room for one. Empty on purpose: it
+          is drawn as a background, which is what keeps it off the wire on every screen that
+          does not show it and out of a screen reader's way on the ones that do. The rule
+          below carries the measurements and the reasoning.
+        */}
+        <div class="mascot"></div>
     </div>
 
     {/*
@@ -153,6 +161,71 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
     .cue {
         margin-top: auto;
         padding-top: var(--jd-space-8);
+    }
+
+    /*
+     * THE DUMMY ON THE FIRST SCREEN, and the only decoration §5.2 leaves room for here: it
+     * carries no part of the demonstration, so it appears only where the page has nothing
+     * else to put, and never where it would take the screen's one focal point (§5.4).
+     *
+     * WHAT IT STANDS IN. The gap the rule above shares out stops being air and becomes a
+     * hole once the window is tall: 240 pixels of nothing at 1080, and half of every pixel
+     * of window above that. Sideways, the free room is the column between the install
+     * block's own 46rem cap and the shell's 72rem edge — 384 pixels, whatever the window
+     * does, once it is wide enough for the shell to reach that cap. The dummy stands in
+     * that column with its feet on the block's bottom line, which is what makes it read as
+     * standing beside the offer rather than floating near it.
+     *
+     * A BACKGROUND, NOT AN `<img>`. An image element is fetched even when the rule that
+     * hides it is `display: none`, so every phone would pay 50 KiB for a drawing it is
+     * never shown; declared inside the query, the file is requested by the windows that
+     * draw it and by nobody else. It settles the other question by construction too —
+     * there is no element for a screen reader to announce, which is the right answer for a
+     * drawing that says nothing the page has not already said.
+     *
+     * WHERE THE NUMBERS COME FROM, measured on the built page in both locales:
+     *
+     *     window height    1080    1120    1200    1440
+     *     free box          240     260     300     420
+     *
+     * the box being the gap plus the 165-pixel block under it. It grows by one pixel for
+     * every two of window past 1000, and the figure takes that growth at the same rate
+     * from 208, stopping at 352 — where the 518x717 artwork reaches the column's 384.
+     *
+     * THE QUERY STARTS AT 1120, NOT AT THE 1080 WHERE 208 FIRST FITS, because the card
+     * above can grow after the first paint: pressing Run replaces the static figure with
+     * the live one, and the library's refusal is a line or two taller than a value. Those
+     * 40 pixels are that line.
+     *
+     * IN PIXELS RATHER THAN REM, alone on this screen. Every number above came off a
+     * viewport measured in pixels. In `rem` the figure would grow with the reader's font
+     * while the box holding it shrank — the one direction in which a decoration ends up
+     * over the code.
+     *
+     * AND IF THAT REASONING IS EVER WRONG, `z-index: -1` is what keeps the mistake cheap:
+     * the drawing slides behind the card and behind the install block, both of which paint
+     * their own ground. A dummy with its head hidden, never a dummy over the expression.
+     */
+    .offer {
+        position: relative;
+    }
+
+    .mascot {
+        display: none;
+    }
+
+    @media (min-width: 75rem) and (min-height: 1120px) {
+        .mascot {
+            display: block;
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+            height: clamp(208px, calc(208px + (100vh - 1120px) / 2), 352px);
+            aspect-ratio: 518 / 717;
+            background: url('/dummy-look-at-this.webp') no-repeat center bottom / contain;
+            pointer-events: none;
+        }
     }
 
     .cue:hover {
