@@ -31,8 +31,30 @@ import { expect, test } from './support/harness';
  * thing that reports the boxes a reader actually sees.
  */
 
-/** Where a dummy may appear at all. Both locales, because a translation's length is a layout input. */
-const PAGES: readonly string[] = ['/', '/fr/', '/about/', '/fr/about/'];
+/**
+ * Every page of the site that carries a drawing, in both locales — a translation's length is a
+ * layout input, and the two 404s are here because the rule counts drawings the site owns, not
+ * drawings written a particular way.
+ */
+const PAGES: readonly string[] = ['/', '/fr/', '/about/', '/fr/about/', '/404.html', '/fr/404.html'];
+
+/**
+ * WHAT COUNTS AS A DUMMY IS AN ATTRIBUTE, NOT A CLASS NAME. Two of the three are background
+ * images on a `div.mascot` and the third is the 404's `img.crash`, so a selector on either name
+ * would have counted some of them and quietly ignored the rest — which is how a guard advertised
+ * as "one per page" lets a second drawing through. Marking them declares what they are, and a
+ * drawing added later without the mark is the one thing this cannot catch; the specification says
+ * so at §5.8.
+ */
+const DUMMY: string = '[data-dummy]';
+
+/*
+ * The playground's own dummy carries no mark and is not swept, for a reason worth writing down
+ * rather than discovering: it is drawn by the Blazor application after its runtime boots, so a
+ * check that opened /playground/ would be asserting §5.8 against another application's markup
+ * and waiting on a megabyte of .NET to find out. `playground.spec.ts` owns that page. The rule
+ * still binds it — a reviewer holds that half.
+ */
 
 /** Wide and tall enough that every drawing the site has is drawn. A window that hides them proves nothing. */
 const WINDOW = { width: 2560, height: 1440 } as const;
@@ -49,8 +71,8 @@ interface Verdict {
 }
 
 async function inspect(page: Page): Promise<Verdict> {
-    return page.evaluate(async () => {
-        const drawn: HTMLElement[] = Array.from(document.querySelectorAll<HTMLElement>('.mascot'))
+    return page.evaluate(async (selector: string) => {
+        const drawn: HTMLElement[] = Array.from(document.querySelectorAll<HTMLElement>(selector))
             .filter((element: HTMLElement) => getComputedStyle(element).display !== 'none');
 
         if (drawn.length !== 1) {
@@ -59,14 +81,19 @@ async function inspect(page: Page): Promise<Verdict> {
 
         const mascot: HTMLElement = drawn[0];
         const box: DOMRect = mascot.getBoundingClientRect();
-        const source: RegExpMatchArray | null = getComputedStyle(mascot).backgroundImage.match(/url\("?([^")]+)"?\)/);
 
-        if (source === null) {
+        /* A background on the two that hang in a margin, an `img` on the 404, whose drawing is the page. */
+        const background: RegExpMatchArray | null = getComputedStyle(mascot).backgroundImage.match(/url\("?([^")]+)"?\)/);
+        const file: string | null = background !== null
+            ? background[1]
+            : (mascot instanceof HTMLImageElement ? mascot.currentSrc : null);
+
+        if (file === null) {
             return { drawn: drawn.length, readArtwork: false, worst: null };
         }
 
         const artwork: HTMLImageElement = new Image();
-        artwork.src = source[1];
+        artwork.src = file;
         await artwork.decode();
 
         /*
@@ -182,22 +209,24 @@ async function inspect(page: Page): Promise<Verdict> {
         }
 
         return { drawn: drawn.length, readArtwork: true, worst };
-    });
+    }, DUMMY);
 }
 
 for (const path of PAGES) {
 
-    test(`${path} draws at most one dummy, and no text touches it`, async ({ page }) => {
+    test(`${path} draws exactly one dummy, and no text touches it`, async ({ page }) => {
         await page.setViewportSize(WINDOW);
         await page.goto(path);
 
         const verdict: Verdict = await inspect(page);
 
-        expect(verdict.drawn, `${path} draws ${verdict.drawn} dummies at once, and §5.8 allows one`).toBeLessThanOrEqual(1);
-
-        if (verdict.drawn === 0) {
-            return;
-        }
+        /*
+         * EXACTLY ONE, NOT AT MOST ONE. This window is roomy on purpose, so every page in the list
+         * above is meant to draw its dummy here — and an early return on zero was letting the
+         * opposite regression through: an element deleted, a scoped style renamed, a media query
+         * mistyped, and both /about cases would have passed while drawing nothing at all.
+         */
+        expect(verdict.drawn, `${path} draws ${verdict.drawn} dummies at ${WINDOW.width}x${WINDOW.height}, and §5.8 asks for exactly one`).toBe(1);
 
         expect(verdict.readArtwork, `${path} draws a dummy this check could not read back as pixels`).toBe(true);
 

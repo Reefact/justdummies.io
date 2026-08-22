@@ -10,7 +10,7 @@ const t = useTranslations('fr');
 <Page title={`${t('notfound.title')} — ${site.name}`} description={t('notfound.body')} noindex tightBottom>
     {/* Empty `alt` and intrinsic dimensions, for the reasons written out on the English
         twin. Same file: the mark belongs to the product, not to one language. */}
-    <img class="crash" src="/dummy-404.webp" alt="" width="1253" height="626" decoding="async" />
+    <img class="crash" data-dummy src="/dummy-404.webp" alt="" width="1253" height="626" decoding="async" />
 
     <p class="body">{t('notfound.body')} <a href="/fr/">{t('notfound.home')}</a></p>
 </Page>
