@@ -30,6 +30,15 @@ export interface SiteReleaseProse {
     readonly sections: readonly SiteReleaseRubric[];
 }
 
+/** One older release, kept for the "previous releases" section: the same shape as the
+ *  newest one, minus nothing — its card renders exactly like the newest one's, just without
+ *  a link of its own (see `VersionContent.astro`). */
+export interface SiteReleaseSummary {
+    readonly tag: string;
+    readonly date: string;
+    readonly locales: Readonly<Record<Locale, SiteReleaseProse>>;
+}
+
 export interface SiteRelease {
     /** The `release/*` tag this note describes — the same string /version.json reports as
      *  `release` on a build cut from it. */
@@ -38,6 +47,12 @@ export interface SiteRelease {
      *  which is a spelling and not a second fact. */
     readonly date: string;
     readonly locales: Readonly<Record<Locale, SiteReleaseProse>>;
+    /** The 5 releases published just before this one, newest first. */
+    readonly previous: readonly SiteReleaseSummary[];
+    /** The tag of the release right after `previous`'s last entry — where the "previous
+     *  releases" section's closing link lands, so a reader continuing past it on GitHub picks
+     *  up exactly where this page's own listing stops. */
+    readonly moreTag: string;
 }
 
 export const siteRelease: SiteRelease = siteReleaseDocument as SiteRelease;
@@ -53,19 +68,34 @@ export function siteReleaseIn(locale: Locale): LocalisedSiteRelease {
     return { tag: siteRelease.tag, date: siteRelease.date, ...siteRelease.locales[locale] };
 }
 
+/** The 5 previous releases, newest first, in the locale asked for — the "previous releases"
+ *  section's cards. */
+export function previousSiteReleasesIn(locale: Locale): readonly LocalisedSiteRelease[] {
+    return siteRelease.previous.map((release) => ({ tag: release.tag, date: release.date, ...release.locales[locale] }));
+}
+
 /**
  * Where a release of this repository is read on GitHub — `commitUrl` in `version.ts`, for the
  * other half of the same page.
  *
+ * THE RELEASES LIST, ANCHORED, RATHER THAN THE RELEASE'S OWN PAGE. GitHub gives every release
+ * on /releases an `id="release-<tag>"` (verified against this repository's own listing) — a
+ * fragment that scrolls a reader straight to that entry without leaving the page every other
+ * release on this site links to. The same list serves the "previous releases" section's
+ * closing link, whose tag names a release this page never shows a card for, so linking to that
+ * release's OWN page (as this used to) would have taken a reader somewhere this page never
+ * mentions; the shared list is where both belong.
+ *
  * COMPUTED RATHER THAN STORED, and unconditionally, which is the one thing worth explaining.
  * Its counterpart for the library's notes stores a `tagUrl` that can be null, because the
  * library has pushed a tag whose release run then failed, and a link to a version that was
- * skipped is worse than no link. That reasoning does not reach here: GitHub answers
- * /releases/tag/<tag> for any tag it holds, published release or not — measured, on this
- * repository, at a moment when release/2026-08-19T11-50-00Z was a tag with no release behind
- * it. The tag is what the link needs, and a `## release/*` section naming one that was never
- * pushed would be a release note for something that never shipped.
+ * skipped is worse than no link. That reasoning barely reaches here: a tag with no GitHub
+ * release behind it — measured, on this repository, at a moment when
+ * release/2026-08-19T11-50-00Z was exactly that — still gets an anchor, but one that matches
+ * nothing on the page; GitHub does not 404 on an unknown fragment the way /releases/tag/<tag>
+ * 404s on an unpublished tag, it just lands the reader at the top of the list instead of the
+ * entry named by the URL.
  */
 export function releaseUrl(tag: string): string {
-    return `${site.siteRepository}/releases/tag/${tag}`;
+    return `${site.siteRepository}/releases#release-${tag}`;
 }

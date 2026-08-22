@@ -1,38 +1,49 @@
 ---
 /**
- * What the deployment says about itself, laid out for a reader, and what its last release
- * changed.
+ * What the deployment says about itself, laid out for a reader, what its last release
+ * changed, and the 5 releases before that one.
  *
- * TWO STATEMENTS, TWO SECTIONS, and the separation is the point. The table's three values
- * come from `version.json` — the same file the site serves at /version.json, imported here
- * at build time rather than fetched. Nothing is fetched because nothing needs to be: the
- * document and the file are built together and shipped together, and the artefact's HTML is
- * served `must-revalidate`, so a reader cannot hold a cached page whose figures are older
- * than the file beside it. That also leaves this page with no script at all, which is the
- * strongest form of the rule that a page works without one.
+ * TWO STATEMENTS UNDER ONE HEADING, THEN A SECOND HEADING. The table's three values state
+ * what this build IS, and hold only facts the build itself stamped — they come from
+ * `version.json`, the same file the site serves at /version.json, imported here at build
+ * time rather than fetched. Nothing is fetched because nothing needs to be: the document and
+ * the file are built together and shipped together, and the artefact's HTML is served
+ * `must-revalidate`, so a reader cannot hold a cached page whose figures are older than the
+ * file beside it. That also leaves this page with no script at all, which is the strongest
+ * form of the rule that a page works without one.
  *
  * A null value prints `#null` rather than an empty cell or a sentence. Both of the two
  * that can be null mean something precise — `release: null` is a build that came from a
  * branch, `commit: null` is a build with no git behind it — and a reader who came to this
  * page came for the raw fact.
  *
- * THE NOTE BELOW IS NOT A FOURTH ROW. It is the newest `## release/*` section of
- * RELEASE_NOTES-<locale>.md, which describes the last release this site published — and
- * that is a different fact from the one the table states. A build cut from a branch belongs
- * to no release at all and still displays this note, correctly: the table says what this
- * build is, the note says what shipped last. Folding the second into the first would make a
- * branch build claim to have published something.
+ * THE RELEASE NOTE BELOW THE TABLE IS NOT A FOURTH ROW. It is the newest `## release/*`
+ * section of RELEASE_NOTES-<locale>.md, which describes the last release this site published
+ * — and that is a different fact from the one the table states. A build cut from a branch
+ * belongs to no release at all and still displays this note, correctly: the table says what
+ * this build is, the note says what shipped last. Folding the second into the first would
+ * make a branch build claim to have published something. One heading covers both: a build
+ * IS a release on this site, so a second heading here once said the same thing again in
+ * different words. Each block keeps its own lead sentence, which is where the "IS" vs
+ * "CHANGED" distinction still lives.
+ *
+ * THE SECOND HEADING'S 5 CARDS CARRY NO LINK OF THEIR OWN. A "Voir sur GitHub" repeated
+ * identically five times would be five copies of the same fact, so one link closes the
+ * section instead, naming how many releases it opens and anchored on the release right past
+ * the last one shown — a reader who keeps going on GitHub picks up exactly where this page's
+ * own listing stops.
  */
 import ReleaseCard from './ReleaseCard.astro';
 import { localeFromPath } from '../i18n/routing';
 import { useTranslations } from '../i18n/ui';
-import { releaseUrl, siteReleaseIn } from '../site-release';
+import { previousSiteReleasesIn, releaseUrl, siteRelease, siteReleaseIn } from '../site-release';
 import { commitUrl, version } from '../version';
 
 const locale = localeFromPath(Astro.url.pathname);
 const t = useTranslations(locale);
 
 const latest = siteReleaseIn(locale);
+const previous = previousSiteReleasesIn(locale);
 
 /** What a missing value looks like, everywhere, so it cannot be mistaken for a blank. */
 const NOTHING: string = '#null';
@@ -79,8 +90,7 @@ const NOTHING: string = '#null';
     </table>
 </section>
 
-<section class="latest" aria-labelledby="latest-heading">
-    <h2 id="latest-heading">{t('version.latest.heading')}</h2>
+<section class="latest">
     <p class="lead">{t('version.latest.lead')}</p>
 
     <ReleaseCard
@@ -93,9 +103,33 @@ const NOTHING: string = '#null';
     />
 </section>
 
+<section class="previous" aria-labelledby="previous-heading">
+    <h2 id="previous-heading">{t('version.previous.heading')}</h2>
+    <p class="lead">{t('version.previous.lead')}</p>
+
+    <div class="cards">
+        {
+            previous.map((release) => (
+                <ReleaseCard locale={locale} name={release.tag} date={release.date} summaryHtml={release.summaryHtml} sections={release.sections} />
+            ))
+        }
+    </div>
+
+    <p class="view-all">
+        <a href={releaseUrl(siteRelease.moreTag)} target="_blank" rel="noopener noreferrer">
+            {t('version.previous.viewAllPrefix')} {previous.length} {t('version.previous.viewAllSuffix')}
+            <svg class="arrow" viewBox="0 0 12 12" width="10" height="10" aria-hidden="true" focusable="false">
+                <path d="M3 9L9 3M4.5 3H9v4.5" />
+            </svg>
+            <span class="visually-hidden"> {t('state.newTab')}</span>
+        </a>
+    </p>
+</section>
+
 <style>
     .build,
-    .latest {
+    .latest,
+    .previous {
         max-width: 56rem;
     }
 
@@ -105,6 +139,41 @@ const NOTHING: string = '#null';
        which is the one reading this page must not invite. */
     .latest {
         margin-top: var(--jd-space-12);
+    }
+
+    /* Same reasoning, one heading down: "Releases précédentes" is its own claim, not a
+       continuation of the one above it. */
+    .previous {
+        margin-top: var(--jd-space-12);
+    }
+
+    .cards {
+        display: grid;
+        gap: var(--jd-space-6);
+    }
+
+    .view-all {
+        margin-top: var(--jd-space-6);
+        font-size: var(--jd-text-sm);
+    }
+
+    .view-all a {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--jd-space-1);
+        color: var(--jd-text-muted);
+    }
+
+    .view-all a:hover {
+        color: var(--jd-accent);
+    }
+
+    .arrow {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
     }
 
     h2 {

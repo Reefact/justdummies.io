@@ -19,16 +19,16 @@ interface Served {
     built: string;
 }
 
-const PAGES: ReadonlyArray<{ path: string; heading: string; built: string; latest: string }> = [
-    { path: '/version', heading: 'This build', built: 'Built', latest: 'Latest release' },
-    { path: '/fr/version', heading: 'Ce build', built: 'Construit le', latest: 'Dernière release' },
+const PAGES: ReadonlyArray<{ path: string; heading: string; built: string; previousHeading: string }> = [
+    { path: '/version', heading: 'Latest release', built: 'Built', previousHeading: 'Previous releases' },
+    { path: '/fr/version', heading: 'Dernière release', built: 'Construit le', previousHeading: 'Releases précédentes' },
 ];
 
 async function cell(page: Page, field: string): Promise<string> {
     return (await page.locator(`[data-field="${field}"]`).innerText()).trim();
 }
 
-for (const { path, heading, built, latest } of PAGES) {
+for (const { path, heading, built, previousHeading } of PAGES) {
 
     test(`${path} answers, and wears the site's clothes`, async ({ page }) => {
         const response: Response | null = await page.goto(path);
@@ -70,7 +70,9 @@ for (const { path, heading, built, latest } of PAGES) {
 
         const note = page.locator('.latest');
 
-        await expect(page.getByRole('heading', { name: latest, exact: true })).toBeVisible();
+        // No heading of its own to check here: the release note sits under the page's single
+        // "Latest release" heading (checked above, in the `heading` test), alongside the build
+        // facts table.
 
         // The tag names the release, and it is the same string /version.json reports as
         // `release` on a build cut from that tag. Only its shape is asserted against this
@@ -146,8 +148,10 @@ for (const { path, heading, built, latest } of PAGES) {
 
         // The card names the tag; the link has to name the same one. Built from that string
         // rather than hard-coded, so a check that passes proves the page agrees with itself
-        // rather than proving both agree with this file.
-        await expect(link).toHaveAttribute('href', `https://github.com/Reefact/justdummies.io/releases/tag/${tag}`);
+        // rather than proving both agree with this file. The GitHub releases page gives every
+        // listed release an `id="release-<tag>"` anchor (verified against the live listing),
+        // so the link stays on that shared page rather than a release's own.
+        await expect(link).toHaveAttribute('href', `https://github.com/Reefact/justdummies.io/releases#release-${tag}`);
         await expect(link).toHaveAttribute('target', '_blank');
 
         // `noopener` is the half that matters: without it the opened tab keeps a handle on
@@ -163,11 +167,42 @@ for (const { path, heading, built, latest } of PAGES) {
         // the case that would expose the two being conflated — a `#null` release above a
         // note that names a tag has to read as two statements, not as one contradiction.
         //
-        // So what is asserted is the separation itself: the note is its own labelled
-        // section, outside the table, rather than a fourth row inside it.
+        // So what is asserted is the separation itself: the note sits outside the table,
+        // rather than as a fourth row inside it.
         await expect(page.locator('.build .facts .latest')).toHaveCount(0);
         await expect(page.locator('.latest .facts')).toHaveCount(0);
-        await expect(page.locator('.latest')).toHaveAttribute('aria-labelledby', 'latest-heading');
+    });
+
+    test(`${path} shows the 5 previous releases, each without its own GitHub link`, async ({ page }) => {
+        await page.goto(path);
+
+        await expect(page.getByRole('heading', { name: previousHeading, exact: true })).toBeVisible();
+
+        const cards = page.locator('.previous .cards .release');
+
+        expect(await cards.count()).toBe(5);
+
+        // A "Voir sur GitHub" repeated identically five times would be five copies of the same
+        // fact — these cards carry no link of their own, only the section's closing one does.
+        await expect(page.locator('.previous .cards .release-foot')).toHaveCount(0);
+    });
+
+    test(`${path} closes the previous-releases section with one link past the last one shown`, async ({ page }) => {
+        await page.goto(path);
+
+        const link = page.locator('.previous .view-all a');
+
+        // Named the way "5 releases" is named elsewhere on this site (releaseNotes.releases),
+        // so the count in the sentence and the number of cards above it can't drift apart
+        // silently — a page showing 5 cards and a link saying "4 more" would satisfy every
+        // other check here.
+        expect(await link.innerText()).toMatch(/5/);
+
+        // Anchored past the last of the 5 cards shown, not at the GitHub releases page's top —
+        // a reader who keeps going lands exactly where this page's own listing stops.
+        await expect(link).toHaveAttribute('href', /^https:\/\/github\.com\/Reefact\/justdummies\.io\/releases#release-release\//);
+        await expect(link).toHaveAttribute('target', '_blank');
+        await expect(link).toHaveAttribute('rel', /noopener/);
     });
 
 }
