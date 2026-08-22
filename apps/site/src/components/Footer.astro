@@ -35,11 +35,15 @@ const year: number = new Date(version.built).getFullYear();
 
 <footer class="site-footer">
     <nav class="footer-nav" aria-label={t('footer.nav')}>
-        <a href={pathForLocale('/api', locale)}>{t('footer.api')}</a>
-        <a href={pathForLocale('/release-notes', locale)}>{t('footer.releaseNotes')}</a>
-        <span class="divider" aria-hidden="true"></span>
-        <a href={pathForLocale('/about', locale)}>{t('footer.about')}</a>
-        <a href={pathForLocale('/privacy', locale)}>{t('footer.privacy')}</a>
+        <span class="footer-group">
+            <a href={pathForLocale('/api', locale)}>{t('footer.api')}</a>
+            <a href={pathForLocale('/release-notes', locale)}>{t('footer.releaseNotes')}</a>
+        </span>
+        <span class="footer-group">
+            <span class="divider" aria-hidden="true"></span>
+            <a href={pathForLocale('/about', locale)}>{t('footer.about')}</a>
+            <a href={pathForLocale('/privacy', locale)}>{t('footer.privacy')}</a>
+        </span>
     </nav>
     <p class="copyright">© {year} {site.legal.entity}</p>
 </footer>
@@ -62,6 +66,12 @@ const year: number = new Date(version.built).getFullYear();
     .footer-nav {
         display: flex;
         flex-wrap: wrap;
+        gap: var(--jd-space-4);
+    }
+
+    .footer-group {
+        display: flex;
+        align-items: center;
         gap: var(--jd-space-4);
     }
 

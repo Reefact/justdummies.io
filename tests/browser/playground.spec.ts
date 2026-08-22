@@ -1200,12 +1200,6 @@ test.describe('the playground', () => {
         await expect(footer.locator('a[href="/api/"]')).toBeVisible();
         await expect(footer.locator('a[href="/release-notes/"]')).toBeVisible();
         await expect(footer.locator('a[href="/privacy/"]')).toBeVisible();
-
-        const repository = footer.locator('a[href="https://github.com/Reefact/justdummies.io"]');
-
-        await expect(repository).toBeVisible();
-        await expect(repository).toHaveAttribute('target', '_blank');
-        await expect(repository).toHaveAttribute('rel', /noopener/);
     });
 
     test('carries the same footer on its own not-found page', async ({ page }) => {

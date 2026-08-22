@@ -43,11 +43,15 @@
 
 <footer class="site-footer">
     <nav class="footer-nav" aria-label='@PlaygroundStrings.T(LocaleState.Current, "footer.nav")'>
-        <a href="@ApiHref">@PlaygroundStrings.T(LocaleState.Current, "footer.api")</a>
-        <a href="@ReleaseNotesHref">@PlaygroundStrings.T(LocaleState.Current, "footer.releaseNotes")</a>
-        <span class="divider" aria-hidden="true"></span>
-        <a href="@AboutHref">@PlaygroundStrings.T(LocaleState.Current, "footer.about")</a>
-        <a href="@PrivacyHref">@PlaygroundStrings.T(LocaleState.Current, "footer.privacy")</a>
+        <span class="footer-group">
+            <a href="@ApiHref">@PlaygroundStrings.T(LocaleState.Current, "footer.api")</a>
+            <a href="@ReleaseNotesHref">@PlaygroundStrings.T(LocaleState.Current, "footer.releaseNotes")</a>
+        </span>
+        <span class="footer-group">
+            <span class="divider" aria-hidden="true"></span>
+            <a href="@AboutHref">@PlaygroundStrings.T(LocaleState.Current, "footer.about")</a>
+            <a href="@PrivacyHref">@PlaygroundStrings.T(LocaleState.Current, "footer.privacy")</a>
+        </span>
     </nav>
     <p class="copyright">© @DateTime.Now.Year @Entity</p>
 </footer>
