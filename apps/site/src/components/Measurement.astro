@@ -9,7 +9,10 @@
  * LANE TWO is the dimensioned event §15.2 asks for, sent to this site's own
  * collector. It exists because lane one cannot carry it — Web Analytics has no
  * custom-event API — and because "people copy the install command" is not the
- * question the page was built to answer. "Which moment convinced them" is.
+ * question the page was built to answer. "Which moment convinced them" is. The
+ * floating download link joined it for a reason of the same kind: whether a
+ * permanent call to action earns its place is a rate, and a rate read against lane
+ * three is a rate among the people who accepted lane three.
  *
  * LANE THREE is Google Analytics, and it answers the question neither of the others
  * can: not how many arrived or how many copied, but the path between the two — which
@@ -59,24 +62,54 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
 
 <script>
     /**
-     * Forwards the copy event to the collector.
+     * Forwards the two events the census lane carries to the collector.
      *
      * IT LISTENS RATHER THAN BEING CALLED. `CopyableCommand` dispatches a DOM event
      * and deliberately knows nothing about who is listening, so the component stays
      * a component and this file is the only place that knows a collector exists.
-     * Removing this file removes the measurement and breaks nothing else.
+     * Removing this file removes the measurement and breaks nothing else. The
+     * download control is read the same way, off a click rather than a custom event
+     * — it is a link, so the click it wants to count is the one the browser is
+     * already dispatching.
      *
      * IT IS FIRE-AND-FORGET, and that is what keeps §15 from ever costing a visitor
      * anything. `sendBeacon` hands the request to the browser and returns; there is
      * no await, no retry, no queue that could grow, and no branch that reads the
      * response — because by the time this runs, the command is already on the
-     * clipboard and the visitor is already gone.
+     * clipboard and the visitor is already gone. It is also what makes the download
+     * control measurable at all: that click navigates, and a request handed to the
+     * browser outlives the page that asked for it, where a fetch would not.
      */
     const ENDPOINT = '/_event';
 
     interface Copied {
         placement?: string;
         variant?: string;
+    }
+
+    /**
+     * Posts one event, with the fields every event carries.
+     *
+     * `variant` is passed by the caller that has one and omitted by the caller that
+     * does not: `JSON.stringify` drops an undefined property, so the body simply has
+     * no such field, which is what the collector reads as "this event has no door to
+     * choose between" (ADR-0023).
+     */
+    function report(name: string, placement: string, rest: Record<string, unknown>): void {
+        const body: string = JSON.stringify({
+            event: name,
+            placement,
+            // The document's own language, which is the locale the reader chose. Two
+            // letters, never a region: what a dashboard needs to know is which half of
+            // the site convinced somebody, not where they were sitting.
+            locale: document.documentElement.lang,
+            ...rest,
+        });
+
+        // A Blob rather than a bare string, so the request carries a JSON content type
+        // and the collector can parse it without guessing. Same origin, so none of this
+        // involves CORS.
+        navigator.sendBeacon(ENDPOINT, new Blob([body], { type: 'application/json' }));
     }
 
     /**
@@ -111,21 +144,44 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
             return;
         }
 
-        const body: string = JSON.stringify({
-            event: 'install-command-copied',
-            placement,
-            variant,
-            // The document's own language, which is the locale the reader chose. Two
-            // letters, never a region: what a dashboard needs to know is which half of
-            // the site convinced somebody, not where they were sitting.
-            locale: document.documentElement.lang,
-            ordinal: ordinalOf(placement),
-        });
+        report('install-command-copied', placement, { variant, ordinal: ordinalOf(placement) });
+    });
 
-        // A Blob rather than a bare string, so the request carries a JSON content type
-        // and the collector can parse it without guessing. Same origin, so none of this
-        // involves CORS.
-        navigator.sendBeacon(ENDPOINT, new Blob([body], { type: 'application/json' }));
+    /**
+     * The floating download link, which until now was the one control on this site that
+     * led somewhere and counted nothing (#161).
+     *
+     * DELEGATED, LIKE THE EXITS IN LANE THREE. This script is bundled on every page and
+     * the control is absent from `/download/` itself, so a listener bound to the element
+     * would have to cope with not finding one; delegation simply never matches there.
+     * `Element` rather than `HTMLElement` for the same reason lane three gives: the label
+     * sits beside an inline `<svg>`, and a click landing on that icon has an `SVGElement`
+     * target.
+     *
+     * NO ORDINAL AND NO VARIANT. The ordinal is a position within one page and this
+     * control has no position — it floats above the page rather than in it. The variant
+     * is absent because there is one door behind it, which is the whole of ADR-0023.
+     * What it does carry is where it was clicked from, which `DownloadFab.astro` renders
+     * as the placement because this script has no way to name a section on its own.
+     */
+    document.addEventListener('click', (event: Event) => {
+        const target: Element | null = event.target instanceof Element ? event.target : null;
+        const fab: HTMLAnchorElement | null = target?.closest<HTMLAnchorElement>('a.download-fab') ?? null;
+
+        if (fab === null) {
+            return;
+        }
+
+        const placement: string | undefined = fab.dataset.placement;
+
+        // Nothing rather than something wrong: an unmarked control is a defect
+        // `verify-output.sh` fails the build for, and reporting it under a made-up name
+        // would be the way that defect reached the dataset instead.
+        if (placement === undefined) {
+            return;
+        }
+
+        report('download-fab-clicked', placement, {});
     });
 </script>
 
@@ -808,10 +864,10 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
     });
 
     /**
-     * One delegated listener for the three things a reader clicks on the way out.
+     * One delegated listener for the things a reader clicks on the way out.
      *
      * Delegation rather than a listener per element because two of these are rendered
-     * five times over and the third does not exist on most pages — and because a
+     * five times over and another does not exist on most pages — and because a
      * listener bound at load would miss nothing here but would have to be rebound the
      * day any of this becomes conditional.
      */
@@ -836,6 +892,20 @@ const beaconToken: string | undefined = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
                 variant: nuget.dataset.variant ?? '',
                 link_url: nuget.href,
             });
+
+            return;
+        }
+
+        const fab: HTMLAnchorElement | null = target.closest<HTMLAnchorElement>('a.download-fab');
+
+        if (fab !== null) {
+            // The same click lane two counts, explained rather than totalled: this lane
+            // knows which page it was clicked from exactly, because it attaches the
+            // address to everything it reports, where the placement is the section
+            // `DownloadFab.astro` names. It carries no `link_url` for the reason the
+            // NuGet links do carry one — those lead to four different packages, and this
+            // leads to one page (ADR-0023).
+            track('download_fab_clicked', { placement: fab.dataset.placement ?? '' });
 
             return;
         }

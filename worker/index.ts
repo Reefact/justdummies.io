@@ -21,7 +21,9 @@
  * WHAT IT REFUSES TO RECORD. No address, no identifier, no cookie, nothing the
  * visitor typed. Four fields, each validated against a shape rather than trusted,
  * because this is a public endpoint and anything reachable from a browser is
- * reachable from a script.
+ * reachable from a script. Three of the four are required of every event; the
+ * variant is required of the events that have one, which is ADR-0023 and is
+ * written out where the check is.
  */
 
 /**
@@ -66,6 +68,16 @@ const PLACEMENT = /^[a-z]+(?:-[a-z]+)*$/;
  * `xunit-v3-adapter` is a variant this site could plausibly emit tomorrow.
  */
 const VARIANT = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/**
+ * What an event with no variant is recorded as, and the reason it is empty rather
+ * than a word. A word would be a value: it would sort among the real variants, it
+ * would have to be excluded from every query by name, and the first reader to meet
+ * it would have to find out whether `none` was a door somebody could take. Empty
+ * reads as what it is — this event has no door to choose between — and ADR-0023
+ * says why an event is allowed to have none.
+ */
+const NO_VARIANT = '';
 
 /** Matches the site's own locale tags without this file having to list them. */
 const LOCALE = /^[a-z]{2}$/;
@@ -124,15 +136,29 @@ export default {
 
         const { event, placement, variant, locale, ordinal } = payload as Record<string, unknown>;
 
-        if (!isName(event, VARIANT) || !isName(placement, PLACEMENT) || !isName(variant, VARIANT)) {
+        if (!isName(event, VARIANT) || !isName(placement, PLACEMENT)) {
             return accepted;
         }
         if (!isName(locale, LOCALE)) {
             return accepted;
         }
 
-        // Absent is fine — the ordinal is the one optional field, because §15.3 makes
-        // it a convenience for reading a dashboard rather than part of the record.
+        // ABSENT IS A SHAPE HERE; MALFORMED IS STILL A REFUSAL. §15.2 asks the copy event
+        // for a variant because a copy has two doors behind it and the question is which
+        // one was taken. An event whose exit is single has no such answer to give, and
+        // ADR-0023 is the decision to let it say so rather than invent a word. What is not
+        // relaxed is the check on a variant that did arrive: recording a malformed one as
+        // absent would make rubbish and a legitimate silence read identically here, which
+        // is the one thing the dataset could never recover from.
+        if (variant !== undefined && !isName(variant, VARIANT)) {
+            return accepted;
+        }
+
+        const door: string = typeof variant === 'string' ? variant : NO_VARIANT;
+
+        // Absent is fine, and for its own reason rather than the variant's above: §15.3
+        // makes the ordinal a convenience for reading a dashboard rather than part of the
+        // record, so no event has ever been required to carry one.
         const position: number =
             typeof ordinal === 'number' && Number.isInteger(ordinal) && ordinal >= 0 && ordinal <= MAX_ORDINAL
                 ? ordinal
@@ -147,7 +173,7 @@ export default {
          * while doing so.
          */
         env.MEASUREMENT.writeDataPoint({
-            blobs: [event, placement, variant, locale],
+            blobs: [event, placement, door, locale],
             doubles: [position],
             indexes: [placement],
         });
