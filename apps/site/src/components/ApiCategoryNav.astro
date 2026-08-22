@@ -257,12 +257,21 @@ const searchIndex: SearchEntry[] = allApiCategories().flatMap((category) =>
          * for, and a sticky box taller than the viewport pins its own top while its lower
          * links sit below the fold for the rest of the scroll. Capping it to the viewport
          * and letting it scroll independently keeps every link reachable.
+         *
+         * `overflow-y: auto` also turns this into a clip box, and the nav links sit flush
+         * against its left edge — so a keyboard focus ring, drawn 2px outside the focused
+         * link (`outline-offset: 2px` in base.css), loses its left side to the clip.
+         * `ReleaseNotesContents.astro`'s `.contents` hits the same thing; the fix is the
+         * same one it uses: push the clip box out by the ring's width with padding, then
+         * pull the box back to where it visually was with a matching negative margin.
          */
         position: sticky;
         top: var(--jd-space-4);
         align-self: start;
         max-height: calc(100svh - 2 * var(--jd-space-4));
         overflow-y: auto;
+        padding-left: 4px;
+        margin-left: -4px;
         border-right: 1px solid var(--jd-border);
     }
 
