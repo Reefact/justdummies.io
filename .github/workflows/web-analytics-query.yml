@@ -1,0 +1,106 @@
+name: Web Analytics query
+
+# Manual, on-demand read of Cloudflare Web Analytics (the beacon rendered on every page,
+# token PUBLIC_CF_BEACON_TOKEN — see docs/for-maintainers/deployment-en.md, "Step 10 —
+# Turn the measurement on"). This is a different product from Analytics Engine
+# (analytics-query.yml): it captures the audience half — country, referrer, device —
+# that the site's own /_event collector deliberately does not.
+#
+# Queried through Cloudflare's GraphQL Analytics API (api.cloudflare.com/client/v4/graphql),
+# not the Analytics Engine SQL endpoint. `siteTag` in the filter is the beacon token.
+# This is not yet documented in the deployment guide as an API query — the schema below
+# follows Cloudflare's published rumPageloadEventsAdaptiveGroups examples but has not been
+# confirmed against this account's actual data shape; a first run may need adjusting.
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: 'How many days back to query'
+        required: true
+        default: '7'
+
+jobs:
+  query:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Run query against Web Analytics
+        env:
+          CLOUDFLARE_ANALYTICS_TOKEN: ${{ secrets.CLOUDFLARE_ANALYTICS_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          SITE_TAG: ${{ vars.PUBLIC_CF_BEACON_TOKEN }}
+          DAYS: ${{ inputs.days }}
+        run: |
+          set -euo pipefail
+
+          since="$(date -u -d "-${DAYS} days" +'%Y-%m-%dT%H:%M:%SZ')"
+          until_="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+
+          query='query WebAnalytics($accountTag: string, $siteTag: string, $since: Time, $until: Time) {
+            viewer {
+              accounts(filter: { accountTag: $accountTag }) {
+                rumPageloadEventsAdaptiveGroups(
+                  limit: 100
+                  filter: { siteTag: $siteTag, datetime_geq: $since, datetime_leq: $until }
+                  orderBy: [count_DESC]
+                ) {
+                  count
+                  dimensions {
+                    date
+                    countryName
+                    referer
+                    deviceType
+                  }
+                }
+              }
+            }
+          }'
+
+          payload="$(jq -n \
+            --arg query "$query" \
+            --arg accountTag "$CLOUDFLARE_ACCOUNT_ID" \
+            --arg siteTag "$SITE_TAG" \
+            --arg since "$since" \
+            --arg until "$until_" \
+            '{query: $query, variables: {accountTag: $accountTag, siteTag: $siteTag, since: $since, until: $until}}')"
+
+          response="$(curl -sS -w '\n%{http_code}' \
+            --connect-timeout 10 --max-time 60 \
+            -X POST \
+            -H "Authorization: Bearer ${CLOUDFLARE_ANALYTICS_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data "$payload" \
+            "https://api.cloudflare.com/client/v4/graphql")"
+          status="$(tail -n1 <<<"$response")"
+          body="$(sed '$d' <<<"$response")"
+          echo "$body" > result.json
+
+          {
+            echo "### Window"
+            echo "$since to $until_"
+            echo
+            echo "HTTP status: $status"
+            echo
+            echo "### Result"
+            echo "Full response is attached as the \`web-analytics-result\` artifact."
+            echo '```json'
+            head -c 200000 result.json
+            if [ "$(wc -c < result.json)" -gt 200000 ]; then
+              echo
+              echo "… truncated, see the artifact for the full response …"
+            fi
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$status" -ge 300 ]; then
+            echo "Query failed with status $status" >&2
+            exit 1
+          fi
+
+      - name: Upload full result
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: web-analytics-result
+          path: result.json
+          retention-days: 7
