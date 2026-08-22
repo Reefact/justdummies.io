@@ -286,9 +286,14 @@ réponse vraie.
 - **Une seule famille graphique** — même origine, même palette, même lumière. Un dessin
   d'une autre facture ferait de la série une collection.
 - **Contrôlé en intégration continue** : un second dessin sur une même page, ou un dessin
-  qu'une ligne de texte touche, fait échouer la suite navigateur. Les deux premières
-  modalités cessent ainsi d'être des intentions. Les autres relèvent de la relecture, et
-  ce paragraphe est l'endroit où elles sont écrites plutôt que supposées.
+  qu'une ligne de texte touche, fait échouer la suite navigateur — qui compare le texte aux
+  pixels peints, pas au CSS qui les place. Les deux premières modalités cessent ainsi d'être
+  des intentions.
+
+  Le contrôle voit les dessins qui se déclarent comme tels, par un attribut. Un dessin ajouté
+  sans cette marque lui échappe : c'est la limite du garde-fou, et elle est écrite ici plutôt
+  que découverte. Les autres modalités relèvent de la relecture, et ce paragraphe est l'endroit
+  où elles sont énoncées plutôt que supposées.
 
 ---
 
