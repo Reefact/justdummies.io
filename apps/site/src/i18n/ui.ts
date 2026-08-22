@@ -88,13 +88,12 @@ const en = {
     /**
      * The second heading: the 5 releases published just before the one above, read from the
      * same RELEASE_NOTES-en.md. Their cards carry no link of their own — a single link closes
-     * the section instead, naming how many releases it opens (`version.previous.viewAllPrefix`
-     * / `viewAllSuffix`, split around the count the way `releaseNotes.releases.one`/`.many` are).
+     * the section instead. That link names no count: GitHub's own list keeps going well past
+     * these 5, so a label promising a number here would be wrong the moment a reader followed it.
      */
     'version.previous.heading': 'Previous releases',
     'version.previous.lead': "The 5 releases this site published just before its latest one, for the same reason as above — its own history, not the library's.",
-    'version.previous.viewAllPrefix': 'See the',
-    'version.previous.viewAllSuffix': 'other previous releases on GitHub',
+    'version.previous.viewMoreOnGithub': 'See more releases on GitHub',
 
     /**
      * ACT I — validity. The claim is that a value a test does not care about still has
@@ -740,8 +739,7 @@ const fr: Record<UiKey, string> = {
     'version.previous.heading': 'Releases précédentes',
     'version.previous.lead':
         "Les 5 releases publiées par ce site juste avant la dernière, pour la même raison qu'au-dessus — son histoire à lui, pas celle de la bibliothèque.",
-    'version.previous.viewAllPrefix': 'Voir les',
-    'version.previous.viewAllSuffix': 'autres releases précédentes sur GitHub',
+    'version.previous.viewMoreOnGithub': 'Voir plus de releases sur GitHub',
 
     'act1.title': 'La valeur dont votre test se moque',
     'act1.summary': 'Elle doit quand même être valide.',
