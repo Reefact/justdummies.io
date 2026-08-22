@@ -100,6 +100,14 @@ jobs:
             exit 1
           fi
 
+          # GraphQL can answer 200 while carrying a non-empty "errors" array — the HTTP
+          # status alone does not tell success from a validation or execution failure.
+          errors="$(jq -c '.errors // []' result.json)"
+          if [ "$errors" != "[]" ]; then
+            echo "Query returned GraphQL errors: $errors" >&2
+            exit 1
+          fi
+
       - name: Upload full result
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
