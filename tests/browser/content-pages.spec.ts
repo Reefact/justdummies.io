@@ -91,6 +91,47 @@ test('the footer appears on every page that carries it, in the right locale', as
     }
 });
 
+/**
+ * The footer sits in the same place on every page, and this exists because it did not.
+ *
+ * A decoration on /about was floated so that it hung past the section holding it and into the
+ * band the footer occupies. A footer establishes its own formatting context, so it does not pass
+ * under a float — it was laid out *beside* that one instead, narrowed to what was left and then
+ * re-centred inside it by its own `margin: 0 auto`. The result was a footer 515 pixels to the
+ * left of where it sits everywhere else, with its rule stopping short of the drawing, on two
+ * pages of the site.
+ *
+ * Every check in this suite passed on that build. The footer was visible, in the right locale,
+ * carrying the right links, `static` rather than fixed, and each of those is what was asserted
+ * about it. Where it *was* had never been worth writing down until something moved it, and the
+ * one thing that would have caught it is the comparison no single-page test can make: this page
+ * against the others.
+ *
+ * Wide on purpose. The shell stops growing at 72rem, so past that width every footer is the same
+ * box to the pixel and any difference is a defect rather than a consequence of the viewport.
+ */
+test('the footer occupies the same box on every page', async ({ page }) => {
+    const boxes = new Map<string, string>();
+
+    for (const path of ['/', '/fr/', '/about', '/fr/about', '/privacy', '/why-justdummies', '/404.html']) {
+        await page.setViewportSize({ width: 2560, height: 1440 });
+        await page.goto(path);
+
+        const box: string = await page.evaluate(() => {
+            const rect: DOMRect = document.querySelector('.site-footer')!.getBoundingClientRect();
+
+            return `${Math.round(rect.left)}..${Math.round(rect.right)}`;
+        });
+
+        boxes.set(path, box);
+    }
+
+    const found: string[] = Array.from(new Set(boxes.values()));
+    const report: string = Array.from(boxes, ([path, box]) => `${path} ${box}`).join(', ');
+
+    expect(found, `the footer is not the same box on every page: ${report}`).toHaveLength(1);
+});
+
 for (const path of ['/about', '/privacy', '/why-justdummies']) {
 
     test(`${path} needs no script to say anything`, async ({ browser }) => {
