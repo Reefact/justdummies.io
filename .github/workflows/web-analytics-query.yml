@@ -36,8 +36,9 @@ jobs:
           since="$(date -u -d "-${DAYS} days" +'%Y-%m-%dT%H:%M:%SZ')"
           until_="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
 
-          # shellcheck disable=SC2016 -- these are GraphQL variable placeholders ($accountTag
-          # etc.), not shell variables; the single quotes are deliberate so bash leaves them alone.
+          # $accountTag/$siteTag/etc. below are GraphQL variable placeholders, not shell
+          # variables; the single quotes are deliberate so bash leaves them alone.
+          # shellcheck disable=SC2016
           query='query WebAnalytics($accountTag: string, $siteTag: string, $since: Time, $until: Time) {
             viewer {
               accounts(filter: { accountTag: $accountTag }) {
