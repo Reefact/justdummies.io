@@ -166,6 +166,7 @@ requests, issues, diagrams.
 | [ADR-0020](0020-one-release-notes-page-per-train-and-major-en.md) | One release notes page per train and major | Accepted |
 | [ADR-0021](0021-a-release-tag-is-verified-against-the-pr-that-named-it-en.md) | A release tag is verified against the PR that named it, not its own creation clock | Accepted |
 | [ADR-0022](0022-a-step-settles-when-it-is-chosen-not-when-focus-leaves-en.md) | A step settles when it is chosen, not when it loses focus | Accepted |
+| [ADR-0023](0023-an-event-carries-a-variant-only-when-it-has-a-door-to-choose-en.md) | An event carries a variant only when it has a door to choose between | Proposed |
 
 **0008 is absent on purpose.** It named a record that was written, merged, then withdrawn: how a
 scene is titled is an editorial principle, which this file sends to the specification rather than

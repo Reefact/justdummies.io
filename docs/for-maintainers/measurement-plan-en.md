@@ -15,12 +15,37 @@ added. An unread dimension is not free — it is one more thing every later read
 | Lane | What it carries | Consent | Who it covers |
 |---|---|---|---|
 | Cloudflare Web Analytics | visits, and whether pages load quickly (§15.1) | not required | everyone |
-| The Worker collector on `/_event` | the dimensioned copy event (§15.2) | not required | everyone |
+| The Worker collector on `/_event` | the dimensioned exit events (§15.2) | not required | everyone |
 | Google Analytics 4 | the journey between the two (ADR-0018) | **required** | those who accept |
 
 The first two are the totals; the third is the explanation. **Read a rate against lane two, never
 against lane three** — lane three's denominator is the consenting fraction, so a conversion rate
 computed there is a rate among people who accepted analytics, which is not a fact about the page.
+
+## The events lane two counts
+
+Two, and they are the two exits whose **rate** has to be readable. Lane two is the only lane a rate
+may be computed against, so an exit measured in lane three alone is an exit whose denominator is the
+consenting fraction — which is not a fact about the page.
+
+| Event | Fires when | Fields | The question |
+|---|---|---|---|
+| `install-command-copied` | a command is copied | `placement`, `variant`, `ordinal` | which moment convinced them, and by which door? |
+| `download-fab-clicked` | the floating download control is clicked | `placement` | does a permanent call to action on every page earn its place? |
+
+`locale` travels with both. The names are kebab-case here and snake_case in lane three because each
+lane keeps its own convention: GA4 reports on an event name it also uses for its own, and the
+collector writes a blob nobody else reads.
+
+**A variant is carried by the event that has one.** A copy has two doors behind it — the CLI and the
+Package Manager Console — and which one was taken is precisely what §15.2 asks for. The download
+control has one door, so it sends no variant and the collector records an empty one rather than an
+invented word ([ADR-0023](adr/0023-an-event-carries-a-variant-only-when-it-has-a-door-to-choose-en.md)).
+
+**The download control reports the section it was clicked from**, not the exact page — `home`, `api`,
+`release-notes`, `not-found`. That is the granularity the decision is taken at: a floating control is
+kept or dropped across `/api/`, never on one entry page of it. The exact address is lane three's to
+give, and it gives it without being asked.
 
 ## The events lane three reports
 
@@ -35,13 +60,19 @@ own language — the locale the reader chose — and not the browser's, which GA
 | `install_command_copied` | a command is copied — the same DOM event lane two listens to | `placement`, `variant`, `scene_ordinal` | which moment convinced them? |
 | `install_variant_switched` | the CLI ↔ Package Manager tab is switched | `placement`, `variant` | is the default tab the right one? |
 | `nuget_link_clicked` | a NuGet link is followed | `placement`, `variant`, `link_url` | the exit nobody was watching |
+| `download_fab_clicked` | the floating download link is clicked | `placement` | is a permanent call to action on every page pulling its weight, or visual noise? |
 | `playground_started` | the hero's Run button is pressed | — | the strongest intent on the page: agreeing to download the runtime |
 | `comparison_narrowed` | the positioning page's selector is used | `competitor` | who are we being compared against? |
 | `view_search_results` | the API search settles on a term | `search_term` | what is being looked for, and not found |
 
-`install_command_copied` is the **key event**. It is also the one event reported in two lanes at once,
-deliberately: lane two counts every copy, lane three explains the path to it, and the two are read
-together rather than one instead of the other.
+`install_command_copied` is the **key event**. It and `download_fab_clicked` are the two reported in
+both lanes at once, deliberately: lane two counts every one of them, lane three explains the path
+taken to it, and each pair is read together rather than one half instead of the other.
+
+`download_fab_clicked` carries the section as its `placement` because that is what lane two can hold;
+this lane already knows the exact page, since GA4 attaches the address to everything it reports. The
+parameter is sent anyway, so the same key joins the two lanes — which is the way the plan says to
+read them.
 
 `view_search_results` carries text a visitor typed. It is the only event here that does, which is why
 it is named twice before anyone can consent to it: on the banner itself, and in the privacy page's
@@ -59,6 +90,10 @@ question.
 
 Custom dimensions, event-scoped: `placement`, `variant`, `scene_name`, `act`, `content_locale`,
 `competitor`, `link_url`. Seven of the fifty a standard property allows.
+
+`download_fab_clicked` adds none: it reports under `placement`, which is on that list already. An
+event that needs no new definition is an event whose history is readable from its first day, which is
+the only kind this section can promise.
 
 Custom metric: `scene_ordinal`.
 
