@@ -379,6 +379,11 @@ const searchIndex: SearchEntry[] = allApiCategories().flatMap((category) =>
         font-family: var(--jd-font-mono);
         font-size: var(--jd-text-sm);
         text-decoration: none;
+        /* A name like `ConflictingAnyConstraintException` outruns the fixed 16rem column with
+           no space to break at — and `.api-nav`'s `overflow-y: auto` makes the other axis
+           `auto` too (the CSS rule for a box with only one axis scrollable), so an unbroken
+           name pushed a horizontal scrollbar onto the whole sidebar instead of just wrapping. */
+        overflow-wrap: anywhere;
     }
 
     .api-nav-sublist a:hover {
