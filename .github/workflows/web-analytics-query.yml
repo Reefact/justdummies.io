@@ -51,7 +51,7 @@ jobs:
                   dimensions {
                     date
                     countryName
-                    referer
+                    refererHost
                     deviceType
                   }
                 }
