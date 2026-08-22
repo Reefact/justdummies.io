@@ -1,0 +1,96 @@
+name: GA4 query
+
+# Manual, on-demand read of the site's Google Analytics 4 property (G-CSJQVP0XLD,
+# GA4_PROPERTY_ID) via the Analytics Data API. This is a third source alongside
+# analytics-query.yml (Analytics Engine, the /_event collector's own dimensioned
+# data) and web-analytics-query.yml (Cloudflare Web Analytics, the unconditional
+# audience beacon) — see ADR-0018 for why GA4 exists as a consent-gated third lane.
+#
+# Authentication differs from the two Cloudflare workflows: GA4 needs an OAuth
+# access token minted from a service account key, not a bearer token used as-is.
+# google-github-actions/auth handles that exchange; GA4_SERVICE_ACCOUNT_KEY must
+# carry Viewer access on the property (Admin -> Property Access Management).
+on:
+  workflow_dispatch:
+    inputs:
+      body:
+        description: 'JSON body for the runReport request'
+        required: true
+        default: >-
+          {"dateRanges":[{"startDate":"7daysAgo","endDate":"today"}],
+          "dimensions":[{"name":"pageTitle"},{"name":"country"},{"name":"sessionDefaultChannelGroup"}],
+          "metrics":[{"name":"screenPageViews"},{"name":"activeUsers"}],
+          "orderBys":[{"metric":{"metricName":"screenPageViews"},"desc":true}],
+          "limit":50}
+
+jobs:
+  query:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2.1.13
+        with:
+          credentials_json: ${{ secrets.GA4_SERVICE_ACCOUNT_KEY }}
+          token_format: access_token
+
+      - name: Run report against the Analytics Data API
+        env:
+          GA4_PROPERTY_ID: ${{ vars.GA4_PROPERTY_ID }}
+          BODY: ${{ inputs.body }}
+          ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+        run: |
+          set -euo pipefail
+
+          response="$(curl -sS -w '\n%{http_code}' \
+            --connect-timeout 10 --max-time 60 \
+            -X POST \
+            -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data "$BODY" \
+            "https://analyticsdata.googleapis.com/v1beta/properties/${GA4_PROPERTY_ID}:runReport")"
+          status="$(tail -n1 <<<"$response")"
+          body="$(sed '$d' <<<"$response")"
+          echo "$body" > result.json
+
+          {
+            echo "### Request body"
+            echo '```json'
+            echo "$BODY"
+            echo '```'
+            echo
+            echo "HTTP status: $status"
+            echo
+            echo "### Result"
+            echo "Full response is attached as the \`ga4-result\` artifact."
+            echo '```json'
+            head -c 200000 result.json
+            if [ "$(wc -c < result.json)" -gt 200000 ]; then
+              echo
+              echo "… truncated, see the artifact for the full response …"
+            fi
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$status" -ge 300 ]; then
+            echo "Query failed with status $status" >&2
+            exit 1
+          fi
+
+          # The Data API answers 200 with an "error" object on some failure modes too.
+          error="$(jq -c '.error // null' result.json)"
+          if [ "$error" != "null" ]; then
+            echo "Query returned an API error: $error" >&2
+            exit 1
+          fi
+
+      - name: Upload full result
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: ga4-result
+          path: result.json
+          retention-days: 7
