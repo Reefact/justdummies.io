@@ -121,7 +121,7 @@ const en = {
 
     'act1.constraints.title': 'Declare the constraints, not the value',
     'act1.constraints.body':
-        'Every business rule becomes a call in the chain: alphanumeric, uppercase, starts with ORD-, between eight and twenty characters long. The value it produces changes on every run, and it is valid every time. This is where drawing at random makes sense. That value was never the subject of the test, it only had to be valid. Any value that satisfies the rules will do. You describe what the value must satisfy, not what you are going to assert.',
+        'Every business rule becomes a call in the chain: starts with ORD-, uppercase alphanumeric after it, between eight and twenty characters long. The value it produces changes on every run, and it is valid every time. This is where drawing at random makes sense. That value was never the subject of the test, it only had to be valid. Any value that satisfies the rules will do. You describe what the value must satisfy, not what you are going to assert.',
 
     'act1.exit.title': 'Install it now',
     'act1.exit.body':
@@ -411,7 +411,7 @@ const en = {
     'why.tool.justdummies.description':
         'Arbitrary values for everything a test does not check, with the rules they must satisfy written where the value is asked for.',
     'why.tool.justdummies.concretely':
-        'In practice: an alphanumeric, uppercase reference that always starts with ORD- and is between eight and twenty characters long, drawn fresh on every run.',
+        'In practice: a reference that always starts with ORD-, is uppercase alphanumeric after that prefix, and is between eight and twenty characters long, drawn fresh on every run.',
 
     'why.tool.bogus.need': 'I need data that looks real.',
     'why.tool.bogus.description':
@@ -761,7 +761,7 @@ const fr: Record<UiKey, string> = {
 
     'act1.constraints.title': 'Déclarez les contraintes, pas la valeur',
     'act1.constraints.body':
-        "Chaque règle métier devient un appel dans la chaîne : alphanumérique, en majuscules, commence par ORD-, d'une longueur comprise entre huit et vingt caractères. La valeur produite change à chaque exécution, et elle est valide à chaque fois. Le hasard prend son sens ici. Cette valeur n'a jamais été le sujet du test, elle devait seulement être valide. N'importe laquelle qui respecte les règles fait donc l'affaire. Vous décrivez ce que la valeur doit respecter, pas ce que vous allez vérifier.",
+        "Chaque règle métier devient un appel dans la chaîne : commence par ORD-, alphanumérique en majuscules après le préfixe, d'une longueur comprise entre huit et vingt caractères. La valeur produite change à chaque exécution, et elle est valide à chaque fois. Le hasard prend son sens ici. Cette valeur n'a jamais été le sujet du test, elle devait seulement être valide. N'importe laquelle qui respecte les règles fait donc l'affaire. Vous décrivez ce que la valeur doit respecter, pas ce que vous allez vérifier.",
 
     'act1.exit.title': 'Installez-la maintenant',
     'act1.exit.body':
@@ -999,7 +999,7 @@ const fr: Record<UiKey, string> = {
     'why.tool.justdummies.description':
         "Des valeurs arbitraires pour tout ce qu'un test ne vérifie pas, avec les règles qu'elles doivent respecter, écrites là où le test demande la valeur.",
     'why.tool.justdummies.concretely':
-        "Concrètement : une référence alphanumérique en majuscules, commençant toujours par ORD-, d'une longueur comprise entre huit et vingt caractères, et tirée à chaque exécution.",
+        "Concrètement : une référence commençant toujours par ORD-, alphanumérique en majuscules après ce préfixe, d'une longueur comprise entre huit et vingt caractères, et tirée à chaque exécution.",
 
     'why.tool.bogus.need': "J'ai besoin de données qui ont l'air vraies.",
     'why.tool.bogus.description':
