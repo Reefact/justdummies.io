@@ -3,16 +3,20 @@ name: Analytics query
 # Manual, on-demand read of the justdummies_measurement Analytics Engine
 # dataset (see wrangler.jsonc and worker/index.ts §15.2/§15.3 for the schema:
 # blob1=event, blob2=placement, blob3=variant, blob4=locale, double1=ordinal).
-# Results land in the run's job summary, never in a committed file.
+# Results land in the run's job summary (truncated) and as a downloadable
+# artifact (full), never in a committed file.
 on:
   workflow_dispatch:
     inputs:
       sql:
         description: 'SQL to run against justdummies_measurement'
         required: true
+        # sum(_sample_interval), not count(): see deployment-en.md ("sum(_sample_interval), not
+        # count()") — Analytics Engine can sample once a dataset gets busy, and count() would then
+        # silently undercount.
         default: >-
           SELECT blob1 AS event, blob2 AS placement, blob3 AS variant, blob4 AS locale,
-          count() AS hits
+          sum(_sample_interval) AS hits
           FROM justdummies_measurement
           WHERE timestamp > NOW() - INTERVAL '7' DAY
           GROUP BY blob1, blob2, blob3, blob4
@@ -22,21 +26,27 @@ on:
 jobs:
   query:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Run query against Analytics Engine
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          # A separate, read-only token — see deployment-en.md ("The deploy token cannot do
+          # this"): the deploy token's Edit Cloudflare Workers template carries no Analytics
+          # permission, so the SQL API needs an account-scoped Analytics Read token instead.
+          CLOUDFLARE_ANALYTICS_TOKEN: ${{ secrets.CLOUDFLARE_ANALYTICS_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           SQL: ${{ inputs.sql }}
         run: |
           set -euo pipefail
           response="$(curl -sS -w '\n%{http_code}' \
+            --connect-timeout 10 --max-time 60 \
             -X POST \
-            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            -H "Authorization: Bearer ${CLOUDFLARE_ANALYTICS_TOKEN}" \
             --data-raw "${SQL}" \
             "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/analytics_engine/sql")"
           status="$(tail -n1 <<<"$response")"
           body="$(sed '$d' <<<"$response")"
+          echo "$body" > result.json
 
           {
             echo "### Query"
@@ -47,8 +57,13 @@ jobs:
             echo "HTTP status: $status"
             echo
             echo "### Result"
+            echo "Full response is attached as the \`analytics-result\` artifact."
             echo '```json'
-            echo "$body"
+            head -c 200000 result.json
+            if [ "$(wc -c < result.json)" -gt 200000 ]; then
+              echo
+              echo "… truncated, see the artifact for the full response …"
+            fi
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -56,3 +71,11 @@ jobs:
             echo "Query failed with status $status" >&2
             exit 1
           fi
+
+      - name: Upload full result
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: analytics-result
+          path: result.json
+          retention-days: 7
