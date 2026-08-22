@@ -2,8 +2,9 @@
 
 🌍 🇫🇷 Français (ce fichier) · 🇬🇧 [English](0023-an-event-carries-a-variant-only-when-it-has-a-door-to-choose-en.md)
 
-**Status:** Proposed
+**Status:** Accepted
 **Proposed:** 2026-08-22
+**Accepted:** 2026-08-22
 **Decision Makers:** Reefact
 
 ## Context

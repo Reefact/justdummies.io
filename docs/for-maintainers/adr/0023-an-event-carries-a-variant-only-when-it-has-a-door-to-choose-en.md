@@ -2,8 +2,9 @@
 
 🌍 🇬🇧 English (this file) · 🇫🇷 [Français](0023-un-evenement-porte-une-variante-seulement-sil-a-une-porte-a-choisir-fr.md)
 
-**Status:** Proposed
+**Status:** Accepted
 **Proposed:** 2026-08-22
+**Accepted:** 2026-08-22
 **Decision Makers:** Reefact
 
 ## Context
