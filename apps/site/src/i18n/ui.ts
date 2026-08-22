@@ -144,7 +144,7 @@ const en = {
 
     'act2.link.title': 'Generated to help you, and yours to change',
     'act2.link.body':
-        'The tool writes the whole file: the fields, a factory per parameter, the draw. It cannot read the ORD- prefix rule, so it wrote its best generator rather than guess, and planted a line that does not compile beside it. The file does not build until you have looked. You delete that line and add .AlphaNumeric().UpperCase().StartingWith("ORD-") to the reference factory, and that is the chain you already wrote, unchanged. The file is yours: read it, edit it, commit it.',
+        'The tool writes the whole file: the fields, a factory per parameter, the draw. It cannot read the ORD- prefix rule, so it wrote its best generator rather than guess, and planted a line that does not compile beside it. The file does not build until you have looked. You delete it and add .AlphaNumeric(), .UpperCase() and .StartingWith("ORD-") to the reference factory, and that is the chain you already wrote, unchanged. The file is yours: read it, edit it, commit it.',
 
     'act2.concise.title': 'A test that is explicit at last, and does not lie',
     'act2.concise.body':
@@ -780,7 +780,7 @@ const fr: Record<UiKey, string> = {
 
     'act2.link.title': 'Généré pour vous aider, vous gardez la main',
     'act2.link.body':
-        "L'outil écrit tout le fichier : les champs, une factory par paramètre, le tirage. Il ne sait pas lire la règle du préfixe ORD-, alors plutôt que de l'inventer il écrit son meilleur générateur et plante à côté une ligne qui ne compile pas. Le fichier ne se construit pas tant que vous n'avez pas regardé. Vous supprimez cette ligne et ajoutez .AlphaNumeric().UpperCase().StartingWith(\"ORD-\") sur la factory de reference : c'est la chaîne que vous avez déjà écrite, inchangée. Le fichier vous appartient : vous le lisez, vous le modifiez, vous le commitez.",
+        "L'outil écrit tout le fichier : les champs, une factory par paramètre, le tirage. Il ne sait pas lire la règle du préfixe ORD-, alors plutôt que de l'inventer il écrit son meilleur générateur et plante à côté une ligne qui ne compile pas. Le fichier ne se construit pas tant que vous n'avez pas regardé. Vous supprimez cette ligne et ajoutez .AlphaNumeric(), .UpperCase() et .StartingWith(\"ORD-\") sur la factory de reference : c'est la chaîne que vous avez déjà écrite, inchangée. Le fichier vous appartient : vous le lisez, vous le modifiez, vous le commitez.",
 
     'act2.concise.title': 'Un test enfin explicite, et qui ne ment pas',
     'act2.concise.body':
