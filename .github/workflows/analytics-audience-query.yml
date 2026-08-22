@@ -1,9 +1,9 @@
-name: Web Analytics query
+name: Analytics audience query
 
 # Manual, on-demand read of Cloudflare Web Analytics (the beacon rendered on every page,
 # token PUBLIC_CF_BEACON_TOKEN — see docs/for-maintainers/deployment-en.md, "Step 10 —
 # Turn the measurement on"). This is a different product from Analytics Engine
-# (analytics-query.yml): it captures the audience half — country, referrer, device —
+# (analytics-events-query.yml): it captures the audience half — country, referrer, device —
 # that the site's own /_event collector deliberately does not.
 #
 # Queried through Cloudflare's GraphQL Analytics API (api.cloudflare.com/client/v4/graphql),

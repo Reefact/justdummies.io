@@ -1,4 +1,4 @@
-name: Analytics query
+name: Analytics events query
 
 # Manual, on-demand read of the justdummies_measurement Analytics Engine
 # dataset (see wrangler.jsonc and worker/index.ts §15.2/§15.3 for the schema:
