@@ -1,9 +1,9 @@
-name: GA4 query
+name: Analytics journey query
 
 # Manual, on-demand read of the site's Google Analytics 4 property (G-CSJQVP0XLD,
 # GA4_PROPERTY_ID) via the Analytics Data API. This is a third source alongside
-# analytics-query.yml (Analytics Engine, the /_event collector's own dimensioned
-# data) and web-analytics-query.yml (Cloudflare Web Analytics, the unconditional
+# analytics-events-query.yml (Analytics Engine, the /_event collector's own dimensioned
+# data) and analytics-audience-query.yml (Cloudflare Web Analytics, the unconditional
 # audience beacon) — see ADR-0018 for why GA4 exists as a consent-gated third lane.
 #
 # Authentication differs from the two Cloudflare workflows: GA4 needs an OAuth
