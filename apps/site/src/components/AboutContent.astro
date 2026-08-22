@@ -11,6 +11,14 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
 ---
 
 <section class="about" aria-labelledby="about-heading">
+    {/*
+      The dummy this page is signed by, leaning on the text rather than beside it. Empty and
+      first: a background carries the drawing, so nothing is announced to a screen reader and
+      nothing is fetched on the windows that do not draw it, and a float only pushes what
+      follows it. The rule below carries the measurements.
+    */}
+    <div class="mascot"></div>
+
     <h2 id="about-heading">{t('about.heading')}</h2>
 
     <p>{t('about.origin')}</p>
@@ -42,6 +50,73 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
 <style>
     .about {
         max-width: 56rem;
+    }
+
+    /*
+     * THE DUMMY ON THIS PAGE, and the one place on the site where a drawing sits against the
+     * text rather than clear of it (§5.8). This page shows nothing — it is one person saying
+     * why the library exists — so there is no figure for a drawing to compete with, and the
+     * page it signs is the one about the person who drew the conclusion.
+     *
+     * WHY THE TEXT FOLLOWS HIS LEAN, and why that is the whole idea. Set beside the prose in
+     * a rectangle, a leaning figure reads as a picture that happens to be there. Given the
+     * text's own right edge, he reads as something the page leans on: the measure closes as
+     * his shoulder comes down, and the last lines stop where his feet are. `shape-outside`
+     * is what buys that, and it needs a float — which is why this element is first in the
+     * section and empty: a float only pushes what comes after it.
+     *
+     * THE POLYGON IS THE SILHOUETTE'S OWN LEFT EDGE, traced off dummy-leaning.webp rather
+     * than drawn by eye: the artwork's leftmost painted pixel was read every two rows, hulled,
+     * and simplified to the seven vertices below. The drawing crosses that line by at most
+     * 11 of its own 953 pixels — under 6 on screen — and `shape-margin` is more than an order
+     * of magnitude larger, so no line of text ever touches him. Retrace both if the artwork
+     * is ever recropped.
+     *
+     * NOT `shape-outside: url()`, which would follow the alpha exactly and let a line of text
+     * into the gap under his crossed arms and between his legs. Text in an armpit is not a
+     * design, it is a bug that looks deliberate.
+     *
+     * THE NEGATIVE MARGIN IS WHAT PUTS HIM MOSTLY OUTSIDE THE MEASURE. The prose is capped at
+     * 56rem inside a 72rem shell, which leaves a 224-pixel column that no text can reach; he
+     * hangs in it, and only his lower half — where the lean has carried him left — comes back
+     * over the measure. `border-box` on the shape is not decoration: a negative margin shrinks
+     * the margin box, which is what the percentages would otherwise be resolved against.
+     *
+     * 500 PIXELS, AND THE ENGLISH PAGE IS WHAT FIXES IT. Measured from the heading to the
+     * links: 562 pixels in French, 507 in English. A figure taller than the shorter of the two
+     * would hang below its own text and push the footer down on one locale only.
+     */
+    .mascot {
+        display: none;
+    }
+
+    /*
+     * Drawn only where the free column exists, which is the same width at which the shell
+     * stops growing. Below it the drawing would be over the prose rather than beside it, and
+     * a float with a shape in a narrow measure turns a paragraph into a staircase.
+     */
+    @media (min-width: 75rem) {
+        .mascot {
+            display: block;
+            float: right;
+            width: 253px;
+            height: 500px;
+            margin-right: -184px;
+            shape-outside: polygon(
+                    71% 0%,
+                    100% 0%,
+                    100% 100%,
+                    16% 100%,
+                    4% 99%,
+                    0% 97%,
+                    44% 12%,
+                    55% 4%,
+                    63% 1%
+                )
+                border-box;
+            shape-margin: 1rem;
+            background: url('/dummy-leaning.webp') no-repeat center / contain;
+        }
     }
 
     h2 {
