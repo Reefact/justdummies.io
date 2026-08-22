@@ -16,11 +16,12 @@
  * open in the markup, so a reader with no scripting gets the full list rather than a closed
  * box with no way to open it.
  *
- * THE SCROLL-SPY BELOW ADDS, IT NEVER DECIDES. It only ever sets `data-current` on the entry
- * for whichever section is in front of the reader, and CSS uses that to bold it exactly the
- * way `.major-label.current` already is above — the same weight-not-colour rule the links
- * follow (see below). If it never runs, every entry is exactly what it was: the same anchor,
- * the same href, the same click. Modelled on `Scene.astro`'s scroll-spy, including its band.
+ * THE SCROLL-SPY BELOW ADDS, IT NEVER DECIDES. It only ever sets `data-current` and
+ * `aria-current` on the entry for whichever section is in front of the reader, and CSS
+ * uses the former to bold it exactly the way `.major-label.current` already is above —
+ * the same weight-not-colour rule the links follow (see below). If it never runs, every
+ * entry is exactly what it was: the same anchor, the same href, the same click. Modelled
+ * on `Scene.astro`'s scroll-spy, including its band.
  *
  * Its focus ring is declared here rather than inherited: base.css scopes the site's ring to
  * `a:focus-visible` and `button:focus-visible`, and a `<summary>` is neither — it fell back to
@@ -142,10 +143,11 @@ const t = useTranslations(locale);
      * Marks the entry for the section the reader is on, so the table of contents says
      * where they are.
      *
-     * Additive by construction: it only ever sets `data-current` on the entry pointing at
-     * whichever target is in front of the reader, and only one entry at a time, so the
-     * rest of the list is exactly as it was without it. Every entry is still the anchor or
-     * link it always was — this changes what it looks like, never what it does.
+     * Additive by construction: it only ever sets `data-current`/`aria-current` on the
+     * entry pointing at whichever target is in front of the reader, and only one entry at
+     * a time, so the rest of the list is exactly as it was without it. Every entry is
+     * still the anchor or link it always was — this changes what it looks like and what
+     * assistive technology is told, never what it does.
      */
     const nav = document.querySelector<HTMLElement>('[data-release-contents] nav');
     const links = nav ? Array.from(nav.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')) : [];
@@ -154,15 +156,6 @@ const t = useTranslations(locale);
         const targets: { link: HTMLAnchorElement; el: HTMLElement }[] = [];
 
         for (const link of links) {
-            // A release with rubrics is covered by its own rubrics' anchors, each a finer
-            // slice of the scroll than the release itself — observing both would have the
-            // release's entry and one of its rubrics' fighting over `current` in the same
-            // scroll. A release with none has nothing finer to defer to, so it stands in
-            // for its own scroll range.
-            if (link.classList.contains('release-link') && link.parentElement?.querySelector('.rubrics')) {
-                continue;
-            }
-
             const id = link.getAttribute('href')?.slice(1);
             const el = id ? document.getElementById(id) : null;
 
@@ -177,24 +170,53 @@ const t = useTranslations(locale);
 
         let current: HTMLAnchorElement | undefined;
 
+        function setCurrent(link: HTMLAnchorElement | undefined): void {
+            if (current === link) {
+                return;
+            }
+            if (current !== undefined) {
+                current.removeAttribute('data-current');
+                current.removeAttribute('aria-current');
+            }
+            current = link;
+            if (current !== undefined) {
+                current.setAttribute('data-current', '');
+                current.setAttribute('aria-current', 'true');
+            }
+        }
+
+        // A release both is a target (for the heading and summary before its first
+        // rubric) and contains its rubrics, each a finer slice of the same scroll — so
+        // more than one target can be intersecting the band at once. Tracked here rather
+        // than read off the callback's own entries, because the callback only reports
+        // what changed, not everything currently true. The smallest of what is currently
+        // intersecting wins: a rubric inside a release is never taller than the release
+        // itself, so this reads as "prefer the more specific target" without needing to
+        // know the nesting explicitly.
+        const intersecting = new Set<HTMLElement>();
+
         const observer = new IntersectionObserver(
             (entries) => {
                 for (const entry of entries) {
-                    if (!entry.isIntersecting) {
-                        continue;
+                    if (entry.isIntersecting) {
+                        intersecting.add(entry.target as HTMLElement);
+                    } else {
+                        intersecting.delete(entry.target as HTMLElement);
                     }
-
-                    const target = targets.find((candidate) => candidate.el === entry.target);
-                    if (!target) {
-                        continue;
-                    }
-
-                    if (current !== undefined && current !== target.link) {
-                        current.removeAttribute('data-current');
-                    }
-                    current = target.link;
-                    current.setAttribute('data-current', '');
                 }
+
+                let winner: { link: HTMLAnchorElement; height: number } | undefined;
+                for (const target of targets) {
+                    if (!intersecting.has(target.el)) {
+                        continue;
+                    }
+                    const height = target.el.getBoundingClientRect().height;
+                    if (winner === undefined || height < winner.height) {
+                        winner = { link: target.link, height };
+                    }
+                }
+
+                setCurrent(winner?.link);
             },
             { rootMargin: BAND },
         );
@@ -202,6 +224,22 @@ const t = useTranslations(locale);
         for (const { el } of targets) {
             observer.observe(el);
         }
+
+        // The band above only ever answers "what is scrolled to the middle of the
+        // viewport", so it never fires for a target that a jump — a direct fragment URL,
+        // or a reduced-motion reader's click — lands at the top of the viewport instead of
+        // scrolling past. The hash always names that target precisely, so this reads it
+        // directly rather than waiting on geometry it may never cross.
+        function setCurrentFromHash(): void {
+            const id = decodeURIComponent(location.hash.slice(1));
+            const target = targets.find((candidate) => candidate.el.id === id);
+            if (target) {
+                setCurrent(target.link);
+            }
+        }
+
+        window.addEventListener('hashchange', setCurrentFromHash);
+        setCurrentFromHash();
     }
 </script>
 
