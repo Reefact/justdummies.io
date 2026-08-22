@@ -1,0 +1,58 @@
+name: Analytics query
+
+# Manual, on-demand read of the justdummies_measurement Analytics Engine
+# dataset (see wrangler.jsonc and worker/index.ts §15.2/§15.3 for the schema:
+# blob1=event, blob2=placement, blob3=variant, blob4=locale, double1=ordinal).
+# Results land in the run's job summary, never in a committed file.
+on:
+  workflow_dispatch:
+    inputs:
+      sql:
+        description: 'SQL to run against justdummies_measurement'
+        required: true
+        default: >-
+          SELECT blob1 AS event, blob2 AS placement, blob3 AS variant, blob4 AS locale,
+          count() AS hits
+          FROM justdummies_measurement
+          WHERE timestamp > NOW() - INTERVAL '7' DAY
+          GROUP BY blob1, blob2, blob3, blob4
+          ORDER BY hits DESC
+          LIMIT 50
+
+jobs:
+  query:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run query against Analytics Engine
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          SQL: ${{ inputs.sql }}
+        run: |
+          set -euo pipefail
+          response="$(curl -sS -w '\n%{http_code}' \
+            -X POST \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            --data-raw "${SQL}" \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/analytics_engine/sql")"
+          status="$(tail -n1 <<<"$response")"
+          body="$(sed '$d' <<<"$response")"
+
+          {
+            echo "### Query"
+            echo '```sql'
+            echo "$SQL"
+            echo '```'
+            echo
+            echo "HTTP status: $status"
+            echo
+            echo "### Result"
+            echo '```json'
+            echo "$body"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$status" -ge 300 ]; then
+            echo "Query failed with status $status" >&2
+            exit 1
+          fi
