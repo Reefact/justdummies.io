@@ -32,12 +32,13 @@ public sealed record OrderReference {
     // well inside the 130 the page's measure holds, and a throw broken in two makes a
     // reader assemble a sentence that always fitted.
     //
-    // The last guard is not cosmetic: a real order reference holds nothing but letters,
-    // digits and hyphens, the same way a real one starts with ORD- and stays between 8 and
-    // 20 characters — nothing a barcode scanner or a phone number field would choke on.
-    // Declared here, it is what lets the generator's own .WithChars(...) (Snippets/Why.cs,
-    // Snippets/Hero.cs, Snippets/FactoriesConstrained.cs, Domain/AnyOrder.cs) remain a fact
-    // about this domain rather than a constraint invented to keep a displayed value legible.
+    // The last guard is not cosmetic: a real order reference is uppercase alphanumeric past
+    // its separator, the same way a real one starts with ORD- and stays between 8 and 20
+    // characters — the shape a barcode carries and a human reads back over the phone.
+    // Declared here, it is what lets the generator's own .AlphaNumeric().UpperCase()
+    // (Snippets/Why.cs, Snippets/Hero.cs, Snippets/FactoriesConstrained.cs,
+    // Domain/AnyOrder.cs) remain a fact about this domain rather than a constraint invented
+    // to keep a displayed value legible.
     //
     // Nothing between the markers is commentary. What a reader sees is the method.
     // <snippet:order-reference-invariants>
@@ -56,8 +57,8 @@ public sealed record OrderReference {
             throw new ArgumentException("An order reference cannot exceed 20 characters.", nameof(value));
         }
 
-        if (!value[4..].All(character => char.IsAsciiLetterOrDigit(character) || character == '-')) {
-            throw new ArgumentException("An order reference only holds letters, digits and hyphens after ORD-.", nameof(value));
+        if (!value[4..].All(character => char.IsAsciiLetterUpper(character) || char.IsAsciiDigit(character))) {
+            throw new ArgumentException("An order reference holds only uppercase letters and digits after ORD-.", nameof(value));
         }
 
         return new OrderReference(value);
