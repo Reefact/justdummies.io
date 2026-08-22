@@ -42,8 +42,13 @@ assert_prose "§9.4 / ADR-0007 the hinge asks the reader's own question" \
   "act3\.hinge[\s\S]{0,300}?change on every run[\s\S]{0,200}?made a test fail"
 assert_prose "§9.9 the tool marked the parameter rather than guess" \
   "act2\.link\.body[\s\S]{0,200}?rather than guess"
-assert_prose "§9.9 the file it wrote throws until the link is added" \
-  "act2\.link\.body[\s\S]{0,260}?throws on every draw until you add the link"
+# The tool used to hand over a file that compiled and threw on every draw; since the CLI's
+# 1.1 line it plants an identifier that does not resolve instead, so the refusal is a build
+# error rather than a runtime one. What §9.9 asks of the prose is unchanged — the file must
+# be said to refuse to go unnoticed until the reader resolves it — so only the wording the
+# assertion looks for moved.
+assert_prose "§9.9 the file it wrote does not build until it is resolved" \
+  "act2\.link\.body[\s\S]{0,260}?does not build until you have looked"
 # The wording moved when the page dropped its act numbering — "the first act" named a
 # division that only ever existed in the specification. What §9.2 requires is that the
 # link be identified as the chain the reader already wrote, not that it be called an act.
