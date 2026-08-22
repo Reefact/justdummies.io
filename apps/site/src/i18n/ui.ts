@@ -698,7 +698,6 @@ const en = {
     'footer.privacy': 'Privacy',
     'footer.api': 'API',
     'footer.releaseNotes': 'Release notes',
-    'footer.repository': 'Source code',
 } as const;
 
 /**
@@ -1280,7 +1279,6 @@ const fr: Record<UiKey, string> = {
     'footer.privacy': 'Confidentialité',
     'footer.api': 'API',
     'footer.releaseNotes': 'Release notes',
-    'footer.repository': 'Code source',
 };
 
 const translations: Record<Locale, Record<UiKey, string>> = { en, fr };
