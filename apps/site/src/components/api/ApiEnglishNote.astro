@@ -1,0 +1,30 @@
+---
+/**
+ * The note that a category page's signatures and doc comments stay in English everywhere,
+ * French included — they are read off the published packages, not written for this site.
+ * One component rather than eight copies, so the note appears on every page that actually
+ * shows a signature or a doc comment and nowhere else: the overview lists categories, not
+ * members, and carries no English of its own to explain.
+ */
+import { useTranslations, type Locale } from '../../i18n/ui';
+
+interface Props {
+    locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+---
+
+{locale === 'fr' && <p class="english-note">{t('api.english.note')}</p>}
+
+<style>
+    .english-note {
+        margin: var(--jd-space-4) 0 0;
+        max-width: 62ch;
+        color: var(--jd-text-muted);
+        font-size: var(--jd-text-sm);
+        border-left: 2px solid var(--jd-generated);
+        padding-left: var(--jd-space-3);
+    }
+</style>

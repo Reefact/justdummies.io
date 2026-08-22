@@ -3,6 +3,7 @@
  * /api/exceptions — the family the library throws on its own behalf.
  */
 import ApiEntryCard from '../ApiEntryCard.astro';
+import ApiEnglishNote from './ApiEnglishNote.astro';
 import ApiPagination from '../ApiPagination.astro';
 import { localeFromPath } from '../../i18n/routing';
 import { useTranslations, type Locale } from '../../i18n/ui';
@@ -15,6 +16,8 @@ const category = apiCategory('exceptions');
 
 <h2>{t('api.exceptions.heading')}</h2>
 <p class="lede">{t('api.exceptions.lede')}</p>
+
+<ApiEnglishNote locale={locale} />
 
 {category.entries.map((entry) => <ApiEntryCard entry={entry} locale={locale} />)}
 
