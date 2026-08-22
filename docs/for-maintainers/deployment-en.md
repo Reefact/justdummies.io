@@ -1322,7 +1322,10 @@ claim no longer holds.
 
 Analytics Engine ships no dashboard. The data is queried over its SQL API, and the fields are in the
 order the collector writes them — `blob1` the event name, then placement, variant and locale, with
-the ordinal as `double1`:
+the ordinal as `double1`. **`blob3` is empty for an event that has no variant**, which is not a
+missing value but the answer: the floating download control has one destination and never two, so it
+sends none (ADR-0023). `blob2` is required of everything, so no row is ever anonymous about where it
+happened.
 
 ```bash
 curl -s "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/analytics_engine/sql" \
@@ -1349,6 +1352,14 @@ as somebody installing.
 
 That query is the whole point of §15.2: it says which moment of the page sent someone to install,
 and by which door. Group by `placement` alone for the moment, by `variant` alone for the door.
+
+The other event this lane carries answers a different question and is read the same way, with
+`blob1 = 'download-fab-clicked'` and `blob3` left out of the grouping — it is empty on every one of
+its rows. Its `blob2` is the **section** the control was clicked from (`home`, `api`,
+`release-notes`, `not-found`), which is the granularity the decision it informs is taken at; the
+exact page is in the journey lane, which attaches the address to everything it reports. Read the
+count against the audience figures from step 9, never against the journey lane: a rate computed
+there is a rate among the people who accepted analytics.
 
 Do not group by `double1`. It is the ordinal, it is there so a dashboard can print scenes in page
 order, and §15.3 forbids it as a key — the page has already gone from eleven scenes to fourteen

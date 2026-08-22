@@ -1361,7 +1361,10 @@ quota du script à l'écart du site. Un corps vide signifie que le Worker a rép
 
 Analytics Engine ne livre aucun tableau de bord. La donnée s'interroge via son API SQL, et les champs
 sont dans l'ordre où le collecteur les écrit — `blob1` le nom de l'événement, puis l'emplacement, la
-variante et la locale, l'ordinal étant `double1` :
+variante et la locale, l'ordinal étant `double1`. **`blob3` est vide pour un événement sans
+variante**, ce qui n'est pas une valeur manquante mais la réponse : le contrôle de téléchargement
+flottant a une destination et jamais deux, il n'en envoie donc aucune (ADR-0023). `blob2`, lui, est
+exigé de tout : aucune ligne n'est muette sur l'endroit où elle s'est produite.
 
 ```bash
 curl -s "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/analytics_engine/sql" \
@@ -1390,6 +1393,14 @@ jamais passé compterait comme une installation.
 Cette requête est tout l'objet de §15.2 : elle dit quel moment de la page a envoyé quelqu'un
 installer, et par quelle porte. Grouper sur `placement` seul pour le moment, sur `variant` seul pour
 la porte.
+
+L'autre événement que porte cette voie répond à une autre question et se lit de la même façon, avec
+`blob1 = 'download-fab-clicked'` et `blob3` hors du regroupement — il est vide sur chacune de ses
+lignes. Son `blob2` est la **section** d'où le contrôle a été cliqué (`home`, `api`,
+`release-notes`, `not-found`), qui est la granularité à laquelle se prend la décision qu'il éclaire ;
+la page exacte est dans la voie du parcours, qui attache l'adresse à tout ce qu'elle rapporte. Lire
+le compte contre les chiffres d'audience de l'étape 9, jamais contre la voie du parcours : un taux
+calculé là-bas est un taux parmi les gens qui ont accepté l'analytique.
 
 Ne pas grouper sur `double1`. C'est l'ordinal, il est là pour qu'un tableau de bord puisse afficher
 les scènes dans l'ordre de la page, et §15.3 l'interdit comme clé — la page est déjà passée une fois

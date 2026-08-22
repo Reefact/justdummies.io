@@ -16,13 +16,39 @@ lecteur futur devra écarter.
 | Voie | Ce qu'elle porte | Consentement | Qui elle couvre |
 |---|---|---|---|
 | Cloudflare Web Analytics | les visites, et si les pages se chargent vite (§15.1) | non requis | tout le monde |
-| Le collecteur Worker sur `/_event` | l'événement de copie dimensionné (§15.2) | non requis | tout le monde |
+| Le collecteur Worker sur `/_event` | les événements de sortie dimensionnés (§15.2) | non requis | tout le monde |
 | Google Analytics 4 | le parcours entre les deux (ADR-0018) | **requis** | ceux qui acceptent |
 
 Les deux premières sont les totaux ; la troisième est l'explication. **Lire un taux contre la voie
 deux, jamais contre la voie trois** — le dénominateur de la voie trois est la fraction consentante,
 donc un taux de conversion calculé là-bas est un taux parmi les gens qui ont accepté l'analytique, ce
 qui n'est pas un fait au sujet de la page.
+
+## Les événements que compte la voie deux
+
+Deux, et ce sont les deux sorties dont le **taux** doit être lisible. La voie deux est la seule contre
+laquelle un taux peut se calculer : une sortie mesurée seulement en voie trois est une sortie dont le
+dénominateur est la fraction consentante — ce qui n'est pas un fait au sujet de la page.
+
+| Événement | Se déclenche quand | Champs | La question |
+|---|---|---|---|
+| `install-command-copied` | une commande est copiée | `placement`, `variant`, `ordinal` | quel moment les a convaincus, et par quelle porte ? |
+| `download-fab-clicked` | le contrôle de téléchargement flottant est cliqué | `placement` | un appel à l'action permanent sur chaque page mérite-t-il sa place ? |
+
+`locale` voyage avec les deux. Les noms sont en kebab-case ici et en snake_case en voie trois parce
+que chaque voie garde sa propre convention : GA4 rapporte sur un nom d'événement qu'il utilise aussi
+pour les siens, et le collecteur écrit un blob que personne d'autre ne lit.
+
+**Une variante est portée par l'événement qui en a une.** Une copie a deux portes derrière elle — le
+CLI et la console Package Manager —, et laquelle a été prise est précisément ce que §15.2 demande. Le
+contrôle de téléchargement n'en a qu'une : il n'envoie donc aucune variante, et le collecteur
+enregistre une variante vide plutôt qu'un mot inventé
+([ADR-0023](adr/0023-un-evenement-porte-une-variante-seulement-sil-a-une-porte-a-choisir-fr.md)).
+
+**Le contrôle de téléchargement rapporte la section d'où il a été cliqué**, pas la page exacte —
+`home`, `api`, `release-notes`, `not-found`. C'est la granularité à laquelle la décision se prend : un
+contrôle flottant se garde ou se retire à l'échelle d'`/api/`, jamais sur une seule de ses pages
+d'entrée. L'adresse exacte est l'affaire de la voie trois, qui la donne sans qu'on la demande.
 
 ## Les événements que rapporte la voie trois
 
@@ -38,13 +64,19 @@ assis.
 | `install_command_copied` | une commande est copiée — le même événement DOM qu'écoute la voie deux | `placement`, `variant`, `scene_ordinal` | quel moment les a convaincus ? |
 | `install_variant_switched` | l'onglet CLI ↔ Package Manager est changé | `placement`, `variant` | l'onglet par défaut est-il le bon ? |
 | `nuget_link_clicked` | un lien NuGet est suivi | `placement`, `variant`, `link_url` | la sortie que personne ne regardait |
+| `download_fab_clicked` | le lien de téléchargement flottant est cliqué | `placement` | un appel à l'action permanent sur chaque page porte-t-il son poids, ou est-ce du bruit visuel ? |
 | `playground_started` | le bouton Run du hero est pressé | — | la plus forte intention de la page : accepter de télécharger le runtime |
 | `comparison_narrowed` | le sélecteur de la page de positionnement est utilisé | `competitor` | à qui nous compare-t-on ? |
 | `view_search_results` | la recherche API se stabilise sur un terme | `search_term` | ce qu'on cherche, et qu'on ne trouve pas |
 
-`install_command_copied` est le **key event**. C'est aussi le seul événement rapporté dans deux voies
-à la fois, délibérément : la voie deux compte chaque copie, la voie trois explique le chemin qui y
-mène, et les deux se lisent ensemble plutôt que l'une à la place de l'autre.
+`install_command_copied` est le **key event**. Lui et `download_fab_clicked` sont les deux rapportés
+dans deux voies à la fois, délibérément : la voie deux compte chacun d'eux, la voie trois explique le
+chemin qui y mène, et chaque paire se lit ensemble plutôt qu'une moitié à la place de l'autre.
+
+`download_fab_clicked` porte la section comme `placement` parce que c'est ce que la voie deux peut
+tenir ; cette voie-ci connaît déjà la page exacte, puisque GA4 attache l'adresse à tout ce qu'il
+rapporte. Le paramètre est envoyé quand même, pour que la même clé relie les deux voies — ce qui est
+la façon dont ce plan dit de les lire.
 
 `view_search_results` porte du texte saisi par un visiteur. C'est le seul événement ici dans ce cas,
 et c'est pourquoi il est nommé deux fois avant qu'on puisse y consentir : sur le bandeau lui-même, et
@@ -63,6 +95,10 @@ première question.
 
 Dimensions personnalisées, portée événement : `placement`, `variant`, `scene_name`, `act`,
 `content_locale`, `competitor`, `link_url`. Sept des cinquante qu'autorise une propriété standard.
+
+`download_fab_clicked` n'en ajoute aucune : il rapporte sous `placement`, qui figure déjà sur cette
+liste. Un événement qui ne demande aucune déclaration nouvelle est un événement dont l'historique est
+lisible dès son premier jour, ce qui est le seul genre que cette section puisse promettre.
 
 Métrique personnalisée : `scene_ordinal`.
 
