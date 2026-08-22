@@ -73,8 +73,16 @@ const compiled = readFileSync(process.env.COMPILED, 'utf8').replace(/\s+$/, '');
 // sides means a namespace that drifts somewhere else still fails.
 const withoutNamespace = (file) => file.split('\n').map((line) => (line.startsWith('namespace ') ? 'namespace …' : line));
 
-const tool = withoutNamespace(written);
-const ours = withoutNamespace(compiled);
+// The second allowed difference, and the reason it exists: for a parameter it could not
+// vouch for, the tool plants an identifier that does not resolve, so the file it wrote
+// cannot be built past without a look — and its own comment says to delete that line once
+// the generator has been verified. Deleting it is what a developer does, and what the
+// compiled copy here must do to be compiled at all. Dropped from the tool's side before the
+// comparison, so every OTHER line still has to match exactly.
+const withoutPlantedLine = (lines) => lines.filter((line) => !line.trimStart().startsWith('_ = TODO_'));
+
+const tool = withoutPlantedLine(withoutNamespace(written));
+const ours = withoutPlantedLine(withoutNamespace(compiled));
 const at = tool.findIndex((line, index) => line !== ours[index]);
 
 if (at >= 0 || tool.length !== ours.length) {

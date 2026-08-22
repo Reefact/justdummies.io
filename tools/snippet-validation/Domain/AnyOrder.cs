@@ -6,17 +6,18 @@
 // Everything above this line is the tool's. Everything below has been edited exactly once,
 // and the site's second act is about that edit.
 //
-// `dum generate Order` marked `reference` as `unread guards`: the domain rejects a string
-// that does not start with "ORD-" or that holds anything but an uppercase letter or a digit
-// past that prefix, and neither rule is in the closed set of guard idioms the tool
-// reads (tool specification §5.3, and §9 names it as a non-goal). It therefore emitted the
-// neutral recipe, said so in as many words, and did not guess — so the file it wrote
-// compiles cleanly and throws on every draw until the missing links are added. Verified:
-// eight consecutive draws, eight AnyGenerationException.
+// `dum generate Order` marked `reference` as `to verify`: the domain rejects a string that
+// does not start with "ORD-" or that holds anything but an uppercase letter or a digit past
+// that prefix, and neither rule is in the closed set of guard idioms the tool reads (tool
+// specification §5.3, and §9 names it as a non-goal). It therefore wrote its best generator
+// for the type, said in as many words that it could not vouch for it, and planted a line
+// that does not compile so the file cannot be built past without a look. Verified: the
+// scaffolded file fails with CS0103 on that identifier.
 //
-// The links added below are the chain of the first act, unchanged. That is the point of
-// the second: the tool writes the part nobody wants to write, and stops where the
-// developer already knows the answer.
+// Resolving it is what a reader does here: delete the planted line, and add the links the
+// tool could not infer. Those links are the chain of the first act, unchanged. That is the
+// point of the second — the tool writes the part nobody wants to write, and stops, loudly,
+// where the developer already knows the answer.
 //
 // A re-run with --force would overwrite this file, edit and snippet markers alike. The
 // tool's own header says so on line 2, which is the warning working as intended.
@@ -40,27 +41,32 @@ public sealed partial class AnyOrder : IAny<Order> {
     private readonly IAny<OrderStatus>    _status;
 
     /// <summary>Creates the generator with a default recipe for every constructor parameter.</summary>
-    //
-    // The length bounds are the tool's own: it reads those two guards. What it could not read
-    // is the shape of the value, so the whole of the difference with the recipe it wrote is
-    // the three links the page's prose names — `.AlphaNumeric()`, `.UpperCase()` and
-    // `.StartingWith("ORD-")`. They are appended rather than woven into the tool's part, so
-    // what a reader compares against the scaffolded file is a suffix, not a rewrite.
-    //
-    // No snippet markers: the page publishes the tool's own file, and this one is the edited
-    // copy the second act is *about* rather than a figure of its own.
     public AnyOrder()
-        : this(reference:  Any.String()
-                               .NonEmpty()
-                               .WithMinLength(8)
-                               .WithMaxLength(20)
-                               .AlphaNumeric()
-                               .UpperCase()
-                               .StartingWith("ORD-")
-                               .As(OrderReference.Create),
-               customerId: Any.Guid().NonEmpty().As(CustomerId.Create),
-               total:      Any.Decimal().Positive().As(Money.Create),
-               status:     Any.Enum<OrderStatus>()) { }
+        : this(reference:  ReferenceFactory(),
+               customerId: CustomerIdFactory(),
+               total:      TotalFactory(),
+               status:     StatusFactory()) { }
+
+    private static IAny<OrderReference> ReferenceFactory() {
+        return Any.String()
+                  .AlphaNumeric()
+                  .UpperCase()
+                  .StartingWith("ORD-")
+                  .WithLengthBetween(8, 20)
+                  .As(OrderReference.Create);
+    }
+
+    private static IAny<CustomerId> CustomerIdFactory() {
+        return Any.Guid().NonEmpty().As(CustomerId.Create);
+    }
+
+    private static IAny<Money> TotalFactory() {
+        return Any.Decimal().Positive().As(Money.Create);
+    }
+
+    private static IAny<OrderStatus> StatusFactory() {
+        return Any.Enum<OrderStatus>();
+    }
 
     private AnyOrder(IAny<OrderReference> reference,
                      IAny<CustomerId>     customerId,

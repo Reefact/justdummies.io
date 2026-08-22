@@ -21,10 +21,30 @@ public sealed partial class AnyOrder : IAny<Order> {
 
     /// <summary>Creates the generator with a default recipe for every constructor parameter.</summary>
     public AnyOrder()
-        : this(reference:  Any.String().NonEmpty().WithMinLength(8).WithMaxLength(20).As(OrderReference.Create),
-               customerId: Any.Guid().NonEmpty().As(CustomerId.Create),
-               total:      Any.Decimal().Positive().As(Money.Create),
-               status:     Any.Enum<OrderStatus>()) { }
+        : this(reference:  ReferenceFactory(),
+               customerId: CustomerIdFactory(),
+               total:      TotalFactory(),
+               status:     StatusFactory()) { }
+
+    private static IAny<OrderReference> ReferenceFactory() {
+        // TODO(dum): 'OrderReference reference' may be guarded by something dum could not read (§9).
+        //   This is dum's best generator for the type; verify it honours the real invariant,
+        //   or replace it, then delete the line below.
+
+        return Any.String().WithLengthBetween(8, 20).As(OrderReference.Create);
+    }
+
+    private static IAny<CustomerId> CustomerIdFactory() {
+        return Any.Guid().NonEmpty().As(CustomerId.Create);
+    }
+
+    private static IAny<Money> TotalFactory() {
+        return Any.Decimal().Positive().As(Money.Create);
+    }
+
+    private static IAny<OrderStatus> StatusFactory() {
+        return Any.Enum<OrderStatus>();
+    }
 
     private AnyOrder(IAny<OrderReference> reference,
                      IAny<CustomerId>     customerId,
