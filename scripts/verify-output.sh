@@ -566,6 +566,44 @@ if [ -f "${dist}/_headers" ]; then
   fi
 fi
 
+# The playground is measured on the same terms as every other page, or this says so.
+#
+# THE DEFECT THIS ANSWERS SHIPPED. The playground is a second application with a shell of
+# its own, and for as long as it has existed that shell carried no beacon at all — so its
+# visits were missing from every audience figure while every Astro page was counted, and
+# nothing anywhere went red. #161 found it by reading the file, which is not a method.
+#
+# ASSERTED AS AGREEMENT RATHER THAN AS PRESENCE, because a build with no token is a normal
+# build: what must never happen is the two halves disagreeing about whether this site is
+# measured. That covers the regression in both directions — a shell that loses the slot,
+# and a shell that keeps a beacon a token-less build should not have written.
+if [ -f "${dist}/playground/index.html" ]; then
+  pages_carry=0
+  # Every document but the playground's own, so the shell cannot answer for itself.
+  while IFS= read -r page; do
+    case "${page}" in "${dist}/playground/"*) continue ;; esac
+    if grep -qs 'static\.cloudflareinsights\.com' "${page}"; then
+      pages_carry=1
+      break
+    fi
+  done < <(find "${dist}" -name '*.html')
+
+  shell_carries=0
+  grep -qs 'static\.cloudflareinsights\.com' "${dist}/playground/index.html" && shell_carries=1
+
+  if [ "${pages_carry}" -eq "${shell_carries}" ]; then
+    if [ "${shell_carries}" -eq 1 ]; then
+      pass "the playground carries the audience beacon, like every other page"
+    else
+      pass "this build measures nobody, and the playground agrees with its own pages"
+    fi
+  elif [ "${pages_carry}" -eq 1 ]; then
+    fail "every page carries the audience beacon and the playground does not, so its visits are counted nowhere"
+  else
+    fail "the playground carries an audience beacon this build's own pages do not — it would report into an account nothing else reports to"
+  fi
+fi
+
 # The analytics tag and the policy that has to admit it — the same shape as the beacon
 # block above, plus a third direction the beacon never needed.
 #

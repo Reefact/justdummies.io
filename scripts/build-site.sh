@@ -86,6 +86,13 @@ dotnet run --project "${root}/tools/playground-i18n-guard/JustDummies.Playground
 
 "${root}/scripts/copy-playground.sh"
 
+# After the copy and before the policy, and both halves of that are load-bearing. The
+# copy is what puts the shell in the artefact; the policy is derived from what the
+# artefact contains, and grants the beacon's hosts only where a document carries it. A
+# beacon written in after the headers were generated would be one the policy blocks.
+echo "▸ Writing the measurement into the playground shell"
+node "${root}/scripts/write-playground-measurement.mjs"
+
 # After the playground, never before: the policy names a hash of the shell that
 # the publish has just written.
 echo "▸ Generating the response headers"
