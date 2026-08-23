@@ -9,17 +9,18 @@ name: Analytics audience query
 # Queried through Cloudflare's GraphQL Analytics API (api.cloudflare.com/client/v4/graphql),
 # not the Analytics Engine SQL endpoint.
 #
-# THE FILTER IS OPTIONAL, AND EMPTY BY DEFAULT, which is the answer to the thing that cost
-# this workflow every result it ever returned. `siteTag` is not the beacon token the page
-# carries: it is a separate identifier, and the /rum/site_info/list endpoint that maps one to
-# the other answers 403 to this token under every analytics permission tried (Account
-# Analytics, Zone Analytics). Filtering on the token therefore named an identifier the account
-# does not have, which GraphQL reports as "nothing matched" rather than as a mistake.
+# TWO QUERIES, AND THE ORDER MATTERS. `siteTag` is not the beacon token the page carries:
+# it is a separate identifier, and /rum/site_info/list — the endpoint that maps one to the
+# other — answers 403 to this token under every analytics permission tried (Account
+# Analytics, Zone Analytics). Filtering on the token named an identifier the account does
+# not have, which GraphQL reports as "nothing matched" rather than as a mistake, and that
+# is what made this workflow answer empty for its whole life.
 #
-# The way out is that `siteTag` is also a DIMENSION of this dataset, not only a filter. Asking
-# for it unfiltered makes the API report the tag rather than requiring it up front — the data
-# comes back, and the tag comes back with it. Pass `site_tag` once it is known and the query
-# narrows to that one site; leave it empty and the run enumerates whatever the account holds.
+# The way out is that `siteTag` is also a DIMENSION, so the API can be asked to name it.
+# The first query groups by siteTag AND NOTHING ELSE — which is what keeps this repository,
+# whose Actions summaries and artifacts are public, from publishing another site's country
+# and referrer breakdown to readers who have no access to the Cloudflare account. Only once
+# a single site is settled on does the second query fetch that site's detail.
 on:
   workflow_dispatch:
     inputs:
@@ -28,7 +29,7 @@ on:
         required: true
         default: '7'
       site_tag:
-        description: 'Site tag to filter on. Leave empty to enumerate every site and report its tag.'
+        description: 'Site tag to report on. Leave empty: the run names the tags it finds, and reports detail only if there is exactly one.'
         required: false
         default: ''
 
@@ -49,103 +50,161 @@ jobs:
           since="$(date -u -d "-${DAYS} days" +'%Y-%m-%dT%H:%M:%SZ')"
           until_="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
 
-          # Two whole queries rather than one with a clause spliced in. The filtered form
-          # declares $siteTag and the unfiltered one does not, because a declared-but-unused
-          # variable is rejected by some GraphQL servers — and building the filter by string
-          # concatenation would put a workflow input inside the query text, which is the one
-          # place a value should never be interpolated. Both keep siteTag as a dimension, so
-          # every row says which site it came from either way.
-          #
-          # $accountTag/$siteTag/etc. are GraphQL variable placeholders, not shell variables;
+          # One place where a response is turned into a file, so that HTTP status and the
+          # GraphQL `errors` array are both checked BEFORE any caller classifies the result.
+          # Checking them afterwards is how an execution failure gets reported as "no
+          # traffic", which is the wrong answer to give about a measurement.
+          run_query() {
+            local payload="$1" label="$2" out="$3"
+            local response status body errors
+
+            if ! response="$(curl -sS -w '\n%{http_code}' \
+                --connect-timeout 10 --max-time 60 \
+                -X POST \
+                -H "Authorization: Bearer ${CLOUDFLARE_ANALYTICS_TOKEN}" \
+                -H "Content-Type: application/json" \
+                --data "$payload" \
+                "https://api.cloudflare.com/client/v4/graphql")"; then
+              printf '\n**%s did not reach Cloudflare** — transport failure, no HTTP response.\n' \
+                "$label" >> "$GITHUB_STEP_SUMMARY"
+              return 1
+            fi
+
+            status="$(tail -n1 <<<"$response")"
+            body="$(sed '$d' <<<"$response")"
+            printf '%s\n' "$body" > "$out"
+
+            if [ "$status" -ge 300 ]; then
+              printf '\n**%s failed with HTTP %s.**\n' "$label" "$status" >> "$GITHUB_STEP_SUMMARY"
+              return 1
+            fi
+
+            errors="$(jq -c '.errors // []' "$out")"
+            if [ "$errors" != "[]" ]; then
+              {
+                printf '\n**%s returned GraphQL errors** — this is not an empty dataset.\n\n' "$label"
+                echo '```json'
+                printf '%s\n' "$errors"
+                echo '```'
+              } >> "$GITHUB_STEP_SUMMARY"
+              return 1
+            fi
+
+            return 0
+          }
+
+          # $accountTag and friends are GraphQL variable placeholders, not shell variables;
           # the single quotes are what keep bash out of them.
-          if [ -n "$SITE_TAG" ]; then
-            # shellcheck disable=SC2016
-            query='query WebAnalytics($accountTag: string, $siteTag: string, $since: Time, $until: Time) {
-              viewer {
-                accounts(filter: { accountTag: $accountTag }) {
-                  rumPageloadEventsAdaptiveGroups(
-                    limit: 100
-                    filter: { siteTag: $siteTag, datetime_geq: $since, datetime_leq: $until }
-                    orderBy: [count_DESC]
-                  ) {
-                    count
-                    dimensions { siteTag date countryName refererHost deviceType }
-                  }
+          # shellcheck disable=SC2016
+          discover='query DiscoverSites($accountTag: string, $since: Time, $until: Time) {
+            viewer {
+              accounts(filter: { accountTag: $accountTag }) {
+                rumPageloadEventsAdaptiveGroups(
+                  limit: 100
+                  filter: { datetime_geq: $since, datetime_leq: $until }
+                  orderBy: [count_DESC]
+                ) {
+                  count
+                  dimensions { siteTag }
                 }
               }
-            }'
-            # shellcheck disable=SC2016
-            variables='{accountTag: $accountTag, siteTag: $siteTag, since: $since, until: $until}'
-          else
-            # shellcheck disable=SC2016
-            query='query WebAnalytics($accountTag: string, $since: Time, $until: Time) {
-              viewer {
-                accounts(filter: { accountTag: $accountTag }) {
-                  rumPageloadEventsAdaptiveGroups(
-                    limit: 100
-                    filter: { datetime_geq: $since, datetime_leq: $until }
-                    orderBy: [count_DESC]
-                  ) {
-                    count
-                    dimensions { siteTag date countryName refererHost deviceType }
-                  }
+            }
+          }'
+
+          # shellcheck disable=SC2016
+          detail='query SiteAudience($accountTag: string, $siteTag: string, $since: Time, $until: Time) {
+            viewer {
+              accounts(filter: { accountTag: $accountTag }) {
+                rumPageloadEventsAdaptiveGroups(
+                  limit: 100
+                  filter: { siteTag: $siteTag, datetime_geq: $since, datetime_leq: $until }
+                  orderBy: [count_DESC]
+                ) {
+                  count
+                  dimensions { date countryName refererHost deviceType }
                 }
               }
-            }'
-            # shellcheck disable=SC2016
-            variables='{accountTag: $accountTag, since: $since, until: $until}'
-          fi
-
-          payload="$(jq -n \
-            --arg query "$query" \
-            --arg accountTag "$CLOUDFLARE_ACCOUNT_ID" \
-            --arg siteTag "$SITE_TAG" \
-            --arg since "$since" \
-            --arg until "$until_" \
-            "{query: \$query, variables: ${variables}}")"
-
-          response="$(curl -sS -w '\n%{http_code}' \
-            --connect-timeout 10 --max-time 60 \
-            -X POST \
-            -H "Authorization: Bearer ${CLOUDFLARE_ANALYTICS_TOKEN}" \
-            -H "Content-Type: application/json" \
-            --data "$payload" \
-            "https://api.cloudflare.com/client/v4/graphql")"
-          status="$(tail -n1 <<<"$response")"
-          response_body="$(sed '$d' <<<"$response")"
-          echo "$response_body" > result.json
+            }
+          }'
 
           {
             echo "### Window"
             echo "$since to $until_"
-            echo
-            if [ -n "$SITE_TAG" ]; then
-              printf "Filtered to site tag \`%s\`.\n" "$SITE_TAG"
-            else
-              echo "No site filter — every site in the account is reported, each row naming its own tag."
-            fi
-            echo
-            echo "HTTP status: $status"
-            echo
+          } >> "$GITHUB_STEP_SUMMARY"
 
-            # The tags actually seen, which is what an unfiltered run exists to reveal.
-            # jq is given the file rather than the shell variable so a malformed body fails
-            # here rather than producing a misleading empty table.
-            echo "### Site tags in the result"
-            echo
-            tags="$(jq -r '[.data.viewer.accounts[]?.rumPageloadEventsAdaptiveGroups[]?.dimensions.siteTag] | unique | .[]?' result.json)"
-            if [ -n "$tags" ]; then
-              # Double quotes with the backticks escaped: in single quotes a Markdown
-              # backtick reads as a command substitution that will never expand (SC2016).
-              while IFS= read -r tag; do
-                printf -- "- \`%s\`\n" "$tag"
-              done <<<"$tags"
-            else
-              echo "None — the dataset returned no rows at all for this window."
-            fi
-            echo
+          # ---- 1. Which sites reported anything at all -------------------------------
+          #
+          # Grouped by siteTag alone: one row per site, so the 100-group cap cannot let a
+          # busy site crowd a quiet one out of the list, and no site's country or referrer
+          # detail is published by a run that was only meant to find an identifier.
+          # shellcheck disable=SC2016
+          discover_payload="$(jq -n \
+            --arg query "$discover" \
+            --arg accountTag "$CLOUDFLARE_ACCOUNT_ID" \
+            --arg since "$since" \
+            --arg until "$until_" \
+            '{query: $query, variables: {accountTag: $accountTag, since: $since, until: $until}}')"
 
-            echo "### Result"
+          run_query "$discover_payload" "Site discovery" discovery.json
+
+          mapfile -t tags < <(jq -r \
+            '[.data.viewer.accounts[]?.rumPageloadEventsAdaptiveGroups[]?.dimensions.siteTag] | unique | .[]?' \
+            discovery.json)
+
+          {
+            echo
+            echo "### Sites reporting in this window"
+            echo
+            if [ "${#tags[@]}" -eq 0 ]; then
+              echo "None. The account returned no rows for this window at all — which, the checks above having passed, is a statement about the data rather than about the query."
+            else
+              for t in "${tags[@]}"; do
+                # Double quotes with the backtick escaped: in single quotes a Markdown
+                # backtick reads as a command substitution that will never expand (SC2016).
+                printf -- "- \`%s\`\n" "$t"
+              done
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          # ---- 2. Which one to report on ---------------------------------------------
+          target=""
+          if [ -n "$SITE_TAG" ]; then
+            target="$SITE_TAG"
+          elif [ "${#tags[@]}" -eq 1 ]; then
+            # The only site there is, so reporting it leaks nothing that is not already
+            # this repository's own.
+            target="${tags[0]}"
+          fi
+
+          if [ -z "$target" ]; then
+            cp discovery.json result.json
+            {
+              echo
+              if [ "${#tags[@]}" -gt 1 ]; then
+                echo "More than one site reported. Re-run with **site_tag** set to the one you want, so this summary does not publish another site's audience."
+              else
+                echo "No detail to report."
+              fi
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          # ---- 3. That site's audience ------------------------------------------------
+          # shellcheck disable=SC2016
+          detail_payload="$(jq -n \
+            --arg query "$detail" \
+            --arg accountTag "$CLOUDFLARE_ACCOUNT_ID" \
+            --arg siteTag "$target" \
+            --arg since "$since" \
+            --arg until "$until_" \
+            '{query: $query, variables: {accountTag: $accountTag, siteTag: $siteTag, since: $since, until: $until}}')"
+
+          run_query "$detail_payload" "Audience query" result.json
+
+          {
+            echo
+            printf -- "### Audience for \`%s\`\n" "$target"
+            echo
             echo "Full response is attached as the \`web-analytics-result\` artifact."
             echo '```json'
             head -c 200000 result.json
@@ -155,19 +214,6 @@ jobs:
             fi
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
-
-          if [ "$status" -ge 300 ]; then
-            echo "Query failed with status $status" >&2
-            exit 1
-          fi
-
-          # GraphQL can answer 200 while carrying a non-empty "errors" array — the HTTP
-          # status alone does not tell success from a validation or execution failure.
-          errors="$(jq -c '.errors // []' result.json)"
-          if [ "$errors" != "[]" ]; then
-            echo "Query returned GraphQL errors: $errors" >&2
-            exit 1
-          fi
 
       - name: Upload full result
         if: always()
