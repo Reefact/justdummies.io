@@ -1,0 +1,73 @@
+---
+/**
+ * The shell every /docs page shares — sibling of `ApiPage.astro`, same sidebar-plus-content
+ * layout, because a documentation topic and an API reference entry both need a wide,
+ * scrollable content column beside a persistent section nav rather than `Page.astro`'s
+ * 72rem narrative measure.
+ */
+import BrandHeading from '../components/BrandHeading.astro';
+import DocsSectionNav from '../components/DocsSectionNav.astro';
+import { localeFromPath } from '../i18n/routing';
+import type { Locale } from '../i18n/ui';
+import type { DocsSection } from '../docsNav';
+import Base from './Base.astro';
+
+interface Props {
+    title: string;
+    description: string;
+    activeSection: DocsSection;
+    /** '' for a section's own index page. */
+    activeSlug: string;
+    topics: ReadonlyArray<{ slug: string; title: string }>;
+}
+
+const { title, description, activeSection, activeSlug, topics } = Astro.props;
+const locale: Locale = localeFromPath(Astro.url.pathname);
+---
+
+<Base title={title} description={description}>
+    <div class="docs-shell">
+        <div class="shell">
+            <BrandHeading />
+        </div>
+        <div class="docs-layout">
+            <DocsSectionNav locale={locale} activeSection={activeSection} activeSlug={activeSlug} topics={topics} />
+            <main class="docs-main">
+                <slot />
+            </main>
+        </div>
+    </div>
+</Base>
+
+<style>
+    .docs-shell {
+        padding-block: var(--jd-space-8) var(--jd-space-16);
+    }
+
+    .docs-layout {
+        max-width: 88rem;
+        margin-inline: auto;
+        padding-inline: var(--jd-space-4);
+        display: grid;
+        grid-template-columns: var(--jd-reference-nav) minmax(0, 1fr);
+        gap: var(--jd-space-8);
+        margin-top: var(--jd-space-8);
+    }
+
+    .docs-main {
+        min-width: 0;
+    }
+
+    @media (max-width: 56rem) {
+        .docs-layout {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+    }
+
+    @media (max-width: 47.99rem), (max-height: 820px) {
+        .docs-shell {
+            padding-block-start: var(--jd-space-4);
+        }
+    }
+</style>

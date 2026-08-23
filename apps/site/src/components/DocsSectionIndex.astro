@@ -1,0 +1,62 @@
+---
+/**
+ * A `/docs` section's own index — its label, its description, and its topics in reading
+ * order. Shared between the English and French section-index pages, `ReleaseNotesIndexContent.astro`'s
+ * pattern.
+ */
+import { pathForLocale } from '../i18n/routing';
+import { useTranslations, type Locale } from '../i18n/ui';
+import type { DocsSection } from '../docsNav';
+
+interface Props {
+    locale: Locale;
+    section: DocsSection;
+    topics: ReadonlyArray<{ slug: string; title: string }>;
+}
+
+const { locale, section, topics } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<h2>{t(`docs.section.${section}.label`)}</h2>
+<p class="lead">{t(`docs.section.${section}.description`)}</p>
+
+<ul class="topics">
+    {
+        topics.map((topic) => (
+            <li>
+                <a href={pathForLocale(`/docs/${section}/${topic.slug}`, locale)}>{topic.title}</a>
+            </li>
+        ))
+    }
+</ul>
+
+<style>
+    .lead {
+        max-width: 44rem;
+        color: var(--jd-text-muted);
+    }
+
+    .topics {
+        list-style: none;
+        margin: var(--jd-space-8) 0 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: var(--jd-space-2);
+    }
+
+    .topics a {
+        display: block;
+        padding: var(--jd-space-4);
+        border: 1px solid var(--jd-border);
+        border-radius: 0.5rem;
+        color: inherit;
+        font-weight: 600;
+    }
+
+    .topics a:hover {
+        border-color: var(--jd-accent);
+        color: var(--jd-accent);
+    }
+</style>

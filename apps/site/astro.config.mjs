@@ -1,8 +1,55 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 
+/**
+ * A fenced code block renders as `<pre>` with `overflow-x: auto` (`DocsTopicBody.astro`), so
+ * a line wider than the column is reachable only by scrolling it — and axe's
+ * `scrollable-region-focusable` rule is right that nothing makes that region reachable by
+ * keyboard on its own. `tabindex="0"` here is the fix the rule itself names, set at build
+ * time so it holds with no script.
+ */
+function rehypeMakeCodeBlocksFocusable() {
+    /** @param {any} tree */
+    return function transform(tree) {
+        /** @param {any} node */
+        function walk(node) {
+            if (node !== null && typeof node === 'object') {
+                if (node.type === 'element' && node.tagName === 'pre') {
+                    node.properties = { ...node.properties, tabIndex: 0 };
+                }
+                if (Array.isArray(node.children)) {
+                    node.children.forEach(walk);
+                }
+            }
+        }
+
+        walk(tree);
+    };
+}
+
 export default defineConfig({
     site: 'https://justdummies.io',
+
+    // /docs (ADR-0026) is the only place this site renders Markdown as content — every
+    // other page is .astro. Shiki's default output colours tokens with inline `style`
+    // attributes, which the site's own CSP forbids: `style-src 'self'` carries no
+    // 'unsafe-inline' and, unlike script-src, generate-headers.mjs hashes no styles to
+    // cover one either — the policy is kept clean today solely by never emitting an
+    // inline style anywhere on the site. So syntax highlighting is off rather than
+    // shipped broken; `DocsTopicBody.astro` styles `pre`/`code` plainly with the site's
+    // own design tokens instead. Turning it back on is a CSP change, not a Markdown one.
+    markdown: {
+        syntaxHighlight: false,
+        // An empty array still switches Markdown rendering onto @astrojs/markdown-remark's
+        // older `unified` pipeline rather than Astro's newer default processor — deliberate,
+        // not incidental. That default renders GFM table alignment (`:---:`) as
+        // `style="text-align: …"` on `<th>`/`<td>`, which the site's CSP forbids the same
+        // way it forbids Shiki's inline colours above: `style-src 'self'` carries no
+        // 'unsafe-inline'. This pipeline emits the older `align="…"` attribute instead — a
+        // presentational HTML attribute browsers still honour, and one CSP's style-src has
+        // no say over because it is not CSS.
+        rehypePlugins: [rehypeMakeCodeBlocksFocusable],
+    },
 
     i18n: {
         defaultLocale: 'en',

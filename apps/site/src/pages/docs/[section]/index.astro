@@ -1,0 +1,46 @@
+---
+/**
+ * A `/docs` section's own index. The routes come from `docsNav.ts` rather than a file per
+ * section, and `apps/site/src/i18n/routing.ts` is taught the same list — a parameterised
+ * path is invisible to the glob it reads its known routes from (§7.4).
+ */
+import { getCollection } from 'astro:content';
+import DocsSectionIndex from '../../../components/DocsSectionIndex.astro';
+import DocsPage from '../../../layouts/DocsPage.astro';
+import { useTranslations } from '../../../i18n/ui';
+import { DOCS_SECTIONS, type DocsSection } from '../../../docsNav';
+import { site } from '../../../site';
+
+const locale = 'en';
+
+export async function getStaticPaths() {
+    const entries = await getCollection('docs', (entry) => entry.data.locale === 'en');
+
+    return DOCS_SECTIONS.map((section) => {
+        const topics = entries
+            .filter((entry) => entry.data.section === section)
+            .sort((left, right) => left.data.order - right.data.order)
+            .map((entry) => ({ slug: entry.data.slug, title: entry.data.title }));
+
+        return { params: { section }, props: { section, topics } };
+    });
+}
+
+interface Props {
+    section: DocsSection;
+    topics: ReadonlyArray<{ slug: string; title: string }>;
+}
+
+const { section, topics } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<DocsPage
+    title={`${t(`docs.section.${section}.label`)} — ${t('docs.heading')} — ${site.name}`}
+    description={t(`docs.section.${section}.description`)}
+    activeSection={section}
+    activeSlug=""
+    topics={topics}
+>
+    <DocsSectionIndex locale={locale} section={section} topics={topics} />
+</DocsPage>

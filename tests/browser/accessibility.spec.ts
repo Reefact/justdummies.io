@@ -73,13 +73,15 @@ async function settle(page: Page): Promise<void> {
  * `h1` and the refusal the `h2` under it, which is exactly the kind of change that produces
  * a skipped level or a second `h1` without anybody noticing.
  *
- * `/about`, `/release-notes`, `/why-justdummies` and `/privacy` are here too, unlike
- * `/version` — `/version` is a deliberate orphan nothing links to, while these four are
- * reachable from the site (the sitewide footer, or — for `/why-justdummies` — the header
- * nav), so they get the same automated sweep as everything else a reader can actually
- * reach. One release notes page of the second kind is in the sweep as well: the section's
- * front page and a train's own page are two different documents — the second nests a table
- * of contents beside four heading levels — and only the first would be covered otherwise.
+ * `/about`, `/release-notes`, `/why-justdummies`, `/privacy` and `/docs` are here too, unlike
+ * `/version` — `/version` is a deliberate orphan nothing links to, while these are reachable
+ * from the site (the sitewide footer, or — for `/why-justdummies` — the header nav), so they
+ * get the same automated sweep as everything else a reader can actually reach. One release
+ * notes page of the second kind is in the sweep as well: the section's front page and a
+ * train's own page are two different documents — the second nests a table of contents beside
+ * four heading levels — and only the first would be covered otherwise. `/docs` gets the same
+ * treatment: its own index, a section index (the sidebar's collapsed <details>) and one topic
+ * page (mirrored prose — headings, a table, code) are three different documents too.
  */
 for (const path of PAGES.concat(
     '/playground/',
@@ -93,6 +95,12 @@ for (const path of PAGES.concat(
     '/fr/why-justdummies',
     '/privacy',
     '/fr/privacy',
+    '/docs',
+    '/fr/docs',
+    '/docs/guides',
+    '/fr/docs/guides',
+    '/docs/guides/getting-started',
+    '/fr/docs/guides/getting-started',
     '/404.html',
     '/fr/404.html',
 )) {
