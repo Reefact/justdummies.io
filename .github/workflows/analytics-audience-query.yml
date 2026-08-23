@@ -7,10 +7,9 @@ name: Analytics audience query
 # that the site's own /_event collector deliberately does not.
 #
 # Queried through Cloudflare's GraphQL Analytics API (api.cloudflare.com/client/v4/graphql),
-# not the Analytics Engine SQL endpoint. `siteTag` in the filter is the beacon token.
-# This is not yet documented in the deployment guide as an API query — the schema below
-# follows Cloudflare's published rumPageloadEventsAdaptiveGroups examples but has not been
-# confirmed against this account's actual data shape; a first run may need adjusting.
+# not the Analytics Engine SQL endpoint. The `siteTag` the filter wants is NOT the beacon
+# token the page carries — the first step below resolves one into the other, and its comment
+# says why that distinction cost this workflow every result it ever returned.
 on:
   workflow_dispatch:
     inputs:
@@ -24,11 +23,93 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      # THE BEACON TOKEN IS NOT THE SITE TAG, and assuming it was is why every run of this
+      # workflow answered with an empty result and no error: the filter named an identifier
+      # the account does not have, which GraphQL reports as "nothing matched" rather than as
+      # a mistake. The token is what the page carries — public, rendered into every document.
+      # The tag is what the analytics filter wants, and it is only reachable through the API.
+      #
+      # This step resolves one into the other by joining on the token, and prints what the
+      # account actually holds either way, so a future empty answer can be told apart from a
+      # future wrong identifier without editing anything.
+      - name: Resolve the site tag
+        id: site
+        env:
+          CLOUDFLARE_ANALYTICS_TOKEN: ${{ secrets.CLOUDFLARE_ANALYTICS_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          BEACON_TOKEN: ${{ vars.PUBLIC_CF_BEACON_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          # THE ASSIGNMENT IS INSIDE THE `if` ON PURPOSE. A transport failure — DNS, a refused
+          # connection, the 30-second timeout — makes curl exit nonzero, the assignment
+          # inherits that status, and `set -e` would end the step here: the fallback below
+          # would never run, and the GraphQL query would be lost along with it, which is the
+          # single outcome this step exists to avoid. A command tested by `if` is exempt from
+          # `set -e`, so the failure becomes a value rather than an exit.
+          if response="$(curl -sS -w '\n%{http_code}' \
+            --connect-timeout 10 --max-time 30 \
+            -H "Authorization: Bearer ${CLOUDFLARE_ANALYTICS_TOKEN}" \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/rum/site_info/list")"; then
+            status="$(tail -n1 <<<"$response")"
+            listing="$(sed '$d' <<<"$response")"
+          else
+            # No HTTP response at all, so there is no status to report. `000` is curl's own
+            # convention for it, and it keeps the numeric comparison below well-formed.
+            status="000"
+            listing=""
+          fi
+
+          {
+            echo "### Sites known to Web Analytics"
+            echo
+            if [ "$status" = "000" ]; then
+              echo "Lookup did not reach Cloudflare (transport failure, no HTTP response)."
+            else
+              echo "Lookup HTTP status: $status"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          tag=""
+          # A 2xx range rather than "under 300": the transport-failure sentinel is 000, which
+          # is under 300 too, and would otherwise send an empty listing into jq.
+          if [ "$status" -ge 200 ] && [ "$status" -lt 300 ]; then
+            # $t below is jq's own variable, bound by --arg; the single quotes are what keep
+            # bash out of the filter.
+            # shellcheck disable=SC2016
+            tag="$(jq -r --arg t "$BEACON_TOKEN" \
+              '[.result[]? | select(.site_token == $t) | .site_tag] | first // empty' <<<"$listing")"
+
+            # Neither value is a credential — the token is published in every page by design,
+            # and the tag is an opaque identifier — so both are safe to print, and printing
+            # them is the whole point of the step.
+            {
+              echo
+              echo '| site tag | carries our beacon token |'
+              echo '|---|---|'
+              # shellcheck disable=SC2016
+              jq -r --arg t "$BEACON_TOKEN" \
+                '.result[]? | "| `\(.site_tag)` | \(if .site_token == $t then "**yes**" else "no" end) |"' <<<"$listing"
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          if [ -n "$tag" ]; then
+            echo "site_tag=$tag" >> "$GITHUB_OUTPUT"
+            # Double quotes, and the backticks escaped: in single quotes shellcheck reads a
+            # Markdown backtick as a command substitution that will never expand (SC2016).
+            printf "\nQuerying site tag \`%s\`.\n" "$tag" >> "$GITHUB_STEP_SUMMARY"
+          else
+            # Falling back rather than failing: the query below is what tells us whether the
+            # tag was ever the problem, and a hard failure here would withhold that answer.
+            echo "site_tag=$BEACON_TOKEN" >> "$GITHUB_OUTPUT"
+            printf '\n**No tag resolved** — falling back to the beacon token, which is what this workflow used before and what returned nothing. An empty result below therefore has some other cause.\n' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Run query against Web Analytics
         env:
           CLOUDFLARE_ANALYTICS_TOKEN: ${{ secrets.CLOUDFLARE_ANALYTICS_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          SITE_TAG: ${{ vars.PUBLIC_CF_BEACON_TOKEN }}
+          SITE_TAG: ${{ steps.site.outputs.site_tag }}
           DAYS: ${{ inputs.days }}
         run: |
           set -euo pipefail
