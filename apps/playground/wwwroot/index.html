@@ -111,10 +111,28 @@
             document.querySelector('#blazor-error-ui .reload').textContent = 'Recharger';
         }
     </script>
+    <!--
+      WHERE THE SITE'S MEASUREMENT IS WRITTEN IN, by scripts/write-playground-measurement.mjs,
+      into the artefact rather than into this file.
+
+      It is a slot rather than a tag because the value cannot reach here. The site renders its
+      beacon from `import.meta.env.PUBLIC_CF_BEACON_TOKEN`, which is Vite inlining a build
+      variable; this document is published by `dotnet publish` and copied verbatim, and nothing
+      in that pipeline substitutes anything into it. So the shell says where, and the build says
+      what — the same arrangement, and the same rule: no token, no beacon, and a preview build
+      measures nobody instead of measuring into the wrong account.
+
+      This application was served unmeasured in all three lanes until #161 established it, which
+      is why the slot is declared here in the source a maintainer reads rather than left as a
+      place the build happens to know about. `scripts/verify-output.sh` fails a build whose
+      playground disagrees with its own pages about whether the site is measured.
+    -->
+    <!--jd:measurement-->
     <script src="js/hero-frame.js"></script>
     <script src="js/locale.js"></script>
     <script src="js/site-header.js"></script>
     <script src="js/brand-heading.js"></script>
+    <script src="js/measurement.js"></script>
     <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
 </body>
 
