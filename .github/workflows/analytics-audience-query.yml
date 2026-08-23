@@ -242,22 +242,24 @@ jobs:
           # go missing without a word.
           detail_rows="$(jq '[.data.viewer.accounts[]?.rumPageloadEventsAdaptiveGroups[]?] | length' result.json)"
 
+          # THE SUMMARY CARRIES NO AUDIENCE. This repository is public, so a job summary
+          # is a durable, browsable page anyone can read — and it used to hold every row.
+          # At this site's volume a row is close to a single person: one visit, one country,
+          # one day, one device names somebody. The rows travel in the artifact, which
+          # expires in a day; what stays here is only what says whether the run worked.
+          #
+          # The site tags above are a different matter and stay: they are opaque
+          # identifiers, they grant nothing without the token, and naming them is the only
+          # way the caller can pick one for the run that follows.
           {
             echo
             printf -- "### Audience for \`%s\`\n" "$target"
             echo
             if [ "$detail_rows" -ge "$group_limit" ]; then
-              echo "**These figures are cut short.** The query came back with $detail_rows groups against a cap of $group_limit, and the cap drops the least frequent combinations first — so the rarest countries and referrers are missing from what follows. Narrow the window with **days** and run again."
+              echo "**These figures are cut short.** The query came back with $detail_rows groups against a cap of $group_limit, and the cap drops the least frequent combinations first — so the rarest countries and referrers are missing. Narrow the window with **days** and run again."
               echo
             fi
-            echo "Full response is attached as the \`web-analytics-result\` artifact."
-            echo '```json'
-            head -c 200000 result.json
-            if [ "$(wc -c < result.json)" -gt 200000 ]; then
-              echo
-              echo "… truncated, see the artifact for the full response …"
-            fi
-            echo '```'
+            echo "Groups returned: $detail_rows — in the \`web-analytics-result\` artifact, not here."
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload full result
@@ -274,4 +276,6 @@ jobs:
             discovery.json
             result.json
           if-no-files-found: warn
-          retention-days: 7
+          # One day: long enough for the reader this run was launched for, short enough
+          # that the payload is not left lying around in a public repository.
+          retention-days: 1

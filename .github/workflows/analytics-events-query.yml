@@ -54,6 +54,13 @@ jobs:
           body="$(sed '$d' <<<"$response")"
           echo "$body" > result.json
 
+          # THE SUMMARY CARRIES NO MEASUREMENT. This repository is public, so a job
+          # summary is a durable, browsable page anyone can read — and it used to hold the
+          # whole response. It now holds only what tells a maintainer whether the run
+          # worked; the rows themselves travel in the artifact, which is the transport this
+          # data actually needs and which expires in a day.
+          rows="$(jq -r '.rows // "unknown"' result.json 2>/dev/null || echo unknown)"
+
           {
             echo "### Query"
             echo '```sql'
@@ -63,14 +70,7 @@ jobs:
             echo "HTTP status: $status"
             echo
             echo "### Result"
-            echo "Full response is attached as the \`analytics-result\` artifact."
-            echo '```json'
-            head -c 200000 result.json
-            if [ "$(wc -c < result.json)" -gt 200000 ]; then
-              echo
-              echo "… truncated, see the artifact for the full response …"
-            fi
-            echo '```'
+            echo "Rows returned: $rows — in the \`analytics-result\` artifact, not here."
           } >> "$GITHUB_STEP_SUMMARY"
 
           if [ "$status" -ge 300 ]; then
@@ -84,4 +84,6 @@ jobs:
         with:
           name: analytics-result
           path: result.json
-          retention-days: 7
+          # One day: long enough for the reader this run was launched for, short enough
+          # that the payload is not left lying around in a public repository.
+          retention-days: 1
