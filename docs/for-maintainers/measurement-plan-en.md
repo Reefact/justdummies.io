@@ -14,7 +14,7 @@ added. An unread dimension is not free — it is one more thing every later read
 
 | Lane | What it carries | Consent | Who it covers |
 |---|---|---|---|
-| Cloudflare Web Analytics | visits, and whether pages load quickly (§15.1) | not required | everyone |
+| Cloudflare Web Analytics | visits, and whether pages load quickly (§15.1) | not required | everyone, the playground included |
 | The Worker collector on `/_event` | the dimensioned exit events (§15.2) | not required | everyone |
 | Google Analytics 4 | the journey between the two (ADR-0018) | **required** | those who accept |
 
@@ -32,6 +32,7 @@ consenting fraction — which is not a fact about the page.
 |---|---|---|---|
 | `install-command-copied` | a command is copied | `placement`, `variant`, `ordinal` | which moment convinced them, and by which door? |
 | `download-fab-clicked` | the floating download control is clicked | `placement` | does a permanent call to action on every page earn its place? |
+| `generate-clicked` | Generate is pressed in the playground | `placement`, `chain` | is the playground used, and what do visitors come to try? |
 
 `locale` travels with both. The names are kebab-case here and snake_case in lane three because each
 lane keeps its own convention: GA4 reports on an event name it also uses for its own, and the
@@ -41,6 +42,19 @@ collector writes a blob nobody else reads.
 Package Manager Console — and which one was taken is precisely what §15.2 asks for. The download
 control has one door, so it sends no variant and the collector records an empty one rather than an
 invented word ([ADR-0023](adr/0023-an-event-carries-a-variant-only-when-it-has-a-door-to-choose-en.md)).
+
+**`chain` is the expression a visitor built, with every argument replaced by a question mark** —
+`Any.String().StartingWith(?).Generate()`. Never a value: §10.3 forbids the playground persisting a
+saisie outside the browser, and an argument is one
+([ADR-0024](adr/0024-the-playground-reports-a-chains-shape-not-its-values-en.md)). It is the only
+field here that is not a name, so it has a pattern of its own — one that admits a question mark where
+an argument would stand and nothing else, which is what makes the anonymisation a guarantee rather
+than a convention. It is absent, like a variant is, when the chain is longer than the field holds:
+the press still counts, and only its shape is lost.
+
+**Read the chain as a long tail.** A four-step chain drawn from a catalogue of dozens is a shape that
+may occur once. The rows that group cleanly are the short chains; the scatter is the signal, not a
+defect.
 
 **The download control reports the section it was clicked from**, not the exact page — `home`, `api`,
 `release-notes`, `not-found`. That is the granularity the decision is taken at: a floating control is
@@ -129,13 +143,10 @@ the same separation by writing the ordinal among its doubles and never among its
   question, not two answers to it.
 * **Nothing the playground is given.** §15.1 states that what is typed there is never recorded, and the
   playground runs entirely in the browser — there is no server to send it to.
-* **Nothing at all from `/playground/` — page views included — and that one is a gap rather than a
-  decision.** It is a separate Blazor document with a shell of its own, and that shell carries no
-  audience beacon, no analytics tag, no consent banner and no collector script, so not one of the
-  three lanes reaches it. Its own floating download control (`DownloadFab.razor`) is uncounted for
-  the same reason. **Instrumenting that control alone would make the figures worse, not better** —
-  its clicks would land in the numerator while its visits stayed out of every denominator, which is
-  exactly the unreadable rate this plan's first section warns about. Closing it means giving the
-  playground all three lanes, consent banner included, which is a decision of its own.
+* **The playground's own floating download control, for now.** `/playground/` is a separate Blazor
+  document rendering its own `DownloadFab.razor`, which carries no placement — so its clicks reach
+  neither lane, while the same control is counted everywhere else. It is named here rather than left
+  to be discovered, and it is now the smaller half of the gap: the document carries the audience
+  beacon, so its visits are in the denominator, and what is missing is the numerator alone.
 * **No advertising signals, ever.** They are denied permanently rather than following consent, and the
   content policy names no advertising host, so a change of mind fails a check rather than shipping.

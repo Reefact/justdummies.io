@@ -16,6 +16,7 @@ consumes this deployment (see [ADR-0001](docs/for-maintainers/adr/0001-a-release
 - A dummy now stands beside the install command on the home page's first screen, on windows large enough to have room for it.
 - The About page is now signed by a dummy leaning at the end of the text, on wide windows: the prose's right edge follows his lean instead of running past him.
 - Clicks on the floating "Download" button are now counted, so the site can tell whether a permanent call to action on every page earns its place. The privacy page says exactly what is recorded — which section of the site you were reading, the page's language, and when — and nothing else: no identifier, no address, nothing that can be traced back to you.
+- The playground is now counted too: its visits, which were missing from the site's audience figures entirely, and the expressions visitors build. What is recorded of an expression is its shape with the values left out — `Any.String().StartingWith(?).Generate()` — so nothing you type there leaves your browser, which the privacy page now spells out.
 
 ### 🙌 Improvements
 

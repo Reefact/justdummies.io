@@ -1281,8 +1281,12 @@ chaque moitié, et pourquoi il y en a deux, c'est
 Les deux premiers sont peu coûteux. C'est le troisième qui compte.
 
 ```bash
-# 1 — le beacon est dans la page
+# 1 — le beacon est dans la page, et dans la coquille propre au playground, qui est
+#     un document séparé avec un build séparé, et qui était servi
+#     sans mesure tant qu'on ne l'a pas vérifié au lieu de le supposer.
 curl -s https://justdummies.io/ | grep -c 'static.cloudflareinsights.com'      # attendu : 1
+curl -s https://justdummies.io/playground/ | grep -c 'static.cloudflareinsights.com'
+                                                                               # attendu : 1
 
 # 2 — le collecteur accepte un événement bien formé, et seulement lui.
 #     PAS un install-command-copied : cette ligne est écrite dans le même jeu de
@@ -1364,7 +1368,12 @@ sont dans l'ordre où le collecteur les écrit — `blob1` le nom de l'événeme
 variante et la locale, l'ordinal étant `double1`. **`blob3` est vide pour un événement sans
 variante**, ce qui n'est pas une valeur manquante mais la réponse : le contrôle de téléchargement
 flottant a une destination et jamais deux, il n'en envoie donc aucune (ADR-0023). `blob2`, lui, est
-exigé de tout : aucune ligne n'est muette sur l'endroit où elle s'est produite.
+exigé de tout : aucune ligne n'est muette sur l'endroit où elle s'est produite. **`blob5` est la
+chaîne du playground** — l'expression construite par le visiteur, chaque argument remplacé par un
+point d'interrogation (ADR-0024) — et il est vide sur tout autre événement, ainsi que sur celui-là
+quand la chaîne a dépassé le champ. Une valeur ne l'atteint jamais : le motif du collecteur admet un
+point d'interrogation là où se tient un argument et rien d'autre, si bien qu'un argument ne peut pas
+être enregistré même par un émetteur qui essaierait.
 
 ```bash
 curl -s "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/analytics_engine/sql" \
