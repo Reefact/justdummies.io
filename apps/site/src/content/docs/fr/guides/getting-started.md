@@ -218,6 +218,6 @@ vous via un attribut `[Reproducible]` : aucun corps de test n'a besoin d'être e
 | rejouer une exécution en échec, ou épingler une graine | [Reproductibilité](/fr/docs/guides/reproducibility/) |
 | construire un dummy pour *vos* types | [Composition](/fr/docs/guides/composition/) |
 | savoir ce qui arrive quand des contraintes se contredisent | [Erreurs et conflits](/fr/docs/guides/errors-and-conflicts/) |
-| retrouver toutes les contraintes d'un type donné | [Référence des générateurs](/fr/docs/generators/README/) |
+| retrouver toutes les contraintes d'un type donné | [Référence des générateurs](/fr/docs/generators/) |
 | comprendre pourquoi la bibliothèque refuse certaines choses volontairement | [Principes de conception](/fr/docs/guides/design-principles/) |
 | obtenir une réponse courte à une question précise | [FAQ](/fr/docs/guides/faq/) |

@@ -1,5 +1,5 @@
 ---
-title: "`JustDummies`"
+title: "JustDummies"
 section: "packages"
 slug: "justdummies"
 order: 0

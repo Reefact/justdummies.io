@@ -32,7 +32,14 @@ function topicPath(slug: string): string {
 </article>
 
 <p class="source">
-    <a href={sourceUrl} target="_blank" rel="noopener noreferrer">{t('docs.sourceLink')}</a>
+    {/*
+      The hidden half is not decoration: a link that replaces the window without warning
+      is what `state.newTab` exists to announce, and every other outbound link on this
+      site already carries it (AboutContent, VersionContent, InstallTabs, ReleaseNotesMajor).
+    */}
+    <a href={sourceUrl} target="_blank" rel="noopener noreferrer">
+        {t('docs.sourceLink')}<span class="visually-hidden"> {t('state.newTab')}</span>
+    </a>
     · {t('docs.pinnedAt')} <code>{ref}</code>
 </p>
 

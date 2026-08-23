@@ -1,5 +1,5 @@
 ---
-title: "`JustDummies.DiagnosticCatalog`"
+title: "JustDummies.DiagnosticCatalog"
 section: "packages"
 slug: "justdummies-diagnosticcatalog"
 order: 2
@@ -107,4 +107,4 @@ soient vérifiées plutôt que crues. Le catalogue publié est ce qui fait d'une
 affirmation vérifiée par le compilateur, et non un commentaire qui se trouve être un attribut
 ([ADR-0052](https://github.com/Reefact/just-dummies/blob/catalog-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0052-publish-the-jd-rules-as-a-first-party-catalogue.fr.md)).
 
-Pour les règles elles-mêmes, voir l'[index des règles](/fr/docs/analyzers/README/).
+Pour les règles elles-mêmes, voir l'[index des règles](/fr/docs/analyzers/).

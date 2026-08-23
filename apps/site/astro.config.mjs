@@ -1,6 +1,68 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 
+import { useTranslations } from './src/i18n/ui.ts';
+
+/** Where this site is published — `site` below. A mirrored link to one of its own pages
+ *  is not a link away from it, and must not be dressed as one. */
+const SITE_ORIGIN = 'https://justdummies.io';
+
+/**
+ * A link in mirrored prose that leaves this site opens in a new tab, carries `rel=noopener`,
+ * and SAYS SO.
+ *
+ * The rule is the site's, not this section's: `tests/browser/release-notes.spec.ts` already
+ * enforces all three on the other corpus this repository mirrors, and `ReleaseCard.astro`
+ * pairs a generator that emits the attributes with a component that adds the words. That
+ * split exists because the generator has no locale. This one does — the frontmatter
+ * `scripts/generate-docs.mjs` writes carries it — so both halves happen here, and the words
+ * are still the site's own, read from `i18n/ui.ts` rather than spelled out again (§7.6).
+ *
+ * "Leaves this site", not "starts with http": a mirrored page may name one of this site's
+ * own addresses in full, and sending that off in a new tab would announce a departure that
+ * never happens. Same distinction release-notes.spec.ts draws, and for the same reason.
+ */
+function rehypeAnnounceOutboundLinks() {
+    /**
+     * @param {any} tree
+     * @param {any} file
+     */
+    return function transform(tree, file) {
+        const locale = file?.data?.astro?.frontmatter?.locale === 'fr' ? 'fr' : 'en';
+        const note = useTranslations(locale)('state.newTab');
+
+        /** @param {any} node */
+        function walk(node) {
+            if (node !== null && typeof node === 'object') {
+                const href = node.type === 'element' && node.tagName === 'a' ? node.properties?.href : undefined;
+
+                if (typeof href === 'string' && /^https?:\/\//.test(href) && href !== SITE_ORIGIN && !href.startsWith(`${SITE_ORIGIN}/`)) {
+                    node.properties = { ...node.properties, target: '_blank', rel: ['noopener', 'noreferrer'] };
+                    node.children = [
+                        ...(node.children ?? []),
+                        {
+                            type: 'element',
+                            tagName: 'span',
+                            properties: { className: ['visually-hidden'] },
+                            children: [{ type: 'text', value: ` ${note}` }],
+                        },
+                    ];
+
+                    // Not walked into: the span just added is the only child that could match
+                    // again, and an anchor cannot nest another anchor.
+                    return;
+                }
+
+                if (Array.isArray(node.children)) {
+                    node.children.forEach(walk);
+                }
+            }
+        }
+
+        walk(tree);
+    };
+}
+
 /**
  * A fenced code block renders as `<pre>` with `overflow-x: auto` (`DocsTopicBody.astro`), so
  * a line wider than the column is reachable only by scrolling it — and axe's
@@ -48,7 +110,7 @@ export default defineConfig({
         // 'unsafe-inline'. This pipeline emits the older `align="…"` attribute instead — a
         // presentational HTML attribute browsers still honour, and one CSP's style-src has
         // no say over because it is not CSS.
-        rehypePlugins: [rehypeMakeCodeBlocksFocusable],
+        rehypePlugins: [rehypeMakeCodeBlocksFocusable, rehypeAnnounceOutboundLinks],
     },
 
     i18n: {

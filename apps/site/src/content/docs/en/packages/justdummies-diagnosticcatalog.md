@@ -1,5 +1,5 @@
 ---
-title: "`JustDummies.DiagnosticCatalog`"
+title: "JustDummies.DiagnosticCatalog"
 section: "packages"
 slug: "justdummies-diagnosticcatalog"
 order: 2

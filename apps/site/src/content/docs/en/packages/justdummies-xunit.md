@@ -1,5 +1,5 @@
 ---
-title: "`JustDummies.Xunit`"
+title: "JustDummies.Xunit"
 section: "packages"
 slug: "justdummies-xunit"
 order: 1

@@ -1,5 +1,5 @@
 ---
-title: "`JustDummies`"
+title: "JustDummies"
 section: "packages"
 slug: "justdummies"
 order: 0
@@ -42,7 +42,7 @@ pas de paquet d'analyzers compagnon à retenir, ni de version à maintenir en ph
 Ils existent parce que le système de types n'atteint pas l'endroit où vivent ces erreurs — un
 générateur rendu sous forme de texte, une contrainte dont le résultat est jeté, une graine épinglée
 hors de sa portée, une chaîne n'admettant aucune valeur. Voir
-l'[index des règles](/fr/docs/analyzers/README/) pour les 29, et
+l'[index des règles](/fr/docs/analyzers/) pour les 29, et
 [JD005](/fr/docs/analyzers/JD005/) pour celle qui attrape le faux pas le plus courant.
 
 Pour ajuster une sévérité, utilisez `.editorconfig` :
@@ -94,6 +94,6 @@ Any.Reproducibly(() => Assert.InRange(Any.Int32().Between(1, 100).Generate(), 1,
 Pour aller plus loin :
 
 * [Démarrer](/fr/docs/guides/getting-started/) — la rampe d'accès en dix minutes
-* [Référence des générateurs](/fr/docs/generators/README/) — chaque fabrique et ses contraintes
+* [Référence des générateurs](/fr/docs/generators/) — chaque fabrique et ses contraintes
 * [Composition](/fr/docs/guides/composition/) — des dummies pour vos propres types
 * [Reproductibilité](/fr/docs/guides/reproducibility/) — graines, portées et rejeu
