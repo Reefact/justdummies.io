@@ -1,7 +1,7 @@
 {
     "name": "@justdummies/mermaid-renderer",
     "private": true,
-    "description": "Mermaid, for scripts/generate-docs.mjs only. Deliberately OUTSIDE the pnpm workspace (pnpm-workspace.yaml lists apps/site and packages/* and not this), so CI's `pnpm install --frozen-lockfile` never resolves it: mermaid is 84 MB unpacked across 113 transitive packages, and the artefact it produces is committed rather than rebuilt. Install it once, by hand, where the mirror is refreshed: `npm install --prefix scripts/mermaid`.",
+    "description": "Mermaid, for scripts/generate-docs.mjs only. Deliberately OUTSIDE the pnpm workspace (pnpm-workspace.yaml lists apps/site and packages/* and not this), so CI's `pnpm install --frozen-lockfile` never resolves it: mermaid is 84 MB unpacked across 113 transitive packages, and the artefact it produces is committed rather than rebuilt. Nobody installs this by hand — generate-docs.mjs runs `npm ci` here itself, the first time it meets a diagram in a checkout that has none. The lockfile beside this file is what makes that safe: it pins exactly what gets fetched, so a fresh install cannot change a byte of the committed output.",
     "dependencies": {
         "mermaid": "^11.17.0"
     }
