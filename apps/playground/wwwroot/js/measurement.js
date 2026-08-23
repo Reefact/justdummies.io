@@ -19,6 +19,12 @@
 // IT IS FIRE-AND-FORGET, for the reason the site's is. `sendBeacon` hands the request to
 // the browser and returns; there is no await, no retry, and no branch that reads the
 // response. The visitor has their value by the time this runs.
+//
+// SINCE ADR-0025 IT REPORTS INTO TWO LANES, not one, and the difference between them is the
+// whole reason both exist. The census event below asks nobody and counts everybody, so it is
+// where the totals and the chain shapes live. The journey event asks first and counts only
+// those who said yes, so it is where "how many presses per visitor" lives — a question the
+// census lane cannot answer, because it recognises nobody by design.
 
 /** The one path the collector answers on. Kept in step with worker/index.ts by hand. */
 const JD_EVENT_ENDPOINT = '/_event';
@@ -54,4 +60,34 @@ window.jdReportGenerate = function jdReportGenerate(locale, chain) {
     // A Blob rather than a bare string, so the request carries a JSON content type and the
     // collector parses it without guessing. Same origin, so no CORS is involved.
     navigator.sendBeacon(JD_EVENT_ENDPOINT, new Blob([JSON.stringify(payload)], { type: 'application/json' }));
+
+    reportToJourney(locale);
 };
+
+/**
+ * The same press, in the lane that can tell one visitor from another.
+ *
+ * ASKED OF THE SHARED MODULE, WHICH IS THE ONLY THING THAT MAY ANSWER. `jdConsent.reporting()`
+ * re-reads the stored answer, reconciles this document when it has lapsed, and says no —
+ * ADR-0018's promise, kept by one implementation for both applications rather than by a
+ * second copy here. Absent module or absent tag means no report, which is the direction to
+ * fail in.
+ *
+ * IT CARRIES NO CHAIN, deliberately. ADR-0024 put the shape in the census lane precisely
+ * because a rate is only readable against the lane that covers everybody; sending it here as
+ * well would widen what a third party is told for a figure that is already better answered
+ * next door. What this lane adds is the visitor, not the detail.
+ *
+ * @param {string} locale two letters, the language the reader chose
+ */
+function reportToJourney(locale) {
+    var consent = window.jdConsent;
+
+    if (consent === undefined || !consent.reporting() || typeof window.gtag !== 'function') {
+        return;
+    }
+
+    // `content_locale` is the parameter the site's own events carry, and the same name is
+    // what lets one report read across both applications rather than two.
+    window.gtag('event', 'playground_generated', { content_locale: locale });
+}

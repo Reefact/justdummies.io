@@ -154,6 +154,46 @@ test.describe('the playground’s census event', () => {
 });
 
 /**
+ * The same press, in the lane that can tell one visitor from another (ADR-0025).
+ *
+ * WHY THIS IS A SEPARATE DESCRIBE. Every other check in this file runs with the harness's
+ * default refusal, which is the state where no Google script is even asked for. This one
+ * needs the opposite, and needs it before the page loads.
+ *
+ * READ OFF `dataLayer` RATHER THAN OFF THE NETWORK. `gtag` pushes its arguments into that
+ * array synchronously and the transport batches afterwards, so asserting on a request would
+ * be asserting on Google's own scheduling — the shape of check ADR-0009 refuses. What is
+ * being defended here is that this playground reports the press at all, and to the right
+ * event name.
+ */
+test.describe('a press of Generate, for a visitor who accepted', () => {
+    test.use({ consent: 'granted' });
+
+    test('reaches the journey lane, and carries no chain there', async ({ page }) => {
+        await generateAPrefixedString(page, 'ORD-');
+
+        const pushed = await page.evaluate(() => {
+            const layer = (window as unknown as { dataLayer?: unknown[] }).dataLayer ?? [];
+
+            return layer
+                .map((entry) => Array.from(entry as ArrayLike<unknown>))
+                .filter((entry) => entry[0] === 'event' && entry[1] === 'playground_generated');
+        });
+
+        expect(pushed, 'the press did not reach the journey lane').toHaveLength(1);
+        expect(pushed[0][2], 'the journey event did not carry the locale').toMatchObject({ content_locale: 'en' });
+
+        // ADR-0024 puts the shape in the lane that covers everybody, deliberately. Sending it
+        // here as well would widen what a third party is told for a figure already answered
+        // next door — so the absence is the decision, and it is asserted as one.
+        expect(
+            JSON.stringify(pushed[0][2]),
+            'the journey event carried the chain, which belongs to the census lane alone',
+        ).not.toContain('Any.');
+    });
+});
+
+/**
  * WHERE THE BEACON LOADS FROM, AND WHY THIS IS A HOSTNAME RATHER THAN A SUBSTRING.
  * `support/harness.ts` already states the rule for these two checks and this file did
  * not follow it: a URL *containing* `static.cloudflareinsights.com` is not a request to
