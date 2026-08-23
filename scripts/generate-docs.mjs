@@ -122,6 +122,39 @@ function readTagsPerTrain() {
             byTrain[train] = trainTags;
         }
 
+        // WHAT FAILS WHEN THIS SNAPSHOT SILENTLY STOPS BEING THE CORPUS.
+        //
+        // `TOPICS` above is a hand-written membership list, and nothing about fetching 51
+        // known paths can notice a 52nd. Left alone, the library adding
+        // `analyzers/JD034.{en,fr}.md` produces a clean run, an empty diff and a `/docs`
+        // that is quietly one rule short — the failure mode with no symptom, which is the
+        // one this repository asks a decision to come with a check against.
+        //
+        // `--filter=blob:none` brought the trees but none of their contents, so listing the
+        // corpus is free here and needs no second clone: `ls-tree` reads names.
+        const corpus = git('ls-tree', '-r', '--name-only', byTrain.lib[0].name, '--', `${DOC_ROOT}/`)
+            .split('\n')
+            .filter((path) => /\/[^/]+\.(en|fr)\.md$/.test(path) || /\/README(\.(en|fr))?\.md$/.test(path));
+
+        const named = new Set(TOPICS.map((topic) => `${topic.section}/${topic.slug}`));
+        const strayed = [
+            ...new Set(
+                corpus
+                    .map((path) => path.slice(DOC_ROOT.length + 1).replace(/\.(en|fr)\.md$/, '').replace(/\.md$/, ''))
+                    // A section README is the site's own index page, written here, never mirrored;
+                    // anything at the corpus root (its own README, CONTRIBUTING, SECURITY) likewise.
+                    .filter((topic) => !topic.endsWith('/README') && topic.includes('/'))
+                    .filter((topic) => !named.has(topic)),
+            ),
+        ];
+
+        if (strayed.length > 0) {
+            refuse(
+                `${byTrain.lib[0].name} carries ${strayed.length} topic(s) this snapshot does not name: ${strayed.join(', ')}. ` +
+                    'Add them to TOPICS (and to apps/site/src/docsNav.ts, which the routes are read from) or this mirror is not the corpus.',
+            );
+        }
+
         return byTrain;
     } finally {
         rmSync(workspace, { recursive: true, force: true });

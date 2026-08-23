@@ -43,15 +43,33 @@ the chronologically newest tag of any train, in that order, if its own train has
 
 ## Rationale
 
-Pinning package pages to their own train, rather than to the single newest tag `/release-notes`
-uses, keeps a page's version numbering meaningful to the one thing a reader of that page is
-installing: `packages/justdummies-cli.md` names the CLI's own version, not whichever package shipped
-most recently. A CLI-only release then refreshes only the CLI page's pin, which is the same
-narrowing ADR-0013's "mirror per train, or per section" alternative rejected *for `/release-notes`*
-on the grounds that it composes refs the library's own link-and-sample verification never ran
-together — a constraint that does not weaken here: this generator still refuses two languages of one
-topic read at different refs (§6.4), it simply allows two different *topics* to be pinned at two
-different refs, which `/release-notes` already does across trains today.
+**This decision overturns an alternative ADR-0013 considered and rejected, for the same corpus.**
+That has to be said first and plainly, because an earlier draft of this record said the opposite
+twice and both statements were false. ADR-0013's "Mirror per train, or per section" alternative is
+about *this* documentation corpus, not about `/release-notes` — it argues in its own words that "a
+CLI release could refresh the CLI pages alone" and that "the corpus is a hundred text files" — and
+`/release-notes` does not pin per train either: `generate-release-notes.mjs` takes `const ref =
+tags[0]` and reads all four trains at that one ref, which this record's own Context states
+correctly. So this is a partial supersession of ADR-0013, and it has to win the argument ADR-0013
+actually made rather than one aimed elsewhere. Whether it does is the maintainer's call; that is
+what `Proposed` is for.
+
+ADR-0013's argument is that composing several refs publishes pages whose cross-page links passed an
+upstream check that was never run on the combination. That cost is real and this change pays it: the
+snapshot spans three refs today (48 topics at `lib-v1.0.0-preview.3`, two at `cli-v1.1.0-beta.2`,
+one at `catalog-v1.0.0-preview.3`), so a link from a page taken at one ref into a page taken at
+another was verified by nobody. What bounds it is that the corpus's cross-page links are almost
+entirely to *section indexes and sibling topics* — structural destinations that the route layer
+here, not the upstream tree, resolves — and that the one contract §6.4 turns on is preserved
+exactly: the two languages of a single topic are always read at one ref, never two.
+
+What is bought for that cost is that a package page names the version of the package it documents.
+Under one ref, `packages/justdummies-cli.md` carries whichever tag happened to be newest across all
+four trains, so a reader told to install `JustDummies.Cli` reads documentation stamped with a
+`lib-v*` version — the install command and the documentation naming different artefacts, which is
+the exact failure ADR-0013's own Rationale gives as the reason a tag beats a branch. Under this
+decision the two agree again. That is the trade: ADR-0013's atomicity is weakened between topics, to
+restore ADR-0013's own "one artefact, one statement" property within a topic.
 
 Guides, the generator reference and the analyzers are not any package's own documentation — they
 describe the library — so `lib`, the train that publishes the library itself and the one every other
@@ -113,6 +131,18 @@ does not yet read this snapshot.
 
 ## Follow-up Actions
 
+* **What fails when this decision is broken:** `scripts/generate-docs.mjs` lists the corpus at the
+  `lib` train's newest tag and refuses the whole snapshot, naming them, if it carries topics the
+  generator does not. Without it the membership list is hand-written and a topic added upstream is
+  simply never mirrored — a clean run, an empty diff, and a `/docs` quietly short of a page. It was
+  break-tested before this record landed, per
+  [`CONTRIBUTING.md`](../../../CONTRIBUTING.md#a-decision-comes-with-something-that-fails-when-it-is-broken):
+  dropping one analyzer rule from the list made it refuse with
+  `lib-v1.0.0-preview.3 carries 1 topic(s) this snapshot does not name: analyzers/JD033`, and it was
+  put back.
+* **`apps/site/src/docsNav.ts` still restates the same membership by hand**, and nothing compares it
+  against the generator's list; the refusal above names it in its message, which is a signpost rather
+  than a check. Deriving the routes from the content collection would close it properly.
 * `scripts/check-package-freshness.mjs` (ADR-0013) does not read `/docs`'s snapshot. Extending it to
   compare each package page's pinned `ref` against that train's latest published tag would surface
   the risk above the same way it already does for `site.ts`.

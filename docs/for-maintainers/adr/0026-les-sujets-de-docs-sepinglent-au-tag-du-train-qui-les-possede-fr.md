@@ -49,17 +49,36 @@ confondus, dans cet ordre, si son propre train n'en a aucun.**
 
 ## Justification
 
-Épingler les pages de paquet à leur propre train, plutôt qu'au tag le plus récent unique que
-`/release-notes` utilise, garde la numérotation de version d'une page pertinente pour la seule chose
-que le lecteur de cette page est en train d'installer : `packages/justdummies-cli.md` nomme la
-version propre de la CLI, pas celle du paquet ayant le plus récemment publié. Une release CLI seule
-ne rafraîchit alors que l'épinglage de la page CLI, ce qui est le même resserrement que l'alternative
-« reprendre par train, ou par section » de l'ADR-0013 rejetait *pour `/release-notes`* au motif
-qu'elle compose des refs que la vérification liens-et-échantillons de la bibliothèque n'a jamais fait
-tourner ensemble — une contrainte qui ne s'affaiblit pas ici : ce générateur refuse toujours de lire
-les deux langues d'un même sujet à deux refs différentes (§6.4), il permet simplement à deux *sujets*
-différents d'être épinglés à deux refs différentes, ce que `/release-notes` fait déjà aujourd'hui
-entre trains.
+**Cette décision renverse une alternative que l'ADR-0013 a envisagée et rejetée, pour le même
+corpus.** Il faut le dire d'emblée et sans détour, parce qu'un brouillon antérieur de cette fiche
+affirmait deux fois le contraire et que les deux affirmations étaient fausses. L'alternative
+« reprendre par train, ou par section » de l'ADR-0013 porte sur *ce* corpus de documentation, pas sur
+`/release-notes` — elle argumente dans ses propres termes qu'« une release CLI pourrait ne
+rafraîchir que les pages CLI » et que « le corpus fait une centaine de fichiers texte » — et
+`/release-notes` n'épingle pas non plus par train : `generate-release-notes.mjs` prend
+`const ref = tags[0]` et lit les quatre trains à ce ref unique, ce que le Contexte de cette fiche
+énonce correctement. Il s'agit donc d'une supersession partielle de l'ADR-0013, et elle doit gagner
+l'argument que l'ADR-0013 a réellement avancé plutôt qu'un argument visant ailleurs. Savoir si elle
+y parvient revient au mainteneur ; c'est à cela que sert le statut `Proposé`.
+
+L'argument de l'ADR-0013 est que composer plusieurs refs publie des pages dont les liens
+inter-pages ont passé en amont une vérification qui n'a jamais tourné sur la combinaison. Ce coût est
+réel et ce changement le paie : l'instantané couvre trois refs aujourd'hui (48 sujets à
+`lib-v1.0.0-preview.3`, deux à `cli-v1.1.0-beta.2`, un à `catalog-v1.0.0-preview.3`), si bien qu'un
+lien d'une page prise à un ref vers une page prise à un autre n'a été vérifié par personne. Ce qui le
+borne, c'est que les liens inter-pages du corpus visent presque exclusivement des *index de section
+et des sujets voisins* — des destinations structurelles que résout la couche de routes d'ici, pas
+l'arbre amont — et que l'unique contrat dont dépend §6.4 est préservé exactement : les deux langues
+d'un même sujet sont toujours lues à un seul ref, jamais deux.
+
+Ce que ce coût achète, c'est qu'une page de paquet nomme la version du paquet qu'elle documente. Sous
+un ref unique, `packages/justdummies-cli.md` porte le tag qui se trouvait être le plus récent tous
+trains confondus, si bien qu'un lecteur à qui l'on dit d'installer `JustDummies.Cli` lit une
+documentation estampillée d'une version `lib-v*` — la commande d'installation et la documentation
+nommant deux artefacts différents, exactement l'échec que la Justification de l'ADR-0013 donne comme
+raison qu'un tag vaut mieux qu'une branche. Sous cette décision, les deux concordent à nouveau. Tel
+est l'échange : l'atomicité de l'ADR-0013 est affaiblie entre sujets, pour restaurer à l'intérieur
+d'un sujet la propriété « un artefact, une affirmation » que l'ADR-0013 pose elle-même.
 
 Les guides, la référence des generators et les analyzers ne sont la documentation propre d'aucun
 paquet — ils décrivent la bibliothèque — donc `lib`, le train qui publie la bibliothèque elle-même et
@@ -126,6 +145,20 @@ train, sans rien qui le signale — la même péremption que l'ADR-0013 attribue
 
 ## Actions de suivi
 
+* **Ce qui échoue quand cette décision est violée :** `scripts/generate-docs.mjs` liste le corpus au
+  tag le plus récent du train `lib` et refuse tout l'instantané, en les nommant, s'il porte des
+  sujets que le générateur ignore. Sans cela la liste d'appartenance est écrite à la main et un sujet
+  ajouté en amont n'est tout simplement jamais repris — une exécution propre, un diff vide, et un
+  `/docs` discrètement amputé d'une page. Le garde-fou a été cassé pour vérification avant que cette
+  fiche n'atterrisse, conformément à
+  [`CONTRIBUTING.md`](../../../CONTRIBUTING.md#a-decision-comes-with-something-that-fails-when-it-is-broken) :
+  retirer une règle d'analyzer de la liste l'a fait refuser avec
+  `lib-v1.0.0-preview.3 carries 1 topic(s) this snapshot does not name: analyzers/JD033`, puis elle a
+  été remise.
+* **`apps/site/src/docsNav.ts` redit encore la même appartenance à la main**, et rien ne le compare à
+  la liste du générateur ; le refus ci-dessus le nomme dans son message, ce qui est un panneau
+  indicateur, pas un contrôle. Dériver les routes de la collection de contenu fermerait cela
+  correctement.
 * `scripts/check-package-freshness.mjs` (ADR-0013) ne lit pas l'instantané de `/docs`. L'étendre pour
   comparer le `ref` épinglé de chaque page de paquet au dernier tag publié de ce train ferait
   apparaître le risque ci-dessus de la même façon qu'il le fait déjà pour `site.ts`.
