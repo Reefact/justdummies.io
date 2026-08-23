@@ -1,4 +1,4 @@
-import { expect, test } from './support/harness';
+import { BEACON_TAG_MARKER, expect, isBeaconHost, test } from './support/harness';
 import type { BrowserContext, Page } from '@playwright/test';
 
 /**
@@ -38,7 +38,7 @@ async function beaconBodies(page: Page): Promise<number[]> {
     const lengths: number[] = [];
 
     page.on('response', async (response) => {
-        if (!response.url().includes('cloudflareinsights.com')) {
+        if (!isBeaconHost(new URL(response.url()).hostname)) {
             return;
         }
         // A body that cannot be read is not a body of length zero, and calling it one would
@@ -51,7 +51,7 @@ async function beaconBodies(page: Page): Promise<number[]> {
     await page.goto('/');
 
     const html: string = await page.content();
-    test.skip(!html.includes('static.cloudflareinsights.com'), 'this artefact was built without a beacon token');
+    test.skip(!html.includes(BEACON_TAG_MARKER), 'this artefact was built without a beacon token');
 
     // Polled rather than waited on: the tag is deferred, so the request is in flight after
     // the navigation settles. ADR-0009 refuses a fixed delay, and check-in-browser.sh
