@@ -4,6 +4,7 @@
 @using System.Reflection
 @using JustDummies.Playground.Catalogue
 @using JustDummies.Playground.Localization
+@inject IJSRuntime JS
 
 <PageTitle>@PageTitleText</PageTitle>
 
@@ -361,6 +362,66 @@
         } else {
             _generatedValue = result.Value;
             _refusal        = null;
+        }
+
+        // Reported whether the library answered with a value or a refusal: what this counts is
+        // a visitor pressing Generate, and a chain the library declined is a press that
+        // happened. Separating the two would need a field to carry the difference, which
+        // ADR-0024 does not ask for.
+        //
+        // Fire-and-forget, the pattern LocaleState uses for its own interop: this must not
+        // delay the value appearing, and there is no answer to wait for — `sendBeacon` returns
+        // before the request leaves.
+        _ = JS.InvokeVoidAsync("jdReportGenerate", PlaygroundStrings.Tag(LocaleState.Current), ChainTemplate);
+    }
+
+    /// <summary>
+    ///     How long a chain may be and still be reported. Kept in step with MAX_CHAIN in
+    ///     worker/index.ts by hand — the collector refuses a longer one outright, so a value
+    ///     larger than its own would cost the event rather than only its shape.
+    /// </summary>
+    private const int MaxChainTemplate = 256;
+
+    /// <summary>
+    ///     The chain a visitor built, with every argument replaced by a question mark, or null
+    ///     when it is longer than the collector's field holds.
+    ///
+    ///     THIS IS <see cref="CodeSegments" /> DECLINING TO CALL THE FORMATTER. The same walk
+    ///     over the same links, emitting the same method names and the same punctuation — and
+    ///     where that one asks <c>FormatArgumentLiteral</c> what the visitor typed, this one
+    ///     writes a question mark and never reads it. So the anonymisation is not a filter run
+    ///     over a finished line: the value never exists to be filtered. §10.3 forbids persisting
+    ///     a saisie outside the browser, and nothing here assembles one.
+    ///
+    ///     The declaration <see cref="CodeSegments" /> opens with is left off. It carries the
+    ///     return type, which the first link already determines, and a fixed variable name —
+    ///     both derived rather than typed, and both the same on every row of the dataset.
+    /// </summary>
+    private string? ChainTemplate {
+        get {
+            var template = new System.Text.StringBuilder("Any");
+
+            foreach (var link in _links.Where(l => l.Chosen is not null)) {
+                var chosen = link.Chosen!;
+
+                template.Append('.').Append(chosen.MethodName).Append('(');
+
+                for (var i = 0; i < chosen.Parameters.Count; i++) {
+                    if (i > 0) {
+                        template.Append(", ");
+                    }
+
+                    template.Append('?');
+                }
+
+                template.Append(')');
+            }
+
+            template.Append(".Generate()");
+
+            // Null rather than a truncation: half a chain is a shape that was never built, and
+            // a dataset row claiming it would be worse than a row admitting it has none.
+            return template.Length <= MaxChainTemplate ? template.ToString() : null;
         }
     }
 

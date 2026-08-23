@@ -1,0 +1,117 @@
+import { expect, test } from './support/harness';
+import type { Page, Request } from '@playwright/test';
+
+/**
+ * What a press of Generate reports, and — the half this file exists for — what it does not
+ * (ADR-0024).
+ *
+ * THE COLLECTOR ALREADY REFUSES AN ARGUMENT, so why check here at all. `worker/index.ts`
+ * admits a question mark where an argument would stand and nothing else, which is a
+ * guarantee against every sender rather than a promise about this one. What it cannot say
+ * is whether *this* page sends something the endpoint would refuse: a playground that
+ * assembled the real line and posted it would have its event dropped, silently, and the
+ * measurement would simply be missing rather than wrong. §10.3's rule is that the value is
+ * never persisted outside the browser; an event refused at the door still travelled. So the
+ * body is read on the wire, before the collector ever sees it.
+ *
+ * IT ASSERTS THE ABSENCE BY NAME. A check that only compared the chain against the expected
+ * template would pass on a body that carried the template *and* the typed value in some
+ * other field — which is exactly the shape a careless addition would take. The typed value
+ * is looked for in the whole body, not in the field it would be expected in.
+ *
+ * `wrangler dev` serves this suite, so `/_event` is the real collector and the request is a
+ * real one; `page.on('request')` records it on the Node side, where nothing the page does
+ * afterwards can lose it.
+ */
+
+/** The page's own posts to the collector, oldest first, parsed. */
+function collectorPosts(page: Page): { body: string; parsed: Record<string, unknown> }[] {
+    const posted: { body: string; parsed: Record<string, unknown> }[] = [];
+
+    page.on('request', (request: Request) => {
+        if (new URL(request.url()).pathname !== '/_event') {
+            return;
+        }
+
+        const body: string = request.postData() ?? '';
+
+        try {
+            posted.push({ body, parsed: JSON.parse(body) as Record<string, unknown> });
+        } catch {
+            // Not one of ours, or not JSON. Recorded nowhere, so the assertions below fail on
+            // "nothing was posted" rather than on a shape.
+        }
+    });
+
+    return posted;
+}
+
+/**
+ * Builds `Any.String().StartingWith("ORD-")` through the builder's own controls, the way
+ * `playground.spec.ts` does, and presses Generate.
+ *
+ * The prefix is the interesting part: it is free text, it is the kind of argument a visitor
+ * might paste real data into, and it is what must not appear in the request.
+ */
+async function generateAPrefixedString(page: Page, prefix: string): Promise<void> {
+    await page.goto('/playground/');
+
+    await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'String()' });
+    await page.locator('.chain-link').nth(1).locator('select').selectOption({ label: 'StartingWith(prefix)' });
+    await page.locator('.chain-link').nth(1).locator('input').fill(prefix);
+
+    await page.getByRole('button', { name: 'Generate' }).click();
+}
+
+test.describe('the playground’s census event', () => {
+    test('reports the chain a visitor built, as a shape', async ({ page }) => {
+        const posted = collectorPosts(page);
+
+        await generateAPrefixedString(page, 'ORD-');
+
+        await expect.poll(() => posted.map((p) => p.parsed), 'nothing was posted to the collector').toContainEqual({
+            event: 'generate-clicked',
+            placement: 'playground',
+            locale: 'en',
+            chain: 'Any.String().StartingWith(?).Generate()',
+        });
+    });
+
+    /**
+     * The one that would have caught the defect ADR-0024 exists to prevent. A prefix nobody
+     * would write by accident, looked for in the whole body rather than in one field.
+     */
+    test('and never the value the visitor typed, anywhere in the body', async ({ page }) => {
+        const posted = collectorPosts(page);
+        const secret = 'ZZTOP-42-SECRET';
+
+        await generateAPrefixedString(page, secret);
+
+        await expect.poll(() => posted.length, 'nothing was posted to the collector').toBeGreaterThan(0);
+
+        expect(
+            posted.filter((p) => p.body.includes(secret)),
+            'the value a visitor typed into the playground left the browser',
+        ).toEqual([]);
+    });
+
+    /**
+     * A chain with no arguments at all, in the other locale. Two facts at once, because they
+     * share a page load: an empty parameter list reports as `()` rather than as `(?)`, and the
+     * locale reported is the reader's own rather than the document's default.
+     */
+    test('reports an argument-free chain, and the reader’s own locale', async ({ page }) => {
+        const posted = collectorPosts(page);
+
+        await page.goto('/playground/?lang=fr');
+        await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'Guid()' });
+        await page.getByRole('button', { name: 'Générer' }).click();
+
+        await expect.poll(() => posted.map((p) => p.parsed), 'nothing was posted to the collector').toContainEqual({
+            event: 'generate-clicked',
+            placement: 'playground',
+            locale: 'fr',
+            chain: 'Any.Guid().Generate()',
+        });
+    });
+});
