@@ -1,0 +1,75 @@
+---
+/**
+ * `/docs`'s own landing content, shared between the English and French index pages —
+ * `ReleaseNotesIndexContent.astro`'s pattern, one component rather than two copies of the
+ * same four cards.
+ */
+import { pathForLocale } from '../i18n/routing';
+import { useTranslations, type Locale } from '../i18n/ui';
+import { DOCS_SECTIONS } from '../docsNav';
+
+interface Props {
+    locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+
+const sections = DOCS_SECTIONS.map((section) => ({
+    slug: section,
+    label: t(`docs.section.${section}.label`),
+    description: t(`docs.section.${section}.description`),
+    href: pathForLocale(`/docs/${section}`, locale),
+}));
+---
+
+<h2>{t('docs.heading')}</h2>
+<p class="lead">{t('docs.lead')}</p>
+
+<div class="sections">
+    {
+        sections.map((section) => (
+            <a class="section-card" href={section.href}>
+                <h3>{section.label}</h3>
+                <p>{section.description}</p>
+            </a>
+        ))
+    }
+</div>
+
+<style>
+    .lead {
+        max-width: 48rem;
+        color: var(--jd-text-muted);
+    }
+
+    .sections {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+        gap: var(--jd-space-4);
+        margin-top: var(--jd-space-8);
+    }
+
+    .section-card {
+        display: block;
+        padding: var(--jd-space-6);
+        border: 1px solid var(--jd-border);
+        border-radius: 0.75rem;
+        color: inherit;
+    }
+
+    .section-card:hover {
+        border-color: var(--jd-accent);
+    }
+
+    .section-card h3 {
+        margin: 0 0 var(--jd-space-2);
+        color: var(--jd-accent);
+    }
+
+    .section-card p {
+        margin: 0;
+        color: var(--jd-text-muted);
+        font-size: var(--jd-text-sm);
+    }
+</style>

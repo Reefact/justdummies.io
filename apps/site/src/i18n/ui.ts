@@ -692,12 +692,37 @@ const en = {
         'Install commands for JustDummies: the library, the xUnit adapter, and the CLI — in the .NET CLI and the Package Manager Console.',
     'download.cta': 'Download',
 
+    /**
+     * /docs — the library's own handwritten user documentation, mirrored under this site
+     * (specification §7.2, §7.5, ADR-0026). The section labels, descriptions and this
+     * chrome are the site's own words; every leaf page's title and body are the library's,
+     * read verbatim from `scripts/generate-docs.mjs`'s snapshot.
+     */
+    'docs.heading': 'Documentation',
+    'docs.meta.description': 'Guides, the generator reference, the package overview and every analyzer rule — the full user documentation for JustDummies.',
+    'docs.lead': 'The full user documentation for JustDummies: how to use it, what each generator draws, what each package is for, and what each analyzer rule catches.',
+    'docs.nav.toggle': 'Documentation sections',
+    'docs.nav.heading': 'Sections',
+
+    'docs.section.guides.label': 'Guides',
+    'docs.section.guides.description': 'From a first dummy to composing your own generators — the concepts and how they fit together.',
+    'docs.section.generators.label': 'Generators',
+    'docs.section.generators.description': 'Every Any.* factory, grouped by the kind of value it draws.',
+    'docs.section.packages.label': 'Packages',
+    'docs.section.packages.description': 'The four packages this library ships, and which of them a project actually needs.',
+    'docs.section.analyzers.label': 'Analyzer rules',
+    'docs.section.analyzers.description': 'The 33 build-time rules that ship inside the library, JD001 through JD033.',
+
+    'docs.sourceLink': 'Read the source, or correct it there',
+    'docs.pinnedAt': 'Mirrored from',
+
     /** The sitewide footer. */
     'footer.nav': 'Footer',
     'footer.about': 'About',
     'footer.privacy': 'Privacy',
     'footer.api': 'API',
     'footer.releaseNotes': 'Release notes',
+    'footer.docs': 'Docs',
 } as const;
 
 /**
@@ -1274,11 +1299,31 @@ const fr: Record<UiKey, string> = {
         "Commandes d'installation de JustDummies : la bibliothèque, l'adaptateur xUnit et la CLI — en CLI .NET et en console du gestionnaire de packages.",
     'download.cta': 'Télécharger',
 
+    'docs.heading': 'Documentation',
+    'docs.meta.description': "Guides, la référence des générateurs, la présentation des packages et chaque règle d'analyseur — toute la documentation utilisateur de JustDummies.",
+    'docs.lead':
+        "Toute la documentation utilisateur de JustDummies : comment l'utiliser, ce que produit chaque générateur, à quoi sert chaque package, et ce que détecte chaque règle d'analyseur.",
+    'docs.nav.toggle': 'Sections de la documentation',
+    'docs.nav.heading': 'Sections',
+
+    'docs.section.guides.label': 'Guides',
+    'docs.section.guides.description': "Du premier dummy à la composition de vos propres générateurs — les concepts, et comment ils s'articulent.",
+    'docs.section.generators.label': 'Générateurs',
+    'docs.section.generators.description': 'Chaque factory Any.*, regroupée par nature de valeur produite.',
+    'docs.section.packages.label': 'Packages',
+    'docs.section.packages.description': "Les quatre packages publiés par cette bibliothèque, et celui dont un projet a réellement besoin.",
+    'docs.section.analyzers.label': "Règles d'analyseur",
+    'docs.section.analyzers.description': "Les 33 règles vérifiées à la compilation, embarquées dans la bibliothèque, de JD001 à JD033.",
+
+    'docs.sourceLink': 'Lire la source, ou la corriger là-bas',
+    'docs.pinnedAt': 'Repris depuis',
+
     'footer.nav': 'Pied de page',
     'footer.about': 'À propos',
     'footer.privacy': 'Confidentialité',
     'footer.api': 'API',
     'footer.releaseNotes': 'Release notes',
+    'footer.docs': 'Docs',
 };
 
 const translations: Record<Locale, Record<UiKey, string>> = { en, fr };

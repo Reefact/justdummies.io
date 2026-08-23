@@ -13,6 +13,7 @@
  * from the page files themselves at build time.
  */
 import { majorSlug, publishedMajors } from '../release-notes';
+import { DOCS_SECTIONS, DOCS_TOPICS } from '../docsNav';
 import { defaultLocale, locales, type Locale } from './ui';
 
 /**
@@ -59,8 +60,21 @@ const releaseNotesRoutes: string[] = locales.flatMap(function inLocale(locale: L
     });
 });
 
+/**
+ * `/docs`'s own routes — one section index and one topic page per entry of `docsNav.ts`,
+ * in every locale. Parameterised the same way `[train]/[major].astro` is, so invisible to
+ * the glob above for the same reason (§7.4).
+ */
+const docsRoutes: string[] = locales.flatMap(function inLocale(locale: Locale): string[] {
+    const prefix = locale === defaultLocale ? '' : `/${locale}`;
+    const sectionRoutes = DOCS_SECTIONS.map((section) => `${prefix}/docs/${section}/`);
+    const topicRoutes = DOCS_SECTIONS.flatMap((section) => DOCS_TOPICS[section].map((slug) => `${prefix}/docs/${section}/${slug}/`));
+
+    return [...sectionRoutes, ...topicRoutes];
+});
+
 /** Known routes, normalised to a leading and trailing slash. */
-const knownRoutes: ReadonlySet<string> = new Set([...fileRoutes, ...releaseNotesRoutes]);
+const knownRoutes: ReadonlySet<string> = new Set([...fileRoutes, ...releaseNotesRoutes, ...docsRoutes]);
 
 function segmentsOf(pathname: string): string[] {
     return pathname.split('/').filter(function isNotEmpty(segment: string): boolean {

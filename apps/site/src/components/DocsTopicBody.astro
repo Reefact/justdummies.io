@@ -1,0 +1,133 @@
+---
+/**
+ * One `/docs` topic's own chrome around its mirrored prose: the source link back to the
+ * library (§7.5 — a defect in the content is corrected there, never here), and the
+ * previous/next pair through the section's own reading order. The prose itself — the
+ * rendered Markdown — is the default slot, passed in from the page so this component never
+ * has to know how to render a content-collection entry.
+ */
+import { pathForLocale } from '../i18n/routing';
+import { useTranslations, type Locale } from '../i18n/ui';
+import type { DocsSection } from '../docsNav';
+
+interface Props {
+    locale: Locale;
+    section: DocsSection;
+    sourceUrl: string;
+    ref: string;
+    previous: { slug: string; title: string } | null;
+    next: { slug: string; title: string } | null;
+}
+
+const { locale, section, sourceUrl, ref, previous, next } = Astro.props;
+const t = useTranslations(locale);
+
+function topicPath(slug: string): string {
+    return pathForLocale(`/docs/${section}/${slug}`, locale);
+}
+---
+
+<article class="docs-topic">
+    <slot />
+</article>
+
+<p class="source">
+    <a href={sourceUrl} target="_blank" rel="noopener noreferrer">{t('docs.sourceLink')}</a>
+    · {t('docs.pinnedAt')} <code>{ref}</code>
+</p>
+
+{
+    (previous !== null || next !== null) && (
+        <nav class="pager" aria-label={t('docs.nav.heading')}>
+            {previous !== null ? (
+                <a class="prev" href={topicPath(previous.slug)}>
+                    ← {previous.title}
+                </a>
+            ) : (
+                <span />
+            )}
+            {next !== null && (
+                <a class="next" href={topicPath(next.slug)}>
+                    {next.title} →
+                </a>
+            )}
+        </nav>
+    )
+}
+
+<style>
+    .docs-topic {
+        max-width: 44rem;
+        line-height: var(--jd-line-body);
+    }
+
+    .docs-topic :global(h1) {
+        display: none;
+    }
+
+    .docs-topic :global(h2) {
+        margin-top: var(--jd-space-8);
+    }
+
+    .docs-topic :global(pre) {
+        border: 1px solid var(--jd-border);
+        border-radius: 0.5rem;
+        padding: var(--jd-space-4);
+        overflow-x: auto;
+    }
+
+    .docs-topic :global(code) {
+        font-family: var(--jd-font-mono);
+    }
+
+    .docs-topic :global(:not(pre) > code) {
+        background: var(--jd-code-inline-bg, rgba(255, 255, 255, 0.06));
+        padding: 0.1em 0.35em;
+        border-radius: 0.3em;
+    }
+
+    .docs-topic :global(table) {
+        width: 100%;
+        border-collapse: collapse;
+        margin-block: var(--jd-space-4);
+        font-size: var(--jd-text-sm);
+    }
+
+    .docs-topic :global(th),
+    .docs-topic :global(td) {
+        border: 1px solid var(--jd-border);
+        padding: var(--jd-space-2) var(--jd-space-3);
+        text-align: left;
+    }
+
+    .source {
+        max-width: 44rem;
+        margin-top: var(--jd-space-8);
+        color: var(--jd-text-muted);
+        font-size: var(--jd-text-sm);
+    }
+
+    .pager {
+        max-width: 44rem;
+        margin-top: var(--jd-space-6);
+        padding-top: var(--jd-space-4);
+        border-top: 1px solid var(--jd-border);
+        display: flex;
+        justify-content: space-between;
+        gap: var(--jd-space-4);
+    }
+
+    .pager a {
+        color: var(--jd-text-primary);
+        font-weight: 600;
+    }
+
+    .pager a:hover {
+        color: var(--jd-accent);
+    }
+
+    .pager .next {
+        margin-left: auto;
+        text-align: right;
+    }
+</style>

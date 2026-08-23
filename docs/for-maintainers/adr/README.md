@@ -169,6 +169,7 @@ requests, issues, diagrams.
 | [ADR-0023](0023-an-event-carries-a-variant-only-when-it-has-a-door-to-choose-en.md) | An event carries a variant only when it has a door to choose between | Accepted |
 | [ADR-0024](0024-the-playground-reports-a-chains-shape-not-its-values-en.md) | The playground reports a chain's shape, never its values | Accepted |
 | [ADR-0025](0025-one-consent-question-for-two-applications-en.md) | One consent question for two applications | Accepted |
+| [ADR-0026](0026-docs-topics-pin-to-the-tag-of-the-train-that-owns-them-en.md) | /docs topics pin to the tag of the train that owns them | Proposed |
 
 **0008 is absent on purpose.** It named a record that was written, merged, then withdrawn: how a
 scene is titled is an editorial principle, which this file sends to the specification rather than

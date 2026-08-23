@@ -1,0 +1,172 @@
+---
+/**
+ * The /docs section's own sidebar: the four sections, and — inside a section — the topics
+ * it holds, in reading order. Sibling of `ApiCategoryNav.astro`, trimmed to what `/docs`
+ * actually needs: no member search, because a topic page is prose, not a member catalogue.
+ *
+ * Same collapse behaviour as `ApiCategoryNav.astro`, for the same reason (ADR-0004): a
+ * native <details>/<summary> works before any script runs, and the script only narrows the
+ * default to collapsed on a phone-width screen.
+ */
+import { pathForLocale } from '../i18n/routing';
+import { useTranslations, type Locale } from '../i18n/ui';
+import { DOCS_SECTIONS, DOCS_TOPICS, type DocsSection } from '../docsNav';
+
+interface Props {
+    locale: Locale;
+    activeSection: DocsSection;
+    /** '' outside a topic page — the section's own index. */
+    activeSlug: string;
+    /** The active section's topics, titled in this page's own locale, in reading order. */
+    topics: ReadonlyArray<{ slug: string; title: string }>;
+}
+
+const { locale, activeSection, activeSlug, topics } = Astro.props;
+const t = useTranslations(locale);
+
+function docsPath(section: string, slug: string = ''): string {
+    return pathForLocale(slug === '' ? `/docs/${section}` : `/docs/${section}/${slug}`, locale);
+}
+
+const sectionLabel: Record<DocsSection, string> = {
+    guides: t('docs.section.guides.label'),
+    generators: t('docs.section.generators.label'),
+    packages: t('docs.section.packages.label'),
+    analyzers: t('docs.section.analyzers.label'),
+};
+---
+
+<details class="docs-nav" open>
+    <summary>
+        {t('docs.nav.toggle')}
+        <svg class="chev" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="m4 6 4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+    </summary>
+    <ul class="docs-nav-list">
+        {
+            DOCS_SECTIONS.map((section) => (
+                <li>
+                    <a href={docsPath(section)} aria-current={section === activeSection && activeSlug === '' ? 'page' : undefined}>
+                        {sectionLabel[section]}
+                    </a>
+                    {section === activeSection && (
+                        <ul class="docs-nav-sublist">
+                            {(section === activeSection ? topics : DOCS_TOPICS[section].map((slug) => ({ slug, title: slug }))).map((topic) => (
+                                <li>
+                                    <a href={docsPath(section, topic.slug)} aria-current={topic.slug === activeSlug ? 'page' : undefined}>
+                                        {topic.title}
+                                    </a>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </li>
+            ))
+        }
+    </ul>
+</details>
+
+<script is:inline>
+    (function manageNarrowScreenCollapse() {
+        const details = document.currentScript.previousElementSibling;
+
+        if (!(details instanceof HTMLDetailsElement)) {
+            return;
+        }
+
+        const narrowScreen = window.matchMedia('(max-width: 56rem)');
+
+        if (narrowScreen.matches) {
+            details.open = false;
+        }
+
+        narrowScreen.addEventListener('change', (event) => {
+            if (!event.matches) {
+                details.open = true;
+            }
+        });
+    })();
+</script>
+
+<style>
+    .docs-nav {
+        position: sticky;
+        top: var(--jd-space-6);
+        align-self: start;
+        max-height: calc(100vh - 2 * var(--jd-space-6));
+        overflow-y: auto;
+    }
+
+    .docs-nav summary {
+        display: flex;
+        align-items: center;
+        gap: var(--jd-space-2);
+        font-weight: 600;
+        cursor: pointer;
+        list-style: none;
+    }
+
+    .docs-nav summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .docs-nav .chev {
+        width: 1rem;
+        height: 1rem;
+        transition: transform 0.15s ease;
+    }
+
+    .docs-nav[open] summary .chev {
+        transform: rotate(180deg);
+    }
+
+    .docs-nav-list {
+        list-style: none;
+        margin: var(--jd-space-4) 0 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: var(--jd-space-2);
+    }
+
+    .docs-nav-list > li > a {
+        display: block;
+        padding: 0.2rem 0;
+        color: var(--jd-text-primary);
+        font-weight: 600;
+    }
+
+    .docs-nav-list a[aria-current='page'] {
+        color: var(--jd-accent);
+    }
+
+    .docs-nav-sublist {
+        list-style: none;
+        margin: var(--jd-space-2) 0 var(--jd-space-2) var(--jd-space-4);
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: var(--jd-space-1);
+        border-left: 1px solid var(--jd-border);
+        padding-left: var(--jd-space-3);
+    }
+
+    .docs-nav-sublist a {
+        display: block;
+        padding: 0.15rem 0;
+        color: var(--jd-text-muted);
+        font-size: var(--jd-text-sm);
+    }
+
+    .docs-nav-sublist a[aria-current='page'] {
+        color: var(--jd-accent);
+        font-weight: 600;
+    }
+
+    @media (max-width: 56rem) {
+        .docs-nav summary {
+            cursor: pointer;
+        }
+    }
+</style>

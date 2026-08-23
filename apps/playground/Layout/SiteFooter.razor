@@ -44,6 +44,7 @@
 <footer class="site-footer">
     <nav class="footer-nav" aria-label='@PlaygroundStrings.T(LocaleState.Current, "footer.nav")'>
         <span class="footer-group">
+            <a href="@DocsHref">@PlaygroundStrings.T(LocaleState.Current, "footer.docs")</a>
             <a href="@ApiHref">@PlaygroundStrings.T(LocaleState.Current, "footer.api")</a>
             <a href="@ReleaseNotesHref">@PlaygroundStrings.T(LocaleState.Current, "footer.releaseNotes")</a>
         </span>
@@ -65,6 +66,7 @@
 
     private string AboutHref => LocaleState.Current == Locale.Fr ? "/fr/about/" : "/about/";
     private string ApiHref => LocaleState.Current == Locale.Fr ? "/fr/api/" : "/api/";
+    private string DocsHref => LocaleState.Current == Locale.Fr ? "/fr/docs/" : "/docs/";
     private string ReleaseNotesHref => LocaleState.Current == Locale.Fr ? "/fr/release-notes/" : "/release-notes/";
     private string PrivacyHref => LocaleState.Current == Locale.Fr ? "/fr/privacy/" : "/privacy/";
 
