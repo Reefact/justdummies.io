@@ -18,6 +18,7 @@ compatibilité, puisque rien ne consomme ce déploiement (voir
 - La page À propos est désormais signée par un dummy adossé en fin de texte, sur les fenêtres larges : le bord droit de la prose épouse son inclinaison au lieu de lui passer dessus.
 - Les clics sur le bouton flottant « Télécharger » sont désormais comptés, pour savoir si un appel à l'action permanent sur chaque page mérite sa place. La page vie privée dit exactement ce qui est enregistré — quelle section du site vous étiez en train de lire, la langue de la page, et le moment — et rien d'autre : aucun identifiant, aucune adresse, rien qui puisse remonter jusqu'à vous.
 - Le playground est désormais compté lui aussi : ses visites, qui manquaient entièrement aux chiffres d'audience du site, et les expressions que les visiteurs construisent. Ce qui est enregistré d'une expression est sa forme sans les valeurs — `Any.String().StartingWith(?).Generate()` — si bien que rien de ce que vous y saisissez ne quitte votre navigateur, ce que la page vie privée énonce désormais.
+- La question de consentement n'est plus posée qu'une fois pour tout le site, où que vous arriviez. Le playground la pose lui aussi — il ne demandait rien et n'était compté par rien — et une réponse donnée d'un côté est celle que suivent toutes les autres pages : la question ne vous est jamais posée deux fois. Si vous l'y acceptez, une chose de plus est enregistrée quand vous pressez Générer : qu'une pression a eu lieu, et rien de ce que vous avez tapé.
 
 ### 🙌 Améliorations
 

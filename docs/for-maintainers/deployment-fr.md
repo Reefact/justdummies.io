@@ -1511,6 +1511,12 @@ Avec l'état `enabled`, sur le déploiement :
 ```bash
 curl -s https://justdummies.io/ | grep -c 'www.googletagmanager.com'   # attendu 1
 curl -sI https://justdummies.io/ | grep -i 'content-security-policy' | grep -c 'googletagmanager'   # attendu 1
+
+# Et le playground, qui porte le même tag depuis ADR-0025 — écrit dans sa coquille par le
+# build plutôt que rendu par Astro : c'est le document qu'il vaut la peine de vérifier à la main.
+curl -s https://justdummies.io/playground/ | grep -c 'data-jd-analytics'                       # attendu 1
+curl -s https://justdummies.io/playground/ | grep -qc 'data-consent' && echo 'bandeau présent'
+curl -s https://justdummies.io/playground/ | grep -qc '/consent.js' && echo 'module présent'
 ```
 
 Avec l'état `disabled`, les deux attendent `0` — et c'est le contrôle qui vaut d'être fait une fois,
@@ -1526,6 +1532,17 @@ chargement :
 * *Confidentialité* → **Modifier votre choix** → **accepter** — `gtag/js` charge, et la console ne
   rapporte aucune violation de politique ;
 * copier une commande d'installation — elle est enregistrée dans les deux voies.
+
+Puis le croisement pour lequel ADR-0025 existe, la partie qu'aucune page seule ne peut montrer. Dans
+un profil neuf :
+
+* ouvrir `/playground/` en premier — le bandeau y apparaît, avant même que le runtime ait fini de se
+  télécharger ;
+* **accepter** — `gtag/js` charge sur le playground, et la console ne rapporte aucune violation de
+  politique ;
+* ouvrir `/` — aucun bandeau, et le tag démarre sur une réponse donnée ailleurs ;
+* presser Générer dans le playground — `playground_generated` dans DebugView, et une ligne
+  `generate-clicked` dans le collecteur.
 
 Enfin, GA4 → *Admin* → **DebugView**, avec l'extension Google Analytics Debugger active, et lire
 `scene_view` arriver avec un `scene_name`. Confirmer que les paramètres arrivent **avant** de faire

@@ -17,7 +17,12 @@ lecteur futur devra écarter.
 |---|---|---|---|
 | Cloudflare Web Analytics | les visites, et si les pages se chargent vite (§15.1) | non requis | tout le monde, playground compris |
 | Le collecteur Worker sur `/_event` | les événements de sortie dimensionnés (§15.2) | non requis | tout le monde |
-| Google Analytics 4 | le parcours entre les deux (ADR-0018) | **requis** | ceux qui acceptent |
+| Google Analytics 4 | le parcours entre les deux (ADR-0018) | **requis** | ceux qui acceptent, sur l'une ou l'autre application |
+
+**La question est posée une fois, où que le visiteur arrive.** Depuis ADR-0025 le playground la pose
+lui aussi, et les deux applications lisent et écrivent l'unique réponse stockée : une réponse donnée
+sur l'une est celle que l'autre trouve. La décision elle-même est un module unique,
+`apps/site/public/consent.js`, chargé par les deux.
 
 Les deux premières sont les totaux ; la troisième est l'explication. **Lire un taux contre la voie
 deux, jamais contre la voie trois** — le dénominateur de la voie trois est la fraction consentante,
@@ -80,6 +85,7 @@ assis.
 | `nuget_link_clicked` | un lien NuGet est suivi | `placement`, `variant`, `link_url` | la sortie que personne ne regardait |
 | `download_fab_clicked` | le lien de téléchargement flottant est cliqué | `placement` | un appel à l'action permanent sur chaque page porte-t-il son poids, ou est-ce du bruit visuel ? |
 | `playground_started` | le bouton Run du hero est pressé | — | la plus forte intention de la page : accepter de télécharger le runtime |
+| `playground_generated` | Générer est pressé dans le playground | — | combien de pressions fait un même visiteur : le playground est-il essayé une fois, ou travaillé ? |
 | `comparison_narrowed` | le sélecteur de la page de positionnement est utilisé | `competitor` | à qui nous compare-t-on ? |
 | `view_search_results` | la recherche API se stabilise sur un terme | `search_term` | ce qu'on cherche, et qu'on ne trouve pas |
 
@@ -149,14 +155,16 @@ Regrouper par `scene_name` ; ne lire `scene_ordinal` que pour trier un tableau.
   sur toutes les autres. Lire `scene_view` sur la narration et `scroll` partout ailleurs ; ce sont
   deux granularités d'une même question, pas deux réponses à celle-ci.
 * **Rien de ce qui est saisi dans le playground.** §15.1 énonce que ce qui y est tapé n'est jamais
-  enregistré, et le playground tourne entièrement dans le navigateur — il n'y a aucun serveur à qui
-  l'envoyer.
+  enregistré, et ADR-0024 est ce qui le maintient vrai maintenant qu'un événement quitte ce document :
+  la chaîne est rapportée sous sa forme, chaque argument remplacé par un point d'interrogation, et
+  aucune valeur d'argument n'est envoyée à l'une ou l'autre voie. La voie du parcours en apprend
+  encore moins : qu'une pression a eu lieu, et rien de ce qu'elle contenait.
 * **Le contrôle de téléchargement flottant propre au playground, pour l'instant.** `/playground/` est
   un document Blazor séparé qui rend son propre `DownloadFab.razor`, lequel ne porte aucun
   emplacement : ses clics n'atteignent donc aucune des deux voies, alors que le même contrôle est
-  compté partout ailleurs. C'est nommé ici plutôt que laissé à découvrir, et c'est désormais la plus petite
-  moitié du manque : le document porte la balise d'audience, donc ses visites sont au dénominateur,
-  et il ne manque que le numérateur.
+  compté partout ailleurs. C'est nommé ici plutôt que laissé à découvrir, et c'est désormais le dernier
+  reste du manque du playground : le document porte les trois voies, et il ne manque que le numérateur
+  de ce seul contrôle.
 * **Aucun signal publicitaire, jamais.** Ils sont refusés en permanence au lieu de suivre le
   consentement, et la politique de contenu ne nomme aucun hôte publicitaire, si bien qu'un changement
   d'avis fait échouer un contrôle plutôt que d'être livré.
