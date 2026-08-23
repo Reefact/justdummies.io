@@ -2,10 +2,70 @@
 import { defineConfig } from 'astro/config';
 
 import { useTranslations } from './src/i18n/ui.ts';
+import { highlight } from './src/highlight.ts';
 
 /** Where this site is published — `site` below. A mirrored link to one of its own pages
  *  is not a link away from it, and must not be dressed as one. */
 const SITE_ORIGIN = 'https://justdummies.io';
+
+/**
+ * What the corpus's fences call a language, in the terms `src/highlight.ts` reasons about.
+ * A fence whose language is absent here is left uncoloured rather than guessed at — `ini`,
+ * `json` and `xml` between them are 14 of the corpus's 392 fences, and a tokeniser applied
+ * to a grammar it was not written for publishes code nobody wrote.
+ */
+const HIGHLIGHTED = { csharp: 'csharp', bash: 'shell', text: 'output' };
+
+/**
+ * The mirrored code blocks, coloured by the site's OWN highlighter.
+ *
+ * Astro's Markdown pipeline colours with Shiki, and Shiki writes `style="color:#…"` on
+ * every span — which `style-src 'self'` drops, leaving code in one flat colour: the failure
+ * that looks exactly like nothing having been attempted. `src/highlight.ts` exists because
+ * this site already met that problem and answered it, emitting `.tok-*` classes that
+ * `base.css` colours from the design tokens. Those classes are declared globally there,
+ * deliberately, so nothing further is needed to make them apply here.
+ *
+ * So `syntaxHighlight: false` below is not a decision to publish uncoloured code — it turns
+ * Shiki off so that this can do the same job the rest of the site already does, with no
+ * dependency and no CSS in the document.
+ *
+ * `highlight()` verifies itself: it strips its own markup back off and throws unless the
+ * result is the input character for character. On this corpus that guarantee is worth more
+ * than on the thirteen hand-written snippets it was built for — these 392 fences are the
+ * library's, not this repository's, and a highlighter that dropped a character would be
+ * publishing code a reader is invited to paste.
+ */
+function rehypeColourCodeBlocks() {
+    /** @param {any} tree */
+    return function transform(tree) {
+        /** @param {any} node */
+        function walk(node) {
+            if (node === null || typeof node !== 'object') {
+                return;
+            }
+
+            if (node.type === 'element' && node.tagName === 'pre') {
+                const code = (node.children ?? []).find((child) => child.type === 'element' && child.tagName === 'code');
+                const className = code?.properties?.className ?? [];
+                const named = className.map(String).find((name) => name.startsWith('language-'));
+                const language = HIGHLIGHTED[named?.slice('language-'.length)];
+
+                if (language !== undefined && code.children?.length === 1 && code.children[0].type === 'text') {
+                    code.children = [{ type: 'raw', value: highlight(code.children[0].value, language) }];
+
+                    return;
+                }
+            }
+
+            if (Array.isArray(node.children)) {
+                node.children.forEach(walk);
+            }
+        }
+
+        walk(tree);
+    };
+}
 
 /**
  * A link in mirrored prose that leaves this site opens in a new tab, carries `rel=noopener`,
@@ -110,7 +170,7 @@ export default defineConfig({
         // 'unsafe-inline'. This pipeline emits the older `align="…"` attribute instead — a
         // presentational HTML attribute browsers still honour, and one CSP's style-src has
         // no say over because it is not CSS.
-        rehypePlugins: [rehypeMakeCodeBlocksFocusable, rehypeAnnounceOutboundLinks],
+        rehypePlugins: [rehypeMakeCodeBlocksFocusable, rehypeAnnounceOutboundLinks, rehypeColourCodeBlocks],
     },
 
     i18n: {
