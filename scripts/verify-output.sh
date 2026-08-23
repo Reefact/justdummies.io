@@ -584,7 +584,7 @@ if [ -f "${dist}/playground/index.html" ]; then
   # one. Both were shipped and both were found by reading, which is why they are asserted
   # here rather than described in a comment. Same shape as the inline-script scan above.
   node "${root}/scripts/write-playground-measurement.mjs" --self-test \
-    || fail "the playground beacon writer no longer keeps the token off its hashed body"
+    || fail "the playground measurement writer no longer writes what it must, the way it must"
 
   pages_carry=0
   # Every document but the playground's own, so the shell cannot answer for itself.
@@ -610,6 +610,60 @@ if [ -f "${dist}/playground/index.html" ]; then
   else
     fail "the playground carries an audience beacon this build's own pages do not — it would report into an account nothing else reports to"
   fi
+fi
+
+# A DOCUMENT THAT CARRIES THE TAG CARRIES A BANNER, AND THE MODULE THAT ACTS ON IT.
+#
+# This is the invariant ADR-0018 rests on, and until ADR-0025 it was true for a reason that
+# is not a check: one toolchain rendered both, on one condition, in one component. A second
+# application carrying the tag can break it silently — the tag is written into the shell by
+# a build step, and the banner is markup somebody has to remember to keep there.
+#
+# BOTH HALVES, BECAUSE THEY FAIL DIFFERENTLY. A document with the tag and no banner asks
+# nobody and reports nobody, which is a measurement quietly missing. A document with the tag
+# and no `consent.js` is worse in principle and safer in practice: nothing would start the
+# tag, because that module is its only caller — so the failure is silent rather than
+# dangerous, and it is still a failure.
+#
+# COMMENTS ARE STRIPPED FIRST, and that is not tidiness. The first version of this grepped the
+# raw file, and the playground's shell explains its own banner in a comment naming both
+# `data-consent` and `consent.js` — so removing the banner entirely left the check green,
+# satisfied by the paragraph describing what was no longer there. A prose mention is exactly
+# what `generate-headers.mjs` refuses to read as a tag, for the same reason.
+tagged_without="$(
+  node -e '
+    const fs = require("node:fs");
+    const path = require("node:path");
+
+    const MARKER = "data-jd-analytics";  // kept in step with generate-headers.mjs by hand
+    const offenders = [];
+
+    function walk(directory) {
+      for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+        const full = path.join(directory, entry.name);
+        if (entry.isDirectory()) { walk(full); continue; }
+        if (!entry.name.endsWith(".html")) { continue; }
+
+        const markup = fs.readFileSync(full, "utf8").replace(/<!--[\s\S]*?-->/g, "");
+        if (!markup.includes(MARKER)) { continue; }
+
+        if (!/\sdata-consent[\s>=]/.test(markup)) { offenders.push(full + " :: no consent banner"); }
+        if (!markup.includes("src=\"/consent.js\"")) { offenders.push(full + " :: does not load the consent module"); }
+      }
+    }
+
+    walk(process.argv[1]);
+    console.log(offenders.join("\n"));
+  ' "${dist}"
+)"
+
+if [ -z "${tagged_without}" ]; then
+  pass "every document carrying the analytics tag carries a banner and the module that acts on it"
+else
+  printf '%s\n' "${tagged_without}" | while IFS= read -r offender; do
+    [ -n "${offender}" ] || continue
+    fail "${offender#"${dist}"/}"
+  done
 fi
 
 # The analytics tag and the policy that has to admit it — the same shape as the beacon
