@@ -92,6 +92,72 @@
     </div>
 
     <!--
+      THE CONSENT QUESTION, AND WHY IT IS IN THE SHELL RATHER THAN IN THE APPLICATION.
+
+      ADR-0025 puts the question on the origin: either half of this site may ask it, both read
+      and write the one stored answer, and a visitor who has answered is never asked again. The
+      playground is a deep link, so it is a first page as often as a second one, and a visitor
+      who arrives here and is never asked is a visitor who is never counted.
+
+      IT IS CHROME THE SHELL OWNS, like #blazor-error-ui above and for the same reasons. It has
+      to be readable before the runtime is: a visitor on a slow connection who lands here and
+      leaves is exactly the reader worth asking, and a banner that waits for a megabyte and a
+      half of WebAssembly would never reach them. It also has to be in the artefact rather than
+      rendered into it, so that `scripts/verify-output.sh` can hold this document to the rule
+      ADR-0018 rests on — a document carrying the analytics tag carries a banner — which is
+      precisely the rule a second toolchain can break silently.
+
+      IT IS PRESENT EVEN WHEN THERE IS NOTHING TO ASK ABOUT, and that is not a hole in ADR-0004.
+      A build with no measurement id has no tag written into the slot below, and `consent.js`
+      shows no banner in a document with no tag to start: the control never appears, which is
+      the rule. What ships in that case is a few hundred bytes of hidden markup, which is the
+      price of the invariant above being checkable.
+
+      KNOWN DUPLICATION, the same one #blazor-error-ui already carries: these strings are
+      declared a second time in `PlaygroundStrings.cs`, because `LocaleState` re-words this
+      banner through `js/locale.js` when a reader switches language after boot, which the
+      pre-boot script below cannot reach. Change one, change the other.
+    -->
+    <div
+        class="consent"
+        data-consent
+        hidden
+        role="dialog"
+        aria-modal="false"
+        aria-labelledby="jd-consent-title"
+        aria-describedby="jd-consent-body"
+        tabindex="-1"
+    >
+        <div class="consent-text">
+            <p class="consent-title" id="jd-consent-title" data-consent-heading>How the playground is used.</p>
+            <p class="consent-body" id="jd-consent-body">
+                <span data-consent-sentence
+                    >The site would like to use Google Analytics to see which generators and constraints people
+                    actually try here. That stores a cookie and sends your visit to Google. What you type into an
+                    argument is never sent — that stays in your browser. Refusing changes nothing about what you can
+                    build here. Your answer covers the whole site, so this is asked once.</span
+                >
+                <a href="/privacy/" data-consent-more>What is measured</a>
+            </p>
+        </div>
+        <!-- Refusing comes first in reading order and wears the same class, so the two answers
+             are the same size, weight and colour. The site's ConsentBanner.astro says why at
+             length: the moment one of them is styled to be chosen, the answer stops being an
+             answer. -->
+        <div class="choices">
+            <button type="button" class="choice" data-consent-refuse data-announce="Google Analytics refused.">
+                Refuse
+            </button>
+            <button type="button" class="choice" data-consent-accept data-announce="Google Analytics accepted.">
+                Accept
+            </button>
+        </div>
+    </div>
+
+    <!-- Outside the dialogue, so the outcome is still announced after the banner is hidden. -->
+    <p class="visually-hidden" role="status" data-consent-status></p>
+
+    <!--
       The three strings above that do change with the locale, rewritten by the same
       synchronous read as `<html lang>` above — this runs before the runtime download even
       starts, so a slow connection sees the French wording throughout, not a flash of English
@@ -109,6 +175,26 @@
             document.querySelector('.boot-note').textContent = 'Chargement du runtime .NET…';
             document.querySelector('#blazor-error-ui .message').textContent = 'Une erreur est survenue.';
             document.querySelector('#blazor-error-ui .reload').textContent = 'Recharger';
+
+            document.querySelector('[data-consent-heading]').textContent = 'Comment le playground est utilisé.';
+            document.querySelector('[data-consent-sentence]').textContent =
+                'Le site aimerait utiliser Google Analytics pour voir quels générateurs et quelles contraintes sont ' +
+                'réellement essayés ici. Cela dépose un cookie et envoie votre visite à Google. Ce que vous tapez ' +
+                "dans un argument n'est jamais envoyé — cela reste dans votre navigateur. Refuser ne change rien à " +
+                "ce que vous pouvez construire ici. Votre réponse vaut pour tout le site : la question n'est posée " +
+                "qu'une fois.";
+
+            var more = document.querySelector('[data-consent-more]');
+            more.textContent = 'Ce qui est mesuré';
+            more.setAttribute('href', '/fr/privacy/');
+
+            var refuse = document.querySelector('[data-consent-refuse]');
+            refuse.textContent = 'Refuser';
+            refuse.setAttribute('data-announce', 'Google Analytics refusé.');
+
+            var accept = document.querySelector('[data-consent-accept]');
+            accept.textContent = 'Accepter';
+            accept.setAttribute('data-announce', 'Google Analytics accepté.');
         }
     </script>
     <!--
@@ -133,6 +219,16 @@
     <script src="js/site-header.js"></script>
     <script src="js/brand-heading.js"></script>
     <script src="js/measurement.js"></script>
+    <!--
+      The consent decision, which is one module for both of this site's applications
+      (ADR-0025) and therefore lives outside this one: `apps/site/public/consent.js`, served
+      at a fixed address so a hand-written shell can name it. Absolute, past `<base
+      href="/playground/">`, for the same reason the favicons above are.
+
+      `defer` rather than plain, so it neither blocks this document's first paint nor races the
+      banner above — it waits for `DOMContentLoaded` before wiring anything.
+    -->
+    <script defer src="/consent.js"></script>
     <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
 </body>
 

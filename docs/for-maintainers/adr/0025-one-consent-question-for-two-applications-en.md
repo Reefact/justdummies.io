@@ -70,12 +70,14 @@ playground is a banner to ask with and a bootstrap to act on the answer — and 
 sharing runs in both directions at no extra cost: an answer given on the playground is the answer
 every site page reads next, exactly as the reverse already would be.
 
-**The banner is chrome, and this repository has already decided how chrome is shared.** The header,
-the footer and the floating download control each exist twice, once per toolchain, sharing the design
-tokens rather than the markup. A fourth piece of chrome following the same arrangement is the
-consistent answer, not a new one. It also survives what an injected fragment would not: the playground
-chooses its language after the build and can change it after boot, so a banner rendered once in one
-locale would be wrong for half its readers and unable to follow the other half.
+**The banner is chrome, and the playground already has a place chrome lives: its shell.**
+`#blazor-error-ui` is in `wwwroot/index.html`, translated before boot by a script that reads the URL
+the page opened with, and re-worded after a language switch by `LocaleState` through
+`js/locale.js`. The consent question takes the same place, for two reasons the error banner only half
+needs. It has to be readable before the runtime is — a visitor on a slow connection who lands on the
+playground and leaves is exactly the reader worth asking, and a banner waiting on a megabyte and a
+half of WebAssembly would never reach them. And it has to be in the artefact, so that the build can
+hold this document to the rule below rather than trusting it.
 
 **The decision itself is not chrome, and that half must not be duplicated.** The retention window, the
 skew tolerance, the re-check on every report and the opt-out flag are not appearance — they are the
@@ -117,9 +119,27 @@ both documents, extracted after the site build and written into the shell, with 
 Rejected on localisation. The Astro banner is rendered per page, in that page's language; the
 playground is one document that chooses its language from `?lang=` at run time and can change it after
 boot. A fragment captured at build time is one locale, and injecting both and hiding one would
-reimplement the language switch anyway — at which point the Razor twin is the smaller and more
-honest thing. The build-time coupling would also be new: nothing today reads the site's output to
-assemble the playground's.
+reimplement the language switch anyway — at which point the shell's own banner is the smaller and more
+honest thing.
+
+The analytics *tag* is lifted out of a built page exactly this way, and the difference is the whole
+argument. `GoogleAnalytics.astro` guarantees its body is byte-identical on every page and carries no
+locale — that is why exactly one hash of it ever enters the content policy — so a copy is the original.
+A rendered banner is guaranteed the opposite: one locale per page, by construction. Lifting what the
+site promises is invariant is not the same move as lifting what it promises is not.
+
+### Give the playground a Razor banner, like its other chrome
+
+Considered first, and it is what the header, the footer and the download control all do: a Razor
+component per toolchain, sharing the design tokens rather than the markup. It would have followed the
+established arrangement exactly, and localisation would have come free from `LocalizedComponent`.
+
+Rejected on when it would appear and on what could see it. A Razor component renders after the
+WebAssembly runtime has downloaded and started, so a visitor who arrives on the playground and leaves
+before that is never asked — and that visitor is not an edge case, they are the slow connection the
+runtime's own weight makes likely. It is also invisible to the build: the shell that ships would carry
+the tag and no banner, and the assertion below could only pass by not looking at that document, which
+is the one document it exists for.
 
 ### Serve the playground from an Astro page
 
@@ -148,9 +168,11 @@ construction in one toolchain: a document that carries the tag must carry a bann
 
 ### Negative
 
-There is a second banner view to keep in step with the first — a fourth after the header, the footer
-and the download control. The tokens and the shared module carry most of it, but the wording and the
-markup are two files that a change has to visit twice.
+There is a second banner view to keep in step with the first. The tokens and the shared module carry
+most of it, but the markup and the wording are two more files a change has to visit — and the wording
+is itself declared twice within the playground, as literals in the shell for the pre-boot translation
+and again in `PlaygroundStrings.cs` for the switch after boot. That is the duplication
+`#blazor-error-ui` already carries and already documents; this widens it rather than inventing it.
 
 The playground gains the analytics tag, so the content policy grants Google's hosts on a document that
 never contacted them before. The policy is derived rather than written, so it follows on its own, but
@@ -178,9 +200,12 @@ would be the same defect `jdSetDocumentLanguage` exists to prevent for the error
 ## Follow-up Actions
 
 * **What fails when this is broken, in the build:** `scripts/verify-output.sh` gains an assertion that
-  every document carrying the analytics tag also carries a consent banner. It is the invariant
-  ADR-0018 rests on, it has been true only because one toolchain rendered both, and it is exactly what
-  a second toolchain can break silently. Break-tested before the pull request, per CONTRIBUTING.
+  every document carrying the analytics tag also carries a consent banner *and* the module that acts
+  on it. It is the invariant ADR-0018 rests on, it has been true only because one toolchain rendered
+  both, and it is exactly what a second toolchain can break silently. Both halves are checked because
+  they fail differently: a tagged document with no banner asks nobody and reports nobody, while a
+  tagged document with no module starts nothing at all — silent rather than dangerous, and still a
+  failure. Break-tested before the pull request, per CONTRIBUTING.
 * **What fails by construction:** the decision is one module. A retention window, a skew tolerance or
   a withdrawal path cannot drift between the two applications, because there is only one of each to
   drift from.
