@@ -1463,6 +1463,12 @@ With the state `enabled`, on the deployment:
 ```bash
 curl -s https://justdummies.io/ | grep -c 'www.googletagmanager.com'   # expect 1
 curl -sI https://justdummies.io/ | grep -i 'content-security-policy' | grep -c 'googletagmanager'   # expect 1
+
+# And the playground, which carries the same tag since ADR-0025 — written into its shell by
+# the build rather than rendered by Astro, so it is the one document worth checking by hand.
+curl -s https://justdummies.io/playground/ | grep -c 'data-jd-analytics'                       # expect 1
+curl -s https://justdummies.io/playground/ | grep -qc 'data-consent' && echo 'banner present'
+curl -s https://justdummies.io/playground/ | grep -qc '/consent.js' && echo 'module present'
 ```
 
 With the state `disabled`, both expect `0` — and that is the check worth running once, because the
@@ -1477,6 +1483,14 @@ policy to be validated by a real load rather than by review, and this is that lo
 * *Privacy* → **Change your choice** → **accept** — `gtag/js` loads, and the console reports no policy
   violation;
 * copy an install command — it is recorded in both lanes.
+
+Then the crossing ADR-0025 is for, which is the part no single page can show. In a fresh profile:
+
+* open `/playground/` first — the banner appears there, before the runtime has finished downloading;
+* **accept** — `gtag/js` loads on the playground, and the console reports no policy violation;
+* open `/` — no banner, and the tag starts on an answer given somewhere else;
+* press Generate in the playground — `playground_generated` in DebugView, and a `generate-clicked`
+  row in the collector.
 
 Finally, GA4 → *Admin* → **DebugView**, with the browser's Google Analytics Debugger enabled, and read
 `scene_view` arriving with a `scene_name`. Confirm the parameters are landing **before** trusting the

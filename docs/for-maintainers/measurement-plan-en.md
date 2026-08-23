@@ -16,7 +16,11 @@ added. An unread dimension is not free — it is one more thing every later read
 |---|---|---|---|
 | Cloudflare Web Analytics | visits, and whether pages load quickly (§15.1) | not required | everyone, the playground included |
 | The Worker collector on `/_event` | the dimensioned exit events (§15.2) | not required | everyone |
-| Google Analytics 4 | the journey between the two (ADR-0018) | **required** | those who accept |
+| Google Analytics 4 | the journey between the two (ADR-0018) | **required** | those who accept, on either application |
+
+**The question is asked once, wherever a visitor arrives.** Since ADR-0025 the playground asks it too
+and both applications read and write the one stored answer, so an answer given on either is the answer
+the other finds. The decision itself is one module, `apps/site/public/consent.js`, loaded by both.
 
 The first two are the totals; the third is the explanation. **Read a rate against lane two, never
 against lane three** — lane three's denominator is the consenting fraction, so a conversion rate
@@ -76,6 +80,7 @@ own language — the locale the reader chose — and not the browser's, which GA
 | `nuget_link_clicked` | a NuGet link is followed | `placement`, `variant`, `link_url` | the exit nobody was watching |
 | `download_fab_clicked` | the floating download link is clicked | `placement` | is a permanent call to action on every page pulling its weight, or visual noise? |
 | `playground_started` | the hero's Run button is pressed | — | the strongest intent on the page: agreeing to download the runtime |
+| `playground_generated` | Generate is pressed in the playground | — | how many presses one visitor makes: does the playground get tried once, or worked with? |
 | `comparison_narrowed` | the positioning page's selector is used | `competitor` | who are we being compared against? |
 | `view_search_results` | the API search settles on a term | `search_term` | what is being looked for, and not found |
 
@@ -141,12 +146,14 @@ the same separation by writing the ordinal among its doubles and never among its
   off to avoid a redundancy on two pages would remove the only answer on all the others. Read
   `scene_view` on the narrative and `scroll` everywhere else; they are two granularities of one
   question, not two answers to it.
-* **Nothing the playground is given.** §15.1 states that what is typed there is never recorded, and the
-  playground runs entirely in the browser — there is no server to send it to.
+* **Nothing the playground is given.** §15.1 states that what is typed there is never recorded, and
+  ADR-0024 is what keeps that true now that one event does leave the document: the chain is reported
+  as its shape, every argument replaced by a question mark, and no argument value is sent to either
+  lane. The journey lane is told less still — a press happened, and nothing about what was in it.
 * **The playground's own floating download control, for now.** `/playground/` is a separate Blazor
   document rendering its own `DownloadFab.razor`, which carries no placement — so its clicks reach
   neither lane, while the same control is counted everywhere else. It is named here rather than left
-  to be discovered, and it is now the smaller half of the gap: the document carries the audience
-  beacon, so its visits are in the denominator, and what is missing is the numerator alone.
+  to be discovered, and it is now the last of the playground's gap: the document carries all three
+  lanes, and what is missing is this one control's numerator.
 * **No advertising signals, ever.** They are denied permanently rather than following consent, and the
   content policy names no advertising host, so a change of mind fails a check rather than shipping.
