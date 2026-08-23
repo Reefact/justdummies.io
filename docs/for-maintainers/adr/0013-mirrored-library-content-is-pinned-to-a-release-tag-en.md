@@ -2,10 +2,20 @@
 
 🌍 🇬🇧 English (this file) · 🇫🇷 [Français](0013-le-contenu-repris-de-la-bibliotheque-est-epingle-a-un-tag-fr.md)
 
-**Status:** Accepted
+**Status:** Accepted — superseded in part by
+[ADR-0026](0026-docs-topics-pin-to-the-tag-of-the-train-that-owns-them-en.md)
 **Proposed:** 2026-08-16
 **Accepted:** 2026-08-16
 **Decision Makers:** Reefact
+
+> **What ADR-0026 replaced, and what it did not.** The half that is gone is *one snapshot at one
+> tag* — the atomicity this record argues for under "Mirror per train, or per section", and the
+> reason it gives for rejecting that alternative. `/docs` now pins each topic to the train that owns
+> it, so the snapshot spans several tags. The half that stands is the one this record was written
+> for, and it is the load-bearing one: mirrored content is pinned to a **published release tag**,
+> never to a branch, so that the documentation and the install command name one artefact.
+> ADR-0026 narrows *which* tag a page takes; it does not reopen the question of whether a tag is
+> what a mirror pins to.
 
 ## Context
 

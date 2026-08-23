@@ -156,7 +156,7 @@ requests, issues, diagrams.
 | [ADR-0010](0010-the-playground-catalogue-is-generated-c-source-not-json-en.md) | The playground catalogue is generated C# source, not JSON | Accepted |
 | [ADR-0011](0011-the-playground-references-the-catalogue-as-a-project-reference-en.md) | The playground references the catalogue as a project reference | Accepted |
 | [ADR-0012](0012-the-site-runs-one-worker-script-for-measurement-en.md) | The site runs one Worker script, and only for measurement | Accepted |
-| [ADR-0013](0013-mirrored-library-content-is-pinned-to-a-release-tag-en.md) | Mirrored library content is pinned to a release tag | Accepted |
+| [ADR-0013](0013-mirrored-library-content-is-pinned-to-a-release-tag-en.md) | Mirrored library content is pinned to a release tag | Accepted — superseded in part by ADR-0026 |
 | [ADR-0014](0014-the-playground-builds-inside-the-card-it-reads-en.md) | The playground builds inside the card it reads | Accepted — superseded in part by ADR-0022 |
 | [ADR-0015](0015-the-combo-names-what-the-playground-cannot-offer-en.md) | The combo names what the playground cannot offer | Proposed |
 | [ADR-0016](0016-a-list-argument-is-one-comma-separated-field-en.md) | A list argument is one comma-separated field | Proposed |
@@ -169,7 +169,7 @@ requests, issues, diagrams.
 | [ADR-0023](0023-an-event-carries-a-variant-only-when-it-has-a-door-to-choose-en.md) | An event carries a variant only when it has a door to choose between | Accepted |
 | [ADR-0024](0024-the-playground-reports-a-chains-shape-not-its-values-en.md) | The playground reports a chain's shape, never its values | Accepted |
 | [ADR-0025](0025-one-consent-question-for-two-applications-en.md) | One consent question for two applications | Accepted |
-| [ADR-0026](0026-docs-topics-pin-to-the-tag-of-the-train-that-owns-them-en.md) | /docs topics pin to the tag of the train that owns them | Proposed |
+| [ADR-0026](0026-docs-topics-pin-to-the-tag-of-the-train-that-owns-them-en.md) | /docs topics pin to the tag of the train that owns them | Accepted |
 
 **0008 is absent on purpose.** It named a record that was written, merged, then withdrawn: how a
 scene is titled is an editorial principle, which this file sends to the specification rather than
