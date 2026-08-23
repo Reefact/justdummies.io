@@ -93,6 +93,23 @@ function topicPath(slug: string): string {
         border-radius: 0.3em;
     }
 
+    /*
+     * A rendered Mermaid diagram (scripts/lib/mermaid-render.mjs). It arrives with `width`
+     * and `height` attributes and no CSS of its own — that is the whole point, since
+     * `style-src 'self'` forbids the stylesheet mermaid would otherwise ship inside it — so
+     * the sizing rules it needs live here, once, rather than 18 times in the content.
+     *
+     * `max-width: 100%` with `height: auto` lets the viewBox scale it down on a narrow
+     * screen instead of widening the document, which is what tests/browser/layout.spec.ts
+     * measures. The wrapper scrolls rather than shrinking past legibility on a phone.
+     */
+    .docs-topic :global(svg.jd-diagram) {
+        display: block;
+        max-width: 100%;
+        height: auto;
+        margin-block: var(--jd-space-6);
+    }
+
     .docs-topic :global(table) {
         width: 100%;
         border-collapse: collapse;
