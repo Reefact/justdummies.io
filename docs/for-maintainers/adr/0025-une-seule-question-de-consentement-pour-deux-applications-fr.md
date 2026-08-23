@@ -72,13 +72,15 @@ réponse — et une fois qu'il a les deux, le partage joue dans les deux sens sa
 une réponse donnée sur le playground est celle que chaque page du site lit ensuite, exactement comme
 l'inverse le ferait déjà.
 
-**Le bandeau est de la chrome, et ce dépôt a déjà décidé comment la chrome se partage.** L'en-tête, le
-pied de page et le contrôle de téléchargement flottant existent chacun deux fois, une par chaîne
-d'outillage, partageant les design tokens plutôt que le markup. Une quatrième pièce de chrome suivant
-le même arrangement est la réponse cohérente, pas une nouvelle. Elle survit en outre à ce qu'un
-fragment injecté ne survivrait pas : le playground choisit sa langue après le build et peut en changer
-après le boot ; un bandeau rendu une fois dans une locale serait faux pour la moitié de ses lecteurs et
-incapable de suivre l'autre moitié.
+**Le bandeau est de la chrome, et le playground a déjà un endroit où la chrome vit : sa coquille.**
+`#blazor-error-ui` est dans `wwwroot/index.html`, traduit avant le boot par un script qui lit l'URL
+d'ouverture, et re-libellé après un changement de langue par `LocaleState` via `js/locale.js`. La
+question de consentement prend la même place, pour deux raisons dont le bandeau d'erreur n'a qu'à
+moitié besoin. Elle doit être lisible avant que le runtime ne le soit — un visiteur en connexion lente
+qui arrive sur le playground et repart est précisément le lecteur qu'il vaut la peine d'interroger, et
+un bandeau attendant un mégaoctet et demi de WebAssembly ne l'atteindrait jamais. Et elle doit être
+dans l'artefact, pour que le build puisse tenir ce document à la règle plus bas au lieu de lui faire
+confiance.
 
 **La décision, elle, n'est pas de la chrome, et cette moitié-là ne doit pas être dupliquée.** La
 fenêtre de rétention, la tolérance d'horloge, la revérification à chaque rapport et le drapeau
@@ -123,9 +125,29 @@ réimplémenter.
 Rejetée sur la localisation. Le bandeau Astro est rendu par page, dans la langue de cette page ; le
 playground est un document unique qui choisit sa langue depuis `?lang=` à l'exécution et peut en
 changer après le boot. Un fragment capturé au build est d'une seule locale, et en injecter deux pour en
-cacher une réimplémenterait de toute façon le changement de langue — auquel point le jumeau Razor est
-la chose la plus petite et la plus honnête. Le couplage au build serait en outre inédit : rien
-aujourd'hui ne lit la sortie du site pour assembler celle du playground.
+cacher une réimplémenterait de toute façon le changement de langue — auquel point le bandeau de la
+coquille est la chose la plus petite et la plus honnête.
+
+Le *tag* analytique, lui, est bel et bien prélevé d'une page construite de cette manière-là, et la
+différence est tout l'argument. `GoogleAnalytics.astro` garantit que son corps est identique octet pour
+octet sur chaque page et ne porte aucune locale — c'est pourquoi un seul hash de ce corps entre jamais
+dans la politique de contenu — si bien qu'une copie est l'original. Un bandeau rendu garantit
+l'inverse : une locale par page, par construction. Prélever ce que le site promet invariant n'est pas
+le même geste que prélever ce qu'il promet variable.
+
+### Donner au playground un bandeau Razor, comme le reste de sa chrome
+
+Considérée en premier, et c'est ce que font l'en-tête, le pied de page et le contrôle de
+téléchargement : un composant Razor par chaîne d'outillage, partageant les design tokens plutôt que le
+markup. Elle aurait suivi l'arrangement établi à la lettre, et la localisation serait venue
+gratuitement de `LocalizedComponent`.
+
+Rejetée sur le moment où elle apparaîtrait et sur ce qui pourrait la voir. Un composant Razor se rend
+après le téléchargement et le démarrage du runtime WebAssembly : un visiteur qui arrive sur le
+playground et repart avant n'est jamais interrogé — et ce visiteur n'est pas un cas limite, c'est la
+connexion lente que le poids du runtime rend probable. Elle est en outre invisible au build : la
+coquille livrée porterait le tag et aucun bandeau, et l'assertion plus bas ne pourrait passer qu'en ne
+regardant pas ce document — le seul pour lequel elle existe.
 
 ### Servir le playground depuis une page Astro
 
@@ -156,9 +178,12 @@ construction dans une seule chaîne d'outillage : un document qui porte le tag d
 
 ### Negative
 
-Il y a une seconde vue de bandeau à tenir en phase avec la première — une quatrième après l'en-tête, le
-pied de page et le contrôle de téléchargement. Les tokens et le module partagé en portent l'essentiel,
-mais le libellé et le markup sont deux fichiers qu'un changement doit visiter deux fois.
+Il y a une seconde vue de bandeau à tenir en phase avec la première. Les tokens et le module partagé en
+portent l'essentiel, mais le markup et le libellé sont deux fichiers de plus qu'un changement doit
+visiter — et le libellé est lui-même déclaré deux fois à l'intérieur du playground : en littéraux dans
+la coquille pour la traduction d'avant boot, et de nouveau dans `PlaygroundStrings.cs` pour le
+changement d'après boot. C'est la duplication que `#blazor-error-ui` porte et documente déjà ; celle-ci
+l'élargit plutôt qu'elle ne l'invente.
 
 Le playground gagne le tag analytique : la politique de contenu accorde donc les hôtes de Google sur un
 document qui ne les avait jamais contactés. La politique étant dérivée plutôt qu'écrite, elle suit
@@ -188,9 +213,12 @@ bannière d'erreur.
 
 * **Ce qui échoue quand la décision est cassée, dans le build :** `scripts/verify-output.sh` gagne une
   assertion selon laquelle tout document portant le tag analytique porte aussi un bandeau de
-  consentement. C'est l'invariant sur lequel repose ADR-0018, il n'a été vrai que parce qu'une seule
-  chaîne d'outillage rendait les deux, et c'est exactement ce qu'une seconde chaîne peut casser
-  silencieusement. Testé en le cassant avant la pull request, comme l'exige CONTRIBUTING.
+  consentement *et* le module qui agit dessus. C'est l'invariant sur lequel repose ADR-0018, il n'a été
+  vrai que parce qu'une seule chaîne d'outillage rendait les deux, et c'est exactement ce qu'une
+  seconde chaîne peut casser silencieusement. Les deux moitiés sont vérifiées parce qu'elles échouent
+  différemment : un document taggé sans bandeau n'interroge personne et ne rapporte personne, tandis
+  qu'un document taggé sans module ne démarre rien du tout — silencieux plutôt que dangereux, et
+  toujours une défaillance. Testé en le cassant avant la pull request, comme l'exige CONTRIBUTING.
 * **Ce qui échoue par construction :** la décision est un module unique. Une fenêtre de rétention, une
   tolérance d'horloge ou un chemin de retrait ne peuvent pas dériver entre les deux applications,
   puisqu'il n'y en a qu'un exemplaire de chaque dont dériver.

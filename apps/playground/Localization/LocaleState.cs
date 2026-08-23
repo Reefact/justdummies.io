@@ -51,21 +51,39 @@ public sealed class LocaleState {
     }
 
     /// <summary>
-    ///     Beyond <c>&lt;html lang&gt;</c>, this also re-words <c>#blazor-error-ui</c> — the
-    ///     banner Blazor reveals on an unhandled error. It lives in <c>wwwroot/index.html</c>,
-    ///     outside this app's render tree, and <c>index.html</c>'s own pre-boot script only ever
-    ///     translates it once, from the query string the page opened with. Without repeating
-    ///     that here, a reader who opened in English and then switched to French through this
-    ///     app's own selector would see the banner in the language they left, the exact
-    ///     mixed-language interface this class exists to prevent — and see it only if the
-    ///     runtime later fails, which is the one moment reading it matters most.
+    ///     Beyond <c>&lt;html lang&gt;</c>, this also re-words the two pieces of chrome that
+    ///     live in <c>wwwroot/index.html</c> rather than in this app's render tree: the banner
+    ///     Blazor reveals on an unhandled error, and the consent question (ADR-0025).
+    ///     <c>index.html</c>'s own pre-boot script only ever translates them once, from the
+    ///     query string the page opened with. Without repeating that here, a reader who opened
+    ///     in English and then switched to French through this app's own selector would see
+    ///     them in the language they left — the exact mixed-language interface this class
+    ///     exists to prevent, and in the error banner's case seen only if the runtime later
+    ///     fails, which is the one moment reading it matters most.
+    ///
+    ///     The consent banner is the more consequential of the two, because a reader answers
+    ///     it: a question read in one language and announced in another is a choice made
+    ///     against a sentence they did not read.
     /// </summary>
     private async Task ApplyDocumentLanguage(Locale locale) {
         await _js.InvokeVoidAsync(
             "jdSetDocumentLanguage",
             PlaygroundStrings.Tag(locale),
-            PlaygroundStrings.T(locale, "errorBanner.message"),
-            PlaygroundStrings.T(locale, "errorBanner.reload"));
+            new Dictionary<string, string> {
+                ["errorMessage"]       = PlaygroundStrings.T(locale, "errorBanner.message"),
+                ["errorReload"]        = PlaygroundStrings.T(locale, "errorBanner.reload"),
+                ["consentHeading"]     = PlaygroundStrings.T(locale, "consent.heading"),
+                ["consentBody"]        = PlaygroundStrings.T(locale, "consent.body"),
+                ["consentMore"]        = PlaygroundStrings.T(locale, "consent.more"),
+                ["consentAccept"]      = PlaygroundStrings.T(locale, "consent.accept"),
+                ["consentRefuse"]      = PlaygroundStrings.T(locale, "consent.refuse"),
+                ["consentAccepted"]    = PlaygroundStrings.T(locale, "consent.state.accepted"),
+                ["consentRefused"]     = PlaygroundStrings.T(locale, "consent.state.refused"),
+                // The site's own address for the page the banner links to, derived here for the
+                // reason DownloadFab.razor derives its own: the French prefix belongs to the
+                // site's routing, which this application knows about and does not share.
+                ["consentPrivacyHref"] = locale == Locale.Fr ? "/fr/privacy/" : "/privacy/",
+            });
     }
 
     /// <summary>

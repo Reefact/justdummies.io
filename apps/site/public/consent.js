@@ -223,7 +223,7 @@
     }
 
     function start() {
-        if (tag.jdAnalyticsStart === undefined) {
+        if (tag.jdAnalyticsStart === undefined || isEmbedded()) {
             return;
         }
 
@@ -261,6 +261,19 @@
 
     function show() {
         if (banner === null) {
+            return;
+        }
+
+        /*
+         * A CONTROL APPEARS ONLY WHEN IT CAN ACT (ADR-0004), and this is where that rule lives
+         * for both documents rather than twice in two toolchains. A build with no measurement
+         * id has no tag, and a banner asking about a tag that is not there is theatre.
+         *
+         * The site never reaches this: it renders no banner at all on such a build. The
+         * playground's banner is in its shell, which has no build-time condition to hang it
+         * on — it ships hidden and this is what keeps it hidden.
+         */
+        if (tag.jdAnalyticsStart === undefined) {
             return;
         }
 
@@ -395,6 +408,43 @@
     }
 
     /**
+     * What the live region says after an answer, translated by whoever drew the button.
+     *
+     * READ WHEN THE BUTTON IS PRESSED, NOT WHEN IT IS WIRED. The playground re-words its
+     * banner in place when a reader switches language — the element stays, its text and its
+     * `data-announce` change — so an announcement captured at wiring time would be the one
+     * from the language they left. The site never re-words anything and reads the same value
+     * either way.
+     *
+     * @param {Element|null} button
+     * @returns {string}
+     */
+    function announcementOf(button) {
+        return button !== null && button.dataset ? button.dataset.announce || '' : '';
+    }
+
+    /**
+     * Whether this document is somebody else's frame.
+     *
+     * THE PLAYGROUND'S SHELL ANSWERS ON TWO ADDRESSES. `_redirects` rewrites
+     * `/playground/hero` to `/playground/` with a 200, and `LiveHero.astro` loads that address
+     * into an iframe the moment a visitor presses Run on the landing page. Everything this
+     * file does would then happen twice on one screen: a second banner inside the frame,
+     * asking the same question the page behind it is already asking, and a `config` page_view
+     * for a document nobody navigated to. The beacon written into the same shell is keyed on
+     * the same property, for the same reason.
+     *
+     * `window.self === window.top` rather than a test against the path, because being embedded
+     * is what matters rather than being one particular route — and reading `frameElement`
+     * would throw across origins where this does not.
+     *
+     * @returns {boolean}
+     */
+    function isEmbedded() {
+        return window.self !== window.top;
+    }
+
+    /**
      * Finds this document's banner, whichever toolchain drew it, and wires it.
      *
      * DEFERRED TO `DOMContentLoaded` RATHER THAN RUN AT LOAD, and that is not only about the
@@ -408,6 +458,13 @@
      * later. `jdConsentRewire` is how that document says so.
      */
     function wire() {
+        // Nothing at all in a frame: no question, no reconciliation, and therefore no tag —
+        // `start()` is only ever reached from `applyDecision()`, which is only ever reached
+        // from here and from the two listeners below, and those find `reporting` false.
+        if (isEmbedded()) {
+            return;
+        }
+
         var found = document.querySelector('[data-consent]');
 
         // Wired once per element. The playground replaces its banner rather than re-wording
@@ -428,18 +485,16 @@
 
             var accept = banner.querySelector('[data-consent-accept]');
             var refuse = banner.querySelector('[data-consent-refuse]');
-            var accepted = accept !== null && accept.dataset ? accept.dataset.announce || '' : '';
-            var refused = refuse !== null && refuse.dataset ? refuse.dataset.announce || '' : '';
 
             if (accept !== null) {
                 accept.addEventListener('click', function () {
-                    answer('granted', accepted);
+                    answer('granted', announcementOf(accept));
                 });
             }
 
             if (refuse !== null) {
                 refuse.addEventListener('click', function () {
-                    answer('denied', refused);
+                    answer('denied', announcementOf(refuse));
                 });
             }
 
@@ -449,7 +504,7 @@
             // "yes", which is the whole of the parity rule.
             banner.addEventListener('keydown', function (event) {
                 if (event.key === 'Escape') {
-                    answer('denied', refused);
+                    answer('denied', announcementOf(refuse));
                 }
             });
         }
@@ -457,8 +512,9 @@
         applyDecision();
 
         // The privacy page's way back in. Hidden in the markup for the same reason the
-        // banner is: a button that reopens a dialogue is dead without scripting.
-        if (reopen !== null) {
+        // banner is: a button that reopens a dialogue is dead without scripting — and for
+        // the reason `show()` gives, dead as well in a document with no tag behind it.
+        if (reopen !== null && tag.jdAnalyticsStart !== undefined) {
             reopen.hidden = false;
             reopen.addEventListener('click', show);
         }

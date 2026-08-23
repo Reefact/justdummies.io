@@ -1336,17 +1336,112 @@ main {
 }
 
 /*
+ * THE CONSENT BANNER (wwwroot/index.html) — the site's own ConsentBanner.astro, to the
+ * token, for the reason the download control below is: one question asked in two
+ * applications should not look like two questions (ADR-0025). The markup is in the shell
+ * rather than in a component, so that it can be read before the runtime is and so that the
+ * build can see it; these rules are the site's own, transcribed.
+ *
+ * `[hidden]` FIRST, AND IT IS NOT A FORMALITY. The banner ships hidden and is unhidden by
+ * `consent.js`, and `display: flex` below beats the user agent's own
+ * `[hidden] { display: none }` on specificity alone — so without this rule the attribute
+ * would be set correctly and the banner shown anyway, on every page, to every reader
+ * including one who has already answered. The site's base.css carries the identical rule
+ * and says so at length; this is that rule, in the other stylesheet.
+ */
+[hidden] {
+    display: none !important;
+}
+
+.consent {
+    position: fixed;
+    inset: auto 0 0 0;
+    /* Above the page, and above the download control floating in the corner beneath it
+       (`z-index: 5`) — that control reads its own bottom offset from this banner's
+       published height rather than sharing its layer. */
+    z-index: 10;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--jd-space-4);
+    padding: var(--jd-space-4) var(--jd-space-6);
+    background: var(--jd-surface-raised);
+    border-top: 1px solid var(--jd-border);
+    box-shadow: var(--jd-shadow-raised);
+    /* Anchored to the bottom and out of flow, so a banner taller than the viewport would
+       grow off the TOP of the screen, where the document cannot be scrolled to reach it.
+       That happens at high zoom and on short landscape viewports, and what it hides is the
+       disclosure and the privacy link: the two things a visitor needs before answering.
+       dvh rather than vh so a mobile browser's retracting toolbar is accounted for. */
+    max-height: 100dvh;
+    overflow-y: auto;
+}
+
+.consent-text {
+    flex: 1 1 24rem;
+    min-width: 0;
+}
+
+.consent-title {
+    margin: 0 0 var(--jd-space-1);
+    font-weight: 600;
+}
+
+.consent-body {
+    margin: 0;
+    color: var(--jd-text-muted);
+    font-size: var(--jd-text-sm);
+    line-height: var(--jd-line-body);
+}
+
+.choices {
+    flex: none;
+    display: flex;
+    gap: var(--jd-space-3);
+}
+
+/* One class for both answers. Any rule that distinguishes them by size, weight or colour
+   is the bug, not a refinement — the site's component says why at length. */
+.choice {
+    font: inherit;
+    font-size: var(--jd-text-sm);
+    color: var(--jd-text-primary);
+    background: var(--jd-surface);
+    border: 1px solid var(--jd-border);
+    border-radius: var(--jd-radius-sm);
+    padding: var(--jd-space-2) var(--jd-space-4);
+    cursor: pointer;
+    transition: border-color var(--jd-duration-fast) var(--jd-ease);
+}
+
+.choice:hover {
+    border-color: var(--jd-accent);
+}
+
+.choice:focus-visible,
+.consent:focus-visible {
+    outline: 2px solid var(--jd-accent);
+    outline-offset: 2px;
+}
+
+.consent:focus-visible {
+    outline-offset: -2px;
+}
+
+/*
  * THE DOWNLOAD FAB (Layout/DownloadFab.razor) — the site's own DownloadFab.astro, to the
  * token: same position, same shape, same corner, so the control reads as one the two
- * halves of the product share rather than two that happen to agree today. Unlike the
- * site's, this one carries no consent banner to share stacking with — the playground
- * shows no such banner — so it sits at a plain fixed offset instead of the site's
- * `--jd-consent-height` calculation.
+ * halves of the product share rather than two that happen to agree today. That now
+ * includes the site's `--jd-consent-height` calculation: since ADR-0025 this document
+ * carries a consent banner too, and a control that ignored its height would sit under it.
+ * The variable is published by `consent.js` and defaults to zero, so a build with no
+ * banner puts the control exactly where it was.
  */
 .download-fab {
     position: fixed;
     right: var(--jd-space-6);
-    bottom: var(--jd-space-6);
+    bottom: calc(var(--jd-space-6) + var(--jd-consent-height, 0px));
     z-index: 5;
     display: flex;
     align-items: center;

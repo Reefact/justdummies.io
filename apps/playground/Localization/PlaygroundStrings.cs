@@ -161,6 +161,19 @@ public static class PlaygroundStrings {
         // pre-boot script still carries its own literal copy rather than awaiting this class.
         ["errorBanner.message"] = "Something went wrong.",
         ["errorBanner.reload"]  = "Reload",
+
+        // The consent banner, which lives in index.html for the reasons that file gives and is
+        // therefore duplicated here for the same reason the two keys above are: the pre-boot
+        // script translates it once from the URL the page opened with, and LocaleState.Set(...)
+        // is what reaches it after a switch. Its wording is the playground's own rather than the
+        // site's — the same question, asked about what this application does with the answer.
+        ["consent.heading"]        = "How the playground is used.",
+        ["consent.body"]           = "The site would like to use Google Analytics to see which generators and constraints people actually try here. That stores a cookie and sends your visit to Google. What you type into an argument is never sent — that stays in your browser. Refusing changes nothing about what you can build here. Your answer covers the whole site, so this is asked once.",
+        ["consent.accept"]         = "Accept",
+        ["consent.refuse"]         = "Refuse",
+        ["consent.more"]           = "What is measured",
+        ["consent.state.accepted"] = "Google Analytics accepted.",
+        ["consent.state.refused"]  = "Google Analytics refused.",
     };
 
     private static readonly Dictionary<string, Translation> Fr = new() {
@@ -270,6 +283,14 @@ public static class PlaygroundStrings {
 
         ["errorBanner.message"] = new("Une erreur est survenue.", "Something went wrong."),
         ["errorBanner.reload"]  = new("Recharger", "Reload"),
+
+        ["consent.heading"]        = new("Comment le playground est utilisé.", "How the playground is used."),
+        ["consent.body"]           = new("Le site aimerait utiliser Google Analytics pour voir quels générateurs et quelles contraintes sont réellement essayés ici. Cela dépose un cookie et envoie votre visite à Google. Ce que vous tapez dans un argument n'est jamais envoyé — cela reste dans votre navigateur. Refuser ne change rien à ce que vous pouvez construire ici. Votre réponse vaut pour tout le site : la question n'est posée qu'une fois.", "The site would like to use Google Analytics to see which generators and constraints people actually try here. That stores a cookie and sends your visit to Google. What you type into an argument is never sent — that stays in your browser. Refusing changes nothing about what you can build here. Your answer covers the whole site, so this is asked once."),
+        ["consent.accept"]         = new("Accepter", "Accept"),
+        ["consent.refuse"]         = new("Refuser", "Refuse"),
+        ["consent.more"]           = new("Ce qui est mesuré", "What is measured"),
+        ["consent.state.accepted"] = new("Google Analytics accepté.", "Google Analytics accepted."),
+        ["consent.state.refused"]  = new("Google Analytics refusé.", "Google Analytics refused."),
     };
 
     /// <summary>
