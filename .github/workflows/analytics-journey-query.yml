@@ -60,6 +60,12 @@ jobs:
           response_body="$(sed '$d' <<<"$response")"
           echo "$response_body" > result.json
 
+          # THE SUMMARY CARRIES NO MEASUREMENT — see analytics-events-query.yml for why.
+          # It matters most here: this is the consent-gated lane, so its rows describe the
+          # visitors who agreed to be measured for this site's own audience analysis, and
+          # publishing them would be a different purpose than the one they agreed to.
+          rows="$(jq -r '.rowCount // (.rows | length) // "unknown"' result.json 2>/dev/null || echo unknown)"
+
           {
             echo "### Request body"
             echo '```json'
@@ -69,14 +75,7 @@ jobs:
             echo "HTTP status: $status"
             echo
             echo "### Result"
-            echo "Full response is attached as the \`ga4-result\` artifact."
-            echo '```json'
-            head -c 200000 result.json
-            if [ "$(wc -c < result.json)" -gt 200000 ]; then
-              echo
-              echo "… truncated, see the artifact for the full response …"
-            fi
-            echo '```'
+            echo "Rows returned: $rows — in the \`ga4-result\` artifact, not here."
           } >> "$GITHUB_STEP_SUMMARY"
 
           if [ "$status" -ge 300 ]; then
@@ -97,4 +96,5 @@ jobs:
         with:
           name: ga4-result
           path: result.json
-          retention-days: 7
+          # One day — see analytics-events-query.yml.
+          retention-days: 1
