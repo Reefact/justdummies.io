@@ -19,8 +19,8 @@ name: Analytics audience query
 # The way out is that `siteTag` is also a DIMENSION, so the API can be asked to name it.
 # The first query groups by siteTag AND NOTHING ELSE — which is what keeps this repository,
 # whose Actions summaries and artifacts are public, from publishing another site's country
-# and referrer breakdown to readers who have no access to the Cloudflare account. Only once
-# a single site is settled on does the second query fetch that site's detail.
+# and referrer breakdown to readers who have no access to the Cloudflare account. The second
+# query fetches one site's detail, and only for a tag the caller named.
 on:
   workflow_dispatch:
     inputs:
@@ -29,7 +29,7 @@ on:
         required: true
         default: '7'
       site_tag:
-        description: 'Site tag to report on. Leave empty: the run names the tags it finds, and reports detail only if there is exactly one.'
+        description: 'Site tag to report on. Leave empty and the run only names the tags it finds: naming one is what unlocks its detail.'
         required: false
         default: ''
 
