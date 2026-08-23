@@ -105,12 +105,31 @@ export function isAnalyticsHost(hostname: string): boolean {
 }
 
 /**
+ * Whether a hostname is the audience beacon's — where it loads from, or where it reports to.
+ *
+ * Compared against the parsed hostname, for the reason stated where the collect domains are
+ * matched by suffix above: `https://elsewhere.invalid/?ref=cloudflareinsights.com` contains
+ * that string and is somebody else, and a predicate that says "contains" does not say what it
+ * means. Exact names rather than a suffix, because this repository writes both URLs.
+ */
+export function isBeaconHost(hostname: string): boolean {
+    return BEACON_HOSTS.includes(hostname);
+}
+
+/**
  * What marks a document as carrying the tag: the tag's own attribute, never its host.
  * A page is free to mention `googletagmanager.com` in prose one day — a privacy page
  * listing subprocessors would — and a check keyed on the host would then read that
  * paragraph as a tag. `generate-headers.mjs` derives the policy the same way.
  */
 export const ANALYTICS_TAG_MARKER = 'data-jd-analytics';
+
+/**
+ * And what marks a document as carrying the audience beacon, for the same reason and read the
+ * same way. Cloudflare reads the beacon's configuration out of `data-cf-beacon`; the shell's
+ * injected copy carries `data-cf-beacon-token` besides, and both begin with this.
+ */
+export const BEACON_TAG_MARKER = 'data-cf-beacon';
 
 /** Where the site remembers the visitor's answer. Mirrors `Measurement.astro`. */
 const CONSENT_KEY = 'jd:analytics-consent';

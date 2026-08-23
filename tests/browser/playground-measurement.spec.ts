@@ -1,4 +1,4 @@
-import { expect, test } from './support/harness';
+import { BEACON_TAG_MARKER, expect, test } from './support/harness';
 import type { Page, Request } from '@playwright/test';
 
 /**
@@ -205,15 +205,6 @@ test.describe('a press of Generate, for a visitor who accepted', () => {
 const BEACON_HOST = 'static.cloudflareinsights.com';
 
 /**
- * AND WHAT SAYS A DOCUMENT CARRIES THE BEACON, which is not a host at all — it is the
- * tag's own attribute. `generate-headers.mjs` gives the reason where it reads the
- * analytics tag: a host is a string a page could one day mention in prose, a privacy
- * page naming its subprocessors say, and a check that reads one cannot tell a tag from a
- * paragraph. The attribute appears on the tag and nowhere else.
- */
-const BEACON_TAG = 'data-cf-beacon';
-
-/**
  * The framed hero, which is the same shell at a second address.
  *
  * `_redirects` rewrites `/playground/hero` to `/playground/` with a 200, so both routes are
@@ -240,7 +231,7 @@ test.describe('the framed hero', () => {
 
         const html: string = await page.content();
 
-        test.skip(!html.includes(BEACON_TAG), 'this artefact was built without a beacon token');
+        test.skip(!html.includes(BEACON_TAG_MARKER), 'this artefact was built without a beacon token');
 
         // The landing page is a document a visitor navigated to, so it reports — and its
         // request is the baseline the assertion below is measured against.

@@ -90,6 +90,19 @@ const ANALYTICS_COLLECT_HOSTS = 'https://*.google-analytics.com https://*.analyt
 let carriesBeacon = false;
 
 /**
+ * What marks a document as carrying the beacon: the tag's own attribute, never its host —
+ * the rule stated for the analytics tag below, applied here too because it was always the
+ * same rule. The host is a string a page could one day mention in prose, and a policy
+ * widened by a paragraph would be a policy wider than its artefact. Cloudflare reads the
+ * beacon's configuration out of `data-cf-beacon`; the playground shell's injected copy
+ * carries `data-cf-beacon-token` besides, and both begin with this.
+ *
+ * verify-output.sh still checks the host itself, so the two derive the same answer from two
+ * different witnesses.
+ */
+const BEACON_TAG_MARKER = 'data-cf-beacon';
+
+/**
  * The same rule, read the same way, for the analytics lane.
  *
  * This grep only works because the tag is `is:inline`, which is not a detail: Astro
@@ -118,7 +131,7 @@ for (const document of htmlDocuments(dist)) {
         hashes.add(`'sha256-${hash}'`);
     }
 
-    if (html.includes('static.cloudflareinsights.com')) {
+    if (html.includes(BEACON_TAG_MARKER)) {
         carriesBeacon = true;
     }
 
