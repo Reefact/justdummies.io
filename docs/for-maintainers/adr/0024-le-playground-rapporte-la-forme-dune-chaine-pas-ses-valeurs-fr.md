@@ -83,6 +83,15 @@ par le parcours qui dessine cette barre — la même itération sur les mêmes l
 le formateur —, si bien que l'anonymisation n'est pas un filtre appliqué à une chaîne finie mais une
 valeur qui n'a jamais été assemblée.
 
+**Un argument de liste compte une fois par valeur, pas une fois par paramètre.** `OneOf` et `Except`
+prennent `params T[]`, et ADR-0016 leur donne un seul champ séparé par des virgules ; la barre de code
+réétale ce champ dans l'appel, si bien que `OneOf("red", "green", "blue")` est une ligne portant trois
+arguments là où le catalogue nomme un paramètre. Rapporté par paramètre, cela donnerait `OneOf(?)` —
+une forme que la barre ne peut jamais dessiner, et qui aplatit toutes les arités de liste sur la même
+ligne, c'est-à-dire précisément l'aplatissement que cette forme a été choisie pour éviter. Le parcours
+demande donc à `SplitList` — la fonction même qui découpe les valeurs pour l'analyseur et pour la
+barre — son seul compte, et jette les valeurs qu'elle retourne.
+
 **Il lui faut un champ à lui plutôt que celui de la variante.** ADR-0023 vient d'établir ce que veut
 dire une variante, et une chaîne n'est pas une porte ; réutiliser le champ rendrait vide de sens la
 seule requête qui regroupe les portes. Le motif de la variante ne pourrait pas le porter non plus —
@@ -182,6 +191,13 @@ d'identifier qu'une ligne vue mille fois. Ce qui la borne : chaque élément de 
 catalogue fermé et publié, aucun argument, adresse, identifiant ni horodatage au-delà de celui de
 l'événement n'est enregistré à côté, et la ligne ne peut être jointe à rien — la voie de recensement
 ne reconnaît personne, il n'y a donc aucune seconde ligne à laquelle la joindre.
+
+**L'arité d'une liste est un nombre choisi par le visiteur, ce que n'est aucune autre partie de la
+forme.** Un nom de méthode vient d'un catalogue fermé ; combien de valeurs quelqu'un a mises dans une
+liste, non. Cela reste un compte et non une valeur, c'est borné aux cinquante du bac à sable, et une
+chaîne assez longue pour être distinctive de cette façon perd sa forme sur la borne du champ avant
+d'atterrir. Ce que cela coûte est admis ici plutôt que laissé à découvrir : une ligne lisant
+`OneOf(?, ?, ?, …)` avec un nombre inhabituel de marques est plus rare que la même étape avec deux.
 
 **Le catalogue pourrait un jour porter un nom de méthode lui-même révélateur.** Le motif admet
 n'importe quel nom de méthode que le catalogue peut produire, parce qu'il le doit ; si un générateur

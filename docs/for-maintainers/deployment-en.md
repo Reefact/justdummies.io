@@ -1333,6 +1333,9 @@ happened. **`blob5` is the playground's chain** — the expression a visitor bui
 replaced by a question mark (ADR-0024) — and is empty on every other event, and on that one when the
 chain outran the field. A value never reaches it: the collector's pattern admits a question mark where
 an argument stands and nothing else, so an argument cannot be recorded even by a sender that tried.
+A list argument carries one mark per value rather than one per parameter, because that is what the
+line the visitor read carries — `OneOf(?, ?, ?)` was a list of three — so two rows differing only in
+their number of marks are two different list lengths and not a formatting difference.
 
 ```bash
 curl -s "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/analytics_engine/sql" \

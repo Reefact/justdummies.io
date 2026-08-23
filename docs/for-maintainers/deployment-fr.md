@@ -1373,7 +1373,10 @@ chaîne du playground** — l'expression construite par le visiteur, chaque argu
 point d'interrogation (ADR-0024) — et il est vide sur tout autre événement, ainsi que sur celui-là
 quand la chaîne a dépassé le champ. Une valeur ne l'atteint jamais : le motif du collecteur admet un
 point d'interrogation là où se tient un argument et rien d'autre, si bien qu'un argument ne peut pas
-être enregistré même par un émetteur qui essaierait.
+être enregistré même par un émetteur qui essaierait. Un argument de liste porte une marque par valeur
+plutôt qu'une par paramètre, parce que c'est ce que porte la ligne que le visiteur a lue —
+`OneOf(?, ?, ?)` était une liste de trois — si bien que deux lignes ne différant que par leur nombre
+de marques sont deux longueurs de liste et non une différence de mise en forme.
 
 ```bash
 curl -s "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/analytics_engine/sql" \

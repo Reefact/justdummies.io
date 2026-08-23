@@ -389,9 +389,24 @@
     ///     THIS IS <see cref="CodeSegments" /> DECLINING TO CALL THE FORMATTER. The same walk
     ///     over the same links, emitting the same method names and the same punctuation — and
     ///     where that one asks <c>FormatArgumentLiteral</c> what the visitor typed, this one
-    ///     writes a question mark and never reads it. So the anonymisation is not a filter run
-    ///     over a finished line: the value never exists to be filtered. §10.3 forbids persisting
-    ///     a saisie outside the browser, and nothing here assembles one.
+    ///     writes a question mark instead. So the anonymisation is not a filter run over a
+    ///     finished line: the value never exists to be filtered. §10.3 forbids persisting a
+    ///     saisie outside the browser, and nothing here assembles one.
+    ///
+    ///     A LIST ARGUMENT IS ONE FIELD AND SEVERAL ARGUMENTS, which is ADR-0016 seen from here.
+    ///     <c>OneOf</c> and <c>Except</c> take <c>params T[]</c>, and the bar spreads the field
+    ///     back into the call — <c>OneOf("red", "green", "blue")</c> — so the line a visitor
+    ///     reads carries three arguments where the catalogue names one parameter. One question
+    ///     mark per parameter would report <c>OneOf(?)</c>: a shape the bar can never draw, and
+    ///     one that flattens every list arity into a single row — the very thing ADR-0024 chose
+    ///     this form to avoid.
+    ///
+    ///     So this reads an argument, and it reads it only to count. <c>SplitList</c> is the
+    ///     same function that cuts the values for the parser and for the bar, called here for
+    ///     its <c>Count</c> alone; the values it returns are dropped where they are returned.
+    ///     What leaves the browser is a number between zero and the sandbox's fifty, never a
+    ///     value — the arity the visitor chose, which is the signal, and nothing of what is in
+    ///     it.
     ///
     ///     The declaration <see cref="CodeSegments" /> opens with is left off. It carries the
     ///     return type, which the first link already determines, and a fixed variable name —
@@ -406,12 +421,27 @@
 
                 template.Append('.').Append(chosen.MethodName).Append('(');
 
-                for (var i = 0; i < chosen.Parameters.Count; i++) {
-                    if (i > 0) {
-                        template.Append(", ");
-                    }
+                var written = 0;
 
-                    template.Append('?');
+                for (var i = 0; i < chosen.Parameters.Count; i++) {
+                    var typeKey = chosen.Parameters[i].TypeKey;
+
+                    // One placeholder per argument the bar would print: one for a scalar
+                    // parameter, and one per value for a list one. An empty list gives none,
+                    // which is what the bar prints too — `OneOf()` — so the two still agree on
+                    // a chain that was never writable.
+                    var placeholders = ArgumentParsing.IsListTypeKey(typeKey)
+                        ? ArgumentParsing.SplitList(link.Argument(i)).Count
+                        : 1;
+
+                    for (var placeholder = 0; placeholder < placeholders; placeholder++) {
+                        if (written > 0) {
+                            template.Append(", ");
+                        }
+
+                        template.Append('?');
+                        written++;
+                    }
                 }
 
                 template.Append(')');
