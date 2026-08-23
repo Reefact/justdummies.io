@@ -35,6 +35,8 @@ import { tmpdir } from 'node:os';
 import { dirname, join, posix } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { mermaidRenderer } from './lib/mermaid-render.mjs';
+
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const destination = join(root, 'apps', 'site', 'src', 'content', 'docs');
 
@@ -312,6 +314,48 @@ function rewriteLinks(markdown, { fromDir, locale, ref }) {
     });
 }
 
+const MERMAID_FENCE = /^```mermaid[ \t]*\n([\s\S]*?)^```[ \t]*$/gm;
+
+/**
+ * Every ```mermaid fence, replaced by the diagram it describes.
+ *
+ * The SVG is emitted inline rather than as a file behind `<img>`: inline text is
+ * selectable and searchable, it carries the site's own colours rather than a second copy
+ * of them, and it costs no request. `scripts/lib/mermaid-render.mjs` is what makes that
+ * survivable under `style-src 'self'`.
+ *
+ * The accessible name is derived from the heading the diagram sits under, because the
+ * upstream fences declare none and this site does not write prose for mirrored content
+ * (§7.5). A fence before any heading falls back to the topic's own title.
+ */
+async function renderDiagrams(markdown, { renderer, topicTitle, slug, locale }) {
+    const fences = [...markdown.matchAll(MERMAID_FENCE)];
+
+    if (fences.length === 0) {
+        return { markdown, count: 0 };
+    }
+
+    let out = markdown;
+    const draw = await renderer();
+
+    // Replaced last-first, so an earlier replacement cannot move a later fence's offsets.
+    for (const [position, fence] of [...fences.entries()].reverse()) {
+        const before = markdown.slice(0, fence.index);
+        const headings = [...before.matchAll(/^#{2,6}[ \t]+(.+?)[ \t]*$/gm)];
+        const section = headings.length > 0 ? headings[headings.length - 1][1] : topicTitle;
+        const svg = await draw.render(fence[1], {
+            name: section.replace(/[`*_]/g, ''),
+            id: `jd-${locale}-${slug}-${position}`.replace(/[^A-Za-z0-9-]/g, '-'),
+        });
+
+        // A blank line each side: this is raw HTML in Markdown, and without them the
+        // renderer folds it into an adjacent paragraph.
+        out = `${out.slice(0, fence.index)}\n${svg}\n${out.slice(fence.index + fence[0].length)}`;
+    }
+
+    return { markdown: out, count: fences.length };
+}
+
 const tagsByTrain = readTagsPerTrain();
 const allTagsNewestFirst = Object.values(tagsByTrain)
     .flat()
@@ -322,6 +366,17 @@ for (const [train, tags] of Object.entries(tagsByTrain)) {
 }
 
 rmSync(destination, { recursive: true, force: true });
+
+// Opened on the first diagram met and not before: a corpus with no fences must not need
+// mermaid installed, and starting Chromium costs about a second.
+let renderer = null;
+let diagramCount = 0;
+
+async function diagramRenderer() {
+    renderer ??= await mermaidRenderer({ refuse });
+
+    return renderer;
+}
 
 for (const topic of TOPICS) {
     const trainTags = tagsByTrain[topic.train];
@@ -345,8 +400,18 @@ for (const topic of TOPICS) {
         const { title, body } = extractTitleAndBody(markdown, path);
         const withoutFooter = stripFooterNav(body);
         const rewritten = rewriteLinks(withoutFooter, { fromDir: topic.section, locale, ref });
+        const drawn = await renderDiagrams(rewritten, {
+            // A function, not a renderer: `renderDiagrams` calls it only once it has found
+            // a fence, which is what keeps mermaid unneeded by a corpus that has none.
+            renderer: diagramRenderer,
+            topicTitle: title,
+            slug: topic.slug,
+            locale,
+        });
 
-        perLocale[locale] = { path, title, body: rewritten.trim() };
+        diagramCount += drawn.count;
+
+        perLocale[locale] = { path, title, body: drawn.markdown.trim() };
     }
 
     // A page whose title exists only in one language is exactly the half-translated page
@@ -380,4 +445,6 @@ for (const topic of TOPICS) {
     }
 }
 
-console.log(`  apps/site/src/content/docs/  (${TOPICS.length} topics × ${LOCALES.length} locales)`);
+await renderer?.close();
+
+console.log(`  apps/site/src/content/docs/  (${TOPICS.length} topics × ${LOCALES.length} locales, ${diagramCount} diagram(s))`);
