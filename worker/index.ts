@@ -70,17 +70,52 @@ const PLACEMENT = /^[a-z]+(?:-[a-z]+)*$/;
 const VARIANT = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /**
- * What an event with no variant is recorded as, and the reason it is empty rather
- * than a word. A word would be a value: it would sort among the real variants, it
- * would have to be excluded from every query by name, and the first reader to meet
- * it would have to find out whether `none` was a door somebody could take. Empty
- * reads as what it is — this event has no door to choose between — and ADR-0023
- * says why an event is allowed to have none.
+ * What a field an event does not have is recorded as, and the reason it is empty
+ * rather than a word. A word would be a value: it would sort among the real ones, it
+ * would have to be excluded from every query by name, and the first reader to meet it
+ * would have to find out whether `none` was a door somebody could take. Empty reads as
+ * what it is.
+ *
+ * Two fields reach it. The variant, of an event with one door and no choice to report
+ * (ADR-0023). The chain, of every event but the playground's — and of that one too when
+ * the chain outran what the field holds (ADR-0024).
  */
-const NO_VARIANT = '';
+const ABSENT = '';
 
 /** Matches the site's own locale tags without this file having to list them. */
 const LOCALE = /^[a-z]{2}$/;
+
+/**
+ * THE SHAPE OF A PLAYGROUND CHAIN, AND THE REASON IT IS A PATTERN RATHER THAN A
+ * PROMISE. §10.3 forbids the playground persisting a saisie outside the browser, and
+ * an argument is a saisie — `StartingWith("…")` accepts whatever a visitor pastes into
+ * it. ADR-0024 answers that by reporting the line they read with every argument
+ * replaced by a question mark, and this is where that stops being a convention the
+ * sender is trusted to follow.
+ *
+ * A question mark is the only thing admitted where an argument would stand. Not
+ * "arguments are stripped before sending" — that is a sentence about one sender, and
+ * this endpoint is public. A body carrying `Any.String().StartingWith("ORD-")` does not
+ * fail a comparison here; it fails to match, and is refused exactly as a malformed
+ * variant is. The guarantee holds against a sender that never read the decision.
+ *
+ * It ends in `.Generate()` because a chain that never generated a value is not an
+ * event this records, and requiring the ending costs nothing a real chain has.
+ */
+const CHAIN = /^Any(?:\.[A-Z][A-Za-z0-9]*\((?:\?(?:, \?)*)?\))*\.Generate\(\)$/;
+
+/**
+ * Longer than a name, because a chain is a line rather than a word: four or five steps
+ * with their arguments outrun the 64 above long before a visitor would call the chain
+ * unusual.
+ *
+ * KEPT IN STEP WITH THE PLAYGROUND BY HAND, like the endpoint above is kept in step
+ * with wrangler.jsonc. `Home.razor` reports no chain rather than an over-long one, and
+ * it measures against this number; if the two ever disagree in the wrong direction the
+ * event is refused outright rather than landing without its shape — the count lost as
+ * well as the detail.
+ */
+const MAX_CHAIN = 256;
 
 /**
  * The ordinal §15.3 permits as a secondary field. Bounded because it is only ever a
@@ -134,7 +169,7 @@ export default {
             return accepted;
         }
 
-        const { event, placement, variant, locale, ordinal } = payload as Record<string, unknown>;
+        const { event, placement, variant, locale, ordinal, chain } = payload as Record<string, unknown>;
 
         if (!isName(event, VARIANT) || !isName(placement, PLACEMENT)) {
             return accepted;
@@ -154,7 +189,17 @@ export default {
             return accepted;
         }
 
-        const door: string = typeof variant === 'string' ? variant : NO_VARIANT;
+        const door: string = typeof variant === 'string' ? variant : ABSENT;
+
+        // Absent on every event but the playground's, and absent on that one too when the
+        // chain outran MAX_CHAIN — ADR-0024 chooses losing the shape over losing the count,
+        // for the reason ADR-0023 made the variant optional. Present and malformed is still
+        // a refusal: a chain that does not match carries something a chain may not carry.
+        if (chain !== undefined && !(typeof chain === 'string' && chain.length <= MAX_CHAIN && CHAIN.test(chain))) {
+            return accepted;
+        }
+
+        const shape: string = typeof chain === 'string' ? chain : ABSENT;
 
         // Absent is fine, and for its own reason rather than the variant's above: §15.3
         // makes the ordinal a convenience for reading a dashboard rather than part of the
@@ -173,7 +218,7 @@ export default {
          * while doing so.
          */
         env.MEASUREMENT.writeDataPoint({
-            blobs: [event, placement, door, locale],
+            blobs: [event, placement, door, locale, shape],
             doubles: [position],
             indexes: [placement],
         });
