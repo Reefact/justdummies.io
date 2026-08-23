@@ -1,5 +1,5 @@
 ---
-title: "`JustDummies.Cli`"
+title: "JustDummies.Cli"
 section: "packages"
 slug: "justdummies-cli"
 order: 3

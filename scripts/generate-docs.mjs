@@ -194,7 +194,18 @@ function extractTitleAndBody(markdown, sourcePath) {
         refuse(`${sourcePath} does not open on a level-1 heading`);
     }
 
-    const title = lines[0].slice(2).trim();
+    // The title is used as PLAIN TEXT everywhere it lands — the page's h2, the sidebar
+    // label, the <title>, the meta description — none of which renders Markdown. Four of
+    // the package pages open on a code-span heading (`# \`JustDummies.Cli\``), which
+    // reached all four of those places with its backticks intact. Only the inline forms
+    // this corpus actually uses in a heading are unwrapped, and nothing else is touched:
+    // a heading is one line of prose, not a document to parse (§13).
+    const title = lines[0]
+        .slice(2)
+        .trim()
+        .replace(/`([^`]+)`/g, '$1')
+        .replace(/\*\*([^*]+)\*\*/g, '$1')
+        .replace(/\*([^*]+)\*/g, '$1');
     let index = 1;
 
     while (index < lines.length && lines[index].trim() === '') {
@@ -240,11 +251,16 @@ function rewriteLinks(markdown, { fromDir, locale, ref }) {
         if (resolved.startsWith(`${DOC_ROOT}/`)) {
             const rest = resolved.slice(DOC_ROOT.length + 1);
 
-            if (rest === 'README.md') {
+            // `README.md` AND `README.fr.md` alike. The corpus names its English index
+            // unsuffixed and its French one `README.fr.md`, so matching only the first form
+            // let every French index link fall through to the topic matcher below, which
+            // read `README` as a topic slug and emitted `/fr/docs/analyzers/README/` — four
+            // links to routes that do not exist. The suffix is optional, never required.
+            if (/^README(\.(en|fr))?\.md$/.test(rest)) {
                 return `[${text}](${prefix}/docs/${anchor})`;
             }
 
-            const sectionReadme = /^([a-z-]+)\/README\.md$/.exec(rest);
+            const sectionReadme = /^([a-z-]+)\/README(?:\.(?:en|fr))?\.md$/.exec(rest);
 
             if (sectionReadme !== null) {
                 return `[${text}](${prefix}/docs/${sectionReadme[1]}/${anchor})`;
