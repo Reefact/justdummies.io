@@ -50,6 +50,12 @@ jobs:
           since="$(date -u -d "-${DAYS} days" +'%Y-%m-%dT%H:%M:%SZ')"
           until_="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
 
+          # Must stay equal to the `limit:` written into both queries below. GraphQL will not
+          # accept it as a variable there, so the number is duplicated — and duplicated
+          # deliberately, because a guard compared against the wrong cap would report a
+          # truncated answer as a whole one, which is exactly what it exists to prevent.
+          group_limit=10000
+
           # One place where a response is turned into a file, so that HTTP status and the
           # GraphQL `errors` array are both checked BEFORE any caller classifies the result.
           # Checking them afterwards is how an execution failure gets reported as "no
@@ -100,9 +106,8 @@ jobs:
             viewer {
               accounts(filter: { accountTag: $accountTag }) {
                 rumPageloadEventsAdaptiveGroups(
-                  limit: 100
+                  limit: 10000
                   filter: { datetime_geq: $since, datetime_leq: $until }
-                  orderBy: [count_DESC]
                 ) {
                   dimensions { siteTag }
                 }
@@ -115,7 +120,7 @@ jobs:
             viewer {
               accounts(filter: { accountTag: $accountTag }) {
                 rumPageloadEventsAdaptiveGroups(
-                  limit: 100
+                  limit: 10000
                   filter: { siteTag: $siteTag, datetime_geq: $since, datetime_leq: $until }
                   orderBy: [count_DESC]
                 ) {
@@ -133,9 +138,20 @@ jobs:
 
           # ---- 1. Which sites reported anything at all -------------------------------
           #
-          # Grouped by siteTag alone: one row per site, so the 100-group cap cannot let a
-          # busy site crowd a quiet one out of the list, and no site's country or referrer
-          # detail is published by a run that was only meant to find an identifier.
+          # Grouped by siteTag alone: one row per site, so a busy site cannot crowd a quiet
+          # one out of the list, and no site's country or referrer detail is published by a
+          # run that was only meant to find an identifier.
+          #
+          # A CAP IS STILL A CAP, only a larger one. One row per site means one slot per
+          # site, so `limit` remains the number of sites this run can see — and a list cut
+          # short is offered to the caller as the set to choose from, which is a truncation
+          # presented as a complete answer. $group_limit below is the same number as the
+          # queries', and the row count is compared against it rather than trusted.
+          #
+          # No `orderBy` here, where the detail query has one. Ordering existed to decide what
+          # a cap would keep, and a cap this query is checked against has nothing to decide;
+          # `count_DESC` would also have ranked by a metric the selection set no longer
+          # carries, and `jq unique` sorts the tags before anyone reads them anyway.
           # shellcheck disable=SC2016
           discover_payload="$(jq -n \
             --arg query "$discover" \
@@ -160,6 +176,10 @@ jobs:
             exit 1
           fi
 
+          # Two different numbers, and the difference matters: `rows` is what the cap applies
+          # to, `tags` is what the caller is offered. Testing the deduplicated list against
+          # the cap would let a truncated response pass unnoticed.
+          rows="$(jq '[.data.viewer.accounts[]?.rumPageloadEventsAdaptiveGroups[]?] | length' discovery.json)"
           mapfile -t tags < <(jq -r \
             '[.data.viewer.accounts[]?.rumPageloadEventsAdaptiveGroups[]?.dimensions.siteTag] | unique | .[]?' \
             discovery.json)
@@ -171,6 +191,10 @@ jobs:
             if [ "${#tags[@]}" -eq 0 ]; then
               echo "None. The account returned no rows for this window at all — which, the checks above having passed, is a statement about the data rather than about the query."
             else
+              if [ "$rows" -ge "$group_limit" ]; then
+                echo "**This list is cut short.** Discovery came back with $rows groups against a cap of $group_limit, so sites past the cap are missing and the tag you want may be one of them. Narrow the window with **days** and run again."
+                echo
+              fi
               for t in "${tags[@]}"; do
                 # Double quotes with the backtick escaped: in single quotes a Markdown
                 # backtick reads as a command substitution that will never expand (SC2016).
@@ -210,10 +234,22 @@ jobs:
 
           run_query "$detail_payload" "Audience query" result.json
 
+          # The same cap, and this is where it bites first: a group here is one
+          # date/country/referrer/device combination, so a fortnight of modest traffic from a
+          # handful of countries produces them in the thousands. `orderBy: [count_DESC]` means
+          # what a cap drops is the long tail — the rare referrer, the one country that only
+          # appeared once — which is the half of an audience worth knowing about, and it would
+          # go missing without a word.
+          detail_rows="$(jq '[.data.viewer.accounts[]?.rumPageloadEventsAdaptiveGroups[]?] | length' result.json)"
+
           {
             echo
             printf -- "### Audience for \`%s\`\n" "$target"
             echo
+            if [ "$detail_rows" -ge "$group_limit" ]; then
+              echo "**These figures are cut short.** The query came back with $detail_rows groups against a cap of $group_limit, and the cap drops the least frequent combinations first — so the rarest countries and referrers are missing from what follows. Narrow the window with **days** and run again."
+              echo
+            fi
             echo "Full response is attached as the \`web-analytics-result\` artifact."
             echo '```json'
             head -c 200000 result.json
