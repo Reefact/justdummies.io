@@ -1245,8 +1245,12 @@ why there are two of them, is [ADR-0012](adr/0012-the-site-runs-one-worker-scrip
 The first two are cheap. The third is the one that matters.
 
 ```bash
-# 1 — the beacon is in the page
+# 1 — the beacon is in the page, and in the playground's own shell, which is a
+#     separate document with a separate build, and was served
+#     unmeasured until it was checked rather than assumed.
 curl -s https://justdummies.io/ | grep -c 'static.cloudflareinsights.com'      # expect 1
+curl -s https://justdummies.io/playground/ | grep -c 'static.cloudflareinsights.com'
+                                                                               # expect 1
 
 # 2 — the collector accepts a well-formed event, and only that.
 #     NOT an install-command-copied: this row is written to the same dataset as
@@ -1325,7 +1329,10 @@ order the collector writes them — `blob1` the event name, then placement, vari
 the ordinal as `double1`. **`blob3` is empty for an event that has no variant**, which is not a
 missing value but the answer: the floating download control has one destination and never two, so it
 sends none (ADR-0023). `blob2` is required of everything, so no row is ever anonymous about where it
-happened.
+happened. **`blob5` is the playground's chain** — the expression a visitor built with every argument
+replaced by a question mark (ADR-0024) — and is empty on every other event, and on that one when the
+chain outran the field. A value never reaches it: the collector's pattern admits a question mark where
+an argument stands and nothing else, so an argument cannot be recorded even by a sender that tried.
 
 ```bash
 curl -s "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/analytics_engine/sql" \

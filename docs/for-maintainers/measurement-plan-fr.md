@@ -15,7 +15,7 @@ lecteur futur devra écarter.
 
 | Voie | Ce qu'elle porte | Consentement | Qui elle couvre |
 |---|---|---|---|
-| Cloudflare Web Analytics | les visites, et si les pages se chargent vite (§15.1) | non requis | tout le monde |
+| Cloudflare Web Analytics | les visites, et si les pages se chargent vite (§15.1) | non requis | tout le monde, playground compris |
 | Le collecteur Worker sur `/_event` | les événements de sortie dimensionnés (§15.2) | non requis | tout le monde |
 | Google Analytics 4 | le parcours entre les deux (ADR-0018) | **requis** | ceux qui acceptent |
 
@@ -34,6 +34,7 @@ dénominateur est la fraction consentante — ce qui n'est pas un fait au sujet 
 |---|---|---|---|
 | `install-command-copied` | une commande est copiée | `placement`, `variant`, `ordinal` | quel moment les a convaincus, et par quelle porte ? |
 | `download-fab-clicked` | le contrôle de téléchargement flottant est cliqué | `placement` | un appel à l'action permanent sur chaque page mérite-t-il sa place ? |
+| `generate-clicked` | Générer est pressé dans le playground | `placement`, `chain` | le playground est-il utilisé, et que viennent essayer les visiteurs ? |
 
 `locale` voyage avec les deux. Les noms sont en kebab-case ici et en snake_case en voie trois parce
 que chaque voie garde sa propre convention : GA4 rapporte sur un nom d'événement qu'il utilise aussi
@@ -44,6 +45,19 @@ CLI et la console Package Manager —, et laquelle a été prise est préciséme
 contrôle de téléchargement n'en a qu'une : il n'envoie donc aucune variante, et le collecteur
 enregistre une variante vide plutôt qu'un mot inventé
 ([ADR-0023](adr/0023-un-evenement-porte-une-variante-seulement-sil-a-une-porte-a-choisir-fr.md)).
+
+**`chain` est l'expression construite par le visiteur, chaque argument remplacé par un point
+d'interrogation** — `Any.String().StartingWith(?).Generate()`. Jamais une valeur : §10.3 interdit au
+playground de persister une saisie hors du navigateur, et un argument en est une
+([ADR-0024](adr/0024-le-playground-rapporte-la-forme-dune-chaine-pas-ses-valeurs-fr.md)). C'est le
+seul champ ici qui ne soit pas un nom : il a donc son propre motif — un motif qui admet un point
+d'interrogation là où se tiendrait un argument et rien d'autre, ce qui fait de l'anonymisation une
+garantie plutôt qu'une convention. Il est absent, comme peut l'être une variante, quand la chaîne est
+plus longue que ce que le champ tient : la pression compte toujours, seule sa forme est perdue.
+
+**Lire la chaîne comme une longue traîne.** Une chaîne de quatre étapes tirée d'un catalogue de
+plusieurs dizaines est une forme qui peut n'apparaître qu'une fois. Les lignes qui se regroupent
+proprement sont les chaînes courtes ; la dispersion est le signal, pas un défaut.
 
 **Le contrôle de téléchargement rapporte la section d'où il a été cliqué**, pas la page exacte —
 `home`, `api`, `release-notes`, `not-found`. C'est la granularité à laquelle la décision se prend : un
@@ -137,15 +151,12 @@ Regrouper par `scene_name` ; ne lire `scene_ordinal` que pour trier un tableau.
 * **Rien de ce qui est saisi dans le playground.** §15.1 énonce que ce qui y est tapé n'est jamais
   enregistré, et le playground tourne entièrement dans le navigateur — il n'y a aucun serveur à qui
   l'envoyer.
-* **Rien du tout depuis `/playground/` — les pages vues comprises — et celui-là est un manque, pas
-  une décision.** C'est un document Blazor séparé avec sa propre coquille, et cette coquille ne porte
-  ni balise d'audience, ni tag analytique, ni bandeau de consentement, ni script collecteur : aucune
-  des trois voies ne l'atteint. Son propre contrôle de téléchargement flottant (`DownloadFab.razor`)
-  n'est pas compté pour la même raison. **N'instrumenter que ce contrôle rendrait les chiffres pires,
-  pas meilleurs** — ses clics tomberaient au numérateur pendant que ses visites resteraient hors de
-  tout dénominateur, ce qui est exactement le taux illisible contre lequel la première section de ce
-  plan met en garde. Combler ce manque veut dire donner au playground les trois voies, bandeau de
-  consentement compris, ce qui est une décision à part entière.
+* **Le contrôle de téléchargement flottant propre au playground, pour l'instant.** `/playground/` est
+  un document Blazor séparé qui rend son propre `DownloadFab.razor`, lequel ne porte aucun
+  emplacement : ses clics n'atteignent donc aucune des deux voies, alors que le même contrôle est
+  compté partout ailleurs. C'est nommé ici plutôt que laissé à découvrir, et c'est désormais la plus petite
+  moitié du manque : le document porte la balise d'audience, donc ses visites sont au dénominateur,
+  et il ne manque que le numérateur.
 * **Aucun signal publicitaire, jamais.** Ils sont refusés en permanence au lieu de suivre le
   consentement, et la politique de contenu ne nomme aucun hôte publicitaire, si bien qu'un changement
   d'avis fait échouer un contrôle plutôt que d'être livré.
