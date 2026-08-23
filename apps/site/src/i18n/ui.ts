@@ -279,7 +279,7 @@ const en = {
         "It's published by REEFACT, a single-member SARL registered under SIREN number 804 026 482, headquartered at 134 rue de Chevilly, 94240 L'Haÿ-les-Roses, France, represented by its manager Sylvain Aurat.",
     'privacy.consent.label': 'Google Analytics, if you allow it.',
     'privacy.consent.body':
-        "To understand how this page is actually read — which moment convinces someone, where people stop — the site can use Google Analytics. It is off until you accept it, and if you never do, nothing about you reaches Google. If you accept, it stores a cookie holding a random identifier, so that two visits from the same browser count as one reader rather than two, and Google becomes a second processor alongside Cloudflare, with the transfers outside the European Union that this implies. What it records is how you move through the page: the scenes you reach, the install command you copy, the tool you compare us against — and, on the API pages, the words you type into the search box, because what readers look for and fail to find is the most useful thing this site can learn. It is configured never to feed advertising, and what it collects about you is erased fourteen months after your last visit. You can change your mind at any time, here:",
+        "To understand how this page is actually read — which moment convinces someone, where people stop — the site can use Google Analytics. It is off until you accept it, and if you never do, nothing about you reaches Google. If you accept, it stores a cookie holding a random identifier, so that two visits from the same browser count as one reader rather than two, and Google becomes a second processor alongside Cloudflare, with the transfers outside the European Union that this implies. What it records is how you move through the page: the scenes you reach, the install command you copy, the download button you press, the tool you compare us against — and, on the API pages, the words you type into the search box, because what readers look for and fail to find is the most useful thing this site can learn. It is configured never to feed advertising, and what it collects about you is erased fourteen months after your last visit. You can change your mind at any time, here:",
     'privacy.consent.change': 'Change your choice',
     'privacy.rights.label': 'Your rights.',
     'privacy.rights.body':
@@ -287,7 +287,7 @@ const en = {
     /** The same, for a build where there is no "above" to refuse. */
     'privacy.rights.bodyWithoutAnalytics':
         "This site collects nothing that identifies you individually, so there is in practice nothing to correct or delete about you. For any question on this, write to privacy@reefact.net.",
-    'privacy.updated': 'Last updated: August 17, 2026.',
+    'privacy.updated': 'Last updated: August 22, 2026.',
 
     /**
      * The consent banner (`ConsentBanner.astro`). It speaks only about Google: the
@@ -883,14 +883,14 @@ const fr: Record<UiKey, string> = {
         "Il est édité par REEFACT, SARL unipersonnelle immatriculée sous le numéro SIREN 804 026 482, dont le siège est situé 134 rue de Chevilly, 94240 L'Haÿ-les-Roses, représentée par son gérant Sylvain Aurat.",
     'privacy.consent.label': "Google Analytics, si vous l'autorisez.",
     'privacy.consent.body':
-        "Pour comprendre comment cette page est réellement lue — quel moment convainc, où l'on s'arrête —, le site peut utiliser Google Analytics. Il est éteint tant que vous ne l'avez pas accepté, et si vous ne l'acceptez jamais, rien vous concernant n'arrive chez Google. Si vous l'acceptez, il dépose un cookie contenant un identifiant aléatoire, afin que deux visites depuis le même navigateur comptent pour un lecteur et non pour deux, et Google devient un second sous-traitant aux côtés de Cloudflare, avec les transferts hors de l'Union européenne que cela implique. Ce qu'il enregistre, c'est votre progression dans la page : les scènes que vous atteignez, la commande d'installation que vous copiez, l'outil auquel vous nous comparez — et, sur les pages d'API, les mots que vous tapez dans le champ de recherche, parce que ce que les lecteurs cherchent sans le trouver est la chose la plus utile que ce site puisse apprendre. Il est configuré pour ne jamais alimenter la publicité, et ce qu'il collecte à votre sujet est effacé quatorze mois après votre dernière visite. Vous pouvez changer d'avis à tout moment, ici :",
+        "Pour comprendre comment cette page est réellement lue — quel moment convainc, où l'on s'arrête —, le site peut utiliser Google Analytics. Il est éteint tant que vous ne l'avez pas accepté, et si vous ne l'acceptez jamais, rien vous concernant n'arrive chez Google. Si vous l'acceptez, il dépose un cookie contenant un identifiant aléatoire, afin que deux visites depuis le même navigateur comptent pour un lecteur et non pour deux, et Google devient un second sous-traitant aux côtés de Cloudflare, avec les transferts hors de l'Union européenne que cela implique. Ce qu'il enregistre, c'est votre progression dans la page : les scènes que vous atteignez, la commande d'installation que vous copiez, le bouton de téléchargement que vous pressez, l'outil auquel vous nous comparez — et, sur les pages d'API, les mots que vous tapez dans le champ de recherche, parce que ce que les lecteurs cherchent sans le trouver est la chose la plus utile que ce site puisse apprendre. Il est configuré pour ne jamais alimenter la publicité, et ce qu'il collecte à votre sujet est effacé quatorze mois après votre dernière visite. Vous pouvez changer d'avis à tout moment, ici :",
     'privacy.consent.change': 'Modifier votre choix',
     'privacy.rights.label': 'Vos droits.',
     'privacy.rights.body':
         "Si vous n'avez jamais accepté Google Analytics, ce site ne détient rien qui vous identifie individuellement, et il n'y a en pratique rien à corriger ou à effacer vous concernant. Si vous l'avez accepté, le refuser ci-dessus arrête la collecte à partir de cet instant ; pour faire effacer ce qui a déjà été collecté, ou pour toute autre question, écrivez à privacy@reefact.net.",
     'privacy.rights.bodyWithoutAnalytics':
         "Ce site ne collecte aucune donnée qui vous identifie individuellement, il n'y a donc en pratique rien à corriger ou à effacer vous concernant. Pour toute question sur ce point, écrivez à privacy@reefact.net.",
-    'privacy.updated': 'Dernière mise à jour : 17 août 2026.',
+    'privacy.updated': 'Dernière mise à jour : 22 août 2026.',
 
     'consent.heading': 'Comment cette page est lue.',
     'consent.body':

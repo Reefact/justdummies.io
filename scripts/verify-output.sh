@@ -521,6 +521,13 @@ fi
 # PER PAGE, unlike the checks above. The control is deliberately absent from /download/
 # itself (ADR-0004 applied to navigation), so what is asserted is a conditional — a page
 # that draws one must mark it — rather than a count.
+#
+# IT SEES THE ARTEFACT, WHICH IS NOT EVERY CONTROL ON THE SITE. The playground draws its
+# own counterpart (DownloadFab.razor) at run time, from a shell this scan finds empty, so
+# nothing here covers it — and nothing needs to yet: that document carries no lane at all,
+# beacon and consent banner included. The measurement plan names that gap under what is
+# not measured, so this comment is the second half of the same admission rather than the
+# only place it is written down.
 # shellcheck disable=SC2046  # deliberate: each HTML path becomes its own argv entry for node's process.argv.slice(1)
 unmarked="$(node -e '
   const { readFileSync } = require("node:fs");
