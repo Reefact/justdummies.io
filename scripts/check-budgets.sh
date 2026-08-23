@@ -51,10 +51,18 @@ report "largest asset" "$(kib "${largest_bytes}") — ${largest_path#"${dist}"/}
 # resource in the landing page's critical path, and a visitor who only reads the
 # presentation never downloads the runtime. Measured compressed, which is how it
 # travels.
+#
+# consent.js is counted alongside them although it is not under _astro/: it is served
+# from public/ so that both applications can name one address (ADR-0025), and a budget
+# that skipped it would read as complete while being short by a file every page loads.
+# Named rather than globbed, so the next unfingerprinted asset has to be added here
+# deliberately rather than joining the figure unnoticed.
 landing_js=0
 while IFS= read -r asset; do
   landing_js=$((landing_js + $(gzip -c "${asset}" | wc -c)))
 done < <(find "${dist}/_astro" -name '*.js' 2>/dev/null || true)
+
+[ -f "${dist}/consent.js" ] && landing_js=$((landing_js + $(gzip -c "${dist}/consent.js" | wc -c)))
 report "landing page JavaScript (gzipped)" "$(kib "${landing_js}") / $(kib "${MAX_LANDING_JS_BYTES}")"
 [ "${landing_js}" -le "${MAX_LANDING_JS_BYTES}" ] || fail "the landing page's JavaScript exceeds its budget"
 
