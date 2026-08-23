@@ -39,15 +39,24 @@ const shell = join(root, 'dist', 'playground', 'index.html');
  */
 const MARKER = '<!--jd:measurement-->';
 
-const token = (process.env.PUBLIC_CF_BEACON_TOKEN ?? '').trim();
-
-const html = readFileSync(shell, 'utf8');
-
-if (!html.includes(MARKER)) {
-    console.error(`write-playground-measurement: ${MARKER} is missing from the playground shell.`);
-    console.error('  apps/playground/wwwroot/index.html declares it; the publish copies it verbatim.');
-    console.error('  Without it the playground is served unmeasured, which is what this step exists to prevent.');
-    process.exit(1);
+/**
+ * The token, made safe to sit inside a double-quoted HTML attribute.
+ *
+ * `&` first, or the escape would escape its own output. `<` and `>` cannot end an
+ * attribute and are escaped anyway: a value that leaks into a context this file did not
+ * anticipate should be inert there too, and the cost is four characters.
+ *
+ * The token is ours and none of this is likely; the point is that a token which did
+ * carry a quote would corrupt the document rather than be reported, and a corrupted
+ * shell is a playground that serves nothing.
+ */
+export function asAttribute(value) {
+    return value
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
 }
 
 /**
@@ -69,30 +78,124 @@ if (!html.includes(MARKER)) {
  * embedding added later is covered without this file learning its address, and the check
  * is safe across origins where reading `frameElement` would throw.
  *
+ * THE TOKEN TRAVELS ON AN ATTRIBUTE, NOT IN THE BODY, which is the rule
+ * `GoogleAnalytics.astro` states for the analytics id and it holds for the same reason
+ * here. The content policy names a hash of each inline script's body, computed from the
+ * built artefact; a body carrying the token would mean a new hash on the day the token is
+ * rotated, and a policy that has to be regenerated for a value that is not code. Read
+ * from `dataset` instead, this body is byte-identical across every build and every
+ * account, and the only thing that changes is an attribute the hash never sees.
+ *
  * THE HOST IS STILL WRITTEN LITERALLY, which is load-bearing twice over:
  * `generate-headers.mjs` grants the beacon's hosts to a document that names them, and
  * `verify-output.sh` asserts the shell and the site's pages agree. Both read the string.
- *
- * The token is embedded through JSON.stringify twice — once for the attribute's JSON,
- * once for the JavaScript string literal holding it — so a token carrying a quote cannot
- * break out of either. The token is ours and the risk is theoretical; the alternative was
- * a template literal that would have looked equally correct while being one bad character
- * away from a broken document.
  */
-const beacon = token === ''
-    ? ''
-    : `<script>
-        if (window.self === window.top) {
+export function beaconTag(token) {
+    return token === ''
+        ? ''
+        : `<script data-cf-beacon-token="${asAttribute(token)}">
+        (function () {
+            var tag = document.currentScript;
+            var token = tag && tag.dataset ? tag.dataset.cfBeaconToken : '';
+
+            if (!token || window.self !== window.top) {
+                return;
+            }
+
             var beacon = document.createElement('script');
             beacon.defer = true;
             beacon.src = 'https://static.cloudflareinsights.com/beacon.min.js';
-            beacon.setAttribute('data-cf-beacon', ${JSON.stringify(JSON.stringify({ token }))});
+            beacon.setAttribute('data-cf-beacon', JSON.stringify({ token: token }));
             document.head.appendChild(beacon);
-        }
+        })();
     </script>`;
+}
 
-writeFileSync(shell, html.replace(MARKER, beacon), 'utf8');
+/**
+ * The slot filled, as a value rather than as a file.
+ *
+ * A FUNCTION AS THE REPLACEMENT, NOT A STRING. `String.prototype.replace` reads `$&`,
+ * `$'` and their siblings out of a replacement string, so a token carrying one of them
+ * would splice part of this document into itself instead of the literal value — and the
+ * escaping above cannot help, because `&` escapes to `&amp;` and `$&amp;` still starts
+ * with a pattern. A function's return value is used as-is, which is the only form of
+ * this call that means what it looks like it means.
+ */
+export function fill(html, token) {
+    return html.replace(MARKER, () => beaconTag(token));
+}
 
-console.log(token === ''
-    ? '  no beacon token, so the playground shell measures nobody — as every page of this build does'
-    : '  dist/playground/index.html  (audience beacon written in)');
+/** Fills the shell's slot, in place. The step build-site.sh runs. */
+function write() {
+    const token = (process.env.PUBLIC_CF_BEACON_TOKEN ?? '').trim();
+    const html = readFileSync(shell, 'utf8');
+
+    if (!html.includes(MARKER)) {
+        console.error(`write-playground-measurement: ${MARKER} is missing from the playground shell.`);
+        console.error('  apps/playground/wwwroot/index.html declares it; the publish copies it verbatim.');
+        console.error('  Without it the playground is served unmeasured, which is what this step exists to prevent.');
+        process.exit(1);
+    }
+
+    writeFileSync(shell, fill(html, token), 'utf8');
+
+    console.log(token === ''
+        ? '  no beacon token, so the playground shell measures nobody — as every page of this build does'
+        : '  dist/playground/index.html  (audience beacon written in)');
+}
+
+/** Everything between the tag's `>` and its `</script>` — what the policy hashes. */
+function bodyOf(tag) {
+    return tag.slice(tag.indexOf('>') + 1, tag.lastIndexOf('</script>'));
+}
+
+/**
+ * The rules above, asserted — the shape `lib/inline-scripts.mjs` uses, and for its
+ * reason: a paragraph explaining why the token sits on an attribute is not something a
+ * later edit trips over, and both of the defects these cover were found by reading the
+ * output rather than by anything going red.
+ *
+ * The hash rule is the load-bearing one. `generate-headers.mjs` names a sha256 of each
+ * inline script's body, so the day the body starts carrying the token is the day the
+ * policy has to be regenerated for a value that is not code.
+ */
+const CASES = [
+    ['no token writes nothing at all', () => beaconTag('') === ''],
+    [
+        'the body does not carry the token, so its hash does not move',
+        () => bodyOf(beaconTag('token-one')) === bodyOf(beaconTag('a-completely-different-token-9999')),
+    ],
+    ['the host is still written literally', () => beaconTag('t').includes('https://static.cloudflareinsights.com/beacon.min.js')],
+    [
+        'a token carrying a replacement pattern lands literally',
+        () => beaconTag('ab$&cd').includes('data-cf-beacon-token="ab$&amp;cd"'),
+    ],
+    ['a token carrying a quote cannot end its attribute', () => beaconTag('a"b').includes('data-cf-beacon-token="a&quot;b"')],
+    [
+        'and does not splice the document into itself on the way in',
+        () => !fill(`<head>${MARKER}</head>`, 'ab$&cd').includes(MARKER),
+    ],
+];
+
+function selfTest() {
+    const broken = CASES.filter(([, holds]) => !holds()).map(([name]) => name);
+
+    for (const name of broken) {
+        console.error(`  ✗ ${name}`);
+    }
+
+    if (broken.length > 0) {
+        console.error(`write-playground-measurement: ${broken.length} of ${CASES.length} rules broken.`);
+        process.exit(1);
+    }
+
+    console.log(`  ✓ the playground beacon keeps the token off its hashed body (${CASES.length} rules)`);
+}
+
+if (process.argv[1] === new URL(import.meta.url).pathname) {
+    if (process.argv[2] === '--self-test') {
+        selfTest();
+    } else {
+        write();
+    }
+}
