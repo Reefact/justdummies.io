@@ -117,6 +117,26 @@ test.describe('the playground’s census event', () => {
 });
 
 /**
+ * WHERE THE BEACON LOADS FROM, AND WHY THIS IS A HOSTNAME RATHER THAN A SUBSTRING.
+ * `support/harness.ts` already states the rule for these two checks and this file did
+ * not follow it: a URL *containing* `static.cloudflareinsights.com` is not a request to
+ * that host — `https://elsewhere.invalid/?ref=static.cloudflareinsights.com` contains it
+ * and is somebody else. Compared against the parsed hostname, the predicate says what it
+ * means, which is also how `consent.spec.ts` and `download-fab.spec.ts` ask their
+ * version of this question.
+ */
+const BEACON_HOST = 'static.cloudflareinsights.com';
+
+/**
+ * AND WHAT SAYS A DOCUMENT CARRIES THE BEACON, which is not a host at all — it is the
+ * tag's own attribute. `generate-headers.mjs` gives the reason where it reads the
+ * analytics tag: a host is a string a page could one day mention in prose, a privacy
+ * page naming its subprocessors say, and a check that reads one cannot tell a tag from a
+ * paragraph. The attribute appears on the tag and nowhere else.
+ */
+const BEACON_TAG = 'data-cf-beacon';
+
+/**
  * The framed hero, which is the same shell at a second address.
  *
  * `_redirects` rewrites `/playground/hero` to `/playground/` with a 200, so both routes are
@@ -134,7 +154,7 @@ test.describe('the framed hero', () => {
         const beacons: string[] = [];
 
         page.on('request', (request: Request) => {
-            if (request.url().includes('static.cloudflareinsights.com')) {
+            if (new URL(request.url()).hostname === BEACON_HOST) {
                 beacons.push(request.url());
             }
         });
@@ -143,7 +163,7 @@ test.describe('the framed hero', () => {
 
         const html: string = await page.content();
 
-        test.skip(!html.includes('static.cloudflareinsights.com'), 'this artefact was built without a beacon token');
+        test.skip(!html.includes(BEACON_TAG), 'this artefact was built without a beacon token');
 
         // The landing page is a document a visitor navigated to, so it reports — and its
         // request is the baseline the assertion below is measured against.
