@@ -26,6 +26,7 @@
 // the only thing that reliably knows what an element ended up looking like is the engine
 // that laid it out. Nothing of mermaid's is matched or reimplemented, so a mermaid upgrade
 // changes the input to this, never its correctness.
+import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -116,6 +117,50 @@ function withAccessibleName(source, name) {
     return lines.join('\n');
 }
 
+/**
+ * mermaid, fetched if it is not already here.
+ *
+ * WHY THIS INSTALLS RATHER THAN TELLING SOMEBODY TO. `scripts/mermaid/node_modules` is
+ * gitignored and every environment this repository is worked in is a fresh checkout, so
+ * "install it once" is not once — it is once per machine, per container, per clone, and it
+ * lands on whoever happens to be refreshing the mirror at the time. A prerequisite that has
+ * to be remembered is a prerequisite that will be forgotten, and the symptom is a refusal
+ * in the middle of a regeneration rather than anything a reader of this file would predict.
+ *
+ * It is a narrow thing to do automatically and stays narrow: `npm ci` installs exactly what
+ * `scripts/mermaid/package-lock.json` pins — no resolution, no drift, nothing new decided
+ * here — into a directory outside the pnpm workspace that nothing else reads. It runs only
+ * once a diagram has actually been met, so a corpus with no fences never pays for it, and
+ * CI never reaches this path at all: the SVG it produces is committed.
+ *
+ * It says what it is doing. An 84 MB download that happens in silence is worse than one
+ * that announces itself, and the manual command stays in the failure message for the case
+ * this cannot help with — no network, no npm.
+ */
+function installMermaidIfMissing(refuse) {
+    if (existsSync(MERMAID_BUNDLE)) {
+        return;
+    }
+
+    console.log('  mermaid is not installed here — fetching it (npm ci, scripts/mermaid, once per checkout)…');
+
+    try {
+        execFileSync('npm', ['ci', '--prefix', MERMAID_DIR, '--no-audit', '--no-fund'], {
+            stdio: ['ignore', 'ignore', 'pipe'],
+        });
+    } catch (cause) {
+        refuse(
+            `mermaid could not be installed, and the mirror carries diagrams that need it: ${cause.stderr?.toString().trim() || cause.message}. ` +
+                'Install it by hand with `npm ci --prefix scripts/mermaid` — it sits outside the pnpm workspace on purpose, ' +
+                'so that CI never resolves it (see scripts/mermaid/package.json).',
+        );
+    }
+
+    if (!existsSync(MERMAID_BUNDLE)) {
+        refuse(`npm reported success but ${MERMAID_BUNDLE} is still not there.`);
+    }
+}
+
 function resolveChromium(refuse) {
     if (process.env.JD_CHROMIUM !== undefined) {
         return process.env.JD_CHROMIUM;
@@ -141,13 +186,7 @@ function resolveChromium(refuse) {
  * `render(code, { name, id })` answers with ready-to-embed SVG markup.
  */
 export async function mermaidRenderer({ refuse }) {
-    if (!existsSync(MERMAID_BUNDLE)) {
-        refuse(
-            'mermaid is not installed, and the mirror carries diagrams that need it. ' +
-                'Run `npm install --prefix scripts/mermaid` once — it is deliberately outside the pnpm workspace ' +
-                'so that CI never installs it (see scripts/mermaid/package.json).',
-        );
-    }
+    installMermaidIfMissing(refuse);
 
     const { chromium } = require_(join(root, 'node_modules', '@playwright', 'test'));
     const browser = await chromium.launch({ executablePath: resolveChromium(refuse) });
