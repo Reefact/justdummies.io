@@ -2,9 +2,17 @@
 
 🌍 🇫🇷 Français (ce fichier) · 🇬🇧 [English](0026-docs-topics-pin-to-the-tag-of-the-train-that-owns-them-en.md)
 
-**Statut :** Proposé
+**Statut :** Accepté
 **Proposé le :** 2026-08-23
+**Accepté le :** 2026-08-23
 **Décideurs :** Reefact
+
+> **Cette fiche remplace en partie
+> [ADR-0013](0013-le-contenu-repris-de-la-bibliotheque-est-epingle-a-un-tag-fr.md).** La règle de
+> l'ADR-0013 selon laquelle le contenu repris est épinglé à un *tag de release publié* tient, et
+> c'est ce que cette fiche resserre plutôt qu'elle ne relâche. Ce qu'elle remplace, c'est l'exigence
+> que tout `/docs` soit pris à **un seul** de ces tags : la Justification ci-dessous dit pourquoi, et
+> l'ADR-0013 porte la note correspondante.
 
 ## Contexte
 
@@ -57,9 +65,9 @@ affirmait deux fois le contraire et que les deux affirmations étaient fausses. 
 rafraîchir que les pages CLI » et que « le corpus fait une centaine de fichiers texte » — et
 `/release-notes` n'épingle pas non plus par train : `generate-release-notes.mjs` prend
 `const ref = tags[0]` et lit les quatre trains à ce ref unique, ce que le Contexte de cette fiche
-énonce correctement. Il s'agit donc d'une supersession partielle de l'ADR-0013, et elle doit gagner
-l'argument que l'ADR-0013 a réellement avancé plutôt qu'un argument visant ailleurs. Savoir si elle
-y parvient revient au mainteneur ; c'est à cela que sert le statut `Proposé`.
+énonce correctement. Il s'agit donc d'un remplacement partiel de l'ADR-0013, et il doit gagner
+l'argument que l'ADR-0013 a réellement avancé plutôt qu'un argument visant ailleurs. La suite de
+cette section est cet argument, et c'est lui que le mainteneur a ratifié en acceptant cette fiche.
 
 L'argument de l'ADR-0013 est que composer plusieurs refs publie des pages dont les liens
 inter-pages ont passé en amont une vérification qui n'a jamais tourné sur la combinaison. Ce coût est

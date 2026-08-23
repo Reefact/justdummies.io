@@ -2,9 +2,16 @@
 
 🌍 🇬🇧 English (this file) · 🇫🇷 [Français](0026-les-sujets-de-docs-sepinglent-au-tag-du-train-qui-les-possede-fr.md)
 
-**Status:** Proposed
+**Status:** Accepted
 **Proposed:** 2026-08-23
+**Accepted:** 2026-08-23
 **Decision Makers:** Reefact
+
+> **This record supersedes [ADR-0013](0013-mirrored-library-content-is-pinned-to-a-release-tag-en.md)
+> in part.** ADR-0013's rule that mirrored content is pinned to a *published release tag* stands and
+> is what this record narrows rather than loosens. What it replaces is the requirement that the whole
+> of `/docs` be taken at **one** such tag: the Rationale below argues why, and ADR-0013 carries the
+> matching note.
 
 ## Context
 
@@ -51,8 +58,8 @@ CLI release could refresh the CLI pages alone" and that "the corpus is a hundred
 `/release-notes` does not pin per train either: `generate-release-notes.mjs` takes `const ref =
 tags[0]` and reads all four trains at that one ref, which this record's own Context states
 correctly. So this is a partial supersession of ADR-0013, and it has to win the argument ADR-0013
-actually made rather than one aimed elsewhere. Whether it does is the maintainer's call; that is
-what `Proposed` is for.
+actually made rather than one aimed elsewhere. The rest of this section is that argument, and it is
+what the maintainer ratified in accepting this record.
 
 ADR-0013's argument is that composing several refs publishes pages whose cross-page links passed an
 upstream check that was never run on the combination. That cost is real and this change pays it: the

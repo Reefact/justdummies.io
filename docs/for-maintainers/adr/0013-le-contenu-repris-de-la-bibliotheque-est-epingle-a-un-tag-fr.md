@@ -2,10 +2,20 @@
 
 🌍 🇫🇷 Français (ce fichier) · 🇬🇧 [English](0013-mirrored-library-content-is-pinned-to-a-release-tag-en.md)
 
-**Statut :** Accepté
+**Statut :** Accepté — remplacé en partie par
+[ADR-0026](0026-les-sujets-de-docs-sepinglent-au-tag-du-train-qui-les-possede-fr.md)
 **Proposé le :** 2026-08-16
 **Accepté le :** 2026-08-16
 **Décideurs :** Reefact
+
+> **Ce que l'ADR-0026 a remplacé, et ce qu'il n'a pas remplacé.** La moitié qui disparaît est *un
+> instantané à un seul tag* — l'atomicité que cette fiche défend sous « Reprendre par train, ou par
+> section », et la raison qu'elle donne pour rejeter cette alternative. `/docs` épingle désormais
+> chaque sujet au train qui le possède, si bien que l'instantané couvre plusieurs tags. La moitié qui
+> tient est celle pour laquelle cette fiche a été écrite, et c'est la porteuse : le contenu repris est
+> épinglé à un **tag de release publié**, jamais à une branche, afin que la documentation et la
+> commande d'installation nomment un seul artefact. L'ADR-0026 resserre *quel* tag une page prend ;
+> il ne rouvre pas la question de savoir si c'est bien à un tag qu'une reprise s'épingle.
 
 ## Contexte
 
