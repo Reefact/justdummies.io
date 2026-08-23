@@ -23,7 +23,7 @@
 // rather than measuring into the wrong account (ADR-0004 applied to something invisible).
 // There is no validation to share with the site here, because the site validates nothing
 // about this token either — it is rendered into every page and meant to be read.
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -112,6 +112,93 @@ export function beaconTag(token) {
 }
 
 /**
+ * The attribute `GoogleAnalytics.astro` puts the measurement id on, and the one thing that
+ * identifies its tag in a built page. `generate-headers.mjs` looks for the same string, and
+ * says why it looks for the attribute rather than for the host.
+ */
+const ANALYTICS_TAG_MARKER = 'data-jd-analytics';
+
+/**
+ * The site's analytics tag, lifted out of a built page whole.
+ *
+ * WHY LIFTED RATHER THAN WRITTEN AGAIN. That tag is the promise ADR-0018 made: it declares
+ * every consent signal denied, it loads no Google script until `jdAnalyticsStart` is called,
+ * and its withdrawal path raises Google's own opt-out flag rather than merely revoking the
+ * signal. A second copy of it in this file would be a second copy of that promise, free to
+ * drift from the first — and the drift would be silent in the worst direction. Copying the
+ * bytes keeps one implementation.
+ *
+ * IT IS THE SAME BYTES ON EVERY PAGE, which is not luck. `GoogleAnalytics.astro` puts the id
+ * on an attribute and never in the body, precisely so that the body is identical everywhere
+ * and exactly one hash of it ever enters the content policy. That is what makes a page an
+ * interchangeable source for this, and what makes the copy cost the policy nothing:
+ * `generate-headers.mjs` runs after this step, hashes every document, and finds the hash it
+ * already had.
+ *
+ * @param {string} html a document that may carry the tag
+ * @returns {string} the tag, opening angle bracket to closing tag, or '' when there is none
+ */
+export function analyticsTagIn(html) {
+    const marker = html.indexOf(ANALYTICS_TAG_MARKER);
+
+    if (marker === -1) {
+        return '';
+    }
+
+    // Walked outwards from the attribute rather than matched with a pattern: an attribute is
+    // a fixed string in a place a regex would have to guess at, and the two ends are
+    // unambiguous. A `</script>` cannot appear inside the body — the tag has no string
+    // literal that could carry one — so the first one after the attribute is this tag's.
+    const opening = html.lastIndexOf('<script', marker);
+    const closing = html.indexOf('</script>', marker);
+
+    if (opening === -1 || closing === -1) {
+        return '';
+    }
+
+    return html.slice(opening, closing + '</script>'.length);
+}
+
+/** Every `.html` under a directory, the playground's own excluded. */
+function siteDocuments(directory) {
+    const found = [];
+
+    for (const entry of readdirSync(directory)) {
+        const path = join(directory, entry);
+
+        if (statSync(path).isDirectory()) {
+            if (path !== join(root, 'dist', 'playground')) {
+                found.push(...siteDocuments(path));
+            }
+        } else if (entry.endsWith('.html')) {
+            found.push(path);
+        }
+    }
+
+    return found;
+}
+
+/**
+ * The tag this build's own pages carry, or '' when they carry none.
+ *
+ * ASKED OF THE ARTEFACT RATHER THAN OF THE ENVIRONMENT, which is the rule the beacon check in
+ * `verify-output.sh` already applies: what must never happen is the two halves of one site
+ * disagreeing about whether it is measured. Reading the built pages means the shell agrees
+ * with them by construction rather than by two conditions that happen to match today.
+ */
+function analyticsTagFromSite() {
+    for (const document of siteDocuments(join(root, 'dist'))) {
+        const tag = analyticsTagIn(readFileSync(document, 'utf8'));
+
+        if (tag !== '') {
+            return tag;
+        }
+    }
+
+    return '';
+}
+
+/**
  * The slot filled, as a value rather than as a file.
  *
  * A FUNCTION AS THE REPLACEMENT, NOT A STRING. `String.prototype.replace` reads `$&`,
@@ -121,8 +208,8 @@ export function beaconTag(token) {
  * with a pattern. A function's return value is used as-is, which is the only form of
  * this call that means what it looks like it means.
  */
-export function fill(html, token) {
-    return html.replace(MARKER, () => beaconTag(token));
+export function fill(html, token, analyticsTag = '') {
+    return html.replace(MARKER, () => beaconTag(token) + analyticsTag);
 }
 
 /** Fills the shell's slot, in place. The step build-site.sh runs. */
@@ -137,11 +224,17 @@ function write() {
         process.exit(1);
     }
 
-    writeFileSync(shell, fill(html, token), 'utf8');
+    const analyticsTag = analyticsTagFromSite();
 
-    console.log(token === ''
-        ? '  no beacon token, so the playground shell measures nobody — as every page of this build does'
-        : '  dist/playground/index.html  (audience beacon written in)');
+    writeFileSync(shell, fill(html, token, analyticsTag), 'utf8');
+
+    const written = [token === '' ? null : 'audience beacon', analyticsTag === '' ? null : 'analytics tag'].filter(
+        (part) => part !== null,
+    );
+
+    console.log(written.length === 0
+        ? '  no measurement configured, so the playground shell measures nobody — as every page of this build does'
+        : `  dist/playground/index.html  (${written.join(' and ')} written in)`);
 }
 
 /** Everything between the tag's `>` and its `</script>` — what the policy hashes. */
@@ -175,7 +268,27 @@ const CASES = [
         'and does not splice the document into itself on the way in',
         () => !fill(`<head>${MARKER}</head>`, 'ab$&cd').includes(MARKER),
     ],
+    ['a document with no analytics tag yields none', () => analyticsTagIn('<p>nothing here</p>') === ''],
+    [
+        'a tag is lifted whole, its attribute with it',
+        () => analyticsTagIn(`<p>x</p>${ANALYTICS_TAG}<p>y</p>`) === ANALYTICS_TAG,
+    ],
+    [
+        'and is lifted past a script that came before it',
+        () => analyticsTagIn(`<script>var a = 1;</script>${ANALYTICS_TAG}`) === ANALYTICS_TAG,
+    ],
+    [
+        'the slot carries both when both are configured',
+        () => {
+            const filled = fill(MARKER, 'a-token', ANALYTICS_TAG);
+
+            return filled.includes('data-cf-beacon-token="a-token"') && filled.includes(ANALYTICS_TAG);
+        },
+    ],
 ];
+
+/** A tag shaped like the one `GoogleAnalytics.astro` renders, for the rules above. */
+const ANALYTICS_TAG = '<script is:inline data-jd-analytics="G-EXAMPLE1">(function () { var t = 1; })();</script>';
 
 function selfTest() {
     const broken = CASES.filter(([, holds]) => !holds()).map(([name]) => name);
@@ -189,7 +302,7 @@ function selfTest() {
         process.exit(1);
     }
 
-    console.log(`  ✓ the playground beacon keeps the token off its hashed body (${CASES.length} rules)`);
+    console.log(`  ✓ the playground's measurement is written in the way it must be (${CASES.length} rules)`);
 }
 
 if (process.argv[1] === new URL(import.meta.url).pathname) {
