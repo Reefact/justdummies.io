@@ -81,10 +81,13 @@ fi
 #   docs                  the specification, the ADRs, the deployment guides. Read by
 #                         maintainers, built into nothing.
 #   *.md                  every markdown file in the repository is one of those, plus
-#                         README and CONTRIBUTING. Astro declares no content collection
-#                         here and `apps/site` holds no markdown at all, so there is no
-#                         path from any of them into a page. Re-check that the day a
-#                         collection appears — it would make this line false in one commit.
+#                         README and CONTRIBUTING — EXCEPT the one collection that is
+#                         markdown and does render, re-included below. The line above this
+#                         one used to read "`apps/site` holds no markdown at all" and asked
+#                         to be re-checked "the day a collection appears"; that day was
+#                         ADR-0026, and this is the re-check. The exclusion is a glob over
+#                         the whole repository and a git pathspec cannot un-exclude, so the
+#                         collection is named in a second diff and the two are unioned.
 #   .githooks             a maintainer's local commit hook.
 #   LICENSE               the file, not the footer line naming it.
 #   .github/workflows/commit-lint.yml   the other pipeline, which builds nothing.
@@ -97,12 +100,20 @@ fi
 # `git diff <base> HEAD` compares two trees directly and needs no history between them,
 # which is what lets this run in the shallow clone Actions checks out.
 matched="$(
-  git diff --name-only "${base}" HEAD -- . \
-    ':(exclude)docs' \
-    ':(exclude)*.md' \
-    ':(exclude).githooks' \
-    ':(exclude)LICENSE' \
-    ':(exclude).github/workflows/commit-lint.yml'
+  {
+    git diff --name-only "${base}" HEAD -- . \
+      ':(exclude)docs' \
+      ':(exclude)*.md' \
+      ':(exclude).githooks' \
+      ':(exclude)LICENSE' \
+      ':(exclude).github/workflows/commit-lint.yml'
+
+    # The markdown that IS a page: `apps/site/src/content/` is the mirrored documentation
+    # collection, and every file in it renders under /docs (ADR-0026). Without this a
+    # refresh of the mirror — which writes nothing but `.md` — would report "documentation
+    # only" and skip the very axe sweep that covers the pages it just rewrote.
+    git diff --name-only "${base}" HEAD -- 'apps/site/src/content'
+  } | sort -u
 )"
 
 if [ -n "${matched}" ]; then
