@@ -115,3 +115,47 @@ test.describe('the playground’s census event', () => {
         });
     });
 });
+
+/**
+ * The framed hero, which is the same shell at a second address.
+ *
+ * `_redirects` rewrites `/playground/hero` to `/playground/` with a 200, so both routes are
+ * served the one document — and `LiveHero.astro` loads that address into an iframe the
+ * moment a visitor presses Run on the landing page. A beacon written as a plain tag fires
+ * in an iframe exactly as it does in a tab, so every Run would have reported a playground
+ * visit nobody made, into the one figure the beacon was added to establish. Worse than
+ * noise: the census event comes from `Home.razor` alone, so the denominator would have
+ * grown against a numerator that never moves.
+ *
+ * Found in review rather than by this check, which is why the check exists.
+ */
+test.describe('the framed hero', () => {
+    test('does not report a visit of its own', async ({ page }) => {
+        const beacons: string[] = [];
+
+        page.on('request', (request: Request) => {
+            if (request.url().includes('static.cloudflareinsights.com')) {
+                beacons.push(request.url());
+            }
+        });
+
+        await page.goto('/');
+
+        const html: string = await page.content();
+
+        test.skip(!html.includes('static.cloudflareinsights.com'), 'this artefact was built without a beacon token');
+
+        // The landing page is a document a visitor navigated to, so it reports — and its
+        // request is the baseline the assertion below is measured against.
+        await expect.poll(() => beacons.length, 'the landing page reported no visit at all').toBe(1);
+
+        await page.locator('[data-hero-run]').click();
+
+        // Awaited on the frame rather than on a delay: the shell has to have loaded for the
+        // question to mean anything, and ADR-0009 refuses a fixed wait.
+        await expect(page.locator('.frame iframe')).toBeAttached();
+        await page.frameLocator('.frame iframe').locator('#app').waitFor({ state: 'attached' });
+
+        expect(beacons, 'the framed playground reported a visit nobody made').toHaveLength(1);
+    });
+});

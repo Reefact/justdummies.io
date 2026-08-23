@@ -51,18 +51,45 @@ if (!html.includes(MARKER)) {
 }
 
 /**
- * The same tag the site renders, and the same attribute shape: Cloudflare reads its
- * configuration out of `data-cf-beacon` as JSON, and `defer` keeps it off the path of a
- * first paint that is already waiting on a runtime download.
+ * The same beacon the site renders, and the same attribute shape — Cloudflare reads its
+ * configuration out of `data-cf-beacon` as JSON — but added by a script rather than
+ * written as a tag, because one condition has to be answered first.
  *
- * Built with JSON.stringify rather than written as a string, so a token carrying a quote
- * cannot break out of the attribute. The token is ours and the risk is theoretical; the
- * alternative was a template literal that would have looked equally correct while being
- * one bad character away from a broken document.
+ * IT REPORTS A VISIT ONLY WHEN IT IS THE DOCUMENT THAT WAS VISITED. This shell answers on
+ * two addresses: `/playground/`, which a visitor navigates to, and `/playground/hero`,
+ * which `_redirects` rewrites to the same file and `LiveHero.astro` loads into an iframe
+ * the moment somebody presses Run on the landing page. A beacon written as a plain tag
+ * fires in both, so every Run on the landing page would report a playground visit nobody
+ * made — and would do it to the one figure this whole change exists to establish. The
+ * denominator would grow with an event that has no matching numerator, since the census
+ * event is emitted by `Home.razor` alone and never by the hero widget.
+ *
+ * `window.self === window.top` rather than a test against the path, because the property
+ * that matters is being embedded rather than being one particular route. A second
+ * embedding added later is covered without this file learning its address, and the check
+ * is safe across origins where reading `frameElement` would throw.
+ *
+ * THE HOST IS STILL WRITTEN LITERALLY, which is load-bearing twice over:
+ * `generate-headers.mjs` grants the beacon's hosts to a document that names them, and
+ * `verify-output.sh` asserts the shell and the site's pages agree. Both read the string.
+ *
+ * The token is embedded through JSON.stringify twice — once for the attribute's JSON,
+ * once for the JavaScript string literal holding it — so a token carrying a quote cannot
+ * break out of either. The token is ours and the risk is theoretical; the alternative was
+ * a template literal that would have looked equally correct while being one bad character
+ * away from a broken document.
  */
 const beacon = token === ''
     ? ''
-    : `<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='${JSON.stringify({ token })}'></script>`;
+    : `<script>
+        if (window.self === window.top) {
+            var beacon = document.createElement('script');
+            beacon.defer = true;
+            beacon.src = 'https://static.cloudflareinsights.com/beacon.min.js';
+            beacon.setAttribute('data-cf-beacon', ${JSON.stringify(JSON.stringify({ token }))});
+            document.head.appendChild(beacon);
+        }
+    </script>`;
 
 writeFileSync(shell, html.replace(MARKER, beacon), 'utf8');
 
