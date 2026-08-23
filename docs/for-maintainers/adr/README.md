@@ -168,6 +168,7 @@ requests, issues, diagrams.
 | [ADR-0022](0022-a-step-settles-when-it-is-chosen-not-when-focus-leaves-en.md) | A step settles when it is chosen, not when it loses focus | Accepted |
 | [ADR-0023](0023-an-event-carries-a-variant-only-when-it-has-a-door-to-choose-en.md) | An event carries a variant only when it has a door to choose between | Accepted |
 | [ADR-0024](0024-the-playground-reports-a-chains-shape-not-its-values-en.md) | The playground reports a chain's shape, never its values | Accepted |
+| [ADR-0025](0025-one-consent-question-for-two-applications-en.md) | One consent question for two applications | Accepted |
 
 **0008 is absent on purpose.** It named a record that was written, merged, then withdrawn: how a
 scene is titled is an editorial principle, which this file sends to the specification rather than
