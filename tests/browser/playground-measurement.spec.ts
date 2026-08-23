@@ -96,6 +96,43 @@ test.describe('the playground’s census event', () => {
     });
 
     /**
+     * A LIST ARGUMENT IS ONE FIELD AND SEVERAL ARGUMENTS (ADR-0016), and the count is the half
+     * a naive walk loses. `OneOf` takes `params T[]`, so the bar spreads one comma-separated
+     * field back into the call and the line a visitor reads carries three arguments where the
+     * catalogue names one parameter. Reported per parameter it would read `OneOf(?)` — a shape
+     * the bar can never draw, and one that flattens every list arity into a single row, which
+     * is exactly what ADR-0024 chose the template form to avoid.
+     *
+     * Found in review rather than by a check, which is why this one exists. The values are
+     * spelled so they could not appear by accident, because the second assertion is the one
+     * that matters: counting them must not mean sending them.
+     */
+    test('reports one placeholder per value of a list argument, and none of the values', async ({ page }) => {
+        const posted = collectorPosts(page);
+
+        await page.goto('/playground/');
+        await page.locator('.chain-link').nth(0).locator('select').selectOption({ label: 'String()' });
+
+        const step = page.locator('.chain-link').nth(1);
+        await step.locator('select').selectOption({ label: 'OneOf(values)' });
+        await step.locator('input').fill('ZZRED, ZZGREEN, ZZBLUE');
+
+        await page.getByRole('button', { name: 'Generate' }).click();
+
+        await expect.poll(() => posted.map((p) => p.parsed), 'nothing was posted to the collector').toContainEqual({
+            event: 'generate-clicked',
+            placement: 'playground',
+            locale: 'en',
+            chain: 'Any.String().OneOf(?, ?, ?).Generate()',
+        });
+
+        expect(
+            posted.filter((p) => /ZZ(RED|GREEN|BLUE)/.test(p.body)),
+            'a value from the list left the browser',
+        ).toEqual([]);
+    });
+
+    /**
      * A chain with no arguments at all, in the other locale. Two facts at once, because they
      * share a page load: an empty parameter list reports as `()` rather than as `(?)`, and the
      * locale reported is the reader's own rather than the document's default.

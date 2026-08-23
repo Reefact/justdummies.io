@@ -80,6 +80,14 @@ And it is produced by the walk that draws that bar — the same iteration over t
 to call the formatter — so the anonymisation is not a filter applied to a finished string but a value
 that was never assembled.
 
+**A list argument counts once per value, not once per parameter.** `OneOf` and `Except` take
+`params T[]`, and ADR-0016 gives them one comma-separated field; the code bar spreads that field back
+into the call, so `OneOf("red", "green", "blue")` is a line carrying three arguments where the
+catalogue names one parameter. Reported per parameter it would read `OneOf(?)` — a shape the bar can
+never draw, and one that flattens every list arity into the same row, which is the flattening this
+form was chosen to avoid. So the walk asks `SplitList` — the same function that cuts the values for
+the parser and for the bar — for its count alone, and drops the values it returns.
+
 **It needs a field of its own rather than the variant's.** ADR-0023 has just settled what a variant
 means, and a chain is not a door; reusing the field would make the one query that groups doors
 meaningless. The variant's own pattern could not carry it either — a chain is a shape with
@@ -174,6 +182,13 @@ thousand times. What bounds it is that every element of the shape comes from a c
 catalogue, that no argument, address, identifier or timing beyond the event's own is recorded beside
 it, and that the row cannot be joined to anything — the census lane recognises nobody, so there is no
 second row to join it to.
+
+**A list's arity is a number the visitor chose, and every other part of the shape is not.** A method
+name comes from a closed catalogue; how many values somebody put in a list does not. It is still a
+count rather than a value, it is bounded at the sandbox's fifty, and a chain long enough to be
+distinctive that way loses its shape to the field's own bound before it lands. What it costs is
+admitted here rather than left to be discovered: a row reading `OneOf(?, ?, ?, …)` with an unusual
+number of marks is rarer than the same step with two.
 
 **The catalogue may one day carry a method name that is itself revealing.** The pattern admits any
 method name the catalogue can produce, because it must; if a generator is ever named after something
