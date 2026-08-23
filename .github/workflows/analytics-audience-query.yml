@@ -104,7 +104,6 @@ jobs:
                   filter: { datetime_geq: $since, datetime_leq: $until }
                   orderBy: [count_DESC]
                 ) {
-                  count
                   dimensions { siteTag }
                 }
               }
@@ -147,6 +146,20 @@ jobs:
 
           run_query "$discover_payload" "Site discovery" discovery.json
 
+          # An accountTag that matches nothing comes back as an empty `accounts` array with
+          # no GraphQL error at all. Left unchecked, the optional traversal below collapses
+          # that into an empty tag list and the run reports "no rows" — a statement about
+          # traffic made from an answer that was never about traffic, which is the same
+          # mistake as reading an errored response as an empty one.
+          matched="$(jq '(.data.viewer.accounts // []) | length' discovery.json)"
+          if [ "$matched" -eq 0 ]; then
+            {
+              echo
+              echo "**The account filter matched nothing.** CLOUDFLARE_ACCOUNT_ID names an account this token cannot see, or no account at all. This is a configuration failure, not an empty dataset."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
           mapfile -t tags < <(jq -r \
             '[.data.viewer.accounts[]?.rumPageloadEventsAdaptiveGroups[]?.dimensions.siteTag] | unique | .[]?' \
             discovery.json)
@@ -167,24 +180,20 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
           # ---- 2. Which one to report on ---------------------------------------------
-          target=""
-          if [ -n "$SITE_TAG" ]; then
-            target="$SITE_TAG"
-          elif [ "${#tags[@]}" -eq 1 ]; then
-            # The only site there is, so reporting it leaks nothing that is not already
-            # this repository's own.
-            target="${tags[0]}"
-          fi
+          #
+          # ONLY AN EXPLICIT TAG UNLOCKS THE DETAIL, and "there was only one" is not a
+          # substitute for it. One site reporting in a window is not the same fact as one
+          # site existing in the account, and neither is the same fact as the site being
+          # this repository's: a week in which justdummies.io saw nobody and a neighbour saw
+          # somebody would leave exactly one tag standing, and publishing its countries and
+          # referrers here would publish a stranger's audience in a public repository.
+          # Naming the tag is the only evidence that the person asking meant this site.
+          target="$SITE_TAG"
 
           if [ -z "$target" ]; then
-            cp discovery.json result.json
             {
               echo
-              if [ "${#tags[@]}" -gt 1 ]; then
-                echo "More than one site reported. Re-run with **site_tag** set to the one you want, so this summary does not publish another site's audience."
-              else
-                echo "No detail to report."
-              fi
+              echo "No **site_tag** was given, so no audience detail is reported. Re-run with one of the tags above — naming it is what says the site is yours to publish."
             } >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
@@ -219,6 +228,14 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
+          # Both files, because the discovery response is the one that carries the
+          # diagnosis when the first query fails — and when it does, `set -e` ends the step
+          # before result.json is ever written, so uploading that alone discards the very
+          # answer the run produced. `discovery.json` names site tags and nothing else:
+          # no counts, no countries, no referrers.
           name: web-analytics-result
-          path: result.json
+          path: |
+            discovery.json
+            result.json
+          if-no-files-found: warn
           retention-days: 7
