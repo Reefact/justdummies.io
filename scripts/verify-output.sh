@@ -578,6 +578,14 @@ fi
 # measured. That covers the regression in both directions — a shell that loses the slot,
 # and a shell that keeps a beacon a token-less build should not have written.
 if [ -f "${dist}/playground/index.html" ]; then
+  # The writer's own rules first, because two of them are invisible in the artefact: a
+  # token in the hashed body only costs something on the day the token is rotated, and a
+  # token carrying `$&` only corrupts the document for the account unlucky enough to have
+  # one. Both were shipped and both were found by reading, which is why they are asserted
+  # here rather than described in a comment. Same shape as the inline-script scan above.
+  node "${root}/scripts/write-playground-measurement.mjs" --self-test \
+    || fail "the playground beacon writer no longer keeps the token off its hashed body"
+
   pages_carry=0
   # Every document but the playground's own, so the shell cannot answer for itself.
   while IFS= read -r page; do
