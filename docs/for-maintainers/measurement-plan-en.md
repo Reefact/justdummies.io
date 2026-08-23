@@ -129,5 +129,13 @@ the same separation by writing the ordinal among its doubles and never among its
   question, not two answers to it.
 * **Nothing the playground is given.** §15.1 states that what is typed there is never recorded, and the
   playground runs entirely in the browser — there is no server to send it to.
+* **Nothing at all from `/playground/` — page views included — and that one is a gap rather than a
+  decision.** It is a separate Blazor document with a shell of its own, and that shell carries no
+  audience beacon, no analytics tag, no consent banner and no collector script, so not one of the
+  three lanes reaches it. Its own floating download control (`DownloadFab.razor`) is uncounted for
+  the same reason. **Instrumenting that control alone would make the figures worse, not better** —
+  its clicks would land in the numerator while its visits stayed out of every denominator, which is
+  exactly the unreadable rate this plan's first section warns about. Closing it means giving the
+  playground all three lanes, consent banner included, which is a decision of its own.
 * **No advertising signals, ever.** They are denied permanently rather than following consent, and the
   content policy names no advertising host, so a change of mind fails a check rather than shipping.

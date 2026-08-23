@@ -137,6 +137,15 @@ Regrouper par `scene_name` ; ne lire `scene_ordinal` que pour trier un tableau.
 * **Rien de ce qui est saisi dans le playground.** §15.1 énonce que ce qui y est tapé n'est jamais
   enregistré, et le playground tourne entièrement dans le navigateur — il n'y a aucun serveur à qui
   l'envoyer.
+* **Rien du tout depuis `/playground/` — les pages vues comprises — et celui-là est un manque, pas
+  une décision.** C'est un document Blazor séparé avec sa propre coquille, et cette coquille ne porte
+  ni balise d'audience, ni tag analytique, ni bandeau de consentement, ni script collecteur : aucune
+  des trois voies ne l'atteint. Son propre contrôle de téléchargement flottant (`DownloadFab.razor`)
+  n'est pas compté pour la même raison. **N'instrumenter que ce contrôle rendrait les chiffres pires,
+  pas meilleurs** — ses clics tomberaient au numérateur pendant que ses visites resteraient hors de
+  tout dénominateur, ce qui est exactement le taux illisible contre lequel la première section de ce
+  plan met en garde. Combler ce manque veut dire donner au playground les trois voies, bandeau de
+  consentement compris, ce qui est une décision à part entière.
 * **Aucun signal publicitaire, jamais.** Ils sont refusés en permanence au lieu de suivre le
   consentement, et la politique de contenu ne nomme aucun hôte publicitaire, si bien qu'un changement
   d'avis fait échouer un contrôle plutôt que d'être livré.
