@@ -14,6 +14,7 @@ const SITE_ORIGIN = 'https://justdummies.io';
  * `json` and `xml` between them are 14 of the corpus's 392 fences, and a tokeniser applied
  * to a grammar it was not written for publishes code nobody wrote.
  */
+/** @type {Record<string, 'csharp' | 'shell' | 'output' | undefined>} */
 const HIGHLIGHTED = { csharp: 'csharp', bash: 'shell', text: 'output' };
 
 /**
@@ -46,10 +47,13 @@ function rehypeColourCodeBlocks() {
             }
 
             if (node.type === 'element' && node.tagName === 'pre') {
-                const code = (node.children ?? []).find((child) => child.type === 'element' && child.tagName === 'code');
+                const code = (node.children ?? []).find(
+                    /** @param {any} child */ (child) => child.type === 'element' && child.tagName === 'code',
+                );
+                /** @type {string[]} */
                 const className = code?.properties?.className ?? [];
-                const named = className.map(String).find((name) => name.startsWith('language-'));
-                const language = HIGHLIGHTED[named?.slice('language-'.length)];
+                const named = className.map(String).find(/** @param {string} name */ (name) => name.startsWith('language-'));
+                const language = named === undefined ? undefined : HIGHLIGHTED[named.slice('language-'.length)];
 
                 if (language !== undefined && code.children?.length === 1 && code.children[0].type === 'text') {
                     code.children = [{ type: 'raw', value: highlight(code.children[0].value, language) }];
