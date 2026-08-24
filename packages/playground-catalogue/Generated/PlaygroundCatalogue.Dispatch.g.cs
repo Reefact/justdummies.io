@@ -435,10 +435,19 @@ public static partial class PlaygroundDispatch {
                 return new ChainResult(receiver, "AnyChar", null, refused.Message);
             }
         },
-        ["AnyChar::LowerCase#0"] = (receiver, rawArguments) => {
+        ["AnyChar::InLowerCase#0"] = (receiver, rawArguments) => {
             var typed = (global::JustDummies.AnyChar)receiver!;
             try {
-                var produced = typed.LowerCase();
+                var produced = typed.InLowerCase();
+                return new ChainResult(produced, "AnyChar", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyChar", null, refused.Message);
+            }
+        },
+        ["AnyChar::InUpperCase#0"] = (receiver, rawArguments) => {
+            var typed = (global::JustDummies.AnyChar)receiver!;
+            try {
+                var produced = typed.InUpperCase();
                 return new ChainResult(produced, "AnyChar", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnyChar", null, refused.Message);
@@ -486,15 +495,6 @@ public static partial class PlaygroundDispatch {
             var typed = (global::JustDummies.AnyChar)receiver!;
             try {
                 var produced = typed.Punctuation();
-                return new ChainResult(produced, "AnyChar", null, null);
-            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
-                return new ChainResult(receiver, "AnyChar", null, refused.Message);
-            }
-        },
-        ["AnyChar::UpperCase#0"] = (receiver, rawArguments) => {
-            var typed = (global::JustDummies.AnyChar)receiver!;
-            try {
-                var produced = typed.UpperCase();
                 return new ChainResult(produced, "AnyChar", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnyChar", null, refused.Message);
@@ -2502,10 +2502,19 @@ public static partial class PlaygroundDispatch {
                 return new ChainResult(receiver, "AnyString", null, refused.Message);
             }
         },
-        ["AnyString::LowerCase#0"] = (receiver, rawArguments) => {
+        ["AnyString::InLowerCase#0"] = (receiver, rawArguments) => {
             var typed = (global::JustDummies.AnyString)receiver!;
             try {
-                var produced = typed.LowerCase();
+                var produced = typed.InLowerCase();
+                return new ChainResult(produced, "AnyString", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyString", null, refused.Message);
+            }
+        },
+        ["AnyString::InUpperCase#0"] = (receiver, rawArguments) => {
+            var typed = (global::JustDummies.AnyString)receiver!;
+            try {
+                var produced = typed.InUpperCase();
                 return new ChainResult(produced, "AnyString", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnyString", null, refused.Message);
@@ -2573,15 +2582,6 @@ public static partial class PlaygroundDispatch {
             var typed = (global::JustDummies.AnyString)receiver!;
             try {
                 var produced = typed.StartingWith((System.String)arg0!);
-                return new ChainResult(produced, "AnyString", null, null);
-            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
-                return new ChainResult(receiver, "AnyString", null, refused.Message);
-            }
-        },
-        ["AnyString::UpperCase#0"] = (receiver, rawArguments) => {
-            var typed = (global::JustDummies.AnyString)receiver!;
-            try {
-                var produced = typed.UpperCase();
                 return new ChainResult(produced, "AnyString", null, null);
             } catch (Exception refused) when (refused is DummyException or ArgumentException) {
                 return new ChainResult(receiver, "AnyString", null, refused.Message);

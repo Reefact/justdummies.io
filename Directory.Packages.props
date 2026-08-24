@@ -22,7 +22,7 @@
     reads the version it actually loaded rather than a string typed beside it.
   -->
   <ItemGroup>
-    <PackageVersion Include="JustDummies" Version="1.0.0-preview.3" />
+    <PackageVersion Include="JustDummies" Version="1.0.0-preview.4" />
   </ItemGroup>
 
   <ItemGroup>

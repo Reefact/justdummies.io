@@ -50,7 +50,7 @@ public sealed partial class AnyOrder : IAny<Order> {
     private static IAny<OrderReference> ReferenceFactory() {
         return Any.String()
                   .AlphaNumeric()
-                  .UpperCase()
+                  .InUpperCase()
                   .StartingWith("ORD-")
                   .WithLengthBetween(8, 20)
                   .As(OrderReference.Create);

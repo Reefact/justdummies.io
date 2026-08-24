@@ -207,7 +207,7 @@ const [generated, strings] = process.argv.slice(1);
 // "never empty" are the same rule named twice), tight enough that only that rule satisfies it.
 const NAMED_BY = {
     AlphaNumeric:      /alphanumeric|alphanum/i,
-    UpperCase:         /uppercase|majuscule/i,
+    InUpperCase:       /uppercase|majuscule/i,
     StartingWith:      /with ORD-|par ORD-/i,
     WithLengthBetween: /between eight and twenty|entre huit et vingt/i,
 };

@@ -18,7 +18,7 @@ public static class Why {
         // <snippet:why-order-reference>
         string reference = Any.String()
                               .AlphaNumeric()
-                              .UpperCase()
+                              .InUpperCase()
                               .StartingWith("ORD-")
                               .WithLengthBetween(8, 20)
                               .Generate();
