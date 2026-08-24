@@ -17,7 +17,7 @@ consumes this deployment (see [ADR-0001](docs/for-maintainers/adr/0001-a-release
 
 ### 🐛 Fixes
 
-- The documentation's own links no longer come underlined word by word: the section cards on /docs, the topic list inside a section, the sidebar and the previous/next pair are drawn as the rest of the site draws its links, and the sidebar again marks in colour the page you are reading. The links inside the documentation's own prose keep their underline.
+- The documentation's own links no longer come underlined word by word: the section cards on /docs, the topic list inside a section, the sidebar and the previous/next pair are drawn as the rest of the site draws its links, while the links inside the documentation's own prose keep their underline. The sidebar now marks the page you are reading the way the API reference's does, with a ground and a coloured rail rather than a change of colour alone, and it no longer shows a "Documentation sections" fold on windows wide enough to have nothing to fold.
 
 ## release/2026-08-24T07-27-33Z — August 24, 2026
 

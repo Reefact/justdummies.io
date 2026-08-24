@@ -18,7 +18,7 @@ compatibilité, puisque rien ne consomme ce déploiement (voir
 
 ### 🐛 Corrections
 
-- Les liens de la documentation ne sont plus soulignés mot à mot : les cartes de sections sur /docs, la liste des sujets d'une section, la colonne de navigation et la paire précédent/suivant sont dessinées comme le reste du site dessine ses liens, et la colonne de navigation signale à nouveau en couleur la page en cours de lecture. Les liens à l'intérieur de la prose de la documentation, eux, gardent leur soulignement.
+- Les liens de la documentation ne sont plus soulignés mot à mot : les cartes de sections sur /docs, la liste des sujets d'une section, la colonne de navigation et la paire précédent/suivant sont dessinées comme le reste du site dessine ses liens, tandis que les liens à l'intérieur de la prose de la documentation gardent leur soulignement. La colonne de navigation signale désormais la page en cours de lecture comme le fait celle de la référence d'API, par un fond et un filet coloré plutôt que par un simple changement de couleur, et elle n'affiche plus de repli « Documentation sections » sur les fenêtres assez larges pour n'avoir rien à replier.
 
 ## release/2026-08-24T07-27-33Z — 24 août 2026
 
