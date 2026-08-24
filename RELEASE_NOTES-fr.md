@@ -11,7 +11,9 @@ compatibilité, puisque rien ne consomme ce déploiement (voir
 
 ## Unreleased
 
-_Rien en attente pour l'instant._
+### 🙌 Améliorations
+
+- Le hero de la page d'accueil illustre désormais la même expression que celle expliquée juste en dessous, plutôt qu'une expression différente — sa longueur se règle via deux champs modifiables, un minimum et un maximum, à la place de l'unique longueur exacte précédente.
 
 ## release/2026-08-24T07-27-33Z — 24 août 2026
 

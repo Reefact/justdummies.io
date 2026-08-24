@@ -10,7 +10,9 @@ consumes this deployment (see [ADR-0001](docs/for-maintainers/adr/0001-a-release
 
 ## Unreleased
 
-_Nothing pending yet._
+### 🙌 Improvements
+
+- The home page's hero now demonstrates the same expression explained in the section right below it, instead of an unrelated one — its length is set by two editable fields, a minimum and a maximum, in place of the previous single exact length.
 
 ## release/2026-08-24T07-27-33Z — August 24, 2026
 
