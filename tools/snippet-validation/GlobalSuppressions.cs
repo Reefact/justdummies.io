@@ -26,3 +26,48 @@ using System.Diagnostics.CodeAnalysis;
         "to be the unconstrained one — the rule is right about it, and that is the point being " +
         "made. Suppressed here rather than left unraised globally so JD030 still holds every " +
         "other published expression, and so this exception is one line somebody can find.")]
+
+// The four published chains below all declare AlphaNumeric() then write "ORD-" as an anchored
+// prefix, and JD033 is right to name it: the family governs what is drawn, the hyphen is not
+// drawn, so it survives only because it was written, not because the chain permits it (ADR-0079).
+// That reading is deliberate, not accidental, and it is the library's own documented example of
+// a fixed separator (JD033's own page shows this pairing almost verbatim as "legal, and it stays
+// legal"). Suppressed by name, once per site, so JD033 still holds everywhere a filler
+// genuinely might be misread.
+
+[assembly: SuppressMessage(
+    "Constraints",
+    "JD033:AnchoredLiteralOutsideCharacterFamily",
+    Scope = "member",
+    Target = "~M:JustDummies.SnippetValidation.Snippets.Hero.PreFilledExpression~System.String",
+    Justification =
+        "The hero previews the same chain Act I explains right below it (Snippets/FactoriesConstrained.cs), " +
+        "so the two have to agree on this, not merely both be legal on their own.")]
+
+[assembly: SuppressMessage(
+    "Constraints",
+    "JD033:AnchoredLiteralOutsideCharacterFamily",
+    Scope = "member",
+    Target = "~M:JustDummies.SnippetValidation.Snippets.Constrained.AnyOrderReference.Generate~JustDummies.SnippetValidation.Domain.OrderReference",
+    Justification =
+        "The first act's constrained factory: AlphaNumeric() is what the reference's free " +
+        "characters must be, ORD- is the separator a reader chose, and the two are declared " +
+        "together on purpose.")]
+
+[assembly: SuppressMessage(
+    "Constraints",
+    "JD033:AnchoredLiteralOutsideCharacterFamily",
+    Scope = "member",
+    Target = "~M:JustDummies.SnippetValidation.Snippets.Why.OrderReference~System.String",
+    Justification =
+        "The positioning page's own figure for the same rule the constrained factory " +
+        "demonstrates — same reasoning, same separator.")]
+
+[assembly: SuppressMessage(
+    "Constraints",
+    "JD033:AnchoredLiteralOutsideCharacterFamily",
+    Scope = "member",
+    Target = "~M:JustDummies.SnippetValidation.Domain.AnyOrder.ReferenceFactory~JustDummies.IAny{JustDummies.SnippetValidation.Domain.OrderReference}",
+    Justification =
+        "The second act's corrected factory, once the reader has added the links dum could " +
+        "not infer — the three links of the first act's chain, unchanged, including this one.")]
