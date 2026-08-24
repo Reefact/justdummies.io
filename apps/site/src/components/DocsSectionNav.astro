@@ -151,9 +151,23 @@ const sectionLabel: Record<DocsSection, string> = {
      * above out-specified it (0,4,2 against 0,4,1) and the section a reader was standing in
      * drew in the ordinary colour. Nothing showed it while every entry was underlined
      * anyway; with the underlines gone this is the only mark left, so it has to win.
+     *
+     * AND THE UNDERLINE IS THE OTHER HALF OF IT. Every entry in this list is already bold,
+     * so weight cannot tell one from the rest and colour was doing the whole job alone —
+     * which says nothing to a reader who cannot separate the two hues, and nothing at all
+     * under forced colours, where the accent is replaced by the same ink as its neighbours.
+     * `aria-current` carries the state to assistive technology; this is the sighted reader's
+     * cue, and it survives the transform where colour does not. `ReleaseNotesTrains.astro`
+     * restores the same pair for the same reason.
+     *
+     * So the one underline left in this sidebar means "you are here" rather than "this is a
+     * link" — which is the only thing worth spending it on, now that the other twenty
+     * entries have stopped claiming it.
      */
     .docs-nav-list > li > a[aria-current='page'] {
         color: var(--jd-accent);
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
     }
 
     .docs-nav-sublist {
@@ -179,9 +193,14 @@ const sectionLabel: Record<DocsSection, string> = {
         color: var(--jd-text-primary);
     }
 
+    /* The same mark one level down, for the same reason — the weight already separates this
+       entry from its muted siblings, and the underline is what carries that separation into
+       forced colours, where 600 against 400 is the only thing left of it. */
     .docs-nav-sublist a[aria-current='page'] {
         color: var(--jd-accent);
         font-weight: 600;
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
     }
 
     @media (max-width: 56rem) {
