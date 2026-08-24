@@ -5,8 +5,8 @@ slug: "collections"
 order: 3
 locale: "en"
 sourcePath: "doc/handwritten/for-users/generators/collections.en.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-users/generators/collections.en.md"
-ref: "lib-v1.0.0-preview.3"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/generators/collections.en.md"
+ref: "lib-v1.0.0-preview.4"
 ---
 
 A collection generator is built from an **element** generator: you describe one item, and the
@@ -53,7 +53,7 @@ refused with a message naming both, and the analyzer [JD016](/docs/analyzers/JD0
 constant cases at build time.
 
 A count above one million is refused
-([ADR-0029](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0029-let-a-size-maximum-cap-without-steering-the-draw.md)).
+([ADR-0029](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0029-let-a-size-maximum-cap-without-steering-the-draw.md)).
 
 ## Requiring specific elements
 
@@ -99,7 +99,7 @@ Two things are worth understanding here.
 **Distinctness is gated by cardinality.** Before drawing, the generator compares what you asked for
 with what the element generator can actually produce. Asking for ten distinct booleans, or a hundred
 distinct values from a pool of three, is refused immediately and by name rather than attempted
-([ADR-0004](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0004-gate-distinct-collections-by-cardinality-else-bounded-draw.md)).
+([ADR-0004](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0004-gate-distinct-collections-by-cardinality-else-bounded-draw.md)).
 The analyzer [JD016](/docs/analyzers/JD016/) reports the constant cases at build time.
 
 **Where the count is feasible but tight, a bounded redraw finishes the job** — a fixed number of
@@ -116,7 +116,7 @@ hold what a reader would call the same value twice. That is diagnostic
 
 ```csharp
 Dictionary<string, int> stock = Any.DictionaryOf(
-                                       Any.String().Alpha().UpperCase().WithLength(3),
+                                       Any.String().Alpha().InUpperCase().WithLength(3),
                                        Any.Int32().Between(0, 500))
                                    .WithCountBetween(2, 5)
                                    .Generate();
@@ -128,7 +128,7 @@ default equality is not the one your domain uses.
 Three constraints are specific to dictionaries:
 
 ```csharp
-IAny<string> anyCode  = Any.String().Alpha().UpperCase().WithLength(3);
+IAny<string> anyCode  = Any.String().Alpha().InUpperCase().WithLength(3);
 IAny<int>    anyLevel = Any.Int32().Between(0, 500);
 
 // A key that must be present.

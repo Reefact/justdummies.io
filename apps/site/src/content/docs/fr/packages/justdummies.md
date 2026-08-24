@@ -5,8 +5,8 @@ slug: "justdummies"
 order: 0
 locale: "fr"
 sourcePath: "doc/handwritten/for-users/packages/justdummies.fr.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-users/packages/justdummies.fr.md"
-ref: "lib-v1.0.0-preview.3"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/packages/justdummies.fr.md"
+ref: "lib-v1.0.0-preview.4"
 ---
 
 La bibliothèque elle-même : le point d'entrée `Any`, tous les générateurs, les portées de
@@ -37,12 +37,12 @@ dans votre projet de test, et rien d'autre dans votre graphe de dépendances.
 Les règles sont empaquetées sous `analyzers/dotnet/cs`, la convention que NuGet lit pour charger des
 analyzers automatiquement. Référencer `JustDummies` constitue donc toute l'installation : il n'y a
 pas de paquet d'analyzers compagnon à retenir, ni de version à maintenir en phase
-([ADR-0023](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0023-ship-justdummies-analyzers.fr.md)).
+([ADR-0023](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0023-ship-justdummies-analyzers.fr.md)).
 
 Ils existent parce que le système de types n'atteint pas l'endroit où vivent ces erreurs — un
 générateur rendu sous forme de texte, une contrainte dont le résultat est jeté, une graine épinglée
 hors de sa portée, une chaîne n'admettant aucune valeur. Voir
-l'[index des règles](/fr/docs/analyzers/) pour les 29, et
+l'[index des règles](/fr/docs/analyzers/) pour les 33, et
 [JD005](/fr/docs/analyzers/JD005/) pour celle qui attrape le faux pas le plus courant.
 
 Pour ajuster une sévérité, utilisez `.editorconfig` :
@@ -68,7 +68,7 @@ pourquoi une valeur tirée sur l'un ou l'autre asset est le vrai type plutôt qu
 
 Le plancher .NET Framework supporté est **4.7.2**, exercé en CI contre l'asset `netstandard2.0` que
 les consommateurs .NET Framework chargent réellement
-([ADR-0007](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0007-floor-the-library-on-net-framework-4-7-2.fr.md)).
+([ADR-0007](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0007-floor-the-library-on-net-framework-4-7-2.fr.md)).
 
 ## Tour d'horizon
 

@@ -5,8 +5,8 @@ slug: "justdummies-cli"
 order: 3
 locale: "en"
 sourcePath: "doc/handwritten/for-users/packages/justdummies-cli.en.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.2/doc/handwritten/for-users/packages/justdummies-cli.en.md"
-ref: "cli-v1.1.0-beta.2"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-users/packages/justdummies-cli.en.md"
+ref: "cli-v1.1.0-beta.3"
 ---
 
 `dum` writes the dummy generator for one of your types, **once**, as ordinary code you own and edit.
@@ -60,19 +60,20 @@ It is the point of the recap, not decoration — it separates what was **inferre
 | `AnyX` | a generator you had already scaffolded was reused |
 | `TODO` | nothing could be inferred; the file names what to do |
 | `to verify` | a generator *was* inferred, but something near that parameter could not be read — check it |
-| `unread guards` | that "something": a guard the tool does not recognise, or a helper it cannot see into |
+| `unread guards` | that "something": a guard the tool does not recognise, a helper it cannot see into, or a guard it reads but cannot place — below a write to the parameter, or under something deciding whether it runs |
 | `constraint unavailable` | a guard was understood, and this generator has no member to express it with |
 | `no source` | the type comes from a package, so there was no constructor body to read |
 | `unavailable` | the generator exists in JustDummies, but not in the asset your project resolves |
 
 **A `TODO` is not a failure.** The tool emits an identifier that does not exist, so *your own build*
 reports what could not be inferred, at the exact line, with the type in hand
-([ADR-0060](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.2/doc/handwritten/for-maintainers/adr/0060-seed-generators-from-constructor-guards.md)). A generator
+([ADR-0060](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0060-seed-generators-from-constructor-guards.md)). A generator
 that quietly drew a plausible value there would be far worse.
 
 **`to verify` works the same way, and for the same reason.** Where your constructor delegates its
-validation to a helper, or guards in a shape the tool does not parse, it cannot promise the recipe
-it inferred honours your real invariant — so it writes that recipe as your working base and adds one
+validation to a helper, guards in a shape the tool does not parse, or guards in a place it cannot
+vouch for — below a write to the parameter, or under something deciding whether the guard runs at
+all — it cannot promise the recipe it inferred honours your real invariant — so it writes that recipe as your working base and adds one
 line that does not compile above it:
 
 <!-- jd:skip -->
@@ -90,7 +91,7 @@ private static IAny<string> ValueFactory() {
 Keep the recipe or replace it, delete that one line, and you are done. The alternative — a file that
 compiles and draws a value your constructor rejects on some later run — is the failure that costs
 most, because it surfaces far from its cause
-([ADR-0083](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.2/doc/handwritten/for-maintainers/adr/0083-block-compilation-on-a-guard-the-engine-cannot-vouch-for.md)).
+([ADR-0083](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0083-block-compilation-on-a-guard-the-engine-cannot-vouch-for.md)).
 
 ## Through a graph of aggregates
 
@@ -146,7 +147,7 @@ The generator itself does not move, and `AnyOrder.cs` is byte-identical whicheve
 ask for. A root named `Any` is refused: a static class by that name in your own project would hide
 `JustDummies.Any` for its whole namespace, and `Any.Int32()` would stop compiling — which is what
 `--entry-point any` exists to avoid. Decision:
-[ADR-0070](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.2/doc/handwritten/for-maintainers/adr/0070-emit-an-entry-point-on-request-as-a-file-of-its-own.md).
+[ADR-0070](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0070-emit-an-entry-point-on-request-as-a-file-of-its-own.md).
 
 ## Reporting to a script
 
@@ -179,7 +180,7 @@ carries exactly one document. Everything written for a person keeps going to std
 `2>/dev/null` a clean pipe.
 
 The exit codes are unchanged: this adds a channel rather than redefining one. Decision:
-[ADR-0071](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.2/doc/handwritten/for-maintainers/adr/0071-report-a-run-as-data-without-moving-the-exit-codes.md).
+[ADR-0071](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0071-report-a-run-as-data-without-moving-the-exit-codes.md).
 
 ## Setting defaults once
 
@@ -198,7 +199,7 @@ wins** over any of them, so one invocation can differ without editing the file. 
 A key that is not read is **refused**, naming it — a default you believe is in force and is not is
 worse than no file at all. A relative `output` is resolved against the project's own directory, so it
 means the same thing wherever you run the tool from. Decision:
-[ADR-0072](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.2/doc/handwritten/for-maintainers/adr/0072-read-project-defaults-from-a-file-the-command-line-overrides.md).
+[ADR-0072](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0072-read-project-defaults-from-a-file-the-command-line-overrides.md).
 
 ## Options
 
@@ -221,7 +222,7 @@ failed, `2` an instruction the tool could not read — a command line, or a `dum
 
 The tool resolves every library symbol **by name against your compilation**, and declares no
 dependency on the library
-([ADR-0063](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.2/doc/handwritten/for-maintainers/adr/0063-give-the-scaffolder-no-dependency-on-the-package.md)). The
+([ADR-0063](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0063-give-the-scaffolder-no-dependency-on-the-package.md)). The
 tool and the library therefore version independently, and `dum` cannot drag a JustDummies upgrade
 into your project. If a generator does not exist in the asset you resolve, it says so rather than
 emitting a call that will not compile.

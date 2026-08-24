@@ -5,8 +5,8 @@ slug: "numbers"
 order: 0
 locale: "en"
 sourcePath: "doc/handwritten/for-users/generators/numbers.en.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-users/generators/numbers.en.md"
-ref: "lib-v1.0.0-preview.3"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/generators/numbers.en.md"
+ref: "lib-v1.0.0-preview.4"
 ---
 
 Every numeric type in the BCL has a generator, and they share one constraint vocabulary. Learn the
@@ -60,7 +60,7 @@ sit in one chain, as information rather than as a verdict; the pair stays correc
 
 **An unconstrained integer spans its whole type.** Declare nothing and the draw is uniform over the
 full range, and that is deliberate
-([ADR-0031](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0031-draw-arbitrary-numbers-within-an-ordinary-magnitude.md)):
+([ADR-0031](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0031-draw-arbitrary-numbers-within-an-ordinary-magnitude.md)):
 a large integer is still an ordinary integer, where a large `double` stops behaving like arithmetic
 — the floating-point rule below is the exception, not the norm. Uniform over a range also means most
 of that range sits near its extremes: an unconstrained `Int128` carries 38 or 39 digits in about 94
@@ -132,7 +132,7 @@ Two behaviours are worth knowing.
 
 **Unconstrained draws stay ordinary.** An unconstrained `double`, `float` or `decimal` is drawn
 within a magnitude of one million rather than roaming the type's full range
-([ADR-0031](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0031-draw-arbitrary-numbers-within-an-ordinary-magnitude.md)).
+([ADR-0031](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0031-draw-arbitrary-numbers-within-an-ordinary-magnitude.md)).
 Values like `1.7e308` are technically in range and useless in a test: they turn every subsequent
 arithmetic assertion into a question about floating-point overflow. Declare a bound when your domain
 has one.
