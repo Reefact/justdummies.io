@@ -334,21 +334,26 @@
     }
 
     /// <summary>
-    ///     Called after either bound's own setter runs. <see cref="_capHintOwner" /> names one
-    ///     field, but two — <see cref="_min" /> and <see cref="_max" /> — can independently be
-    ///     unparseable at once, which never arose for the single length field this replaced.
-    ///     Without this, resolving one bound's own complaint calls <see cref="ClearHint" /> for
-    ///     it, which clears the hint outright: Generate stays disabled because the *other*
-    ///     bound is still <c>null</c>, but the sentence saying so is gone and that bound's
-    ///     <c>aria-describedby</c> now points at nothing. So when a field's own fix leaves no
-    ///     hint behind, this hands the hint to whichever bound is still unset, rather than
-    ///     leaving a disabled button with no explanation on screen.
+    ///     Called after either bound's own setter runs, unconditionally. <see cref="_capHintOwner" />
+    ///     names one field, but two — <see cref="_min" /> and <see cref="_max" /> — can
+    ///     independently need an explanation at once, which never arose for the single length
+    ///     field this replaced.
+    ///
+    ///     NOT JUST "WHEN THE HINT WENT AWAY". A first version returned early whenever a
+    ///     setter's own call left a hint standing, on the reasoning that a field's own
+    ///     complaint should not be overwritten. That missed the sibling case: typing a value
+    ///     past 64 into one bound sets *that* bound's own cap message and leaves it as the
+    ///     current owner, and if the *other* bound is still empty, Generate stays disabled
+    ///     with a hint that only explains the field which is no longer the problem.
+    ///
+    ///     So this always defers to whichever bound is still <c>null</c>, even over a
+    ///     legitimate cap notice for the bound just typed into. That is a real trade-off, not
+    ///     a free improvement — the capped field's own "you hit 64" sentence can be replaced
+    ///     by the sibling's "enter a length" — but it is the smaller loss: a capped value has
+    ///     its own visible cue (the field's contents visibly snapped to 64), where a disabled
+    ///     Generate with an empty required field has no cue at all beyond this hint.
     /// </summary>
     private void ReconcileBoundsHint() {
-        if (_capHintOwner is not null) {
-            return;
-        }
-
         if (_min is null) {
             SetHint("min", PlaygroundStrings.T(LocaleState.Current, "hero.lengthRequired"));
         } else if (_max is null) {
