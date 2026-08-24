@@ -53,6 +53,9 @@ const t = useTranslations(locale);
         border-radius: 0.5rem;
         color: inherit;
         font-weight: 600;
+        /* A bordered box, not a word in a sentence: the border and its hover carry the
+           affordance, as they do on every other box link on the site. */
+        text-decoration: none;
     }
 
     .topics a:hover {

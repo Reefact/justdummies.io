@@ -144,6 +144,10 @@ function topicPath(slug: string): string {
     .pager a {
         color: var(--jd-text-primary);
         font-weight: 600;
+        /* Chrome around the prose, like `ApiPagination.astro`'s pair — the arrows and the
+           rule above them say what these are. The links *inside* the prose keep their
+           underline, which is where §13.4 wants it. */
+        text-decoration: none;
     }
 
     .pager a:hover {

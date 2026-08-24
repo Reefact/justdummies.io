@@ -16,6 +16,10 @@ compatibilité, puisque rien ne consomme ce déploiement (voir
 - Le hero de la page d'accueil illustre désormais la même expression que celle expliquée juste en dessous, plutôt qu'une expression différente — sa longueur se règle via deux champs modifiables, un minimum et un maximum, à la place de l'unique longueur exacte précédente.
 - La documentation se rejoint désormais depuis la barre du haut, présente sur chaque page, entre « Playground » et « GitHub ». Elle ne s'atteignait jusqu'ici que par le pied de page, tout en bas — c'est-à-dire après avoir fait défiler la page entière. Le playground porte la même entrée, au même endroit.
 
+### 🐛 Corrections
+
+- Les liens de la documentation ne sont plus soulignés mot à mot : les cartes de sections sur /docs, la liste des sujets d'une section, la colonne de navigation et la paire précédent/suivant sont dessinées comme le reste du site dessine ses liens, et la colonne de navigation signale à nouveau en couleur la page en cours de lecture. Les liens à l'intérieur de la prose de la documentation, eux, gardent leur soulignement.
+
 ## release/2026-08-24T07-27-33Z — 24 août 2026
 
 ### ✨ Nouveautés

@@ -135,9 +135,24 @@ const sectionLabel: Record<DocsSection, string> = {
         padding: 0.2rem 0;
         color: var(--jd-text-primary);
         font-weight: 600;
+        /* A sidebar is a list of destinations, and underlining all of them is the noise
+           `ApiCategoryNav.astro` already avoids: colour marks the current page, hover
+           marks the one under the pointer. */
+        text-decoration: none;
     }
 
-    .docs-nav-list a[aria-current='page'] {
+    .docs-nav-list > li > a:hover {
+        color: var(--jd-accent);
+    }
+
+    /*
+     * `> li > a` rather than the plain descendant `.docs-nav-list a` the current-page rule
+     * used to carry: with Astro's scoping attribute added to every compound, the base rule
+     * above out-specified it (0,4,2 against 0,4,1) and the section a reader was standing in
+     * drew in the ordinary colour. Nothing showed it while every entry was underlined
+     * anyway; with the underlines gone this is the only mark left, so it has to win.
+     */
+    .docs-nav-list > li > a[aria-current='page'] {
         color: var(--jd-accent);
     }
 
@@ -157,6 +172,11 @@ const sectionLabel: Record<DocsSection, string> = {
         padding: 0.15rem 0;
         color: var(--jd-text-muted);
         font-size: var(--jd-text-sm);
+        text-decoration: none;
+    }
+
+    .docs-nav-sublist a:hover {
+        color: var(--jd-text-primary);
     }
 
     .docs-nav-sublist a[aria-current='page'] {
