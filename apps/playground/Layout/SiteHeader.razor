@@ -7,7 +7,7 @@
     playground's own interface follows the site's i18n rules now, only the library's runtime
     messages stay in English).
 
-    THE SAME FOUR ITEMS AS THE SITE'S BAR, IN THE SAME ORDER, and that is the point rather than
+    THE SAME FIVE ITEMS AS THE SITE'S BAR, IN THE SAME ORDER, and that is the point rather than
     an accident. This bar used to carry three — no "Playground" entry, on the reasoning that a
     link to the page you are already on says nothing — and the cost of that reasoning was a
     header whose items landed nowhere near the site's: the row is laid out from the right edge,
@@ -15,6 +15,10 @@
     halves of the product stopped agreeing above the fold. The site's own bar already links the
     page it is on (its "Pourquoi JustDummies" entry does exactly that on /why-justdummies), so
     carrying the entry here is the site's rule applied, not an exception invented for it.
+
+    "Docs" is the fifth, and it is here for the same reason rather than for one of its own:
+    Base.astro carries it, so this bar carries it. What it is doing on the site's bar at all is
+    argued there, and this is not a second place to argue it from.
 
     The brand link leaves this app rather than routing inside it — there is nowhere inside the
     playground that "JustDummies" would point to other than where the reader already is — so it
@@ -28,6 +32,7 @@
     <nav class="site-nav" aria-label='@PlaygroundStrings.T(LocaleState.Current, "nav.primary")'>
         <a href="@WhyJustDummiesHref">@PlaygroundStrings.T(LocaleState.Current, "nav.why")</a>
         <a href="@PlaygroundHref">@PlaygroundStrings.T(LocaleState.Current, "nav.playground")</a>
+        <a href="@DocsHref">@PlaygroundStrings.T(LocaleState.Current, "nav.docs")</a>
         <a href="@RepositoryUrl" target="_blank" rel="noopener noreferrer">@PlaygroundStrings.T(LocaleState.Current, "nav.github")</a>
 
         @*
@@ -87,6 +92,14 @@
     private string SiteHomeHref => LocaleState.Current == Locale.Fr ? "/fr/" : "/";
 
     private string WhyJustDummiesHref => LocaleState.Current == Locale.Fr ? "/fr/why-justdummies/" : "/why-justdummies/";
+
+    /// <summary>
+    ///     The documentation's section index, spelled the way <c>SiteFooter.razor</c> already
+    ///     spells the same destination — root-relative, so it leaves this application's
+    ///     <c>&lt;base href="/playground/" /&gt;</c> alone and reaches the Astro site served
+    ///     from the same artefact (§12.2).
+    /// </summary>
+    private string DocsHref => LocaleState.Current == Locale.Fr ? "/fr/docs/" : "/docs/";
 
     /// <summary>
     ///     The same address the site's own bar points at (<c>Base.astro</c>), spelled the same

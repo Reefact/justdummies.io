@@ -14,6 +14,7 @@ compatibilité, puisque rien ne consomme ce déploiement (voir
 ### 🙌 Améliorations
 
 - Le hero de la page d'accueil illustre désormais la même expression que celle expliquée juste en dessous, plutôt qu'une expression différente — sa longueur se règle via deux champs modifiables, un minimum et un maximum, à la place de l'unique longueur exacte précédente.
+- La documentation se rejoint désormais depuis la barre du haut, présente sur chaque page, entre « Playground » et « GitHub ». Elle ne s'atteignait jusqu'ici que par le pied de page, tout en bas — c'est-à-dire après avoir fait défiler la page entière. Le playground porte la même entrée, au même endroit.
 
 ## release/2026-08-24T07-27-33Z — 24 août 2026
 

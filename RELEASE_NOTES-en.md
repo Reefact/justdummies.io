@@ -13,6 +13,7 @@ consumes this deployment (see [ADR-0001](docs/for-maintainers/adr/0001-a-release
 ### 🙌 Improvements
 
 - The home page's hero now demonstrates the same expression explained in the section right below it, instead of an unrelated one — its length is set by two editable fields, a minimum and a maximum, in place of the previous single exact length.
+- The documentation is now reachable from the bar at the top of every page, between "Playground" and "GitHub". Until now it was only in the footer, at the very bottom — that is, behind scrolling the whole page. The playground carries the same entry, in the same place.
 
 ## release/2026-08-24T07-27-33Z — August 24, 2026
 

@@ -712,12 +712,18 @@ main {
 }
 
 /* Base.astro's own breakpoint, and the same number rather than one measured again: this bar
-   now carries the same brand and the same four items as the site's, so the width at which they
+   carries the same brand and the same five items as the site's, so the width at which they
    stop fitting on one line is the site's width. It used to carry three items and break at
    30rem, which meant the two headers stacked at different windows — one more way for them to
-   disagree. Re-measure them together — in French, §6.5's "unfavourable case" — the day a fifth
-   item joins either. */
-@media (max-width: 32rem) {
+   disagree.
+
+   32rem until "Docs" joined the row. Base.astro carries the re-measurement and the whole of
+   the reasoning for 36 — including why it sits a little further above the measured fit than
+   32 did, and what would have to be re-measured to tighten it. Read it there; this is the
+   copy, and a second account of the same number here would be a second thing to keep true.
+   Move this the day that one moves, and not a day apart from it: two headers that stack at
+   different windows is the disagreement this file exists to prevent. */
+@media (max-width: 36rem) {
     .site-header {
         flex-direction: column;
         align-items: flex-start;

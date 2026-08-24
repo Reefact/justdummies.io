@@ -36,17 +36,37 @@ for (const path of PAGES) {
         await page.goto(path);
 
         const outward = page.locator('.site-nav a[href^="https://github.com/"]');
-        // The playground link now carries the reader's locale (?lang=en|fr — the playground has
-        // no locale-prefixed route of its own to send them to instead), so this matches the
-        // path rather than the full href.
-        const inward = page.locator('.site-nav a[href^="/playground/?lang="]');
 
         await expect(outward).toHaveAttribute('target', '_blank');
         await expect(outward).toHaveAttribute('rel', /noopener/);
 
-        // The other half of the rule, and the half that would silently rot: a `target` added
-        // to every link in the bar would pass everything above and be wrong.
-        await expect(inward).not.toHaveAttribute('target', /.*/);
+        /*
+         * The other half of the rule, and the half that would silently rot: a `target` added
+         * to every link in the bar would pass everything above and be wrong.
+         *
+         * Every link that stays on the site, not a named one. It used to name the playground
+         * alone, which meant the rule was enforced for one of the bar's inward links and
+         * merely true of the others — and "Docs" joined the bar as a second one without this
+         * check noticing either way. Asking the page which of its links are inward is the
+         * form that covers the entry added after this file was last read.
+         */
+        const inward: { href: string; target: string | null }[] = await page
+            .locator('.site-nav a')
+            .evaluateAll((links: Element[]) =>
+                links
+                    .map((link: Element) => ({
+                        href: link.getAttribute('href') ?? '',
+                        target: link.getAttribute('target'),
+                    }))
+                    .filter((link) => !link.href.startsWith('https://')),
+            );
+
+        // The bar's inward links, at the time of writing: Why JustDummies, the playground
+        // (carrying the reader's locale in `?lang=`, having no locale-prefixed route of its
+        // own), Docs, and the language selector's own entries. The count is asserted so that
+        // a selector that silently stops matching cannot pass this as "no link misbehaves".
+        expect(inward.length).toBeGreaterThanOrEqual(3);
+        expect(inward.filter((link) => link.target !== null)).toEqual([]);
     });
 
 }

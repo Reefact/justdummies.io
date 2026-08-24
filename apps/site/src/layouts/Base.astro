@@ -127,7 +127,7 @@ const t = useTranslations(locale);
             <a class="brand" href={pathForLocale('/', locale)}>JustDummies</a>
 
             {/*
-              The two destinations that are not part of the story. They were in the hero,
+              The destinations that are not part of the story. They were in the hero,
               where they competed with the one thing that screen asks for; a link that is
               true on every page belongs in the bar that is on every page.
 
@@ -140,6 +140,27 @@ const t = useTranslations(locale);
             <nav class="site-nav" aria-label={t('nav.primary')}>
                 <a href={pathForLocale('/why-justdummies', locale)}>{t('nav.why')}</a>
                 <a href={`/playground/?lang=${locale}`}>{t('nav.playground')}</a>
+                {/*
+                  THE FOOTER LINKS THE DOCUMENTATION TOO, AND THIS IS NOT THE DUPLICATION IT
+                  LOOKS LIKE. The footer's row is the site's index — every page it has, reached
+                  from the bottom of whichever one you are on. This bar is the reader's route
+                  through the argument: why the library exists, what it feels like to use, how
+                  to actually use it, where the source is. The documentation belongs to that
+                  route. A developer who has been convinced by the first two entries wants the
+                  third, and asking them to scroll past the whole of a landing page's three
+                  acts to find it puts the site's own reference behind the one gesture the
+                  reader will not make.
+
+                  Placed between the playground and GitHub deliberately: the row runs from the
+                  argument to the source, and the documentation is the step between trying the
+                  thing and reading how it is built.
+
+                  `/docs` and not a deeper page. It is the section index (`DocsIndexContent`),
+                  which is the one address that stays true as the guides underneath it are
+                  renamed and reordered — and the reader arriving from a bar rather than from a
+                  search is exactly the reader who has not yet chosen a guide.
+                */}
+                <a href={pathForLocale('/docs', locale)}>{t('nav.docs')}</a>
                 {/*
                   A new tab, because this one leaves the site. The playground beside it does
                   not and keeps the same tab. `noopener` is the half that matters: without it
@@ -408,20 +429,43 @@ const t = useTranslations(locale);
     }
 
     /*
-     * Below this width the bar cannot hold the brand and the four items — Why JustDummies,
-     * Playground, GitHub, the language selector — on one line, and what it does instead is
-     * wrap mid-row, dropping GitHub to a second line while the brand floats against the
+     * Below this width the bar cannot hold the brand and the five items — Why JustDummies,
+     * Playground, Docs, GitHub, the language selector — on one line, and what it does instead
+     * is wrap mid-row, dropping GitHub to a second line while the brand floats against the
      * middle of the rest. Stacking on purpose reads better than wrapping by accident.
      *
-     * The number is measured, not chosen, and measured in French: §6.5 requires templates to
-     * be validated against French, "the unfavourable case", and this bar is exactly that case
-     * — "Pourquoi JustDummies" is wider than "Why JustDummies". Brand and nav together fit
-     * down to 503 pixels of French and wrap below it (503 vs. 475 for English), so the query
-     * trips a little above the wider of the two. It is deliberately not the 48rem the rest of
-     * the page uses — between 512 and 768 the bar fits on one line and has no reason to stack.
-     * Re-measure this — in French — the day a fifth item joins the bar.
+     * The number is measured in French: §6.5 requires templates to be validated against
+     * French, "the unfavourable case", and this bar is exactly that case — "Pourquoi
+     * JustDummies" is wider than "Why JustDummies". It is deliberately not the 48rem the rest
+     * of the page uses — between this width and 768 the bar fits on one line and has no reason
+     * to stack.
+     *
+     * WHAT THE NUMBER IS, AND HOW MUCH OF IT IS MEASURED. At four items the bar fit down to
+     * 503 pixels of French and 475 of English, and the query tripped at 32rem, just above the
+     * wider of the two. "Docs" was added to a bar that had to be re-measured for it, and the
+     * re-measurement was taken where this repository's checks run — a container with no Segoe
+     * UI, no Roboto and no SF, where `ui-sans-serif` falls all the way through to DejaVu Sans
+     * and every string comes out about a third wider. Its absolute numbers are therefore not
+     * this bar's. What it gives that *is* transferable is the cost of the new item, split into
+     * a part that scales with the font and a part that does not: 33px of text, plus 16px of
+     * nav gap and 8px of link margin that are the same in any font. Scaled back by the ratio
+     * the two recorded numbers imply (0.762 in French, 0.760 in English — that they agree to
+     * a thousandth is what says the ratio is the font and not an accident), "Docs" costs about
+     * 49 pixels: French now fits down to roughly 552, English to roughly 524.
+     *
+     * So 36rem rather than the 35 that would sit just above 552 the way 32 sat just above 503.
+     * That figure is derived rather than measured, and the two errors are not each other's
+     * equals: stacking 16 pixels early is invisible and is the layout this file already
+     * chooses on purpose, while tripping late is the mid-row wrap the query exists to prevent.
+     * The margin is the price of the uncertainty, and it is worth paying.
+     *
+     * RE-MEASURE THIS — in French, on a machine with a real system UI font — the day a sixth
+     * item joins the bar, and tighten it back towards the measured value if you are there
+     * anyway. `apps/playground/wwwroot/css/app.css` carries the same query and the same
+     * reasoning; the two move together or the two halves of the product stack at different
+     * windows.
      */
-    @media (max-width: 32rem) {
+    @media (max-width: 36rem) {
         .site-header {
             flex-direction: column;
             align-items: flex-start;
