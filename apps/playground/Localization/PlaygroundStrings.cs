@@ -66,8 +66,8 @@ public static class PlaygroundStrings {
         ["download.cta"] = "Download",
 
         ["hero.aria.prefix"]    = "prefix",
-        ["hero.aria.contains"]  = "contained text",
-        ["hero.aria.length"]    = "length",
+        ["hero.aria.min"]       = "minimum length",
+        ["hero.aria.max"]       = "maximum length",
         ["hero.generate"]       = "Generate",
         ["hero.running"]        = "Runs locally in your browser with JustDummies {0}.",
         ["hero.lengthRequired"] = "Enter a length to generate.",
@@ -139,7 +139,7 @@ public static class PlaygroundStrings {
         ["limit.length"] = "This playground caps the length at {0} characters; the library itself has no such limit.",
         ["limit.text"]   = "This playground caps this field at {0} characters; the library itself has no such limit.",
         ["limit.quotes"] = "This playground strips quotes and backslashes here, so the expression shown stays valid C#.",
-        ["limit.printable"] = "The chain declares Printable(), so this field keeps printable ASCII; the library draws any character you constrain it to.",
+        ["limit.printable"] = "This playground keeps this field to printable ASCII, so the result bar always renders correctly; a literal is exempt from every constraint the chain declares, so the library would draw it exactly as typed.",
 
         ["notFound.title"] = "Not found",
         ["notFound.lede"] =
@@ -189,8 +189,8 @@ public static class PlaygroundStrings {
         ["download.cta"] = new("Télécharger", "Download"),
 
         ["hero.aria.prefix"]    = new("préfixe", "prefix"),
-        ["hero.aria.contains"]  = new("texte contenu", "contained text"),
-        ["hero.aria.length"]    = new("longueur", "length"),
+        ["hero.aria.min"]       = new("longueur minimale", "minimum length"),
+        ["hero.aria.max"]       = new("longueur maximale", "maximum length"),
         ["hero.generate"]       = new("Générer", "Generate"),
         ["hero.running"]        = new("Exécuté localement dans votre navigateur avec JustDummies {0}.", "Runs locally in your browser with JustDummies {0}."),
         ["hero.lengthRequired"] = new("Indiquez une longueur pour générer.", "Enter a length to generate."),
@@ -265,8 +265,8 @@ public static class PlaygroundStrings {
             "Ce playground retire les guillemets et les antislashs ici, pour que l'expression affichée reste du C# valide.",
             "This playground strips quotes and backslashes here, so the expression shown stays valid C#."),
         ["limit.printable"] = new(
-            "La chaîne déclare Printable(), donc ce champ conserve l'ASCII imprimable ; la librairie tire n'importe quel caractère que vous lui autorisez.",
-            "The chain declares Printable(), so this field keeps printable ASCII; the library draws any character you constrain it to."),
+            "Ce playground conserve l'ASCII imprimable dans ce champ, afin que la barre de résultat s'affiche toujours correctement ; un littéral est exempté de toute contrainte déclarée dans la chaîne, donc la librairie le tirerait exactement tel qu'il est saisi.",
+            "This playground keeps this field to printable ASCII, so the result bar always renders correctly; a literal is exempt from every constraint the chain declares, so the library would draw it exactly as typed."),
 
         ["notFound.title"] = new("Introuvable", "Not found"),
         ["notFound.lede"] = new(

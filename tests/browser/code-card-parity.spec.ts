@@ -164,15 +164,17 @@ test.describe('the landing page figure and the live widget behind it', () => {
     /**
      * And the fields stay usable by the visitor the site is half written for.
      *
-     * `Printable()` is declared on the chain, and the library refuses the declaration when a
-     * required prefix or fragment holds a character the family cannot draw — so once that link
-     * was added, typing `café-` answered *Cannot apply Printable() because the prefix "café-"
-     * contains 'é'* where the same keystrokes had drawn a value the day before.
+     * A literal a caller writes — `StartingWith`'s argument here — is exempt from every
+     * character constraint the chain declares (ADR-0079), so under `AlphaNumeric().InUpperCase()`
+     * `café-` is not a contradiction at all: the library would draw it exactly as typed, filler
+     * included, no refusal. This site is bilingual, so that is the right answer for the library
+     * to give.
      *
-     * That refusal is real, and §9.9 is why refusals are never swallowed here. But it is not
-     * one of those: the contradiction came from a link this page declared, not from anything
-     * the visitor asked for, and this site is bilingual. So the field holds printable ASCII and
-     * says so, which is `Cap`'s existing shape for a rule of the playground's own.
+     * It is still the wrong answer for this widget to *display* unfiltered: a control
+     * character reaching the result bar raw is this page failing to render, not a lesson about
+     * the library (see the previous test). An accent is not a control character, but `Cap`
+     * draws one line around both — printable ASCII only — rather than two rules a visitor would
+     * have to tell apart. So the field still strips it and says so.
      */
     test('keep drawing when a visitor types an accent', async ({ page }) => {
         await page.setViewportSize(VIEWPORT);
