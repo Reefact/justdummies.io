@@ -228,6 +228,37 @@ test.describe('the landing page figure and the live widget behind it', () => {
         await expect(min).toHaveAttribute('aria-describedby', 'cap-hint');
     });
 
+    /**
+     * A capped sibling is not a fixed one.
+     *
+     * The test above covers a bound resolving cleanly; this covers the other way a setter
+     * can leave a hint standing — typed past the 64-character cap, which sets *that* bound's
+     * own cap message and keeps it as #cap-hint's owner. If the other bound is still empty,
+     * a hint that only explains the capped one leaves the same disabled, unexplained button
+     * the previous fix was for, on a different path into it.
+     */
+    test('names the empty bound even when its sibling was capped, not fixed', async ({ page }) => {
+        await page.setViewportSize(VIEWPORT);
+        await page.goto('/playground/hero');
+
+        const numbers: Locator = page.locator('.hero-widget .expression input[type="number"]');
+        const min: Locator = numbers.nth(0);
+        const max: Locator = numbers.nth(1);
+        await expect(max).toBeVisible();
+
+        await min.fill('');
+        await max.fill('');
+        await min.fill('100');
+
+        await expect(min).toHaveValue('64');
+        await expect(page.locator('.hero-widget .generate')).toBeDisabled();
+        await expect(
+            page.locator('.hero-widget #cap-hint'),
+            "the empty maximum is what blocks Generate, not the capped minimum",
+        ).toContainText(/enter a length/i);
+        await expect(max).toHaveAttribute('aria-describedby', 'cap-hint');
+    });
+
 });
 
 test.describe('the playground card and the landing page card', () => {
