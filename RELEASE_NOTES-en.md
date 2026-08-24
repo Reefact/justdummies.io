@@ -10,6 +10,10 @@ consumes this deployment (see [ADR-0001](docs/for-maintainers/adr/0001-a-release
 
 ## Unreleased
 
+_Nothing pending yet._
+
+## release/2026-08-24T07-27-33Z — August 24, 2026
+
 ### ✨ New
 
 - The /version page now has a "Previous releases" section, showing the 5 releases this site published just before its latest one, with a single link to see further releases on GitHub.

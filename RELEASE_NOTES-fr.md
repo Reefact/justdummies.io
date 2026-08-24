@@ -11,6 +11,10 @@ compatibilité, puisque rien ne consomme ce déploiement (voir
 
 ## Unreleased
 
+_Rien en attente pour l'instant._
+
+## release/2026-08-24T07-27-33Z — 24 août 2026
+
 ### ✨ Nouveautés
 
 - La page /version dispose désormais d'une section « Releases précédentes », montrant les 5 releases publiées par ce site juste avant la dernière, avec un lien unique pour voir les releases suivantes sur GitHub.
