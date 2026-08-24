@@ -14,6 +14,10 @@ consumes this deployment (see [ADR-0001](docs/for-maintainers/adr/0001-a-release
 
 - The home page's hero now demonstrates the same expression explained in the section right below it, instead of an unrelated one — its length is set by two editable fields, a minimum and a maximum, in place of the previous single exact length.
 
+### 🐛 Fixes
+
+- The documentation's own links no longer come underlined word by word: the section cards on /docs, the topic list inside a section, the sidebar and the previous/next pair are drawn as the rest of the site draws its links, and the sidebar again marks in colour the page you are reading. The links inside the documentation's own prose keep their underline.
+
 ## release/2026-08-24T07-27-33Z — August 24, 2026
 
 ### ✨ New

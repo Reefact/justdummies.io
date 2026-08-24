@@ -56,6 +56,11 @@ const sections = DOCS_SECTIONS.map((section) => ({
         border: 1px solid var(--jd-border);
         border-radius: 0.75rem;
         color: inherit;
+        /* The whole card is the link, heading and description together, so the browser's
+           default underline ran under every word of it. A box that lights its border on
+           hover says "link" without it — `ApiCategoryCard.astro` and `AboutContent.astro`
+           already draw their box links this way. */
+        text-decoration: none;
     }
 
     .section-card:hover {
