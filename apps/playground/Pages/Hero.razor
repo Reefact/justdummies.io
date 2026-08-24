@@ -321,14 +321,39 @@
 
     private Task SetMinText(string value) {
         _min = ParseAndClamp(value, "min", out _minText);
+        ReconcileBoundsHint();
 
         return Task.CompletedTask;
     }
 
     private Task SetMaxText(string value) {
         _max = ParseAndClamp(value, "max", out _maxText);
+        ReconcileBoundsHint();
 
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    ///     Called after either bound's own setter runs. <see cref="_capHintOwner" /> names one
+    ///     field, but two — <see cref="_min" /> and <see cref="_max" /> — can independently be
+    ///     unparseable at once, which never arose for the single length field this replaced.
+    ///     Without this, resolving one bound's own complaint calls <see cref="ClearHint" /> for
+    ///     it, which clears the hint outright: Generate stays disabled because the *other*
+    ///     bound is still <c>null</c>, but the sentence saying so is gone and that bound's
+    ///     <c>aria-describedby</c> now points at nothing. So when a field's own fix leaves no
+    ///     hint behind, this hands the hint to whichever bound is still unset, rather than
+    ///     leaving a disabled button with no explanation on screen.
+    /// </summary>
+    private void ReconcileBoundsHint() {
+        if (_capHintOwner is not null) {
+            return;
+        }
+
+        if (_min is null) {
+            SetHint("min", PlaygroundStrings.T(LocaleState.Current, "hero.lengthRequired"));
+        } else if (_max is null) {
+            SetHint("max", PlaygroundStrings.T(LocaleState.Current, "hero.lengthRequired"));
+        }
     }
 
     /// <summary>

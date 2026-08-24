@@ -197,6 +197,37 @@ test.describe('the landing page figure and the live widget behind it', () => {
         await expect(page.locator('.hero-widget #cap-hint')).toContainText(/printable ASCII/i);
     });
 
+    /**
+     * And a disabled Generate always has a reason on screen.
+     *
+     * Two number fields can be invalid at once now, where the one field this replaced never
+     * could be — WithLengthBetween's minimum and maximum are independent, unlike the single
+     * length before them. #cap-hint has one owner, so fixing one field's own complaint calls
+     * ClearHint for it; if the *other* field is still empty, that clears the only sentence on
+     * the page explaining why Generate stays disabled, on a visitor's cue that nothing is
+     * required of them.
+     */
+    test('keeps a bound named when its sibling is fixed and it is still empty', async ({ page }) => {
+        await page.setViewportSize(VIEWPORT);
+        await page.goto('/playground/hero');
+
+        const numbers: Locator = page.locator('.hero-widget .expression input[type="number"]');
+        const min: Locator = numbers.nth(0);
+        const max: Locator = numbers.nth(1);
+        await expect(max).toBeVisible();
+
+        await min.fill('');
+        await max.fill('');
+        await max.fill('15');
+
+        await expect(page.locator('.hero-widget .generate')).toBeDisabled();
+        await expect(
+            page.locator('.hero-widget #cap-hint'),
+            'Generate is disabled and nothing on the page says why',
+        ).not.toBeEmpty();
+        await expect(min).toHaveAttribute('aria-describedby', 'cap-hint');
+    });
+
 });
 
 test.describe('the playground card and the landing page card', () => {
