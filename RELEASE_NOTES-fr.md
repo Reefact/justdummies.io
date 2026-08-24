@@ -25,6 +25,9 @@ compatibilité, puisque rien ne consomme ce déploiement (voir
 
 - Les deux titres de la page /version qui disaient la même chose (« Ce build » et « Dernière release ») n'en forment plus qu'un, « Dernière release ».
 - Chaque lien « Voir sur GitHub » de la page /version ouvre désormais la liste des releases de GitHub à l'endroit de la release qu'il nomme, plutôt que la page propre à cette release.
+- Les contraintes de casse de JustDummies s'appellent désormais `InUpperCase()` et `InLowerCase()` — dans le playground, la référence d'API et la documentation — suite à la version 1.0.0-preview.4 de la bibliothèque.
+- Le package de catalogue de diagnostics documente désormais `JD031` à `JD033`, suite à sa propre version 1.0.0-preview.4.
+- L'outil en ligne de commande `dum` proposé au téléchargement passe en 1.1.0-beta.3.
 
 ## release/2026-08-21T22-42-04Z — 21 août 2026
 
