@@ -57,6 +57,11 @@
     --jd-border: #262A30;
     --jd-surface-raised: #1E2126;
 
+    /* A wash rather than a surface of its own: an inline `code` span sits directly in a
+       docs topic's prose (DocsTopicBody.astro), on --jd-background rather than a card, so a
+       translucent white reads there without needing its own opaque token. */
+    --jd-code-inline-bg: rgba(255, 255, 255, 0.06);
+
     /* Between the page and a code block, and it has to sit there: the narrative gives
        every other act a ground of its own, and an act on --jd-surface would put that
        ground at the same value as the code blocks standing on it, flattening both.
