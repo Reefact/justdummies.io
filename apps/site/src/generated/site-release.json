@@ -1,14 +1,30 @@
 {
-  "tag": "release/2026-08-21T22-42-04Z",
-  "date": "2026-08-21",
+  "tag": "release/2026-08-24T07-27-33Z",
+  "date": "2026-08-24",
   "locales": {
     "en": {
       "summaryHtml": [],
       "sections": [
         {
-          "label": "🐛 Fixes",
+          "label": "✨ New",
           "items": [
-            "The playground's chain builder no longer refuses a character-family constraint (<code>AlphaNumeric()</code> and friends) together with an anchored literal like <code>StartingWith(&quot;ORD-&quot;)</code> — the two now compose instead of throwing at declaration, following JustDummies' 1.0.0-preview.3 release."
+            "The /version page now has a \"Previous releases\" section, showing the 5 releases this site published just before its latest one, with a single link to see further releases on GitHub.",
+            "A dummy now stands beside the install command on the home page's first screen, on windows large enough to have room for it.",
+            "The About page is now signed by a dummy leaning at the end of the text, on wide windows: the prose's right edge follows his lean instead of running past him.",
+            "Clicks on the floating \"Download\" button are now counted, so the site can tell whether a permanent call to action on every page earns its place. The privacy page says exactly what is recorded — which section of the site you were reading, the page's language, and when — and nothing else: no identifier, no address, nothing that can be traced back to you.",
+            "The playground is now counted too: its visits, which were missing from the site's audience figures entirely, and the expressions visitors build. What is recorded of an expression is its shape with the values left out — <code>Any.String().StartingWith(?).Generate()</code> — so nothing you type there leaves your browser, which the privacy page now spells out.",
+            "The consent question is now asked once for the whole site, wherever you arrive. The playground asks it too — it used to ask nothing and be counted by nothing — and an answer given on either side is the answer every other page follows, so you are never asked twice. If you accept there, one thing more is recorded when you press Generate: that a press happened, and nothing of what you typed.",
+            "The site now has a documentation section. /docs carries the library's guides, its generator reference, a page for each package and one for each analyzer rule, in English and French — the documentation that until now could only be read on GitHub, with its diagrams drawn rather than left as source. What you read there always describes the version the site offers you to install, and each page links to the file it was taken from."
+          ]
+        },
+        {
+          "label": "🙌 Improvements",
+          "items": [
+            "The /version page's two headings that said the same thing (\"This build\" and \"Latest release\") are now one, \"Latest release\".",
+            "Every \"View on GitHub\" link on the /version page now opens GitHub's release listing at the release it names, instead of that release's own page.",
+            "JustDummies' casing constraints are now named <code>InUpperCase()</code> and <code>InLowerCase()</code> — in the playground, the API reference and the documentation — following the library's 1.0.0-preview.4 release.",
+            "The diagnostic catalogue package now documents <code>JD031</code> through <code>JD033</code>, following its own 1.0.0-preview.4 release.",
+            "The <code>dum</code> command-line tool offered for download moved to 1.1.0-beta.3."
           ]
         }
       ]
@@ -17,15 +33,59 @@
       "summaryHtml": [],
       "sections": [
         {
-          "label": "🐛 Corrections",
+          "label": "✨ Nouveautés",
           "items": [
-            "Le générateur de chaîne du playground n'oppose plus un refus lorsqu'une contrainte de famille de caractères (<code>AlphaNumeric()</code> et consorts) est combinée à un littéral ancré comme <code>StartingWith(&quot;ORD-&quot;)</code> — les deux se composent désormais au lieu de lever une erreur à la déclaration, suite à la version 1.0.0-preview.3 de JustDummies."
+            "La page /version dispose désormais d'une section « Releases précédentes », montrant les 5 releases publiées par ce site juste avant la dernière, avec un lien unique pour voir les releases suivantes sur GitHub.",
+            "Un dummy se tient désormais à côté de la commande d'installation sur le premier écran de la page d'accueil, sur les fenêtres assez grandes pour lui faire de la place.",
+            "La page À propos est désormais signée par un dummy adossé en fin de texte, sur les fenêtres larges : le bord droit de la prose épouse son inclinaison au lieu de lui passer dessus.",
+            "Les clics sur le bouton flottant « Télécharger » sont désormais comptés, pour savoir si un appel à l'action permanent sur chaque page mérite sa place. La page vie privée dit exactement ce qui est enregistré — quelle section du site vous étiez en train de lire, la langue de la page, et le moment — et rien d'autre : aucun identifiant, aucune adresse, rien qui puisse remonter jusqu'à vous.",
+            "Le playground est désormais compté lui aussi : ses visites, qui manquaient entièrement aux chiffres d'audience du site, et les expressions que les visiteurs construisent. Ce qui est enregistré d'une expression est sa forme sans les valeurs — <code>Any.String().StartingWith(?).Generate()</code> — si bien que rien de ce que vous y saisissez ne quitte votre navigateur, ce que la page vie privée énonce désormais.",
+            "La question de consentement n'est plus posée qu'une fois pour tout le site, où que vous arriviez. Le playground la pose lui aussi — il ne demandait rien et n'était compté par rien — et une réponse donnée d'un côté est celle que suivent toutes les autres pages : la question ne vous est jamais posée deux fois. Si vous l'y acceptez, une chose de plus est enregistrée quand vous pressez Générer : qu'une pression a eu lieu, et rien de ce que vous avez tapé.",
+            "Le site dispose désormais d'une section documentation. /docs reprend les guides de la bibliothèque, sa référence des générateurs, une page par package et une par règle d'analyzer, en français et en anglais — la documentation qui ne se lisait jusqu'ici que sur GitHub, avec ses diagrammes dessinés plutôt que laissés sous forme de source. Ce que vous y lisez décrit toujours la version que le site vous propose d'installer, et chaque page renvoie au fichier dont elle est tirée."
+          ]
+        },
+        {
+          "label": "🙌 Améliorations",
+          "items": [
+            "Les deux titres de la page /version qui disaient la même chose (« Ce build » et « Dernière release ») n'en forment plus qu'un, « Dernière release ».",
+            "Chaque lien « Voir sur GitHub » de la page /version ouvre désormais la liste des releases de GitHub à l'endroit de la release qu'il nomme, plutôt que la page propre à cette release.",
+            "Les contraintes de casse de JustDummies s'appellent désormais <code>InUpperCase()</code> et <code>InLowerCase()</code> — dans le playground, la référence d'API et la documentation — suite à la version 1.0.0-preview.4 de la bibliothèque.",
+            "Le package de catalogue de diagnostics documente désormais <code>JD031</code> à <code>JD033</code>, suite à sa propre version 1.0.0-preview.4.",
+            "L'outil en ligne de commande <code>dum</code> proposé au téléchargement passe en 1.1.0-beta.3."
           ]
         }
       ]
     }
   },
   "previous": [
+    {
+      "tag": "release/2026-08-21T22-42-04Z",
+      "date": "2026-08-21",
+      "locales": {
+        "en": {
+          "summaryHtml": [],
+          "sections": [
+            {
+              "label": "🐛 Fixes",
+              "items": [
+                "The playground's chain builder no longer refuses a character-family constraint (<code>AlphaNumeric()</code> and friends) together with an anchored literal like <code>StartingWith(&quot;ORD-&quot;)</code> — the two now compose instead of throwing at declaration, following JustDummies' 1.0.0-preview.3 release."
+              ]
+            }
+          ]
+        },
+        "fr": {
+          "summaryHtml": [],
+          "sections": [
+            {
+              "label": "🐛 Corrections",
+              "items": [
+                "Le générateur de chaîne du playground n'oppose plus un refus lorsqu'une contrainte de famille de caractères (<code>AlphaNumeric()</code> et consorts) est combinée à un littéral ancré comme <code>StartingWith(&quot;ORD-&quot;)</code> — les deux se composent désormais au lieu de lever une erreur à la déclaration, suite à la version 1.0.0-preview.3 de JustDummies."
+              ]
+            }
+          ]
+        }
+      }
+    },
     {
       "tag": "release/2026-08-21T10-08-43Z",
       "date": "2026-08-21",
@@ -257,39 +317,7 @@
           ]
         }
       }
-    },
-    {
-      "tag": "release/2026-08-17T20-58-25Z",
-      "date": "2026-08-17",
-      "locales": {
-        "en": {
-          "summaryHtml": [
-            "<em>The playground's code view now matches the one on the homepage.</em>"
-          ],
-          "sections": [
-            {
-              "label": "🙌 Improvements",
-              "items": [
-                "Redesigned the playground to match the landing page's code card, showing your chosen steps as syntax-highlighted code with a one-line, copyable snippet of the full chain."
-              ]
-            }
-          ]
-        },
-        "fr": {
-          "summaryHtml": [
-            "<em>La vue de code du playground correspond désormais à celle de la page d'accueil.</em>"
-          ],
-          "sections": [
-            {
-              "label": "🙌 Améliorations",
-              "items": [
-                "Le playground reprend désormais la carte de code de la page d'accueil : les étapes choisies s'affichent en code coloré, avec un extrait copiable tenant sur une seule ligne pour la chaîne complète."
-              ]
-            }
-          ]
-        }
-      }
     }
   ],
-  "moreTag": "release/2026-08-17T20-39-18Z"
+  "moreTag": "release/2026-08-17T20-58-25Z"
 }
