@@ -58,6 +58,7 @@ public static class PlaygroundStrings {
         ["nav.primary"]    = "Primary",
         ["nav.why"]        = "Why JustDummies",
         ["nav.playground"] = "Playground",
+        ["nav.docs"]       = "Docs",
         ["nav.github"]     = "GitHub",
         ["language.label"] = "Language",
 
@@ -183,6 +184,7 @@ public static class PlaygroundStrings {
         ["nav.primary"]    = new("Principale", "Primary"),
         ["nav.why"]        = new("Pourquoi JustDummies", "Why JustDummies"),
         ["nav.playground"] = new("Playground", "Playground"),
+        ["nav.docs"]       = new("Docs", "Docs"),
         ["nav.github"]     = new("GitHub", "GitHub"),
         ["language.label"] = new("Langue", "Language"),
 

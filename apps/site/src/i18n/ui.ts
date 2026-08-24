@@ -45,6 +45,7 @@ const en = {
 
     'nav.why': 'Why JustDummies',
     'nav.playground': 'Playground',
+    'nav.docs': 'Docs',
     'nav.github': 'GitHub',
     'nav.nuget': 'NuGet',
     'nav.primary': 'Primary',
@@ -737,6 +738,7 @@ const fr: Record<UiKey, string> = {
 
     'nav.why': 'Pourquoi JustDummies',
     'nav.playground': 'Playground',
+    'nav.docs': 'Docs',
     'nav.github': 'GitHub',
     'nav.nuget': 'NuGet',
     'nav.primary': 'Principale',
