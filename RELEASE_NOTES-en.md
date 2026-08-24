@@ -24,6 +24,9 @@ consumes this deployment (see [ADR-0001](docs/for-maintainers/adr/0001-a-release
 
 - The /version page's two headings that said the same thing ("This build" and "Latest release") are now one, "Latest release".
 - Every "View on GitHub" link on the /version page now opens GitHub's release listing at the release it names, instead of that release's own page.
+- JustDummies' casing constraints are now named `InUpperCase()` and `InLowerCase()` — in the playground, the API reference and the documentation — following the library's 1.0.0-preview.4 release.
+- The diagnostic catalogue package now documents `JD031` through `JD033`, following its own 1.0.0-preview.4 release.
+- The `dum` command-line tool offered for download moved to 1.1.0-beta.3.
 
 ## release/2026-08-21T22-42-04Z — August 21, 2026
 
