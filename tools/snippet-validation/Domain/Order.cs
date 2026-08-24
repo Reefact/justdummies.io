@@ -35,8 +35,8 @@ public sealed record OrderReference {
     // The last guard is not cosmetic: a real order reference is uppercase alphanumeric past
     // its separator, the same way a real one starts with ORD- and stays between 8 and 20
     // characters — the shape a barcode carries and a human reads back over the phone.
-    // Declared here, it is what lets the generator's own .AlphaNumeric().UpperCase()
-    // (Snippets/Why.cs, Snippets/Hero.cs, Snippets/FactoriesConstrained.cs,
+    // Declared here, it is what lets the generator's own .AlphaNumeric().InUpperCase()
+    // (Snippets/Why.cs, Snippets/FactoriesConstrained.cs,
     // Domain/AnyOrder.cs) remain a fact about this domain rather than a constraint invented
     // to keep a displayed value legible.
     //

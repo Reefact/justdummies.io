@@ -42,7 +42,7 @@ export const site = {
          */
         status: 'available',
         package: 'JustDummies',
-        version: '1.0.0-preview.3',
+        version: '1.0.0-preview.4',
         nuget: 'https://www.nuget.org/packages/JustDummies',
         /**
          * The prerelease flag is not decoration: every JustDummies package is a
@@ -84,7 +84,7 @@ export const site = {
         package: 'JustDummies.Cli',
         /** The command typed, which is not the package installed. */
         command: 'dum',
-        version: '1.1.0-beta.2',
+        version: '1.1.0-beta.3',
         nuget: 'https://www.nuget.org/packages/JustDummies.Cli',
         installCommand: 'dotnet tool install --global JustDummies.Cli --prerelease',
         example: 'dum generate Order',

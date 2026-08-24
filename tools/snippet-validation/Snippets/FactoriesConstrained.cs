@@ -12,7 +12,7 @@ public static class AnyOrderReference {
     public static OrderReference Generate() {
         string reference = Any.String()
                               .AlphaNumeric()
-                              .UpperCase()
+                              .InUpperCase()
                               .StartingWith("ORD-")
                               .WithLengthBetween(8, 20)
                               .Generate();
