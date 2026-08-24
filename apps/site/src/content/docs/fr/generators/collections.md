@@ -5,8 +5,8 @@ slug: "collections"
 order: 3
 locale: "fr"
 sourcePath: "doc/handwritten/for-users/generators/collections.fr.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-users/generators/collections.fr.md"
-ref: "lib-v1.0.0-preview.3"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/generators/collections.fr.md"
+ref: "lib-v1.0.0-preview.4"
 ---
 
 Un générateur de collection se construit à partir d'un générateur d'**élément** : vous décrivez un
@@ -53,7 +53,7 @@ d'`Empty()` — sont refusés avec un message les nommant tous deux, et l'analyz
 [JD016](/fr/docs/analyzers/JD016/) attrape les cas constants dès la compilation.
 
 Un effectif supérieur à 1 000 000 est refusé
-([ADR-0029](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0029-let-a-size-maximum-cap-without-steering-the-draw.fr.md)).
+([ADR-0029](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0029-let-a-size-maximum-cap-without-steering-the-draw.fr.md)).
 
 ## Exiger des éléments précis
 
@@ -100,7 +100,7 @@ Deux points méritent d'être compris ici.
 demandez à ce que le générateur d'élément peut réellement produire. Demander dix booléens distincts,
 ou cent valeurs distinctes issues d'un vivier de trois, est refusé immédiatement et nommément plutôt
 que tenté
-([ADR-0004](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0004-gate-distinct-collections-by-cardinality-else-bounded-draw.fr.md)).
+([ADR-0004](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0004-gate-distinct-collections-by-cardinality-else-bounded-draw.fr.md)).
 L'analyzer [JD016](/fr/docs/analyzers/JD016/) signale les cas constants dès la compilation.
 
 **Là où l'effectif est atteignable mais serré, un retirage borné termine le travail** — un nombre
@@ -117,7 +117,7 @@ diagnostic [JD028](/fr/docs/analyzers/JD028/).
 
 ```csharp
 Dictionary<string, int> stock = Any.DictionaryOf(
-                                       Any.String().Alpha().UpperCase().WithLength(3),
+                                       Any.String().Alpha().InUpperCase().WithLength(3),
                                        Any.Int32().Between(0, 500))
                                    .WithCountBetween(2, 5)
                                    .Generate();
@@ -129,7 +129,7 @@ Les clés sont distinctes par construction. Une seconde surcharge prend un
 Trois contraintes sont propres aux dictionnaires :
 
 ```csharp
-IAny<string> anyCode  = Any.String().Alpha().UpperCase().WithLength(3);
+IAny<string> anyCode  = Any.String().Alpha().InUpperCase().WithLength(3);
 IAny<int>    anyLevel = Any.Int32().Between(0, 500);
 
 // Une clé qui doit être présente.

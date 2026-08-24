@@ -5,8 +5,8 @@ slug: "inspecting-a-pool"
 order: 6
 locale: "fr"
 sourcePath: "doc/handwritten/for-users/guides/inspecting-a-pool.fr.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-users/guides/inspecting-a-pool.fr.md"
-ref: "lib-v1.0.0-preview.3"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/guides/inspecting-a-pool.fr.md"
+ref: "lib-v1.0.0-preview.4"
 ---
 
 Quand vous tirez d'une liste que vous avez fournie vous-même, les contraintes déclarées à côté d'elle

@@ -4,6 +4,82 @@
   "locale": "fr",
   "releases": [
     {
+      "version": "1.1.0-beta.3",
+      "date": "2026-08-24",
+      "maturity": "beta",
+      "anchor": "v1-1-0-beta-3",
+      "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/cli-v1.1.0-beta.3",
+      "summaryHtml": [
+        "<em>La lecture des gardes devient à la fois plus large et plus stricte — deux bibliothèques de gardes nommées et un type construit par factory sont désormais lus, tandis que trois formes où l'outil se trompait avec assurance sur la portée d'une garde sont refusées au lieu d'être devinées.</em>"
+      ],
+      "sections": [
+        {
+          "label": "⚠️ Changements majeurs",
+          "anchor": "v1-1-0-beta-3-breaking-changes",
+          "items": [
+            "<strong>Une garde que l'outil ne peut pas placer au-dessus de chaque écriture de son paramètre, ou dont il ne peut pas prouver qu'elle s'exécute à chaque construction, est désormais marquée <code>unread guards</code></strong> — un scaffold qui compilait peut donc maintenant bloquer votre build jusqu'à ce que vous confirmiez le générateur. Il émettait auparavant une contrainte que le vrai constructeur ne tient pas, ce qui est la pire des deux défaillances : le fichier compilait, le résumé ne signalait rien à regarder, et le tirage levait dans le constructeur bien plus tard."
+          ]
+        },
+        {
+          "label": "✨ Nouveautés",
+          "anchor": "v1-1-0-beta-3-new",
+          "items": [
+            "<strong>Les helpers de garde d'Ardalis.GuardClauses et de CommunityToolkit.Diagnostics sont lus, dans leurs deux graphies</strong> — <code>Name = Guard.Against.NullOrWhiteSpace(name);</code> ne met plus fin au parcours avant que quoi que ce soit ait été lu, si bien qu'un constructeur gardé dans ce style cesse de produire des générateurs neutres sous un résumé n'affichant aucun doute nulle part (<a href=\"https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0086-read-the-guard-helpers-of-named-libraries.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0086</a>). Une méthode d'une bibliothèque reconnue hors des lignes mesurées vaut <code>unread guards</code> plutôt que le silence.",
+            "<strong>Un type sans constructeur accessible se scaffolde désormais via sa propre factory</strong> — l'objet-valeur validant canonique, un constructeur privé derrière un <code>Create</code> public, voit <code>Generate()</code> appeler la factory et ses gardes lues comme celles d'un constructeur, la ligne de signature du résumé nommant l'appel que le fichier émis effectue (<code>factory Email.Create(string)</code>). Un type abstrait doté d'une factory se scaffolde également."
+          ]
+        },
+        {
+          "label": "🐛 Corrections de bugs",
+          "anchor": "v1-1-0-beta-3-bug-fixes",
+          "items": [
+            "<strong>Une garde n'est plus lue comme une borne sur une valeur que le constructeur avait déjà remplacée, ou qu'elle n'atteignait jamais</strong> — une écriture sur le paramètre lui-même (<code>percent = 100 - percent</code>), un initialiseur <code>: this(…)</code> ou <code>: base(…)</code> qui s'exécute entier avant le corps, une boucle, un <code>switch</code>, un <code>using</code> ou un <code>finally</code> dont l'outil ne lit pas l'ordre, et un <code>return</code> ou un <code>goto</code> au-dessus de la garde. Chacun est désormais placé correctement ou refusé.",
+            "<strong>Une garde de signe sur un paramètre non signé ne perd plus sa contrainte</strong> — <code>if (size &lt;= 0)</code> sur un <code>byte</code> ou un <code>uint</code> se lisait <code>.Positive()</code>, un membre que les générateurs non signés ne portent pas, si bien qu'elle était perdue en silence et qu'<code>Any.Byte()</code> tirait encore <code>0</code> ; elle se lit maintenant <code>.NonZero()</code>, ce qui est la même contrainte et non une plus lâche.",
+            "<strong>Les throw helpers arithmétiques d'<code>ArgumentOutOfRangeException</code> sont lus comme des gardes au lieu de bloquer le build</strong> — <code>ThrowIfNegative</code>, <code>ThrowIfNegativeOrZero</code>, <code>ThrowIfZero</code>, <code>ThrowIfLessThan</code>, <code>ThrowIfGreaterThan</code>, <code>ThrowIfLessThanOrEqual</code> et <code>ThrowIfGreaterThanOrEqual</code> correspondent désormais aux mêmes lignes numériques qu'une comparaison construit déjà.",
+            "<strong>Une garde suivie d'un <code>else</code>, ou une chaîne <code>else if</code> qui lève de bout en bout, est lue au lieu d'être ignorée</strong> — la lecture s'arrête à la première branche qui ne lève pas inconditionnellement, et cette branche, avec tout ce qui la suit, est marquée <code>unread guards</code>.",
+            "<strong>Une garde d'exclusion d'énumération se lit <code>AnyEnum&lt;T&gt;.DifferentFrom</code></strong> — <code>if (status == Status.None) { throw … }</code>, la garde d'énumération la plus courante qui soit, se lisait <code>.NonZero()</code>, un membre qu'<code>AnyEnum&lt;T&gt;</code> ne porte pas, et était perdue en silence.",
+            "<strong>Le résumé n'affiche plus <code>guard</code> pour une factory dont les gardes n'ont rien resserré</strong> — le mot est calculé à partir des contraintes qui atteignent la chaîne émise, sur le chemin factory comme sur tous les autres."
+          ]
+        }
+      ]
+    },
+    {
+      "version": "1.1.0-beta.2",
+      "date": "2026-08-22",
+      "maturity": "beta",
+      "anchor": "v1-1-0-beta-2",
+      "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/cli-v1.1.0-beta.2",
+      "summaryHtml": [
+        "<em>La lecture des gardes devient nettement plus complète — une garde déléguée à un helper ou écrite dans une graphie moderne, et une garde qui lève dans une forme que l'outil ne savait pas parser avant, sont maintenant lues toutes les deux — et une garde que l'outil ne peut toujours pas garantir bloque la compilation au lieu de compiler en silence.</em>"
+      ],
+      "sections": [
+        {
+          "label": "⚠️ Changements majeurs",
+          "anchor": "v1-1-0-beta-2-breaking-changes",
+          "items": [
+            "<strong>La recette de chaque paramètre vit désormais dans sa propre factory method privée</strong>, plutôt qu'en ligne dans l'initialiseur du constructeur — la forme de chaque fichier émis change, mais <code>Generate()</code>, les champs et les méthodes <code>With…</code> ne changent pas.",
+            "<strong>Une garde que l'outil ne peut pas garantir bloque désormais la compilation</strong>, comme le fait déjà un paramètre non résolu, au lieu de conserver silencieusement un générateur neutre qui pouvait tirer une valeur que le vrai constructeur rejette (<a href=\"https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0083-block-compilation-on-a-guard-the-engine-cannot-vouch-for.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0083</a>). Le résumé le compte à part — <code>1 TODO, 1 to verify</code> — puisqu'un générateur <em>a</em> été inféré ici."
+          ]
+        },
+        {
+          "label": "🙌 Améliorations",
+          "anchor": "v1-1-0-beta-2-improvements",
+          "items": [
+            "<strong>Une garde déléguée à un helper, ou écrite avec un throw-helper moderne</strong>, est maintenant lue comme son équivalent en <code>if</code> — <code>Ensure.NotBlank(name)</code> et <code>ArgumentNullException.ThrowIfNull(name)</code> ne passent plus en silence, et ne bloquent plus un build qui était déjà correct.",
+            "<strong>Une garde qui lève dans une forme que l'outil ne savait pas parser avant</strong> — une chaîne <code>else if</code>, un bloc qui journalise avant de lever — est désormais marquée <code>unread guards</code> au lieu de ne rien rapporter du tout.",
+            "<strong><code>openParameters</code> de <code>--format json</code> ne compte plus un paramètre qui a seulement besoin d'être vérifié</strong> — il garde son sens publié, et le nouveau <code>summary.parametersToVerify</code> porte l'autre compte.",
+            "<strong>Le résumé ne se contredit plus au sujet d'un même paramètre</strong> — une ligne lisant <code>to verify</code> est désormais comptée <code>to verify</code> dans le pied de page aussi, plus <code>TODO</code>."
+          ]
+        },
+        {
+          "label": "🐛 Corrections de bugs",
+          "anchor": "v1-1-0-beta-2-bug-fixes",
+          "items": [
+            "<strong>Plusieurs gardes arithmétiques, de taille et inter-paramètres, mal lues, silencieusement perdues, ou faisant planter l'exécution</strong> sont maintenant lues correctement, composées, ou refusées explicitement : une condition sur une valeur dérivée du paramètre, un nom de paramètre inhabituel (<code>@event</code>, <code>_id</code>), une taille au-delà de ce que la bibliothèque peut produire, une constante de garde au-delà de <code>decimal</code>, une borne de taille non <code>int</code>, une garde <code>Enum.IsDefined</code>, une garde portant sur deux paramètres, et un type que le fichier émis ne pouvait pas construire."
+          ]
+        }
+      ]
+    },
+    {
       "version": "1.1.0-beta.1",
       "date": "2026-08-13",
       "maturity": "beta",
@@ -17,10 +93,10 @@
           "label": "✨ Nouveautés",
           "anchor": "v1-1-0-beta-1-new",
           "items": [
-            "<strong><code>--entry-point</code></strong> — un scaffold peut désormais aussi écrire un point d'entrée, pour atteindre un générateur comme ceux de la bibliothèque. <code>any</code> émet un membre d'extension C# 14, vous donnant <code>Any.Order()</code> à côté de <code>Any.Int32()</code> ; <code>static:&lt;Name&gt;</code> émet une racine <code>partial</code> que vous possédez, vous donnant <code>Dummies.Order()</code>, sans aucune exigence de version de langage. Par défaut : <code>none</code> (<a href=\"https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0070-emit-an-entry-point-on-request-as-a-file-of-its-own.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0070</a>).",
+            "<strong><code>--entry-point</code></strong> — un scaffold peut désormais aussi écrire un point d'entrée, pour atteindre un générateur comme ceux de la bibliothèque. <code>any</code> émet un membre d'extension C# 14, vous donnant <code>Any.Order()</code> à côté de <code>Any.Int32()</code> ; <code>static:&lt;Name&gt;</code> émet une racine <code>partial</code> que vous possédez, vous donnant <code>Dummies.Order()</code>, sans aucune exigence de version de langage. Par défaut : <code>none</code> (<a href=\"https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0070-emit-an-entry-point-on-request-as-a-file-of-its-own.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0070</a>).",
             "<strong><code>--entry-point-namespace</code></strong> — place le fichier du point d'entrée dans un espace de noms qui lui est propre, distinct de celui du générateur.",
-            "<strong><code>--format json</code></strong> — une exécution se rapporte comme un seul document JSON sur stdout au lieu du résumé console, pour un appelant qui est un script plutôt qu'un lecteur. Porte ce que le code de sortie ne peut pas — <code>summary.openParameters</code>, et une ligne par paramètre avec son expression et sa provenance. Les codes de sortie eux-mêmes ne bougent pas (<a href=\"https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0071-report-a-run-as-data-without-moving-the-exit-codes.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0071</a>).",
-            "<strong><code>dum.json</code></strong> — un fichier optionnel à côté du projet fournit des valeurs par défaut pour <code>output</code>, <code>namespace</code>, <code>entryPoint</code>, <code>entryPointNamespace</code> et <code>format</code>. La ligne de commande gagne toujours (<a href=\"https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0072-read-project-defaults-from-a-file-the-command-line-overrides.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0072</a>)."
+            "<strong><code>--format json</code></strong> — une exécution se rapporte comme un seul document JSON sur stdout au lieu du résumé console, pour un appelant qui est un script plutôt qu'un lecteur. Porte ce que le code de sortie ne peut pas — <code>summary.openParameters</code>, et une ligne par paramètre avec son expression et sa provenance. Les codes de sortie eux-mêmes ne bougent pas (<a href=\"https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0071-report-a-run-as-data-without-moving-the-exit-codes.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0071</a>).",
+            "<strong><code>dum.json</code></strong> — un fichier optionnel à côté du projet fournit des valeurs par défaut pour <code>output</code>, <code>namespace</code>, <code>entryPoint</code>, <code>entryPointNamespace</code> et <code>format</code>. La ligne de commande gagne toujours (<a href=\"https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0072-read-project-defaults-from-a-file-the-command-line-overrides.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0072</a>)."
           ]
         },
         {
@@ -57,7 +133,7 @@
           "items": [
             "<strong><code>dum generate &lt;Type&gt;</code></strong> — écrit le générateur de dummy d'un type, une fois, comme du code ordinaire que vous possédez ensuite.",
             "<strong>Résolution.</strong> Un paramètre de constructeur devient un générateur via la table de base, puis les clauses de garde du constructeur lui-même (<code>quantity &lt;= 0</code> → <code>.Positive()</code>), puis la composition via une factory ou un <code>Any{Type}</code> déjà scaffoldé.",
-            "<strong>Un paramètre non résolu reste ouvert, bruyamment</strong> — émis comme un identifiant qui n'existe pas, pour que votre propre build le signale à la ligne, avec le type en main (<a href=\"https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0060-seed-generators-from-constructor-guards.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0060</a>).",
+            "<strong>Un paramètre non résolu reste ouvert, bruyamment</strong> — émis comme un identifiant qui n'existe pas, pour que votre propre build le signale à la ligne, avec le type en main (<a href=\"https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0060-seed-generators-from-constructor-guards.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0060</a>).",
             "<strong>Un résumé console</strong> indiquant d'où vient chaque expression — table de base, garde, factory, générateur réutilisé, ou rien.",
             "<strong><code>--project</code>, <code>--output</code>, <code>--namespace</code>, <code>--force</code>, <code>--dry-run</code></strong>, et rien d'autre.",
             "<strong>Durcissement du package</strong> — SBOM SPDX embarqué, SourceLink, package de symboles, build déterministe, et une attestation de provenance sur l'artefact publié."
@@ -67,7 +143,7 @@
           "label": "🙌 Améliorations",
           "anchor": "v1-0-0-beta-1-improvements",
           "items": [
-            "Nécessite le package <code>JustDummies</code> dans le projet analysé. Aucune dépendance vers lui n'est déclarée dans aucun sens — chaque symbole de la bibliothèque est résolu par son nom dans votre compilation, exactement comme le font les analyseurs (<a href=\"https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0063-give-the-scaffolder-no-dependency-on-the-package.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0063</a>), si bien que les versions de l'outil et de la bibliothèque ne peuvent jamais diverger."
+            "Nécessite le package <code>JustDummies</code> dans le projet analysé. Aucune dépendance vers lui n'est déclarée dans aucun sens — chaque symbole de la bibliothèque est résolu par son nom dans votre compilation, exactement comme le font les analyseurs (<a href=\"https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0063-give-the-scaffolder-no-dependency-on-the-package.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0063</a>), si bien que les versions de l'outil et de la bibliothèque ne peuvent jamais diverger."
           ]
         }
       ]

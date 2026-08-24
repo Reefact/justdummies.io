@@ -5,8 +5,8 @@ slug: "strings"
 order: 1
 locale: "fr"
 sourcePath: "doc/handwritten/for-users/generators/strings.fr.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-users/generators/strings.fr.md"
-ref: "lib-v1.0.0-preview.3"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/generators/strings.fr.md"
+ref: "lib-v1.0.0-preview.4"
 ---
 
 `Any.String()` est le générateur le plus contraint de la bibliothèque, parce que c'est dans les
@@ -41,8 +41,8 @@ string reference = Any.String().Printable().WithMaxLength(32).NonEmpty().Generat
 `NonEmpty()` quand du contenu est requis, `WithMaxLength(...)` pour la longueur que votre colonne ou
 votre contrat autorise, `Printable()` quand un caractère de contrôle n'en fait pas partie. Chacun est
 un fait sur le code environnant, écrit là où il doit l'être
-([ADR-0075](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0075-draw-characters-from-the-whole-of-ascii.fr.md),
-[ADR-0076](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0076-let-a-declared-maximum-steer-the-size-draw.fr.md)).
+([ADR-0075](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0075-draw-characters-from-the-whole-of-ascii.fr.md),
+[ADR-0076](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0076-let-a-declared-maximum-steer-the-size-draw.fr.md)).
 
 ## Longueur
 
@@ -67,7 +67,7 @@ comportent identiquement. Avec un minimum seul, le tirage atteint l'étendue par
 
 Tout argument de taille est refusé au-delà de 1 000 000, maxima compris : au-delà, le test voulait un
 test de charge, pas un dummy
-([ADR-0076](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0076-let-a-declared-maximum-steer-the-size-draw.fr.md)).
+([ADR-0076](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0076-let-a-declared-maximum-steer-the-size-draw.fr.md)).
 
 ## Alphabet
 
@@ -91,9 +91,9 @@ string letters      = Any.String().Alpha().WithLength(10).Generate();          /
 string alphanumeric = Any.String().AlphaNumeric().WithLength(10).Generate();   // A-Z a-z 0-9
 string digits       = Any.String().Numeric().WithLength(6).Generate();         // 0-9
 string symbols      = Any.String().Punctuation().WithLength(4).Generate();     // !"#$%&'()*+,-./ etc.
-string sha          = Any.String().Hexadecimal().LowerCase().WithLength(40).Generate();
+string sha          = Any.String().Hexadecimal().InLowerCase().WithLength(40).Generate();
 string anyText      = Any.String().Printable().WithLength(20).Generate();      // aucun caractère de contrôle
-string shouting     = Any.String().Alpha().UpperCase().WithLength(4).Generate();
+string shouting     = Any.String().Alpha().InUpperCase().WithLength(4).Generate();
 string noDigits     = Any.String().Printable().WithoutNumeric().WithLength(8).Generate();
 string custom       = Any.String().WithChars("ACGT").WithLength(20).Generate(); // votre propre vivier
 ```
@@ -149,7 +149,7 @@ un appel nommé :
 
 <!-- jd:allow=JD033 -->
 ```csharp
-string reference = Any.String().StartingWith("ORD-").AlphaNumeric().UpperCase().WithLengthBetween(8, 20).Generate();
+string reference = Any.String().StartingWith("ORD-").AlphaNumeric().InUpperCase().WithLengthBetween(8, 20).Generate();
 // ORD-7K2P9QW, ORD-XZ4M1TB, ORD-B8N3TVJ2 — le tiret sépare, et le corps reste alphanumérique
 ```
 
@@ -190,7 +190,7 @@ valeurs ne puisse les réinterpréter comme un filtre.
 
 Les exclusions sont honorées par un retirage **borné** : exclure presque tout ce qu'un petit domaine
 peut produire se termine donc par une `AnyGenerationException` explicite, et non par un blocage
-([ADR-0012](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0012-meet-string-exclusions-with-a-bounded-redraw.fr.md)).
+([ADR-0012](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0012-meet-string-exclusions-with-a-bounded-redraw.fr.md)).
 
 ## Caractères
 
@@ -198,14 +198,14 @@ peut produire se termine donc par une `AnyGenerationException` explicite, et non
 
 ```csharp
 char letter      = Any.Char().Alpha().Generate();
-char upper       = Any.Char().Alpha().UpperCase().Generate();
+char upper       = Any.Char().Alpha().InUpperCase().Generate();
 char digit       = Any.Char().Numeric().Generate();
 char punctuation = Any.Char().Punctuation().Generate();
 char printable   = Any.Char().Printable().Generate();
 char control     = Any.Char().NonPrintable().Generate();
-char hex         = Any.Char().Hexadecimal().LowerCase().Generate();
+char hex         = Any.Char().Hexadecimal().InLowerCase().Generate();
 char separator   = Any.Char().OneOf('-', '_', '.').Generate();
-char notVowel    = Any.Char().Alpha().LowerCase().Except('a', 'e', 'i', 'o', 'u').Generate();
+char notVowel    = Any.Char().Alpha().InLowerCase().Except('a', 'e', 'i', 'o', 'u').Generate();
 ```
 
 Ce sont les familles que `Any.String()` déclare, elles ont ici le même sens, et le défaut aussi :
@@ -258,7 +258,7 @@ jamais mal généré :
 
 Élargir cet ensemble supposerait une dépendance à un automate d'expressions régulières ; la décision
 de garder un analyseur maison et de refuser bruyamment est
-[ADR-0008](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0008-generate-strings-from-a-home-grown-regular-subset.fr.md).
+[ADR-0008](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0008-generate-strings-from-a-home-grown-regular-subset.fr.md).
 
 ### Ce que l'on peut encore contraindre
 
@@ -274,4 +274,4 @@ l'exigence dans le motif — c'est déjà l'endroit le plus précis pour l'énon
 
 Une valeur générée correspond forcément à son motif, grâce à un retirage borné là où la seule
 construction ne peut pas le garantir
-([ADR-0027](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0027-guarantee-a-generated-regex-value-matches-by-bounded-redraw.fr.md)).
+([ADR-0027](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0027-guarantee-a-generated-regex-value-matches-by-bounded-redraw.fr.md)).

@@ -4,6 +4,27 @@
   "locale": "fr",
   "releases": [
     {
+      "version": "1.0.0-preview.4",
+      "date": "2026-08-24",
+      "maturity": "preview",
+      "anchor": "v1-0-0-preview-4",
+      "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/catalog-v1.0.0-preview.4",
+      "summaryHtml": [
+        "<em>Le catalogue rattrape le jeu de règles que <code>JustDummies 1.0.0-preview.3</code> a livré : trois règles rejoignent les constantes, <code>JD031</code>, <code>JD032</code> et <code>JD033</code>.</em>"
+      ],
+      "sections": [
+        {
+          "label": "✨ Nouveautés",
+          "anchor": "v1-0-0-preview-4-new",
+          "items": [
+            "<strong><code>JustDummiesRule.JD031</code></strong> — <em>Deux bornes inclusives que la bibliothèque nomme aussi comme un seul intervalle</em>, catégorie <code>JustDummies.Constraints</code>.",
+            "<strong><code>JustDummiesRule.JD032</code></strong> — <em>Une borne déclarée deux fois, dont seule la plus serrée survit</em>, catégorie <code>JustDummies.Constraints</code>.",
+            "<strong><code>JustDummiesRule.JD033</code></strong> — <em>Un littéral ancré que les caractères déclarés ne peuvent pas tirer</em>, catégorie <code>JustDummies.Constraints</code>."
+          ]
+        }
+      ]
+    },
+    {
       "version": "1.0.0-preview.3",
       "date": "2026-08-18",
       "maturity": "preview",

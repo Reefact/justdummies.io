@@ -4,6 +4,27 @@
   "locale": "en",
   "releases": [
     {
+      "version": "1.0.0-preview.4",
+      "date": "2026-08-24",
+      "maturity": "preview",
+      "anchor": "v1-0-0-preview-4",
+      "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/catalog-v1.0.0-preview.4",
+      "summaryHtml": [
+        "<em>The catalogue catches up with the rule set <code>JustDummies 1.0.0-preview.3</code> shipped: three rules join the constants, <code>JD031</code>, <code>JD032</code> and <code>JD033</code>.</em>"
+      ],
+      "sections": [
+        {
+          "label": "✨ New",
+          "anchor": "v1-0-0-preview-4-new",
+          "items": [
+            "<strong><code>JustDummiesRule.JD031</code></strong> — <em>Two inclusive bounds the library also names as one range</em>, category <code>JustDummies.Constraints</code>.",
+            "<strong><code>JustDummiesRule.JD032</code></strong> — <em>A bound declared twice, where only the tighter one survives</em>, category <code>JustDummies.Constraints</code>.",
+            "<strong><code>JustDummiesRule.JD033</code></strong> — <em>An anchored literal the declared characters cannot draw</em>, category <code>JustDummies.Constraints</code>."
+          ]
+        }
+      ]
+    },
+    {
       "version": "1.0.0-preview.3",
       "date": "2026-08-18",
       "maturity": "preview",

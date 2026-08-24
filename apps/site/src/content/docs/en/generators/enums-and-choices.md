@@ -5,8 +5,8 @@ slug: "enums-and-choices"
 order: 4
 locale: "en"
 sourcePath: "doc/handwritten/for-users/generators/enums-and-choices.en.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-users/generators/enums-and-choices.en.md"
-ref: "lib-v1.0.0-preview.3"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/generators/enums-and-choices.en.md"
+ref: "lib-v1.0.0-preview.4"
 ---
 
 Four generators cover the case where the value comes from a **known set** rather than a range:
@@ -43,7 +43,7 @@ Permissions combined = Any.Enum<Permissions>().AllowingCombinations().Generate()
 ```
 
 The opt-in is deliberate
-([ADR-0020](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0020-draw-flag-enum-combinations-behind-an-opt-in.md)). A
+([ADR-0020](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0020-draw-flag-enum-combinations-behind-an-opt-in.md)). A
 `[Flags]` attribute says the members *may* combine, not that every value in your domain does; and a
 generator that combined automatically would silently change what existing tests draw the day someone
 adds the attribute. Asking for combinations is one call, and it says at the call site that

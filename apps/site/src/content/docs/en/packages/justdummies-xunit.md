@@ -5,8 +5,8 @@ slug: "justdummies-xunit"
 order: 1
 locale: "en"
 sourcePath: "doc/handwritten/for-users/packages/justdummies-xunit.en.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.2/doc/handwritten/for-users/packages/justdummies-xunit.en.md"
-ref: "cli-v1.1.0-beta.2"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-users/packages/justdummies-xunit.en.md"
+ref: "cli-v1.1.0-beta.3"
 ---
 
 The xUnit **v3** adapter. It contributes exactly one thing — a `[Reproducible]` attribute — and that
@@ -24,7 +24,7 @@ It depends on `JustDummies` and on xUnit v3.
 
 `ReproducibleAttribute`, with a settable `Seed`. That is all of it — the adapter is deliberately thin,
 because everything it needs already exists in the library
-([ADR-0018](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.2/doc/handwritten/for-maintainers/adr/0018-adapt-dummies-to-xunit-v3-through-a-companion-package.md)).
+([ADR-0018](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0018-adapt-dummies-to-xunit-v3-through-a-companion-package.md)).
 
 ## Using it
 
@@ -98,7 +98,7 @@ Notice that the message names the **attribute**, not `Any.Reproducibly(seed, ...
 from outside its own body contains no such call, so naming it would send the reader looking for code
 that is not there. The adapter supplies its own replay snippet through the second `Any.UseSeed`
 overload — the reason that overload exists
-([ADR-0017](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.2/doc/handwritten/for-maintainers/adr/0017-open-the-ambient-seed-scope-to-adapters.md)).
+([ADR-0017](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0017-open-the-ambient-seed-scope-to-adapters.md)).
 
 Three consequences worth knowing:
 

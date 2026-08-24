@@ -26,7 +26,7 @@
           "label": "🙌 Improvements",
           "anchor": "v1-0-0-preview-1-improvements",
           "items": [
-            "Requires xUnit v3 and a <code>JustDummies</code> package published from this repository. The two trains version independently (<a href=\"https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0047-declare-the-adapters-library-dependency-independently.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0047</a>): an adapter-only fix ships on its own, without waiting on a new library release."
+            "Requires xUnit v3 and a <code>JustDummies</code> package published from this repository. The two trains version independently (<a href=\"https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0047-declare-the-adapters-library-dependency-independently.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0047</a>): an adapter-only fix ships on its own, without waiting on a new library release."
           ]
         }
       ]

@@ -1,21 +1,21 @@
 {
   "repository": "https://github.com/Reefact/just-dummies",
-  "ref": "lib-v1.0.0-preview.3",
-  "refUrl": "https://github.com/Reefact/just-dummies/releases/tag/lib-v1.0.0-preview.3",
-  "refDate": "2026-08-21T13:26:00+02:00",
-  "generatedAt": "2026-08-21T11:50:26.368Z",
+  "ref": "cli-v1.1.0-beta.3",
+  "refUrl": "https://github.com/Reefact/just-dummies/releases/tag/cli-v1.1.0-beta.3",
+  "refDate": "2026-08-24T03:13:38+02:00",
+  "generatedAt": "2026-08-24T07:00:48.696Z",
   "trains": [
     {
       "key": "lib",
       "package": "JustDummies",
-      "changelogUrl": "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/JustDummies/CHANGELOG.md",
+      "changelogUrl": "https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/JustDummies/CHANGELOG.md",
       "majors": [
         {
           "major": 1,
-          "releaseCount": 3,
+          "releaseCount": 4,
           "latest": {
-            "version": "1.0.0-preview.3",
-            "date": "2026-08-21",
+            "version": "1.0.0-preview.4",
+            "date": "2026-08-24",
             "maturity": "preview"
           }
         },
@@ -33,7 +33,7 @@
     {
       "key": "xunit",
       "package": "JustDummies.Xunit",
-      "changelogUrl": "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/JustDummies.Xunit/CHANGELOG.md",
+      "changelogUrl": "https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/JustDummies.Xunit/CHANGELOG.md",
       "majors": [
         {
           "major": 1,
@@ -49,14 +49,14 @@
     {
       "key": "catalog",
       "package": "JustDummies.DiagnosticCatalog",
-      "changelogUrl": "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/JustDummies.DiagnosticCatalog/CHANGELOG.md",
+      "changelogUrl": "https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/JustDummies.DiagnosticCatalog/CHANGELOG.md",
       "majors": [
         {
           "major": 1,
-          "releaseCount": 2,
+          "releaseCount": 3,
           "latest": {
-            "version": "1.0.0-preview.3",
-            "date": "2026-08-18",
+            "version": "1.0.0-preview.4",
+            "date": "2026-08-24",
             "maturity": "preview"
           }
         }
@@ -65,14 +65,14 @@
     {
       "key": "cli",
       "package": "JustDummies.Cli",
-      "changelogUrl": "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/JustDummies.Cli/CHANGELOG.md",
+      "changelogUrl": "https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/JustDummies.Cli/CHANGELOG.md",
       "majors": [
         {
           "major": 1,
-          "releaseCount": 2,
+          "releaseCount": 4,
           "latest": {
-            "version": "1.1.0-beta.1",
-            "date": "2026-08-13",
+            "version": "1.1.0-beta.3",
+            "date": "2026-08-24",
             "maturity": "beta"
           }
         }

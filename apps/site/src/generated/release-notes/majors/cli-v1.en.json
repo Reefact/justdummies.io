@@ -4,6 +4,82 @@
   "locale": "en",
   "releases": [
     {
+      "version": "1.1.0-beta.3",
+      "date": "2026-08-24",
+      "maturity": "beta",
+      "anchor": "v1-1-0-beta-3",
+      "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/cli-v1.1.0-beta.3",
+      "summaryHtml": [
+        "<em>Guard reading gets wider and stricter at once — two named guard libraries and a factory-built type are read now, while three shapes where the tool was confidently wrong about a guard's reach are refused instead of guessed.</em>"
+      ],
+      "sections": [
+        {
+          "label": "⚠️ Breaking changes",
+          "anchor": "v1-1-0-beta-3-breaking-changes",
+          "items": [
+            "<strong>A guard the tool cannot place above every write to its parameter, or cannot prove runs on every construction, is now marked <code>unread guards</code></strong> — so a scaffold that used to compile can block your build until you confirm the generator. It used to emit a constraint the real constructor does not hold, which is the worse of the two failures: the file compiled, the recap reported nothing worth looking at, and the draw threw inside the constructor much later."
+          ]
+        },
+        {
+          "label": "✨ New",
+          "anchor": "v1-1-0-beta-3-new",
+          "items": [
+            "<strong>The guard helpers of Ardalis.GuardClauses and CommunityToolkit.Diagnostics are read, in both their spellings</strong> — <code>Name = Guard.Against.NullOrWhiteSpace(name);</code> no longer ends the scan before anything is read, so a constructor guarded in that style stops scaffolding neutral generators under a recap showing no doubt anywhere (<a href=\"https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0086-read-the-guard-helpers-of-named-libraries.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0086</a>). A recognised library's method outside the measured rows earns <code>unread guards</code> rather than silence.",
+            "<strong>A type with no accessible constructor now scaffolds through its own factory</strong> — the canonical validating value object, a private constructor behind a public <code>Create</code>, has <code>Generate()</code> call the factory and its guards read like a constructor's, with the recap's signature line naming the call the emitted file makes (<code>factory Email.Create(string)</code>). An abstract type with a factory scaffolds too."
+          ]
+        },
+        {
+          "label": "🐛 Bug Fixes",
+          "anchor": "v1-1-0-beta-3-bug-fixes",
+          "items": [
+            "<strong>A guard is no longer read as a bound on a value the constructor had already replaced, or never reached</strong> — a write to the parameter itself (<code>percent = 100 - percent</code>), a <code>: this(…)</code> or <code>: base(…)</code> initializer that runs entire before the body, a loop, <code>switch</code>, <code>using</code> or <code>finally</code> whose order the tool does not read, and a <code>return</code> or <code>goto</code> above the guard. Each is now placed correctly or refused.",
+            "<strong>A sign guard on an unsigned parameter no longer loses its constraint</strong> — <code>if (size &lt;= 0)</code> on a <code>byte</code> or a <code>uint</code> read as <code>.Positive()</code>, a member the unsigned generators do not carry, so it was dropped silently and <code>Any.Byte()</code> still drew <code>0</code>; it now reads as <code>.NonZero()</code>, which is the same constraint rather than a looser one.",
+            "<strong>The arithmetic <code>ArgumentOutOfRangeException</code> throw helpers are read as guards instead of blocking the build</strong> — <code>ThrowIfNegative</code>, <code>ThrowIfNegativeOrZero</code>, <code>ThrowIfZero</code>, <code>ThrowIfLessThan</code>, <code>ThrowIfGreaterThan</code>, <code>ThrowIfLessThanOrEqual</code> and <code>ThrowIfGreaterThanOrEqual</code> now map to the same numeric rows a comparison already builds.",
+            "<strong>A guard followed by an <code>else</code>, or an <code>else if</code> chain that throws throughout, is read rather than passed over</strong> — reading stops at the first branch that does not throw unconditionally, and that branch, with everything after it, is marked <code>unread guards</code>.",
+            "<strong>An enum exclusion guard is read as <code>AnyEnum&lt;T&gt;.DifferentFrom</code></strong> — <code>if (status == Status.None) { throw … }</code>, the commonest enum guard there is, used to read as <code>.NonZero()</code>, a member <code>AnyEnum&lt;T&gt;</code> does not carry, and was dropped silently.",
+            "<strong>The recap no longer prints <code>guard</code> for a factory whose guards tightened nothing</strong> — the word is computed from the constraints that reach the emitted chain, on the factory path as on every other."
+          ]
+        }
+      ]
+    },
+    {
+      "version": "1.1.0-beta.2",
+      "date": "2026-08-22",
+      "maturity": "beta",
+      "anchor": "v1-1-0-beta-2",
+      "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/cli-v1.1.0-beta.2",
+      "summaryHtml": [
+        "<em>Guard reading gets substantially more thorough — a helper-delegated or modern-spelled guard, and a guard that throws in a shape the tool couldn't parse before, are both read now — and a guard the tool still can't vouch for blocks compilation instead of compiling silently.</em>"
+      ],
+      "sections": [
+        {
+          "label": "⚠️ Breaking changes",
+          "anchor": "v1-1-0-beta-2-breaking-changes",
+          "items": [
+            "<strong>Each parameter's recipe now lives in its own private factory method</strong>, not inlined in the constructor's initializer — every emitted file's shape changes, though <code>Generate()</code>, the fields and the <code>With…</code> methods do not.",
+            "<strong>A guard the tool cannot vouch for now blocks compilation</strong>, the same way an unresolved parameter already did, instead of quietly keeping a neutral generator that could draw a value the real constructor rejects (<a href=\"https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0083-block-compilation-on-a-guard-the-engine-cannot-vouch-for.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0083</a>). The recap counts it separately — <code>1 TODO, 1 to verify</code> — since a generator <em>was</em> inferred there."
+          ]
+        },
+        {
+          "label": "🙌 Improvements",
+          "anchor": "v1-1-0-beta-2-improvements",
+          "items": [
+            "<strong>A guard delegated to a helper, or spelled with a modern throw-helper</strong>, is now read the same as its <code>if</code>-based equivalent — <code>Ensure.NotBlank(name)</code> and <code>ArgumentNullException.ThrowIfNull(name)</code> no longer pass over in silence or block a build that was already correct.",
+            "<strong>A throwing guard in a shape the tool couldn't parse before</strong> — an <code>else if</code> chain, a block that logs before it throws — is now marked <code>unread guards</code> instead of reporting nothing at all.",
+            "<strong><code>--format json</code>'s <code>openParameters</code> no longer counts a parameter that only needs verifying</strong> — it keeps its published meaning, and the new <code>summary.parametersToVerify</code> carries the other count.",
+            "<strong>The recap no longer disagrees with itself about one parameter</strong> — a row reading <code>to verify</code> is now counted as <code>to verify</code> in the footer too, not <code>TODO</code>."
+          ]
+        },
+        {
+          "label": "🐛 Bug Fixes",
+          "anchor": "v1-1-0-beta-2-bug-fixes",
+          "items": [
+            "<strong>Several arithmetic, size and cross-parameter guards that were misread, silently dropped, or crashed the run</strong> are now read correctly, composed, or refused explicitly: a condition on a value derived from the parameter, an odd parameter name (<code>@event</code>, <code>_id</code>), a size past what the library can produce, a guard constant past <code>decimal</code>, a non-<code>int</code> size bound, an <code>Enum.IsDefined</code> guard, a guard spanning two parameters, and a type the emitted file could not construct."
+          ]
+        }
+      ]
+    },
+    {
       "version": "1.1.0-beta.1",
       "date": "2026-08-13",
       "maturity": "beta",
@@ -17,10 +93,10 @@
           "label": "✨ New",
           "anchor": "v1-1-0-beta-1-new",
           "items": [
-            "<strong><code>--entry-point</code></strong> — a scaffold can now also write an entry point, so a generator is reached the way the library's own are. <code>any</code> emits a C# 14 extension member, giving you <code>Any.Order()</code> beside <code>Any.Int32()</code>; <code>static:&lt;Name&gt;</code> emits a <code>partial</code> root you own, giving you <code>Dummies.Order()</code>, with no language-version requirement at all. Defaults to <code>none</code> (<a href=\"https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0070-emit-an-entry-point-on-request-as-a-file-of-its-own.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0070</a>).",
+            "<strong><code>--entry-point</code></strong> — a scaffold can now also write an entry point, so a generator is reached the way the library's own are. <code>any</code> emits a C# 14 extension member, giving you <code>Any.Order()</code> beside <code>Any.Int32()</code>; <code>static:&lt;Name&gt;</code> emits a <code>partial</code> root you own, giving you <code>Dummies.Order()</code>, with no language-version requirement at all. Defaults to <code>none</code> (<a href=\"https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0070-emit-an-entry-point-on-request-as-a-file-of-its-own.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0070</a>).",
             "<strong><code>--entry-point-namespace</code></strong> — puts the entry-point file in a namespace of its own, apart from the generator.",
-            "<strong><code>--format json</code></strong> — a run reports itself as one JSON document on stdout instead of the console recap, for a caller that is a script rather than a reader. Carries what the exit code cannot — <code>summary.openParameters</code>, and a row per parameter with its expression and provenance. The exit codes themselves do not move (<a href=\"https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0071-report-a-run-as-data-without-moving-the-exit-codes.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0071</a>).",
-            "<strong><code>dum.json</code></strong> — an optional file beside the project supplies defaults for <code>output</code>, <code>namespace</code>, <code>entryPoint</code>, <code>entryPointNamespace</code> and <code>format</code>. The command line always wins (<a href=\"https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0072-read-project-defaults-from-a-file-the-command-line-overrides.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0072</a>)."
+            "<strong><code>--format json</code></strong> — a run reports itself as one JSON document on stdout instead of the console recap, for a caller that is a script rather than a reader. Carries what the exit code cannot — <code>summary.openParameters</code>, and a row per parameter with its expression and provenance. The exit codes themselves do not move (<a href=\"https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0071-report-a-run-as-data-without-moving-the-exit-codes.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0071</a>).",
+            "<strong><code>dum.json</code></strong> — an optional file beside the project supplies defaults for <code>output</code>, <code>namespace</code>, <code>entryPoint</code>, <code>entryPointNamespace</code> and <code>format</code>. The command line always wins (<a href=\"https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0072-read-project-defaults-from-a-file-the-command-line-overrides.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0072</a>)."
           ]
         },
         {
@@ -57,7 +133,7 @@
           "items": [
             "<strong><code>dum generate &lt;Type&gt;</code></strong> — writes the dummy generator for a type, once, as ordinary code you then own.",
             "<strong>Resolution.</strong> A constructor parameter becomes a generator through the base table, then the constructor's own guard clauses (<code>quantity &lt;= 0</code> → <code>.Positive()</code>), then composition through a factory or an already-scaffolded <code>Any{Type}</code>.",
-            "<strong>An open parameter is left open, loudly</strong> — emitted as an identifier that does not exist, so your own build reports it at the line, with the type in hand (<a href=\"https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0060-seed-generators-from-constructor-guards.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0060</a>).",
+            "<strong>An open parameter is left open, loudly</strong> — emitted as an identifier that does not exist, so your own build reports it at the line, with the type in hand (<a href=\"https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0060-seed-generators-from-constructor-guards.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0060</a>).",
             "<strong>A console recap</strong> saying where each expression came from — base table, guard, factory, a reused generator, or nothing.",
             "<strong><code>--project</code>, <code>--output</code>, <code>--namespace</code>, <code>--force</code>, <code>--dry-run</code></strong>, and nothing else.",
             "<strong>Package hardening</strong> — embedded SPDX SBOM, SourceLink, symbol package, deterministic build, and a build-provenance attestation on the release artifact."
@@ -67,7 +143,7 @@
           "label": "🙌 Improvements",
           "anchor": "v1-0-0-beta-1-improvements",
           "items": [
-            "Requires the <code>JustDummies</code> package in the analyzed project. No dependency on it is declared in either direction — every library symbol is resolved by name against your compilation, exactly as the analyzers do (<a href=\"https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0063-give-the-scaffolder-no-dependency-on-the-package.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0063</a>), so tool and library versions can never skew."
+            "Requires the <code>JustDummies</code> package in the analyzed project. No dependency on it is declared in either direction — every library symbol is resolved by name against your compilation, exactly as the analyzers do (<a href=\"https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0063-give-the-scaffolder-no-dependency-on-the-package.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0063</a>), so tool and library versions can never skew."
           ]
         }
       ]

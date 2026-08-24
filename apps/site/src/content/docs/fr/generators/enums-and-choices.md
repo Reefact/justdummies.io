@@ -5,8 +5,8 @@ slug: "enums-and-choices"
 order: 4
 locale: "fr"
 sourcePath: "doc/handwritten/for-users/generators/enums-and-choices.fr.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-users/generators/enums-and-choices.fr.md"
-ref: "lib-v1.0.0-preview.3"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/generators/enums-and-choices.fr.md"
+ref: "lib-v1.0.0-preview.4"
 ---
 
 Quatre générateurs couvrent le cas où la valeur provient d'un **ensemble connu** plutôt que d'un
@@ -45,7 +45,7 @@ Permissions combined = Any.Enum<Permissions>().AllowingCombinations().Generate()
 ```
 
 Ce caractère explicite est délibéré
-([ADR-0020](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0020-draw-flag-enum-combinations-behind-an-opt-in.fr.md)). Un
+([ADR-0020](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0020-draw-flag-enum-combinations-behind-an-opt-in.fr.md)). Un
 attribut `[Flags]` dit que les membres *peuvent* se combiner, non que toute valeur de votre domaine
 le fait ; et un générateur qui combinerait automatiquement changerait silencieusement ce que tirent
 les tests existants le jour où quelqu'un ajoute l'attribut. Demander les combinaisons tient en un

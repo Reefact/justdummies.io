@@ -5,8 +5,8 @@ slug: "justdummies-cli"
 order: 3
 locale: "fr"
 sourcePath: "doc/handwritten/for-users/packages/justdummies-cli.fr.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.2/doc/handwritten/for-users/packages/justdummies-cli.fr.md"
-ref: "cli-v1.1.0-beta.2"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-users/packages/justdummies-cli.fr.md"
+ref: "cli-v1.1.0-beta.3"
 ---
 
 `dum` écrit le générateur de dummy pour l'un de vos types, **une fois**, sous forme de code ordinaire
@@ -60,19 +60,20 @@ qui a été **deviné** :
 | `AnyX` | un générateur que vous aviez déjà scaffoldé a été réutilisé |
 | `TODO` | rien n'a pu être inféré ; le fichier nomme ce qu'il reste à faire |
 | `to verify` | un générateur *a bien* été inféré, mais quelque chose près de ce paramètre n'a pas pu être lu — vérifiez-le |
-| `unread guards` | ce « quelque chose » : une garde que l'outil ne reconnaît pas, ou un helper dans lequel il ne voit pas |
+| `unread guards` | ce « quelque chose » : une garde que l'outil ne reconnaît pas, un helper dans lequel il ne voit pas, ou une garde qu'il lit sans pouvoir la situer — sous une écriture du paramètre, ou sous quelque chose qui décide si elle s'exécute |
 | `constraint unavailable` | une garde a été comprise, et ce générateur n'a aucun membre pour l'exprimer |
 | `no source` | le type vient d'un package, il n'y avait donc aucun corps de constructeur à lire |
 | `unavailable` | le générateur existe dans JustDummies, mais pas dans l'asset que votre projet résout |
 
 **Un `TODO` n'est pas un échec.** L'outil émet un identifiant qui n'existe pas, si bien que *votre
 propre build* signale ce qui n'a pas pu être inféré, à la ligne exacte, avec le type sous la main
-([ADR-0060](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.2/doc/handwritten/for-maintainers/adr/0060-seed-generators-from-constructor-guards.fr.md)). Un
+([ADR-0060](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0060-seed-generators-from-constructor-guards.fr.md)). Un
 générateur qui tirerait discrètement une valeur plausible à cet endroit serait bien pire.
 
 **`to verify` fonctionne pareil, et pour la même raison.** Là où votre constructeur délègue sa
-validation à un helper, ou garde dans une forme que l'outil n'analyse pas, il ne peut pas promettre
-que la recette inférée honore votre véritable invariant — alors il écrit cette recette comme base de
+validation à un helper, garde dans une forme que l'outil n'analyse pas, ou garde à un endroit dont il
+ne peut pas répondre — sous une écriture du paramètre, ou sous quelque chose qui décide si la garde
+s'exécute —, il ne peut pas promettre que la recette inférée honore votre véritable invariant — alors il écrit cette recette comme base de
 travail et ajoute au-dessus une ligne qui ne compile pas :
 
 <!-- jd:skip -->
@@ -90,7 +91,7 @@ private static IAny<string> ValueFactory() {
 Gardez la recette ou remplacez-la, supprimez cette seule ligne, et c'est réglé. L'alternative — un
 fichier qui compile et tire une valeur que votre constructeur rejette lors d'une exécution
 ultérieure — est l'échec qui coûte le plus cher, parce qu'il surgit loin de sa cause
-([ADR-0083](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.2/doc/handwritten/for-maintainers/adr/0083-block-compilation-on-a-guard-the-engine-cannot-vouch-for.fr.md)).
+([ADR-0083](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0083-block-compilation-on-a-guard-the-engine-cannot-vouch-for.fr.md)).
 
 ## À travers un graphe d'agrégats
 
@@ -147,7 +148,7 @@ Le generator, lui, ne bouge pas, et `AnyOrder.cs` est identique octet pour octet
 valeur demandée. Une racine nommée `Any` est refusée : une classe statique de ce nom dans votre propre
 projet masquerait `JustDummies.Any` pour tout son namespace, et `Any.Int32()` cesserait de compiler —
 ce que `--entry-point any` existe précisément pour éviter. Décision :
-[ADR-0070](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.2/doc/handwritten/for-maintainers/adr/0070-emit-an-entry-point-on-request-as-a-file-of-its-own.fr.md).
+[ADR-0070](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0070-emit-an-entry-point-on-request-as-a-file-of-its-own.fr.md).
 
 ## Rendre compte à un script
 
@@ -180,7 +181,7 @@ de sorte que stdout porte toujours exactement un document. Tout ce qui est écri
 continue d'aller sur stderr, ce qui laisse à `2>/dev/null` un tuyau propre.
 
 Les codes de sortie sont inchangés : ceci ajoute un canal plutôt que d'en redéfinir un. Décision :
-[ADR-0071](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.2/doc/handwritten/for-maintainers/adr/0071-report-a-run-as-data-without-moving-the-exit-codes.fr.md).
+[ADR-0071](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0071-report-a-run-as-data-without-moving-the-exit-codes.fr.md).
 
 ## Fixer les défauts une fois
 
@@ -200,7 +201,7 @@ qu'est le projet.
 Une clé non lue est **refusée**, en la nommant — un défaut que vous croyez en vigueur et qui ne l'est
 pas est pire que pas de fichier du tout. Un `output` relatif est résolu depuis le dossier du projet,
 donc il veut dire la même chose d'où que vous lanciez l'outil. Décision :
-[ADR-0072](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.2/doc/handwritten/for-maintainers/adr/0072-read-project-defaults-from-a-file-the-command-line-overrides.fr.md).
+[ADR-0072](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0072-read-project-defaults-from-a-file-the-command-line-overrides.fr.md).
 
 ## Options
 
@@ -223,7 +224,7 @@ a échoué, `2` une instruction que l'outil n'a pas pu lire — une ligne de com
 
 L'outil résout chaque symbole de la bibliothèque **par son nom, contre votre compilation**, et ne
 déclare aucune dépendance vers elle
-([ADR-0063](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.2/doc/handwritten/for-maintainers/adr/0063-give-the-scaffolder-no-dependency-on-the-package.fr.md)).
+([ADR-0063](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0063-give-the-scaffolder-no-dependency-on-the-package.fr.md)).
 L'outil et la bibliothèque versionnent donc indépendamment, et `dum` ne peut pas entraîner une montée
 de version de JustDummies dans votre projet. Si un générateur n'existe pas dans l'asset que vous
 résolvez, il le dit plutôt que d'émettre un appel qui ne compilera pas.

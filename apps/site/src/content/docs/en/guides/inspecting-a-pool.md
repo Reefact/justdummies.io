@@ -5,8 +5,8 @@ slug: "inspecting-a-pool"
 order: 6
 locale: "en"
 sourcePath: "doc/handwritten/for-users/guides/inspecting-a-pool.en.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-users/guides/inspecting-a-pool.en.md"
-ref: "lib-v1.0.0-preview.3"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/guides/inspecting-a-pool.en.md"
+ref: "lib-v1.0.0-preview.4"
 ---
 
 When you draw from a list you supplied yourself, the constraints you declare beside it **narrow that

@@ -5,8 +5,8 @@ slug: "justdummies-xunit"
 order: 1
 locale: "fr"
 sourcePath: "doc/handwritten/for-users/packages/justdummies-xunit.fr.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.2/doc/handwritten/for-users/packages/justdummies-xunit.fr.md"
-ref: "cli-v1.1.0-beta.2"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-users/packages/justdummies-xunit.fr.md"
+ref: "cli-v1.1.0-beta.3"
 ---
 
 L'adaptateur xUnit **v3**. Il n'apporte qu'une seule chose — un attribut `[Reproducible]` — et cette
@@ -24,7 +24,7 @@ Il dépend de `JustDummies` et de xUnit v3.
 
 `ReproducibleAttribute`, avec une propriété `Seed` assignable. C'est tout — l'adaptateur est
 volontairement mince, car tout ce dont il a besoin existe déjà dans la bibliothèque
-([ADR-0018](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.2/doc/handwritten/for-maintainers/adr/0018-adapt-dummies-to-xunit-v3-through-a-companion-package.fr.md)).
+([ADR-0018](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0018-adapt-dummies-to-xunit-v3-through-a-companion-package.fr.md)).
 
 ## Utilisation
 
@@ -99,7 +99,7 @@ Remarquez que le message nomme l'**attribut**, et non `Any.Reproducibly(seed, ..
 depuis l'extérieur de son propre corps ne contient aucun appel de ce genre : le nommer enverrait le
 lecteur chercher du code qui n'existe pas. L'adaptateur fournit son propre fragment de rejeu via la
 seconde surcharge d'`Any.UseSeed` — la raison d'être de cette surcharge
-([ADR-0017](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.2/doc/handwritten/for-maintainers/adr/0017-open-the-ambient-seed-scope-to-adapters.fr.md)).
+([ADR-0017](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0017-open-the-ambient-seed-scope-to-adapters.fr.md)).
 
 Trois conséquences méritent d'être connues :
 

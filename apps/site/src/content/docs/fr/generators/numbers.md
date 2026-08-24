@@ -5,8 +5,8 @@ slug: "numbers"
 order: 0
 locale: "fr"
 sourcePath: "doc/handwritten/for-users/generators/numbers.fr.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-users/generators/numbers.fr.md"
-ref: "lib-v1.0.0-preview.3"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/generators/numbers.fr.md"
+ref: "lib-v1.0.0-preview.4"
 ---
 
 Chaque type numérique du BCL possède un générateur, et tous partagent un même vocabulaire de
@@ -62,7 +62,7 @@ même chaîne, en information et non en verdict ; la paire reste correcte dans l
 
 **Un entier non contraint parcourt tout son type.** Ne déclarez rien et le tirage est uniforme sur
 toute la plage, et c'est délibéré
-([ADR-0031](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0031-draw-arbitrary-numbers-within-an-ordinary-magnitude.fr.md)) :
+([ADR-0031](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0031-draw-arbitrary-numbers-within-an-ordinary-magnitude.fr.md)) :
 un grand entier reste un entier ordinaire, là où un grand `double` cesse de se comporter comme de
 l'arithmétique — la règle sur la virgule flottante, plus bas, est l'exception et non la norme.
 Uniforme sur une plage signifie aussi que l'essentiel de cette plage se trouve près de ses extrêmes :
@@ -138,7 +138,7 @@ Deux comportements méritent d'être connus.
 
 **Les tirages non contraints restent ordinaires.** Un `double`, `float` ou `decimal` non contraint
 est tiré dans un ordre de grandeur d'un million, au lieu de parcourir toute la plage du type
-([ADR-0031](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.3/doc/handwritten/for-maintainers/adr/0031-draw-arbitrary-numbers-within-an-ordinary-magnitude.fr.md)).
+([ADR-0031](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0031-draw-arbitrary-numbers-within-an-ordinary-magnitude.fr.md)).
 Des valeurs comme `1.7e308` sont techniquement dans la plage et inutiles dans un test : elles
 transforment chaque assertion arithmétique suivante en question sur le dépassement de capacité.
 Déclarez une borne quand votre domaine en a une.
