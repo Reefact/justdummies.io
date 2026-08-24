@@ -96,18 +96,28 @@ const sectionLabel: Record<DocsSection, string> = {
         align-self: start;
         max-height: calc(100vh - 2 * var(--jd-space-6));
         overflow-y: auto;
+        /*
+         * `overflow-y: auto` is also a clip box, and these links sit flush against its left
+         * edge — so a keyboard focus ring, drawn 2px outside the focused link
+         * (`outline-offset: 2px` in base.css), loses its left side to the clip. Same thing
+         * `ApiCategoryNav.astro` and `ReleaseNotesContents.astro` meet, same answer: push the
+         * clip box out by the ring's width, pull the box back with a matching negative margin.
+         */
+        padding-left: 4px;
+        margin-left: -4px;
     }
 
-    .docs-nav summary {
-        display: flex;
-        align-items: center;
-        gap: var(--jd-space-2);
-        font-weight: 600;
-        cursor: pointer;
-        list-style: none;
-    }
-
-    .docs-nav summary::-webkit-details-marker {
+    /*
+     * The disclosure is a phone control, not a heading. Past the breakpoint the sidebar is an
+     * ordinary sticky column and "Documentation sections" is a label for a fold that cannot
+     * happen — `ApiCategoryNav.astro` hides its own summary there for that reason, and this one
+     * sat visible on every desktop /docs page announcing a control nobody could use.
+     *
+     * Hiding it is what makes the script's resize listener load-bearing rather than a nicety:
+     * past the breakpoint the summary is the only thing that can reopen a closed `<details>`,
+     * so a rotation or a resize that crosses it has to force `open` back on.
+     */
+    .docs-nav > summary {
         display: none;
     }
 
@@ -123,21 +133,23 @@ const sectionLabel: Record<DocsSection, string> = {
 
     .docs-nav-list {
         list-style: none;
-        margin: var(--jd-space-4) 0 0;
+        margin: 0;
         padding: 0;
         display: flex;
         flex-direction: column;
-        gap: var(--jd-space-2);
+        gap: 0.125rem;
     }
 
+    /* A sidebar is a list of destinations, and underlining all of them is the noise
+       `ApiCategoryNav.astro` already avoids. Same box as its entries, too: the padding and the
+       rail are what give the current page somewhere to be marked. */
     .docs-nav-list > li > a {
         display: block;
-        padding: 0.2rem 0;
+        padding: var(--jd-space-2) var(--jd-space-3);
+        border-left: 2px solid transparent;
+        border-radius: 0 var(--jd-radius-sm) var(--jd-radius-sm) 0;
         color: var(--jd-text-primary);
         font-weight: 600;
-        /* A sidebar is a list of destinations, and underlining all of them is the noise
-           `ApiCategoryNav.astro` already avoids: colour marks the current page, hover
-           marks the one under the pointer. */
         text-decoration: none;
     }
 
@@ -146,44 +158,44 @@ const sectionLabel: Record<DocsSection, string> = {
     }
 
     /*
-     * `> li > a` rather than the plain descendant `.docs-nav-list a` the current-page rule
-     * used to carry: with Astro's scoping attribute added to every compound, the base rule
-     * above out-specified it (0,4,2 against 0,4,1) and the section a reader was standing in
-     * drew in the ordinary colour. Nothing showed it while every entry was underlined
-     * anyway; with the underlines gone this is the only mark left, so it has to win.
+     * WHERE THE READER IS STANDING, in `ApiCategoryNav.astro`'s own terms: a ground, an accent
+     * rail, and the weight the entry already had. Two things are deliberate about it.
      *
-     * AND THE UNDERLINE IS THE OTHER HALF OF IT. Every entry in this list is already bold,
-     * so weight cannot tell one from the rest and colour was doing the whole job alone —
-     * which says nothing to a reader who cannot separate the two hues, and nothing at all
-     * under forced colours, where the accent is replaced by the same ink as its neighbours.
-     * `aria-current` carries the state to assistive technology; this is the sighted reader's
-     * cue, and it survives the transform where colour does not. `ReleaseNotesTrains.astro`
-     * restores the same pair for the same reason.
+     * `> li > a` rather than the plain descendant `.docs-nav-list a` this rule used to carry:
+     * with Astro's scoping attribute added to every compound, the base rule above out-specified
+     * it (0,4,2 against 0,4,1) and the current section drew like any other. Nothing showed it
+     * while every entry was underlined anyway.
      *
-     * So the one underline left in this sidebar means "you are here" rather than "this is a
-     * link" — which is the only thing worth spending it on, now that the other twenty
-     * entries have stopped claiming it.
+     * AND THE RAIL IS WHAT SURVIVES A PALETTE IT DOES NOT CHOOSE. Every entry here is already
+     * bold, so weight cannot separate one from the rest, and colour alone says nothing to a
+     * reader who cannot part the two hues — nor under forced colours, which replaces the accent
+     * and drops the ground entirely. A border does not drop: `transparent` is preserved there,
+     * so the marked entry keeps a bar its neighbours do not have. `aria-current` carries the
+     * same state to assistive technology.
      */
     .docs-nav-list > li > a[aria-current='page'] {
-        color: var(--jd-accent);
-        text-decoration: underline;
-        text-underline-offset: 0.2em;
+        border-color: var(--jd-accent);
+        background: color-mix(in srgb, var(--jd-accent) 8%, transparent);
     }
 
+    /* The active section's own topics — one level down, so they read as belonging to the
+       section above them rather than as siblings in the same list. The indent is the entries'
+       own padding rather than a rule down the side of the list: with each entry carrying the
+       rail the current one needs, a second line beside them would be one line too many. */
     .docs-nav-sublist {
         list-style: none;
-        margin: var(--jd-space-2) 0 var(--jd-space-2) var(--jd-space-4);
+        margin: 0.125rem 0 var(--jd-space-2);
         padding: 0;
         display: flex;
         flex-direction: column;
-        gap: var(--jd-space-1);
-        border-left: 1px solid var(--jd-border);
-        padding-left: var(--jd-space-3);
+        gap: 0.125rem;
     }
 
     .docs-nav-sublist a {
         display: block;
-        padding: 0.15rem 0;
+        padding: var(--jd-space-1) var(--jd-space-3) var(--jd-space-1) calc(var(--jd-space-3) + var(--jd-space-4));
+        border-left: 2px solid transparent;
+        border-radius: 0 var(--jd-radius-sm) var(--jd-radius-sm) 0;
         color: var(--jd-text-muted);
         font-size: var(--jd-text-sm);
         text-decoration: none;
@@ -193,19 +205,28 @@ const sectionLabel: Record<DocsSection, string> = {
         color: var(--jd-text-primary);
     }
 
-    /* The same mark one level down, for the same reason — the weight already separates this
-       entry from its muted siblings, and the underline is what carries that separation into
-       forced colours, where 600 against 400 is the only thing left of it. */
+    /* The same mark one level down, and here the weight joins it: these siblings are muted and
+       set at 400, so 600 is a second cue the rail does not have to carry alone. */
     .docs-nav-sublist a[aria-current='page'] {
-        color: var(--jd-accent);
+        color: var(--jd-text-primary);
         font-weight: 600;
-        text-decoration: underline;
-        text-underline-offset: 0.2em;
+        border-color: var(--jd-accent);
+        background: color-mix(in srgb, var(--jd-accent) 8%, transparent);
     }
 
     @media (max-width: 56rem) {
-        .docs-nav summary {
+        .docs-nav > summary {
+            display: flex;
+            align-items: center;
+            gap: var(--jd-space-2);
+            padding: var(--jd-space-3) 0;
+            font-weight: 600;
             cursor: pointer;
+            list-style: none;
+        }
+
+        .docs-nav > summary::-webkit-details-marker {
+            display: none;
         }
     }
 </style>
