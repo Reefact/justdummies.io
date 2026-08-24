@@ -3,24 +3,24 @@ namespace JustDummies.SnippetValidation.Snippets;
 /// <summary>
 ///     The expression the hero arrives pre-filled with.
 ///
-///     It is chosen, not picked: it chains four links, combines three different kinds
-///     of constraint — an anchored prefix, a required fragment whose position is free,
-///     an exact length — and is unambiguously satisfiable, since eight of its twelve
-///     characters are imposed and four are free.
+///     It is chosen, not picked: it chains four links and combines four different kinds
+///     of constraint — a character family, a casing, an anchored prefix, a length range
+///     — and is unambiguously satisfiable, since the prefix alone fits inside the
+///     shortest length the range allows.
 ///
-///     The exact length is what makes it safe to display. A chain that only bounds a
-///     maximum can legitimately draw the prefix and nothing else, which is correct and
-///     reads as broken.
+///     It is the same chain Act I explains right below the hero (Snippets/FactoriesConstrained.cs,
+///     Snippets/Why.cs), deliberately: the hero previews what the page is about to demonstrate,
+///     rather than a different expression the reader has to reconcile with it.
 /// </summary>
 public static class Hero {
 
     public static string PreFilledExpression() {
         // <snippet:hero-expression>
         string reference = Any.String()
+                              .AlphaNumeric()
+                              .InUpperCase()
                               .StartingWith("ORD-")
-                              .Containing("2026")
-                              .WithLength(12)
-                              .Printable()
+                              .WithLengthBetween(8, 20)
                               .Generate();
         // </snippet:hero-expression>
 
