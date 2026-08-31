@@ -176,6 +176,12 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
      * that column with its feet on the block's bottom line, which is what makes it read as
      * standing beside the offer rather than floating near it.
      *
+     * 70 PIXELS OFF THE EDGE, NOT FLUSH WITH IT. Centred in the 384-pixel column rather
+     * than pinned to its outer edge, the dummy's pointing hand lands on the copy button
+     * instead of the empty margin beyond it — the one thing about its pose worth aiming on
+     * purpose. The offset is a fixed distance from the shell's own edge, so it moves with
+     * the column exactly as `right: 0` did; nothing above changes.
+     *
      * A BACKGROUND, NOT AN `<img>`. An image element is fetched even when the rule that
      * hides it is `display: none`, so every phone would pay 50 KiB for a drawing it is
      * never shown; declared inside the query, the file is requested by the windows that
@@ -225,7 +231,7 @@ const t = useTranslations(localeFromPath(Astro.url.pathname));
         .mascot {
             display: block;
             position: absolute;
-            right: 0;
+            right: 70px;
             bottom: 0;
             z-index: -1;
             height: 300px;
