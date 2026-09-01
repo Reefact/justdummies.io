@@ -3,8 +3,8 @@ name: Analytics audience query
 # Manual, on-demand read of Cloudflare Web Analytics (the beacon rendered on every page,
 # token PUBLIC_CF_BEACON_TOKEN — see docs/for-maintainers/deployment-en.md, "Step 10 —
 # Turn the measurement on"). This is a different product from Analytics Engine
-# (analytics-events-query.yml): it captures the audience half — country, referrer, device —
-# that the site's own /_event collector deliberately does not.
+# (analytics-events-query.yml): it captures the audience half — country, referrer, device,
+# bot verdict — that the site's own /_event collector deliberately does not.
 #
 # Queried through Cloudflare's GraphQL Analytics API (api.cloudflare.com/client/v4/graphql),
 # not the Analytics Engine SQL endpoint.
@@ -125,7 +125,7 @@ jobs:
                   orderBy: [count_DESC]
                 ) {
                   count
-                  dimensions { date countryName refererHost deviceType }
+                  dimensions { date countryName refererHost deviceType bot userAgentBrowser }
                 }
               }
             }
@@ -235,11 +235,22 @@ jobs:
           run_query "$detail_payload" "Audience query" result.json
 
           # The same cap, and this is where it bites first: a group here is one
-          # date/country/referrer/device combination, so a fortnight of modest traffic from a
-          # handful of countries produces them in the thousands. `orderBy: [count_DESC]` means
-          # what a cap drops is the long tail — the rare referrer, the one country that only
-          # appeared once — which is the half of an audience worth knowing about, and it would
-          # go missing without a word.
+          # date/country/referrer/device/bot/browser combination, so a fortnight of modest
+          # traffic from a handful of countries produces them in the thousands. `orderBy:
+          # [count_DESC]` means what a cap drops is the long tail — the rare referrer, the one
+          # country that only appeared once — which is the half of an audience worth knowing
+          # about, and it would go missing without a word.
+          #
+          # `bot` AND `userAgentBrowser` ANSWER A QUESTION THE OTHER DIMENSIONS CANNOT:
+          # whether a row was ever capable of being read, rather than counted. `bot` is
+          # Cloudflare's own verdict from the request that carried the beacon, not a guess
+          # made here from shape or timing — this dataset already excludes traffic Cloudflare
+          # is certain never ran a browser at all, so `bot: true` is what it caught anyway,
+          # and `userAgentBrowser` is what to check by hand for the ones it did not (a
+          # `HeadlessChrome` with no human-shaped pattern around it, say). Discovered by
+          # querying `AccountRumPageloadEventsAdaptiveGroupsDimensions` through `__type` —
+          # the field this dataset documents as browser identity is `userAgentBrowser`, not
+          # `browserName`, which the API rejects outright.
           detail_rows="$(jq '[.data.viewer.accounts[]?.rumPageloadEventsAdaptiveGroups[]?] | length' result.json)"
 
           # THE SUMMARY CARRIES NO AUDIENCE. This repository is public, so a job summary
