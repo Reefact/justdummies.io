@@ -135,7 +135,7 @@ jobs:
                   orderBy: [count_DESC]
                 ) {
                   count
-                  dimensions { date countryName refererHost deviceType bot userAgentBrowser }
+                  dimensions { date countryName refererHost requestPath deviceType bot userAgentBrowser }
                 }
               }
             }
@@ -247,7 +247,7 @@ jobs:
           run_query "$detail_payload" "Audience query" result.json
 
           # The same cap, and this is where it bites first: a group here is one
-          # date/country/referrer/device/bot/browser combination, so a fortnight of modest
+          # date/country/referrer/path/device/bot/browser combination, so a fortnight of modest
           # traffic from a handful of countries produces them in the thousands. `orderBy:
           # [count_DESC]` means what a cap drops is the long tail — the rare referrer, the one
           # country that only appeared once — which is the half of an audience worth knowing
