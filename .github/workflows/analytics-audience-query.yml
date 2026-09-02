@@ -21,6 +21,16 @@ name: Analytics audience query
 # whose Actions summaries and artifacts are public, from publishing another site's country
 # and referrer breakdown to readers who have no access to the Cloudflare account. The second
 # query fetches one site's detail, and only for a tag the caller named.
+#
+# THE CLOUDFLARE ACCOUNT IS NOT DEDICATED TO THIS SITE. It also holds other projects'
+# Web Analytics (each with its own siteTag), so an unfiltered run naming every tag it
+# finds is doing its job, not malfunctioning — the account, not the query, is shared.
+# `vars.CLOUDFLARE_SITE_TAG` is this repository's own answer to "which one is
+# justdummies.io", set once by a maintainer who read it off the Cloudflare dashboard —
+# there is no API path that derives it (the /rum/site_info/list lookup above answers 403
+# to this token under every scope tried, so it cannot be resolved here at run time). The
+# input still wins when given explicitly, so a maintainer can always target a tag other
+# than the site's own default (e.g. to sanity-check a genuinely unfamiliar tag).
 on:
   workflow_dispatch:
     inputs:
@@ -29,7 +39,7 @@ on:
         required: true
         default: '7'
       site_tag:
-        description: 'Site tag to report on. Leave empty and the run only names the tags it finds: naming one is what unlocks its detail.'
+        description: "Site tag to report on. Leave empty to use this repo's CLOUDFLARE_SITE_TAG variable (justdummies.io); pass one explicitly to target a different tag."
         required: false
         default: ''
 
@@ -42,7 +52,7 @@ jobs:
         env:
           CLOUDFLARE_ANALYTICS_TOKEN: ${{ secrets.CLOUDFLARE_ANALYTICS_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          SITE_TAG: ${{ inputs.site_tag }}
+          SITE_TAG: ${{ inputs.site_tag || vars.CLOUDFLARE_SITE_TAG }}
           DAYS: ${{ inputs.days }}
         run: |
           set -euo pipefail
@@ -211,13 +221,15 @@ jobs:
           # this repository's: a week in which justdummies.io saw nobody and a neighbour saw
           # somebody would leave exactly one tag standing, and publishing its countries and
           # referrers here would publish a stranger's audience in a public repository.
-          # Naming the tag is the only evidence that the person asking meant this site.
+          # Naming the tag is the only evidence that the person asking meant this site — the
+          # `site_tag` input does that explicitly, and `vars.CLOUDFLARE_SITE_TAG` does it on
+          # this repository's behalf when the input is left empty (see the header comment).
           target="$SITE_TAG"
 
           if [ -z "$target" ]; then
             {
               echo
-              echo "No **site_tag** was given, so no audience detail is reported. Re-run with one of the tags above — naming it is what says the site is yours to publish."
+              echo "No **site_tag** was given and this repository's **CLOUDFLARE_SITE_TAG** variable is not set, so no audience detail is reported. Either re-run with one of the tags above, or set that repository variable so future runs default to it — naming a tag, one way or the other, is what says the site is yours to publish."
             } >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
