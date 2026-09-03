@@ -62,7 +62,7 @@ fi
 # everything this site publishes is compiled with the analyzers on, and this file is no
 # exception. The two are compared here, on every build. They differ by exactly one line —
 # the namespace — because the copy cannot declare the same partial class twice.
-SCAFFOLDED="${scratch}/AnyOrder.cs" COMPILED="${root}/tools/snippet-validation/Domain/AnyOrderScaffolded.cs" \
+SCAFFOLDED="${scratch}/AnyOrder.cs" COMPILED="${root}/tools/snippet-validation/Domain.UnitTests/AnyOrderScaffolded.cs" \
 DESTINATION="${root}/apps/site/src/generated/tool-written.json" node <<'NODE'
 const { readFileSync, writeFileSync } = require('node:fs');
 
@@ -89,7 +89,7 @@ if (at >= 0 || tool.length !== ours.length) {
     const line = at >= 0 ? at + 1 : Math.min(tool.length, ours.length) + 1;
 
     console.error('generate-tool-output: the compiled copy is no longer what the tool writes.');
-    console.error('  Copy tools/snippet-validation/Domain/AnyOrderScaffolded.cs from the tool\'s output again,');
+    console.error('  Copy tools/snippet-validation/Domain.UnitTests/AnyOrderScaffolded.cs from the tool\'s output again,');
     console.error('  changing nothing but the namespace, then re-run.');
     console.error(`\n  line ${line}:`);
     console.error(`    the tool wrote:     ${tool[at] ?? '(nothing — its file is shorter)'}`);

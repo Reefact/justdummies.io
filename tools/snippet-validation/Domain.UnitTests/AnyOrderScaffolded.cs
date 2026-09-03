@@ -4,7 +4,7 @@
 
 using JustDummies;
 
-namespace JustDummies.SnippetValidation.Domain.Scaffolded;
+namespace JustDummies.SnippetValidation.Domain.UnitTests.Scaffolded;
 
 /// <summary>
 ///     A generator of arbitrary <see cref="Order" /> values. It draws from the ambient random

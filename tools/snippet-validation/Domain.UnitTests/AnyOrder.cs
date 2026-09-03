@@ -25,7 +25,7 @@
 
 using JustDummies;
 
-namespace JustDummies.SnippetValidation.Domain;
+namespace JustDummies.SnippetValidation.Domain.UnitTests;
 
 /// <summary>
 ///     A generator of arbitrary <see cref="Order" /> values. It draws from the ambient random

@@ -37,7 +37,7 @@ public sealed record OrderReference {
     // characters — the shape a barcode carries and a human reads back over the phone.
     // Declared here, it is what lets the generator's own .AlphaNumeric().InUpperCase()
     // (Snippets/Why.cs, Snippets/FactoriesConstrained.cs,
-    // Domain/AnyOrder.cs) remain a fact about this domain rather than a constraint invented
+    // Domain.UnitTests/AnyOrder.cs) remain a fact about this domain rather than a constraint invented
     // to keep a displayed value legible.
     //
     // Nothing between the markers is commentary. What a reader sees is the method.

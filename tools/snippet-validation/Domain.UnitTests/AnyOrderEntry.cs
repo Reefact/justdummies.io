@@ -4,7 +4,7 @@
 
 using JustDummies;
 
-namespace JustDummies.SnippetValidation.Domain;
+namespace JustDummies.SnippetValidation.Domain.UnitTests;
 
 /// <summary>Hangs <c>Any.Order()</c> off the library's own entry point.</summary>
 public static class AnyOrderEntry {

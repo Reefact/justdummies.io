@@ -1,6 +1,12 @@
 namespace JustDummies.SnippetValidation.Snippets;
 
 using JustDummies.SnippetValidation.Domain;
+
+// The generators are test code and live beside the domain's other test code rather than in
+// it, so `Any.Order()` — hung off the library's entry point by AnyOrderEntry — is reached
+// through its own namespace. A reader's test file imports the same two.
+using JustDummies.SnippetValidation.Domain.UnitTests;
+
 using JustDummies.Xunit;
 
 // `global::` because this file's own namespace begins with `JustDummies`, and a plain
