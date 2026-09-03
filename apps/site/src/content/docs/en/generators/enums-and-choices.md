@@ -5,8 +5,8 @@ slug: "enums-and-choices"
 order: 4
 locale: "en"
 sourcePath: "doc/handwritten/for-users/generators/enums-and-choices.en.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/generators/enums-and-choices.en.md"
-ref: "lib-v1.0.0-preview.4"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-users/generators/enums-and-choices.en.md"
+ref: "lib-v1.0.0-preview.6"
 ---
 
 Four generators cover the case where the value comes from a **known set** rather than a range:
@@ -32,7 +32,7 @@ Exclusions that empty the universe are refused by name, and the analyzer
 
 ## Flags enumerations
 
-For a `[Flags]` enum, a plain draw still yields **one declared member**. Combinations are opt-in:
+For a `[Flags]` enum, a plain draw still yields **one declared member**. Widening that draw is opt-in:
 
 ```csharp
 // One declared member: None, Read, Write or Delete.
@@ -40,17 +40,25 @@ Permissions single = Any.Enum<Permissions>().Generate();
 
 // Any combination of them: Read | Delete, Read | Write | Delete, ...
 Permissions combined = Any.Enum<Permissions>().AllowingCombinations().Generate();
+
+// One of two combinations you name: an allow-list is the pool itself, so it needs no opt-in.
+Permissions writable = Any.Enum<Permissions>()
+                          .OneOf(Permissions.Read | Permissions.Write, Permissions.Write | Permissions.Delete)
+                          .Generate();
 ```
 
 The opt-in is deliberate
-([ADR-0020](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0020-draw-flag-enum-combinations-behind-an-opt-in.md)). A
+([ADR-0020](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0020-draw-flag-enum-combinations-behind-an-opt-in.md)). A
 `[Flags]` attribute says the members *may* combine, not that every value in your domain does; and a
 generator that combined automatically would silently change what existing tests draw the day someone
 adds the attribute. Asking for combinations is one call, and it says at the call site that
 combinations are part of what this test covers.
 
-Without the opt-in, naming a combination is a contradiction — it steps outside the declared members —
-and is reported by [JD017](/docs/analyzers/JD017/).
+What the opt-in settles is what a *plain* draw ranges over, and that is all it settles: naming a
+combination in `OneOf` needs none of it, since an allow-list is the pool itself and writing
+`Read | Write` there is asking for that exact value. A value no OR of declared members produces —
+`(Permissions)16` on the enum above — is refused either way, and reported by
+[JD017](/docs/analyzers/JD017/).
 
 ## Explicit pools
 

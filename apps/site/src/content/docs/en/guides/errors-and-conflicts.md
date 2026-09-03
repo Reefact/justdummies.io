@@ -5,8 +5,8 @@ slug: "errors-and-conflicts"
 order: 5
 locale: "en"
 sourcePath: "doc/handwritten/for-users/guides/errors-and-conflicts.en.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/guides/errors-and-conflicts.en.md"
-ref: "lib-v1.0.0-preview.4"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-users/guides/errors-and-conflicts.en.md"
+ref: "lib-v1.0.0-preview.6"
 ---
 
 JustDummies would rather refuse loudly than return a value nobody can explain. This page is about
@@ -124,7 +124,7 @@ try {
 The supported constructs — and the refused ones — are listed in
 [Strings and patterns](/docs/generators/strings/). The decision to parse a regular subset with the
 library's own parser, rather than taking a regex-automaton dependency to widen coverage, is
-[ADR-0008](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0008-generate-strings-from-a-home-grown-regular-subset.md).
+[ADR-0008](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0008-generate-strings-from-a-home-grown-regular-subset.md).
 
 ## Symptom, cause, fix
 

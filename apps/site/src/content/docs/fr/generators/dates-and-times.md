@@ -5,8 +5,8 @@ slug: "dates-and-times"
 order: 2
 locale: "fr"
 sourcePath: "doc/handwritten/for-users/generators/dates-and-times.fr.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/generators/dates-and-times.fr.md"
-ref: "lib-v1.0.0-preview.4"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-users/generators/dates-and-times.fr.md"
+ref: "lib-v1.0.0-preview.6"
 ---
 
 Cinq générateurs couvrent les types temporels. Ils partagent un vocabulaire d'ordonnancement, et deux
@@ -76,7 +76,7 @@ invariant du domaine plutôt qu'un contournement.
 Un `DateTimeOffset` est un instant **et** un décalage par rapport à UTC, et JustDummies fait varier
 les deux. C'est délibéré : un dummy portant toujours `+00:00` ne trouverait jamais le code qui
 suppose l'heure locale
-([ADR-0016](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0016-vary-the-datetimeoffset-offset-dimension.fr.md)).
+([ADR-0016](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0016-vary-the-datetimeoffset-offset-dimension.fr.md)).
 
 ```csharp
 DateTimeOffset anywhere = Any.DateTimeOffset().Generate();                       // instant et décalage varient
@@ -88,7 +88,7 @@ DateTimeOffset european = Any.DateTimeOffset()
 
 Déclarer un décalage **filtre le vivier** d'instants au lieu de réécrire l'instant tiré : la paire
 obtenue est une paire qui existe réellement ensemble
-([ADR-0030](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0030-filter-the-datetimeoffset-pool-by-the-declared-offset.fr.md)).
+([ADR-0030](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0030-filter-the-datetimeoffset-pool-by-the-declared-offset.fr.md)).
 
 ## Le piège de `DateTime.Now`
 

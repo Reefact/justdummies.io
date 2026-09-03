@@ -5,8 +5,8 @@ slug: "dates-and-times"
 order: 2
 locale: "en"
 sourcePath: "doc/handwritten/for-users/generators/dates-and-times.en.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/generators/dates-and-times.en.md"
-ref: "lib-v1.0.0-preview.4"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-users/generators/dates-and-times.en.md"
+ref: "lib-v1.0.0-preview.6"
 ---
 
 Five generators cover the temporal types. They share an ordering vocabulary, and two of them add a
@@ -75,7 +75,7 @@ rather than a workaround.
 
 A `DateTimeOffset` is an instant **and** an offset from UTC, and JustDummies varies both. That is
 deliberate: a dummy that always carried `+00:00` would never find the code that assumes local time
-([ADR-0016](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0016-vary-the-datetimeoffset-offset-dimension.md)).
+([ADR-0016](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0016-vary-the-datetimeoffset-offset-dimension.md)).
 
 ```csharp
 DateTimeOffset anywhere = Any.DateTimeOffset().Generate();                       // instant and offset both vary
@@ -87,7 +87,7 @@ DateTimeOffset european = Any.DateTimeOffset()
 
 Declaring an offset **filters the pool** of instants rather than rewriting the instant that was
 drawn: the pair you get is one that genuinely exists together
-([ADR-0030](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0030-filter-the-datetimeoffset-pool-by-the-declared-offset.md)).
+([ADR-0030](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0030-filter-the-datetimeoffset-pool-by-the-declared-offset.md)).
 
 ## The `DateTime.Now` trap
 

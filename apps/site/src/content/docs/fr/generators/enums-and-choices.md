@@ -5,8 +5,8 @@ slug: "enums-and-choices"
 order: 4
 locale: "fr"
 sourcePath: "doc/handwritten/for-users/generators/enums-and-choices.fr.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/generators/enums-and-choices.fr.md"
-ref: "lib-v1.0.0-preview.4"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-users/generators/enums-and-choices.fr.md"
+ref: "lib-v1.0.0-preview.6"
 ---
 
 Quatre générateurs couvrent le cas où la valeur provient d'un **ensemble connu** plutôt que d'un
@@ -33,8 +33,8 @@ Les exclusions qui vident l'univers sont refusées nommément, et l'analyzer
 
 ## Énumérations de drapeaux
 
-Pour une énumération `[Flags]`, un tirage ordinaire produit toujours **un membre déclaré**. Les
-combinaisons se demandent explicitement :
+Pour une énumération `[Flags]`, un tirage ordinaire produit toujours **un membre déclaré**. Élargir
+ce tirage se demande explicitement :
 
 ```csharp
 // Un membre déclaré : None, Read, Write ou Delete.
@@ -42,17 +42,25 @@ Permissions single = Any.Enum<Permissions>().Generate();
 
 // N'importe quelle combinaison : Read | Delete, Read | Write | Delete, ...
 Permissions combined = Any.Enum<Permissions>().AllowingCombinations().Generate();
+
+// L'une des deux combinaisons que vous nommez : une liste blanche est le vivier, rien à activer.
+Permissions writable = Any.Enum<Permissions>()
+                          .OneOf(Permissions.Read | Permissions.Write, Permissions.Write | Permissions.Delete)
+                          .Generate();
 ```
 
 Ce caractère explicite est délibéré
-([ADR-0020](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0020-draw-flag-enum-combinations-behind-an-opt-in.fr.md)). Un
+([ADR-0020](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0020-draw-flag-enum-combinations-behind-an-opt-in.fr.md)). Un
 attribut `[Flags]` dit que les membres *peuvent* se combiner, non que toute valeur de votre domaine
 le fait ; et un générateur qui combinerait automatiquement changerait silencieusement ce que tirent
 les tests existants le jour où quelqu'un ajoute l'attribut. Demander les combinaisons tient en un
 appel, et cet appel dit sur place que les combinaisons font partie de ce que ce test couvre.
 
-Sans cette demande explicite, nommer une combinaison est une contradiction — cela sort des membres
-déclarés — et c'est signalé par [JD017](/fr/docs/analyzers/JD017/).
+Ce que cette demande explicite tranche, c'est ce que parcourt un tirage *ordinaire*, et rien d'autre :
+nommer une combinaison dans `OneOf` ne demande rien de tel, puisqu'une liste blanche est le vivier
+lui-même et qu'y écrire `Read | Write` revient à demander cette valeur exacte. Une valeur qu'aucun OU
+de membres déclarés ne produit — `(Permissions)16` sur l'énumération ci-dessus — est refusée dans les
+deux cas, et signalée par [JD017](/fr/docs/analyzers/JD017/).
 
 ## Viviers explicites
 

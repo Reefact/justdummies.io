@@ -5,8 +5,8 @@ slug: "guids-and-uris"
 order: 5
 locale: "en"
 sourcePath: "doc/handwritten/for-users/generators/guids-and-uris.en.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/generators/guids-and-uris.en.md"
-ref: "lib-v1.0.0-preview.4"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-users/generators/guids-and-uris.en.md"
+ref: "lib-v1.0.0-preview.6"
 ---
 
 Two generators for the two kinds of identifier that show up in almost every test: the opaque one, and

@@ -4,6 +4,25 @@
   "locale": "fr",
   "releases": [
     {
+      "version": "1.0.0-preview.2",
+      "date": "2026-09-02",
+      "maturity": "preview",
+      "anchor": "v1-0-0-preview-2",
+      "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/xunit-v1.0.0-preview.2",
+      "summaryHtml": [
+        "<em>Un changement de licence que chaque consommateur devrait lire.</em>"
+      ],
+      "sections": [
+        {
+          "label": "⚠️ Changements cassants",
+          "anchor": "v1-0-0-preview-2-breaking-changes",
+          "items": [
+            "<strong>JustDummies.Xunit est désormais sous licence <a href=\"https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.4/LICENSE\" target=\"_blank\" rel=\"noopener noreferrer\">PolyForm Internal Use 1.0.0</a>, et non plus Apache 2.0 — source disponible, pas open source.</strong> Vous pouvez lire, construire, modifier et exécuter l'adaptateur pour vos propres opérations internes ou celles de votre entreprise ; vous ne pouvez pas redistribuer le logiciel. Les versions déjà publiées sur NuGet ne sont pas concernées et conservent la licence sous laquelle elles ont été livrées. Les contributions sont désormais régies par un <a href=\"https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.4/CONTRIBUTOR_AGREEMENT.md\" target=\"_blank\" rel=\"noopener noreferrer\">Contributor Agreement</a>."
+          ]
+        }
+      ]
+    },
+    {
       "version": "1.0.0-preview.1",
       "date": "2026-08-07",
       "maturity": "preview",
@@ -26,7 +45,7 @@
           "label": "🙌 Améliorations",
           "anchor": "v1-0-0-preview-1-improvements",
           "items": [
-            "Nécessite xUnit v3 et un package <code>JustDummies</code> publié depuis ce dépôt. Les deux trains évoluent indépendamment (<a href=\"https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0047-declare-the-adapters-library-dependency-independently.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0047</a>) : un correctif propre à l'adaptateur est publié seul, sans attendre une nouvelle version de la bibliothèque."
+            "Nécessite xUnit v3 et un package <code>JustDummies</code> publié depuis ce dépôt. Les deux trains évoluent indépendamment (<a href=\"https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.4/doc/handwritten/for-maintainers/adr/0047-declare-the-adapters-library-dependency-independently.md\" target=\"_blank\" rel=\"noopener noreferrer\">ADR-0047</a>) : un correctif propre à l'adaptateur est publié seul, sans attendre une nouvelle version de la bibliothèque."
           ]
         }
       ]

@@ -5,8 +5,8 @@ slug: "guids-and-uris"
 order: 5
 locale: "fr"
 sourcePath: "doc/handwritten/for-users/generators/guids-and-uris.fr.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/generators/guids-and-uris.fr.md"
-ref: "lib-v1.0.0-preview.4"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-users/generators/guids-and-uris.fr.md"
+ref: "lib-v1.0.0-preview.6"
 ---
 
 Deux générateurs pour les deux sortes d'identifiants qui apparaissent dans presque tous les tests :

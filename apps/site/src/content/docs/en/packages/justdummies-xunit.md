@@ -5,8 +5,8 @@ slug: "justdummies-xunit"
 order: 1
 locale: "en"
 sourcePath: "doc/handwritten/for-users/packages/justdummies-xunit.en.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-users/packages/justdummies-xunit.en.md"
-ref: "cli-v1.1.0-beta.3"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/xunit-v1.0.0-preview.2/doc/handwritten/for-users/packages/justdummies-xunit.en.md"
+ref: "xunit-v1.0.0-preview.2"
 ---
 
 The xUnit **v3** adapter. It contributes exactly one thing — a `[Reproducible]` attribute — and that
@@ -24,28 +24,27 @@ It depends on `JustDummies` and on xUnit v3.
 
 `ReproducibleAttribute`, with a settable `Seed`. That is all of it — the adapter is deliberately thin,
 because everything it needs already exists in the library
-([ADR-0018](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0018-adapt-dummies-to-xunit-v3-through-a-companion-package.md)).
+([ADR-0018](https://github.com/Reefact/just-dummies/blob/xunit-v1.0.0-preview.2/doc/handwritten/for-maintainers/adr/0018-adapt-dummies-to-xunit-v3-through-a-companion-package.md)).
 
 ## Using it
 
 <!-- jd:declarations -->
 ```csharp
-public sealed class DiscountTests {
+public sealed class OrderTests {
 
     [Fact, Reproducible]
-    public void A_discount_never_produces_a_negative_price() {
-        decimal amount     = Any.Decimal().Between(0m, 10_000m).WithScale(2).Generate();
-        int     percentage = Any.Int32().Between(0, 100).Generate();
+    public void A_20_percent_discount_takes_a_fifth_off_the_order() {
+        // Arrange
+        string anyReference = Any.String().StartingWith("ORD-").WithLength(12).Generate();
+        string anyCustomer  = Any.String().Alpha().WithLengthBetween(1, 50).Generate();
 
-        Assert.InRange(Discount.Apply(amount, percentage), 0m, amount);
-    }
+        Order order = new Order(anyReference, anyCustomer, amount: 100m);
 
-}
+        // Act
+        order.ApplyDiscount(20);
 
-internal static class Discount {
-
-    public static decimal Apply(decimal amount, int percentage) {
-        return amount - (amount * percentage / 100m);
+        // Assert
+        Assert.Equal(80m, order.Total);
     }
 
 }
@@ -60,16 +59,34 @@ The attribute applies at three levels, and the most specific one wins for the du
 public sealed class OrderTests {
 
     [Fact]
-    public void An_order_reference_keeps_its_prefix() {
-        string reference = Any.String().StartingWith("ORD-").WithLength(12).Generate();
+    public void A_20_percent_discount_takes_a_fifth_off_the_order() {
+        // Arrange
+        string anyReference = Any.String().StartingWith("ORD-").WithLength(12).Generate();
+        string anyCustomer  = Any.String().Alpha().WithLengthBetween(1, 50).Generate();
 
-        Assert.StartsWith("ORD-", reference);
+        Order order = new Order(anyReference, anyCustomer, amount: 100m);
+
+        // Act
+        order.ApplyDiscount(20);
+
+        // Assert
+        Assert.Equal(80m, order.Total);
     }
 
     // On a method, replaying a reported seed — the outer level is restored afterwards.
     [Fact, Reproducible(Seed = 1743029518)]
-    public void A_quantity_stays_in_range() {
-        Assert.InRange(Any.Int32().Between(1, 100).Generate(), 1, 100);
+    public void A_100_percent_discount_clears_the_order() {
+        // Arrange
+        string anyReference = Any.String().StartingWith("ORD-").WithLength(12).Generate();
+        string anyCustomer  = Any.String().Alpha().WithLengthBetween(1, 50).Generate();
+
+        Order order = new Order(anyReference, anyCustomer, amount: 100m);
+
+        // Act
+        order.ApplyDiscount(100);
+
+        // Assert
+        Assert.Equal(0m, order.Total);
     }
 
 }
@@ -98,7 +115,7 @@ Notice that the message names the **attribute**, not `Any.Reproducibly(seed, ...
 from outside its own body contains no such call, so naming it would send the reader looking for code
 that is not there. The adapter supplies its own replay snippet through the second `Any.UseSeed`
 overload — the reason that overload exists
-([ADR-0017](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0017-open-the-ambient-seed-scope-to-adapters.md)).
+([ADR-0017](https://github.com/Reefact/just-dummies/blob/xunit-v1.0.0-preview.2/doc/handwritten/for-maintainers/adr/0017-open-the-ambient-seed-scope-to-adapters.md)).
 
 Three consequences worth knowing:
 

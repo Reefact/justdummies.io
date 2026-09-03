@@ -5,8 +5,8 @@ slug: "faq"
 order: 7
 locale: "fr"
 sourcePath: "doc/handwritten/for-users/guides/faq.fr.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/guides/faq.fr.md"
-ref: "lib-v1.0.0-preview.4"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-users/guides/faq.fr.md"
+ref: "lib-v1.0.0-preview.6"
 ---
 
 Réponses courtes aux questions les plus fréquentes. Chacune renvoie à la page qui traite le sujet
@@ -120,7 +120,7 @@ int        quantity = context.Int32().Between(1, 100).Generate();
 
 Au sein d'une version majeure, oui : depuis `1.0.0-preview.1`, une graine donnée tire les mêmes
 valeurs sur chaque version corrective et mineure, garanti par un golden master
-([ADR-0049](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0049-replay-a-seed-across-patch-and-minor-versions.fr.md)).
+([ADR-0049](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0049-replay-a-seed-across-patch-and-minor-versions.fr.md)).
 Une version majeure peut la changer.
 
 ### Le rejeu survit-il aux tests parallèles ?
@@ -142,7 +142,7 @@ que sur l'asset `net8.0`. Tout le reste est disponible partout.
 
 Oui. Le plancher supporté est **.NET Framework 4.7.2**, via l'asset `netstandard2.0`, et la CI y
 exécute les suites
-([ADR-0007](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0007-floor-the-library-on-net-framework-4-7-2.fr.md)).
+([ADR-0007](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0007-floor-the-library-on-net-framework-4-7-2.fr.md)).
 
 ### Dois-je installer les analyzers séparément ?
 

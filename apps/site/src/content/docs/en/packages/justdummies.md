@@ -5,8 +5,8 @@ slug: "justdummies"
 order: 0
 locale: "en"
 sourcePath: "doc/handwritten/for-users/packages/justdummies.en.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/packages/justdummies.en.md"
-ref: "lib-v1.0.0-preview.4"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-users/packages/justdummies.en.md"
+ref: "lib-v1.0.0-preview.6"
 ---
 
 The library itself: the `Any` entry point, every generator, the reproducibility scopes, and the 33
@@ -37,7 +37,7 @@ project and nothing else into your dependency graph.
 The rules are packed at `analyzers/dotnet/cs`, which is the convention NuGet reads to load analyzers
 automatically. Referencing `JustDummies` is therefore the whole installation: there is no companion
 analyzer package to remember, and no version of one to keep in step
-([ADR-0023](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0023-ship-justdummies-analyzers.md)).
+([ADR-0023](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0023-ship-justdummies-analyzers.md)).
 
 They exist because the type system cannot reach where these mistakes live — a generator rendered as
 text, a constraint whose result is discarded, a seed pinned outside its scope, a chain admitting no
@@ -67,7 +67,7 @@ value drawn on either asset is the real type rather than a stand-in.
 
 The supported .NET Framework floor is **4.7.2**, exercised in CI against the `netstandard2.0` asset
 that .NET Framework consumers actually load
-([ADR-0007](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0007-floor-the-library-on-net-framework-4-7-2.md)).
+([ADR-0007](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0007-floor-the-library-on-net-framework-4-7-2.md)).
 
 ## A short tour
 

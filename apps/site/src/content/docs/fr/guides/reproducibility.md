@@ -5,12 +5,12 @@ slug: "reproducibility"
 order: 4
 locale: "fr"
 sourcePath: "doc/handwritten/for-users/guides/reproducibility.fr.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/guides/reproducibility.fr.md"
-ref: "lib-v1.0.0-preview.4"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-users/guides/reproducibility.fr.md"
+ref: "lib-v1.0.0-preview.6"
 ---
 
-Un test qui tire une valeur différente à chaque exécution trouve des défauts qu'un test figé ne
-trouverait jamais — et il ne vaut la peine que si un échec peut être rejoué à l'identique. Cette
+Un test qui tire une valeur différente à chaque exécution peut révéler une dépendance abusive qu'un
+test figé peut masquer — et il ne vaut la peine que si un échec peut être rejoué à l'identique. Cette
 page décrit le mécanisme qui rend cela vrai, et les quatre façons d'y accéder.
 
 ## Pourquoi des valeurs arbitraires ont besoin d'un bouton « rejouer »
@@ -21,7 +21,7 @@ l'équipe à appuyer sur « réessayer ».
 
 JustDummies y répond en rendant chaque exécution **rejouable à partir d'un seul entier**. Les
 tirages proviennent d'une source aléatoire ambiante épinglée à une graine. Faites varier la graine
-et la suite explore ; rapportez la graine en cas d'échec et n'importe quelle exécution revient
+et la suite varie avec elle ; rapportez la graine en cas d'échec et n'importe quelle exécution revient
 exactement.
 
 
@@ -36,10 +36,14 @@ Enveloppez le corps d'un test et tout ce qui est tiré à l'intérieur provient 
 
 ```csharp
 Any.Reproducibly(() => {
-    decimal amount     = Any.Decimal().Between(0m, 10_000m).WithScale(2).Generate();
-    int     percentage = Any.Int32().Between(0, 100).Generate();
+    string anyReference = Any.String().StartingWith("ORD-").WithLength(12).Generate();
+    string anyCustomer  = Any.String().Alpha().WithLengthBetween(1, 50).Generate();
 
-    Assert.InRange(amount - (amount * percentage / 100m), 0m, amount);
+    Order order = new Order(anyReference, anyCustomer, amount: 100m);
+
+    order.ApplyDiscount(20);
+
+    Assert.Equal(80m, order.Total);
 });
 ```
 
@@ -66,10 +70,14 @@ pour valeur :
 
 ```csharp
 Any.Reproducibly(1743029518, () => {
-    decimal amount     = Any.Decimal().Between(0m, 10_000m).WithScale(2).Generate();
-    int     percentage = Any.Int32().Between(0, 100).Generate();
+    string anyReference = Any.String().StartingWith("ORD-").WithLength(12).Generate();
+    string anyCustomer  = Any.String().Alpha().WithLengthBetween(1, 50).Generate();
 
-    Assert.InRange(amount - (amount * percentage / 100m), 0m, amount);
+    Order order = new Order(anyReference, anyCustomer, amount: 100m);
+
+    order.ApplyDiscount(20);
+
+    Assert.Equal(80m, order.Total);
 });
 ```
 
@@ -91,11 +99,16 @@ Un corps `async` demande `ReproduciblyAsync`, et la tâche renvoyée **doit** ê
 
 ```csharp
 await Any.ReproduciblyAsync(async () => {
-    string reference = Any.String().StartingWith("ORD-").WithLength(12).Generate();
+    string anyReference = Any.String().StartingWith("ORD-").WithLength(12).Generate();
+    string anyCustomer  = Any.String().Alpha().WithLengthBetween(1, 50).Generate();
+
+    Order order = new Order(anyReference, anyCustomer, amount: 100m);
 
     await Task.Delay(1);
 
-    Assert.StartsWith("ORD-", reference);
+    order.ApplyDiscount(20);
+
+    Assert.Equal(80m, order.Total);
 });
 ```
 
@@ -112,9 +125,14 @@ Quand le code à épingler ne peut pas être enveloppé dans un délégué, ouvr
 
 ```csharp
 using (IDisposable scope = Any.UseSeed(1743029518)) {
-    int quantity = Any.Int32().Between(1, 100).Generate();
+    string anyReference = Any.String().StartingWith("ORD-").WithLength(12).Generate();
+    string anyCustomer  = Any.String().Alpha().WithLengthBetween(1, 50).Generate();
 
-    Assert.InRange(quantity, 1, 100);
+    Order order = new Order(anyReference, anyCustomer, amount: 100m);
+
+    order.ApplyDiscount(20);
+
+    Assert.Equal(80m, order.Total);
 }
 ```
 
@@ -163,14 +181,21 @@ l'enveloppe :
 
 <!-- jd:declarations -->
 ```csharp
-public sealed class DiscountTests {
+public sealed class OrderTests {
 
     [Fact, Reproducible]
-    public void A_discount_never_produces_a_negative_price() {
-        decimal amount     = Any.Decimal().Between(0m, 10_000m).WithScale(2).Generate();
-        int     percentage = Any.Int32().Between(0, 100).Generate();
+    public void A_20_percent_discount_takes_a_fifth_off_the_order() {
+        // Arrange
+        string anyReference = Any.String().StartingWith("ORD-").WithLength(12).Generate();
+        string anyCustomer  = Any.String().Alpha().WithLengthBetween(1, 50).Generate();
 
-        Assert.InRange(amount - (amount * percentage / 100m), 0m, amount);
+        Order order = new Order(anyReference, anyCustomer, amount: 100m);
+
+        // Act
+        order.ApplyDiscount(20);
+
+        // Assert
+        Assert.Equal(80m, order.Total);
     }
 
 }
@@ -192,7 +217,7 @@ plus spécifique l'emporte pendant la durée du test et les niveaux extérieurs 
 
 Depuis `1.0.0-preview.1`, une graine donnée tire **les mêmes valeurs sur chaque version corrective
 et mineure d'une version majeure**, et un golden master de la suite de tests le vérifie
-([ADR-0049](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0049-replay-a-seed-across-patch-and-minor-versions.fr.md)).
+([ADR-0049](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0049-replay-a-seed-across-patch-and-minor-versions.fr.md)).
 Une graine notée aujourd'hui reste rejouable après une montée de version dans la même majeure.
 
 Deux limites méritent d'être énoncées clairement.
