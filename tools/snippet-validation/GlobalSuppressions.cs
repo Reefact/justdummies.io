@@ -67,7 +67,7 @@ using System.Diagnostics.CodeAnalysis;
     "Constraints",
     "JD033:AnchoredLiteralOutsideCharacterFamily",
     Scope = "member",
-    Target = "~M:JustDummies.SnippetValidation.Domain.AnyOrder.ReferenceFactory~JustDummies.IAny{JustDummies.SnippetValidation.Domain.OrderReference}",
+    Target = "~M:JustDummies.SnippetValidation.Domain.UnitTests.AnyOrder.ReferenceFactory~JustDummies.IAny{JustDummies.SnippetValidation.Domain.OrderReference}",
     Justification =
         "The second act's corrected factory, once the reader has added the links dum could " +
         "not infer — the three links of the first act's chain, unchanged, including this one.")]
