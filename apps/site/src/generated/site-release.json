@@ -1,30 +1,26 @@
 {
-  "tag": "release/2026-08-24T07-27-33Z",
-  "date": "2026-08-24",
+  "tag": "release/2026-09-03T08-52-43Z",
+  "date": "2026-09-03",
   "locales": {
     "en": {
       "summaryHtml": [],
       "sections": [
         {
-          "label": "✨ New",
+          "label": "🙌 Improvements",
           "items": [
-            "The /version page now has a \"Previous releases\" section, showing the 5 releases this site published just before its latest one, with a single link to see further releases on GitHub.",
-            "A dummy now stands beside the install command on the home page's first screen, on windows large enough to have room for it.",
-            "The About page is now signed by a dummy leaning at the end of the text, on wide windows: the prose's right edge follows his lean instead of running past him.",
-            "Clicks on the floating \"Download\" button are now counted, so the site can tell whether a permanent call to action on every page earns its place. The privacy page says exactly what is recorded — which section of the site you were reading, the page's language, and when — and nothing else: no identifier, no address, nothing that can be traced back to you.",
-            "The playground is now counted too: its visits, which were missing from the site's audience figures entirely, and the expressions visitors build. What is recorded of an expression is its shape with the values left out — <code>Any.String().StartingWith(?).Generate()</code> — so nothing you type there leaves your browser, which the privacy page now spells out.",
-            "The consent question is now asked once for the whole site, wherever you arrive. The playground asks it too — it used to ask nothing and be counted by nothing — and an answer given on either side is the answer every other page follows, so you are never asked twice. If you accept there, one thing more is recorded when you press Generate: that a press happened, and nothing of what you typed.",
-            "The site now has a documentation section. /docs carries the library's guides, its generator reference, a page for each package and one for each analyzer rule, in English and French — the documentation that until now could only be read on GitHub, with its diagrams drawn rather than left as source. What you read there always describes the version the site offers you to install, and each page links to the file it was taken from."
+            "The home page's hero now demonstrates the same expression explained in the section right below it, instead of an unrelated one — its length is set by two editable fields, a minimum and a maximum, in place of the previous single exact length.",
+            "The documentation is now reachable from the bar at the top of every page, between \"Playground\" and \"GitHub\". Until now it was only in the footer, at the very bottom — that is, behind scrolling the whole page. The playground carries the same entry, in the same place.",
+            "The library the site offers to install moved to 1.0.0-preview.6, and two constraints came with it — visible in the playground and in the API reference. <code>NotBlank()</code> asks a string for at least one character that is not whitespace, which is what a domain guarding with <code>IsNullOrWhiteSpace</code> demands. <code>AsNullable()</code> widens a value-type generator to <code>Nullable</code> without changing what it draws and without ever yielding null, for a parameter that is spelled nullable and still has to be given a value.",
+            "The xUnit adapter moved to 1.0.0-preview.2 and the diagnostic catalogue package to 1.0.0-preview.5, and the documentation each of them publishes is mirrored here at those versions. The adapter's page now shows a discount applied to an order rather than a standalone price calculation, following the library's own rewrite of that example."
           ]
         },
         {
-          "label": "🙌 Improvements",
+          "label": "🐛 Fixes",
           "items": [
-            "The /version page's two headings that said the same thing (\"This build\" and \"Latest release\") are now one, \"Latest release\".",
-            "Every \"View on GitHub\" link on the /version page now opens GitHub's release listing at the release it names, instead of that release's own page.",
-            "JustDummies' casing constraints are now named <code>InUpperCase()</code> and <code>InLowerCase()</code> — in the playground, the API reference and the documentation — following the library's 1.0.0-preview.4 release.",
-            "The diagnostic catalogue package now documents <code>JD031</code> through <code>JD033</code>, following its own 1.0.0-preview.4 release.",
-            "The <code>dum</code> command-line tool offered for download moved to 1.1.0-beta.3."
+            "The documentation's own links no longer come underlined word by word: the section cards on /docs, the topic list inside a section, the sidebar and the previous/next pair are drawn as the rest of the site draws its links, while the links inside the documentation's own prose keep their underline. The sidebar now marks the page you are reading the way the API reference's does, with a ground and a coloured rail rather than a change of colour alone, and it no longer shows a \"Documentation sections\" fold on windows wide enough to have nothing to fold.",
+            "On the home page, the dummy's hand points at the copy button rather than past it.",
+            "On the home page, the two length fields keep showing their hint when the other bound is invalid, and a bound left empty now takes the hint over a bound that is merely too large.",
+            "Inline code fragments have their background again: the token that carries it was named everywhere and declared nowhere."
           ]
         }
       ]
@@ -33,31 +29,87 @@
       "summaryHtml": [],
       "sections": [
         {
-          "label": "✨ Nouveautés",
+          "label": "🙌 Améliorations",
           "items": [
-            "La page /version dispose désormais d'une section « Releases précédentes », montrant les 5 releases publiées par ce site juste avant la dernière, avec un lien unique pour voir les releases suivantes sur GitHub.",
-            "Un dummy se tient désormais à côté de la commande d'installation sur le premier écran de la page d'accueil, sur les fenêtres assez grandes pour lui faire de la place.",
-            "La page À propos est désormais signée par un dummy adossé en fin de texte, sur les fenêtres larges : le bord droit de la prose épouse son inclinaison au lieu de lui passer dessus.",
-            "Les clics sur le bouton flottant « Télécharger » sont désormais comptés, pour savoir si un appel à l'action permanent sur chaque page mérite sa place. La page vie privée dit exactement ce qui est enregistré — quelle section du site vous étiez en train de lire, la langue de la page, et le moment — et rien d'autre : aucun identifiant, aucune adresse, rien qui puisse remonter jusqu'à vous.",
-            "Le playground est désormais compté lui aussi : ses visites, qui manquaient entièrement aux chiffres d'audience du site, et les expressions que les visiteurs construisent. Ce qui est enregistré d'une expression est sa forme sans les valeurs — <code>Any.String().StartingWith(?).Generate()</code> — si bien que rien de ce que vous y saisissez ne quitte votre navigateur, ce que la page vie privée énonce désormais.",
-            "La question de consentement n'est plus posée qu'une fois pour tout le site, où que vous arriviez. Le playground la pose lui aussi — il ne demandait rien et n'était compté par rien — et une réponse donnée d'un côté est celle que suivent toutes les autres pages : la question ne vous est jamais posée deux fois. Si vous l'y acceptez, une chose de plus est enregistrée quand vous pressez Générer : qu'une pression a eu lieu, et rien de ce que vous avez tapé.",
-            "Le site dispose désormais d'une section documentation. /docs reprend les guides de la bibliothèque, sa référence des générateurs, une page par package et une par règle d'analyzer, en français et en anglais — la documentation qui ne se lisait jusqu'ici que sur GitHub, avec ses diagrammes dessinés plutôt que laissés sous forme de source. Ce que vous y lisez décrit toujours la version que le site vous propose d'installer, et chaque page renvoie au fichier dont elle est tirée."
+            "Le hero de la page d'accueil illustre désormais la même expression que celle expliquée juste en dessous, plutôt qu'une expression différente — sa longueur se règle via deux champs modifiables, un minimum et un maximum, à la place de l'unique longueur exacte précédente.",
+            "La documentation se rejoint désormais depuis la barre du haut, présente sur chaque page, entre « Playground » et « GitHub ». Elle ne s'atteignait jusqu'ici que par le pied de page, tout en bas — c'est-à-dire après avoir fait défiler la page entière. Le playground porte la même entrée, au même endroit.",
+            "La bibliothèque que le site propose d'installer passe en 1.0.0-preview.6, et deux contraintes arrivent avec elle — visibles dans le playground et dans la référence d'API. <code>NotBlank()</code> exige d'une chaîne au moins un caractère qui ne soit pas un blanc, ce que demande un domaine qui se garde avec <code>IsNullOrWhiteSpace</code>. <code>AsNullable()</code> élargit un générateur de type valeur vers <code>Nullable</code> sans changer ce qu'il tire et sans jamais rendre null, pour un paramètre qui s'écrit nullable et doit malgré tout recevoir une valeur.",
+            "L'adaptateur xUnit passe en 1.0.0-preview.2 et le paquet catalogue de diagnostics en 1.0.0-preview.5, et la documentation que chacun publie est reprise ici à ces versions. La page de l'adaptateur montre désormais une remise appliquée à une commande plutôt qu'un calcul de prix isolé, à la suite de la réécriture de cet exemple dans la bibliothèque."
           ]
         },
         {
-          "label": "🙌 Améliorations",
+          "label": "🐛 Corrections",
           "items": [
-            "Les deux titres de la page /version qui disaient la même chose (« Ce build » et « Dernière release ») n'en forment plus qu'un, « Dernière release ».",
-            "Chaque lien « Voir sur GitHub » de la page /version ouvre désormais la liste des releases de GitHub à l'endroit de la release qu'il nomme, plutôt que la page propre à cette release.",
-            "Les contraintes de casse de JustDummies s'appellent désormais <code>InUpperCase()</code> et <code>InLowerCase()</code> — dans le playground, la référence d'API et la documentation — suite à la version 1.0.0-preview.4 de la bibliothèque.",
-            "Le package de catalogue de diagnostics documente désormais <code>JD031</code> à <code>JD033</code>, suite à sa propre version 1.0.0-preview.4.",
-            "L'outil en ligne de commande <code>dum</code> proposé au téléchargement passe en 1.1.0-beta.3."
+            "Les liens de la documentation ne sont plus soulignés mot à mot : les cartes de sections sur /docs, la liste des sujets d'une section, la colonne de navigation et la paire précédent/suivant sont dessinées comme le reste du site dessine ses liens, tandis que les liens à l'intérieur de la prose de la documentation gardent leur soulignement. La colonne de navigation signale désormais la page en cours de lecture comme le fait celle de la référence d'API, par un fond et un filet coloré plutôt que par un simple changement de couleur, et elle n'affiche plus de repli « Documentation sections » sur les fenêtres assez larges pour n'avoir rien à replier.",
+            "Sur la page d'accueil, la main du dummy pointe le bouton de copie et non à côté.",
+            "Sur la page d'accueil, les deux champs de longueur gardent leur indice quand l'autre borne est invalide, et une borne laissée vide l'emporte désormais sur une borne seulement trop grande.",
+            "Les fragments de code en ligne retrouvent leur fond : le jeton qui le porte était nommé partout et déclaré nulle part."
           ]
         }
       ]
     }
   },
   "previous": [
+    {
+      "tag": "release/2026-08-24T07-27-33Z",
+      "date": "2026-08-24",
+      "locales": {
+        "en": {
+          "summaryHtml": [],
+          "sections": [
+            {
+              "label": "✨ New",
+              "items": [
+                "The /version page now has a \"Previous releases\" section, showing the 5 releases this site published just before its latest one, with a single link to see further releases on GitHub.",
+                "A dummy now stands beside the install command on the home page's first screen, on windows large enough to have room for it.",
+                "The About page is now signed by a dummy leaning at the end of the text, on wide windows: the prose's right edge follows his lean instead of running past him.",
+                "Clicks on the floating \"Download\" button are now counted, so the site can tell whether a permanent call to action on every page earns its place. The privacy page says exactly what is recorded — which section of the site you were reading, the page's language, and when — and nothing else: no identifier, no address, nothing that can be traced back to you.",
+                "The playground is now counted too: its visits, which were missing from the site's audience figures entirely, and the expressions visitors build. What is recorded of an expression is its shape with the values left out — <code>Any.String().StartingWith(?).Generate()</code> — so nothing you type there leaves your browser, which the privacy page now spells out.",
+                "The consent question is now asked once for the whole site, wherever you arrive. The playground asks it too — it used to ask nothing and be counted by nothing — and an answer given on either side is the answer every other page follows, so you are never asked twice. If you accept there, one thing more is recorded when you press Generate: that a press happened, and nothing of what you typed.",
+                "The site now has a documentation section. /docs carries the library's guides, its generator reference, a page for each package and one for each analyzer rule, in English and French — the documentation that until now could only be read on GitHub, with its diagrams drawn rather than left as source. What you read there always describes the version the site offers you to install, and each page links to the file it was taken from."
+              ]
+            },
+            {
+              "label": "🙌 Improvements",
+              "items": [
+                "The /version page's two headings that said the same thing (\"This build\" and \"Latest release\") are now one, \"Latest release\".",
+                "Every \"View on GitHub\" link on the /version page now opens GitHub's release listing at the release it names, instead of that release's own page.",
+                "JustDummies' casing constraints are now named <code>InUpperCase()</code> and <code>InLowerCase()</code> — in the playground, the API reference and the documentation — following the library's 1.0.0-preview.4 release.",
+                "The diagnostic catalogue package now documents <code>JD031</code> through <code>JD033</code>, following its own 1.0.0-preview.4 release.",
+                "The <code>dum</code> command-line tool offered for download moved to 1.1.0-beta.3."
+              ]
+            }
+          ]
+        },
+        "fr": {
+          "summaryHtml": [],
+          "sections": [
+            {
+              "label": "✨ Nouveautés",
+              "items": [
+                "La page /version dispose désormais d'une section « Releases précédentes », montrant les 5 releases publiées par ce site juste avant la dernière, avec un lien unique pour voir les releases suivantes sur GitHub.",
+                "Un dummy se tient désormais à côté de la commande d'installation sur le premier écran de la page d'accueil, sur les fenêtres assez grandes pour lui faire de la place.",
+                "La page À propos est désormais signée par un dummy adossé en fin de texte, sur les fenêtres larges : le bord droit de la prose épouse son inclinaison au lieu de lui passer dessus.",
+                "Les clics sur le bouton flottant « Télécharger » sont désormais comptés, pour savoir si un appel à l'action permanent sur chaque page mérite sa place. La page vie privée dit exactement ce qui est enregistré — quelle section du site vous étiez en train de lire, la langue de la page, et le moment — et rien d'autre : aucun identifiant, aucune adresse, rien qui puisse remonter jusqu'à vous.",
+                "Le playground est désormais compté lui aussi : ses visites, qui manquaient entièrement aux chiffres d'audience du site, et les expressions que les visiteurs construisent. Ce qui est enregistré d'une expression est sa forme sans les valeurs — <code>Any.String().StartingWith(?).Generate()</code> — si bien que rien de ce que vous y saisissez ne quitte votre navigateur, ce que la page vie privée énonce désormais.",
+                "La question de consentement n'est plus posée qu'une fois pour tout le site, où que vous arriviez. Le playground la pose lui aussi — il ne demandait rien et n'était compté par rien — et une réponse donnée d'un côté est celle que suivent toutes les autres pages : la question ne vous est jamais posée deux fois. Si vous l'y acceptez, une chose de plus est enregistrée quand vous pressez Générer : qu'une pression a eu lieu, et rien de ce que vous avez tapé.",
+                "Le site dispose désormais d'une section documentation. /docs reprend les guides de la bibliothèque, sa référence des générateurs, une page par package et une par règle d'analyzer, en français et en anglais — la documentation qui ne se lisait jusqu'ici que sur GitHub, avec ses diagrammes dessinés plutôt que laissés sous forme de source. Ce que vous y lisez décrit toujours la version que le site vous propose d'installer, et chaque page renvoie au fichier dont elle est tirée."
+              ]
+            },
+            {
+              "label": "🙌 Améliorations",
+              "items": [
+                "Les deux titres de la page /version qui disaient la même chose (« Ce build » et « Dernière release ») n'en forment plus qu'un, « Dernière release ».",
+                "Chaque lien « Voir sur GitHub » de la page /version ouvre désormais la liste des releases de GitHub à l'endroit de la release qu'il nomme, plutôt que la page propre à cette release.",
+                "Les contraintes de casse de JustDummies s'appellent désormais <code>InUpperCase()</code> et <code>InLowerCase()</code> — dans le playground, la référence d'API et la documentation — suite à la version 1.0.0-preview.4 de la bibliothèque.",
+                "Le package de catalogue de diagnostics documente désormais <code>JD031</code> à <code>JD033</code>, suite à sa propre version 1.0.0-preview.4.",
+                "L'outil en ligne de commande <code>dum</code> proposé au téléchargement passe en 1.1.0-beta.3."
+              ]
+            }
+          ]
+        }
+      }
+    },
     {
       "tag": "release/2026-08-21T22-42-04Z",
       "date": "2026-08-21",
@@ -271,53 +323,7 @@
           ]
         }
       }
-    },
-    {
-      "tag": "release/2026-08-18T12-53-33Z",
-      "date": "2026-08-18",
-      "locales": {
-        "en": {
-          "summaryHtml": [
-            "<em>Wording and layout corrections across the homepage and the playground, nothing structural.</em>"
-          ],
-          "sections": [
-            {
-              "label": "🙌 Improvements",
-              "items": [
-                "Replaced the \"problem it solves\" section on the why-justdummies page with a short transition sentence, since it had shrunk to little more than a link."
-              ]
-            },
-            {
-              "label": "🐛 Fixes",
-              "items": [
-                "Fixed the playground's opening paragraph being sized and stretched full-width like a headline instead of normal body text.",
-                "Corrected the English homepage subtitle, which had described the test values themselves as \"fluent\" instead of the API that generates them."
-              ]
-            }
-          ]
-        },
-        "fr": {
-          "summaryHtml": [
-            "<em>Corrections de formulation et de mise en page sur la page d'accueil et le playground, rien de structurel.</em>"
-          ],
-          "sections": [
-            {
-              "label": "🙌 Améliorations",
-              "items": [
-                "Remplacé la section « le problème qu'elle résout » de la page why-justdummies par une courte phrase de transition, celle-ci s'étant réduite à peu près à un simple lien."
-              ]
-            },
-            {
-              "label": "🐛 Corrections",
-              "items": [
-                "Corrigé le paragraphe d'ouverture du playground, dont la taille et la largeur en faisaient un titre plutôt qu'un texte normal.",
-                "Corrigé le sous-titre anglais de la page d'accueil, qui décrivait les valeurs de test elles-mêmes comme « fluent » au lieu de l'API qui les génère."
-              ]
-            }
-          ]
-        }
-      }
     }
   ],
-  "moreTag": "release/2026-08-17T20-58-25Z"
+  "moreTag": "release/2026-08-18T12-53-33Z"
 }

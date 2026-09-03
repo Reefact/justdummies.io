@@ -11,14 +11,23 @@ compatibilité, puisque rien ne consomme ce déploiement (voir
 
 ## Unreleased
 
+_Rien en attente pour l'instant._
+
+## release/2026-09-03T08-52-43Z — 3 septembre 2026
+
 ### 🙌 Améliorations
 
 - Le hero de la page d'accueil illustre désormais la même expression que celle expliquée juste en dessous, plutôt qu'une expression différente — sa longueur se règle via deux champs modifiables, un minimum et un maximum, à la place de l'unique longueur exacte précédente.
 - La documentation se rejoint désormais depuis la barre du haut, présente sur chaque page, entre « Playground » et « GitHub ». Elle ne s'atteignait jusqu'ici que par le pied de page, tout en bas — c'est-à-dire après avoir fait défiler la page entière. Le playground porte la même entrée, au même endroit.
+- La bibliothèque que le site propose d'installer passe en 1.0.0-preview.6, et deux contraintes arrivent avec elle — visibles dans le playground et dans la référence d'API. `NotBlank()` exige d'une chaîne au moins un caractère qui ne soit pas un blanc, ce que demande un domaine qui se garde avec `IsNullOrWhiteSpace`. `AsNullable()` élargit un générateur de type valeur vers `Nullable` sans changer ce qu'il tire et sans jamais rendre null, pour un paramètre qui s'écrit nullable et doit malgré tout recevoir une valeur.
+- L'adaptateur xUnit passe en 1.0.0-preview.2 et le paquet catalogue de diagnostics en 1.0.0-preview.5, et la documentation que chacun publie est reprise ici à ces versions. La page de l'adaptateur montre désormais une remise appliquée à une commande plutôt qu'un calcul de prix isolé, à la suite de la réécriture de cet exemple dans la bibliothèque.
 
 ### 🐛 Corrections
 
 - Les liens de la documentation ne sont plus soulignés mot à mot : les cartes de sections sur /docs, la liste des sujets d'une section, la colonne de navigation et la paire précédent/suivant sont dessinées comme le reste du site dessine ses liens, tandis que les liens à l'intérieur de la prose de la documentation gardent leur soulignement. La colonne de navigation signale désormais la page en cours de lecture comme le fait celle de la référence d'API, par un fond et un filet coloré plutôt que par un simple changement de couleur, et elle n'affiche plus de repli « Documentation sections » sur les fenêtres assez larges pour n'avoir rien à replier.
+- Sur la page d'accueil, la main du dummy pointe le bouton de copie et non à côté.
+- Sur la page d'accueil, les deux champs de longueur gardent leur indice quand l'autre borne est invalide, et une borne laissée vide l'emporte désormais sur une borne seulement trop grande.
+- Les fragments de code en ligne retrouvent leur fond : le jeton qui le porte était nommé partout et déclaré nulle part.
 
 ## release/2026-08-24T07-27-33Z — 24 août 2026
 
