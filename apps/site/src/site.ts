@@ -42,7 +42,7 @@ export const site = {
          */
         status: 'available',
         package: 'JustDummies',
-        version: '1.0.0-preview.4',
+        version: '1.0.0-preview.6',
         nuget: 'https://www.nuget.org/packages/JustDummies',
         /**
          * The prerelease flag is not decoration: every JustDummies package is a
@@ -69,7 +69,7 @@ export const site = {
     xunit: {
         status: 'available',
         package: 'JustDummies.Xunit',
-        version: '1.0.0-preview.1',
+        version: '1.0.0-preview.2',
         nuget: 'https://www.nuget.org/packages/JustDummies.Xunit',
         installCommand: 'dotnet add package JustDummies.Xunit --prerelease',
         /* Same shape as the library's, because the adapter is an ordinary package. The

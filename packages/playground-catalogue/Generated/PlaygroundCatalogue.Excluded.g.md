@@ -5,7 +5,7 @@ Every public JustDummies member the generator found but did not catalogue, and w
 Specification §10.5/§10.6: an omission must be either catalogued or excluded with a
 stated reason — this file is that reason, kept current on every generation.
 
-## Auto-detected (32)
+## Auto-detected (33)
 
 - `M:JustDummies.Any.ArrayOf``1(JustDummies.IAny{``0})` — open generic method — no closed instantiation is expressible as a flat chain step in v1
 - `M:JustDummies.Any.Combine``3(JustDummies.IAny{``0},JustDummies.IAny{``1},System.Func{``0,``1,``2})` — open generic method — no closed instantiation is expressible as a flat chain step in v1
@@ -37,13 +37,14 @@ stated reason — this file is that reason, kept current on every generation.
 - `M:JustDummies.Any.WithSeed(System.Int32)` — return type 'AnyContext' does not implement IAny<T> — not a chain-eligible step
 - `M:JustDummies.AnyExtensions.As``2(JustDummies.IAny{``0},System.Func{``0,``1})` — open generic method — no closed instantiation is expressible as a flat chain step in v1
 - `M:JustDummies.AnyString.OneOf(System.Collections.Generic.IEnumerable{System.String})` — takes a non-array collection parameter — the catalogue's list form covers params arrays only
+- `M:JustDummies.NullableExtensions.AsNullable``1(JustDummies.IAny{``0})` — open generic method — no closed instantiation is expressible as a flat chain step in v1
 - `M:JustDummies.NullableExtensions.OrNull``1(JustDummies.IAny{``0})` — open generic method — no closed instantiation is expressible as a flat chain step in v1
 - `M:JustDummies.NullableReferenceExtensions.OrNull``1(JustDummies.IAny{``0})` — open generic method — no closed instantiation is expressible as a flat chain step in v1
 
 ## Manual (`excluded-members.jsonc`) (0)
 
 
-## Named in the playground as unavailable (71)
+## Named in the playground as unavailable (101)
 
 Auto-detected exclusions the interface cannot express, shown in the method combo as
 disabled entries rather than hidden. One per name per receiver: the combo prints these
@@ -61,63 +62,93 @@ without arguments, so overloads would be repeats of one dead line.
 - `Any.SetOf`
 - `Any.TripleOf`
 - `AnyBoolean.As`
+- `AnyBoolean.AsNullable`
 - `AnyBoolean.OrNull`
 - `AnyByte.As`
+- `AnyByte.AsNullable`
 - `AnyByte.OrNull`
 - `AnyChar.As`
+- `AnyChar.AsNullable`
 - `AnyChar.OrNull`
 - `AnyDateOnly.As`
+- `AnyDateOnly.AsNullable`
 - `AnyDateOnly.OrNull`
 - `AnyDateTime.As`
+- `AnyDateTime.AsNullable`
 - `AnyDateTime.OrNull`
 - `AnyDateTimeOffset.As`
+- `AnyDateTimeOffset.AsNullable`
 - `AnyDateTimeOffset.OrNull`
 - `AnyDecimal.As`
+- `AnyDecimal.AsNullable`
 - `AnyDecimal.OrNull`
 - `AnyDouble.As`
+- `AnyDouble.AsNullable`
 - `AnyDouble.OrNull`
 - `AnyFtpUri.As`
+- `AnyFtpUri.AsNullable`
 - `AnyFtpUri.OrNull`
 - `AnyGuid.As`
+- `AnyGuid.AsNullable`
 - `AnyGuid.OrNull`
 - `AnyHalf.As`
+- `AnyHalf.AsNullable`
 - `AnyHalf.OrNull`
 - `AnyInt128.As`
+- `AnyInt128.AsNullable`
 - `AnyInt128.OrNull`
 - `AnyInt16.As`
+- `AnyInt16.AsNullable`
 - `AnyInt16.OrNull`
 - `AnyInt32.As`
+- `AnyInt32.AsNullable`
 - `AnyInt32.OrNull`
 - `AnyInt64.As`
+- `AnyInt64.AsNullable`
 - `AnyInt64.OrNull`
 - `AnyMailtoUri.As`
+- `AnyMailtoUri.AsNullable`
 - `AnyMailtoUri.OrNull`
 - `AnyPattern.As`
+- `AnyPattern.AsNullable`
 - `AnyPattern.OrNull`
 - `AnyRelativeUri.As`
+- `AnyRelativeUri.AsNullable`
 - `AnyRelativeUri.OrNull`
 - `AnySByte.As`
+- `AnySByte.AsNullable`
 - `AnySByte.OrNull`
 - `AnySingle.As`
+- `AnySingle.AsNullable`
 - `AnySingle.OrNull`
 - `AnyString.As`
+- `AnyString.AsNullable`
 - `AnyString.OrNull`
 - `AnyTimeOnly.As`
+- `AnyTimeOnly.AsNullable`
 - `AnyTimeOnly.OrNull`
 - `AnyTimeSpan.As`
+- `AnyTimeSpan.AsNullable`
 - `AnyTimeSpan.OrNull`
 - `AnyUInt128.As`
+- `AnyUInt128.AsNullable`
 - `AnyUInt128.OrNull`
 - `AnyUInt16.As`
+- `AnyUInt16.AsNullable`
 - `AnyUInt16.OrNull`
 - `AnyUInt32.As`
+- `AnyUInt32.AsNullable`
 - `AnyUInt32.OrNull`
 - `AnyUInt64.As`
+- `AnyUInt64.AsNullable`
 - `AnyUInt64.OrNull`
 - `AnyUri.As`
+- `AnyUri.AsNullable`
 - `AnyUri.OrNull`
 - `AnyWebSocketUri.As`
+- `AnyWebSocketUri.AsNullable`
 - `AnyWebSocketUri.OrNull`
 - `AnyWebUri.As`
+- `AnyWebUri.AsNullable`
 - `AnyWebUri.OrNull`
 

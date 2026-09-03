@@ -2538,6 +2538,15 @@ public static partial class PlaygroundDispatch {
                 return new ChainResult(receiver, "AnyString", null, refused.Message);
             }
         },
+        ["AnyString::NotBlank#0"] = (receiver, rawArguments) => {
+            var typed = (global::JustDummies.AnyString)receiver!;
+            try {
+                var produced = typed.NotBlank();
+                return new ChainResult(produced, "AnyString", null, null);
+            } catch (Exception refused) when (refused is DummyException or ArgumentException) {
+                return new ChainResult(receiver, "AnyString", null, refused.Message);
+            }
+        },
         ["AnyString::Numeric#0"] = (receiver, rawArguments) => {
             var typed = (global::JustDummies.AnyString)receiver!;
             try {

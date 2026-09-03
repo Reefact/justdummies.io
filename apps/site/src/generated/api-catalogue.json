@@ -1,7 +1,7 @@
 {
   "library": {
-    "libraryVersion": "1.0.0-preview.4",
-    "xunitVersion": "1.0.0-preview.1"
+    "libraryVersion": "1.0.0-preview.6",
+    "xunitVersion": "1.0.0-preview.2"
   },
   "categories": [
     {
@@ -727,7 +727,7 @@
           "name": "AnyEnum<TEnum>",
           "kind": "sealed class",
           "signature": "public sealed class AnyEnum<TEnum> where TEnum : struct, Enum",
-          "summary": "A fluent generator of arbitrary TEnum values, drawn uniformly from the enum's declared members — never from undeclared numeric values. Constraints narrow the pool (OneOf, Except, DifferentFrom), and a combination that empties it fails eagerly with a ConflictingAnyConstraintException naming both sides.",
+          "summary": "A fluent generator of arbitrary TEnum values, drawn uniformly from the enum's declared members — never from undeclared numeric values. Constraints narrow the pool (OneOf, Except, DifferentFrom), and a combination that empties it fails with a ConflictingAnyConstraintException naming both sides — before any value is drawn, and whichever order the chain was written in, since AllowingCombinations widens the universe the pool is cut from wherever it appears.",
           "extends": null,
           "implements": [
             "IAny<TEnum>",
@@ -1408,6 +1408,10 @@
             {
               "signature": "AnyString NonEmpty()",
               "summary": "Requires at least one character."
+            },
+            {
+              "signature": "AnyString NotBlank()",
+              "summary": "Requires at least one character that is not whitespace — what a domain guarding with IsNullOrWhiteSpace demands, and with it the floor of one character NonEmpty gives."
             },
             {
               "signature": "AnyString WithLength(int length)",
@@ -2443,7 +2447,7 @@
           "entryPoints": [
             {
               "signature": "static AnySet<T?> Any.SetOf<T>(IAny<T?> item)",
-              "summary": "Starts an arbitrary HashSet generator over item — distinct by nature. When the count exceeds the number of distinct values item can produce, the conflict is reported eagerly."
+              "summary": "Starts an arbitrary HashSet generator over item — distinct by nature. When the count exceeds the number of distinct values item can produce, the conflict is reported deterministically, before any element is drawn, and whichever order the chain was written in."
             },
             {
               "signature": "static AnySet<T?> Any.SetOf<T>(IAny<T?> item, IEqualityComparer<T?> comparer)",
@@ -2566,7 +2570,7 @@
           "name": "NullableExtensions",
           "kind": "static class",
           "signature": "public static class NullableExtensions",
-          "summary": "Makes a value-type generator optionally null: OrNull turns an IAny into an IAny of Nullable that yields null on an even coin flip and, otherwise, a value satisfying the constraints declared upstream — the dummy for an optional value-type field (int?, DateTime?, Guid?, an enum, ...).",
+          "summary": "The two ways a value-type generator becomes a generator of Nullable, and they are not the same thing. OrNull yields null on an even coin flip and, otherwise, a value satisfying the constraints declared upstream — the dummy for an optional value-type field (int?, DateTime?, Guid?, an enum, ...). AsNullable never yields null: it widens the type and leaves the values alone, for a parameter that is spelled nullable and still has to be given one.",
           "extends": null,
           "implements": [],
           "entryPoints": null,
@@ -2576,6 +2580,10 @@
             {
               "signature": "IAny<T?> OrNull<T>(this IAny<T> generator) where T : struct",
               "summary": "Derives a generator that yields null about half the time and, otherwise, a value drawn from generator — so a test exercises both the present and the absent case without pinning either. Reproducible under a seed, like every other draw."
+            },
+            {
+              "signature": "IAny<T?> AsNullable<T>(this IAny<T> generator) where T : struct",
+              "summary": "Widens generator to Nullable without changing what it draws — the same values, the wider type, and never null."
             }
           ]
         },
