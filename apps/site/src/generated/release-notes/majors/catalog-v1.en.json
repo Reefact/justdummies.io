@@ -4,6 +4,25 @@
   "locale": "en",
   "releases": [
     {
+      "version": "1.0.0-preview.5",
+      "date": "2026-09-02",
+      "maturity": "preview",
+      "anchor": "v1-0-0-preview-5",
+      "tagUrl": "https://github.com/Reefact/just-dummies/releases/tag/catalog-v1.0.0-preview.5",
+      "summaryHtml": [
+        "<em>A license change every consumer should read.</em>"
+      ],
+      "sections": [
+        {
+          "label": "⚠️ Breaking changes",
+          "anchor": "v1-0-0-preview-5-breaking-changes",
+          "items": [
+            "<strong>JustDummies.DiagnosticCatalog is now licensed under <a href=\"https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.4/LICENSE\" target=\"_blank\" rel=\"noopener noreferrer\">PolyForm Internal Use 1.0.0</a>, not Apache 2.0 — source-available, not open source.</strong> You may read, build, modify and run the package for your own or your company's internal business operations; you may not distribute the software. Versions already published on NuGet are untouched and keep the license they shipped with. Contributions are now governed by a <a href=\"https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.4/CONTRIBUTOR_AGREEMENT.md\" target=\"_blank\" rel=\"noopener noreferrer\">Contributor Agreement</a>."
+          ]
+        }
+      ]
+    },
+    {
       "version": "1.0.0-preview.4",
       "date": "2026-08-24",
       "maturity": "preview",

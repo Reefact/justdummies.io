@@ -5,8 +5,8 @@ slug: "faq"
 order: 7
 locale: "en"
 sourcePath: "doc/handwritten/for-users/guides/faq.en.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/guides/faq.en.md"
-ref: "lib-v1.0.0-preview.4"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-users/guides/faq.en.md"
+ref: "lib-v1.0.0-preview.6"
 ---
 
 Short answers to the questions that come up most. Each links to the page that covers the topic
@@ -115,7 +115,7 @@ int        quantity = context.Int32().Between(1, 100).Generate();
 
 Within a major version, yes: from `1.0.0-preview.1` a given seed draws the same values across every
 patch and minor release, enforced by a golden master
-([ADR-0049](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0049-replay-a-seed-across-patch-and-minor-versions.md)). A
+([ADR-0049](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0049-replay-a-seed-across-patch-and-minor-versions.md)). A
 major version may change it.
 
 ### Does replay survive parallel tests?
@@ -137,7 +137,7 @@ not stable — give each item its own seed scope. The opt-in-free diagnostic
 
 Yes. The supported floor is **.NET Framework 4.7.2**, through the `netstandard2.0` asset, and CI runs
 the suites on it
-([ADR-0007](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0007-floor-the-library-on-net-framework-4-7-2.md)).
+([ADR-0007](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0007-floor-the-library-on-net-framework-4-7-2.md)).
 
 ### Do I have to install the analyzers separately?
 

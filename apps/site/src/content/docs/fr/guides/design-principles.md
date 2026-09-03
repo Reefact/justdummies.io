@@ -5,8 +5,8 @@ slug: "design-principles"
 order: 2
 locale: "fr"
 sourcePath: "doc/handwritten/for-users/guides/design-principles.fr.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/guides/design-principles.fr.md"
-ref: "lib-v1.0.0-preview.4"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-users/guides/design-principles.fr.md"
+ref: "lib-v1.0.0-preview.6"
 ---
 
 Toute bibliothèque refuse quelque chose. La plupart le font par accident et s'en excusent dans le
@@ -16,9 +16,21 @@ pour vous — et pour que ses refus cessent de ressembler à des manques.
 
 ## « Just dummies » est un périmètre, pas un slogan
 
-Le nom est la spécification. Un dummy est une valeur arbitraire et **valide pour les contraintes
-déclarées sur le site d'appel**. Ce n'est pas un tirage statistiquement idéal, ni un générateur
-universel, ni un solveur de contraintes.
+Le nom est la spécification. Un dummy est **une valeur dont un test a besoin et dont il ne se soucie
+pas** : elle doit exister et être bien formée pour que le code s'exécute, et sa valeur n'atteint
+jamais l'assertion et ne peut pas changer le résultat. **Une donnée qui intervient dans ce que le
+test cherche à vérifier n'est pas un dummy** — qu'elle figure ou non dans l'assertion elle-même.
+
+Ce que la bibliothèque garantit à propos d'une telle valeur est étroit et exact : elle est
+arbitraire, et elle est **valide pour les contraintes déclarées sur le site d'appel**. Ce n'est pas
+un tirage statistiquement idéal, ni un générateur universel, ni un solveur de contraintes.
+
+Les deux moitiés travaillent. Ôtez la garantie et un dummy devient inutilisable : une valeur qui
+viole le domaine échoue pour des raisons que le test n'a jamais voulu explorer. Ôtez la définition
+et le périmètre devient discrètement autre chose : générez une valeur dont dépend le résultat du
+test et vous avez écrit une propriété — que cette bibliothèque exécute avec un échantillon de taille
+un et ne peut pas défendre. Le [guide de démarrage](/fr/docs/guides/getting-started/#où-passe-la-ligne)
+montre précisément où passe cette ligne.
 
 C'est plus étroit que ce que ce pourrait être, volontairement. Le travail de la bibliothèque est de
 faire dire à un test ce qu'il veut dire et de le garder reproductible ; tout le reste dispute le
@@ -27,7 +39,7 @@ même budget de complexité et se paie en surprises.
 ## Borner l'ambition, jamais la correction
 
 La règle que suit toute la conception a deux moitiés, et les deux comptent
-([ADR-0046](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0046-bound-the-generators-ambition-never-its-correctness.fr.md)) :
+([ADR-0046](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0046-bound-the-generators-ambition-never-its-correctness.fr.md)) :
 
 * **Ambition bornée.** Il y a une limite à ce que le générateur *tente*.
 * **Correction non bornée.** Il n'y a aucune limite à ce qu'il *garantit* une fois qu'il tente. Une
@@ -45,11 +57,11 @@ personne ne peut raisonner.
 
 | Borne | Ce que c'est | Pourquoi |
 | --- | --- | --- |
-| `Any.Combine` s'arrête à huit | aucune surcharge ne prend neuf générateurs | un type réclamant neuf entrées indépendantes appelle une structure intermédiaire ; la composer est à la fois le contournement et la meilleure conception ([ADR-0005](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0005-cap-any-combine-at-arity-eight.fr.md)) |
-| `Any.StringMatching` analyse un sous-ensemble **régulier** | les constructions non régulières sont refusées nommément | élargir signifierait une dépendance à un automate d'expressions régulières ; un refus nommé vaut mieux qu'une dépendance cachée ([ADR-0008](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0008-generate-strings-from-a-home-grown-regular-subset.fr.md)) |
-| les retirages sont **bornés** | collections distinctes, exclusions de chaînes et correspondance d'expressions régulières tentent un nombre fixe de fois | une boucle qui pourrait ne pas finir est pire qu'un échec qui s'explique toujours ([ADR-0004](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0004-gate-distinct-collections-by-cardinality-else-bounded-draw.fr.md), [ADR-0027](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0027-guarantee-a-generated-regex-value-matches-by-bounded-redraw.fr.md)) |
-| les tailles s'arrêtent à un million | une longueur ou un effectif au-dessus de 1 000 000 est refusé | on a dépassé le point où un test voulait un dummy pour entrer dans celui où il voulait un test de charge ([ADR-0029](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0029-let-a-size-maximum-cap-without-steering-the-draw.fr.md)) |
-| le flottant reste ordinaire | un `double`, `float` ou `decimal` non contraint est tiré dans un ordre de grandeur d'un million | des tirages couvrant toute la plage du type produisent des valeurs qu'aucun domaine ne porte, et une arithmétique sur laquelle personne ne peut affirmer quoi que ce soit ([ADR-0031](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0031-draw-arbitrary-numbers-within-an-ordinary-magnitude.fr.md)) |
+| `Any.Combine` s'arrête à huit | aucune surcharge ne prend neuf générateurs | un type réclamant neuf entrées indépendantes appelle une structure intermédiaire ; la composer est à la fois le contournement et la meilleure conception ([ADR-0005](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0005-cap-any-combine-at-arity-eight.fr.md)) |
+| `Any.StringMatching` analyse un sous-ensemble **régulier** | les constructions non régulières sont refusées nommément | élargir signifierait une dépendance à un automate d'expressions régulières ; un refus nommé vaut mieux qu'une dépendance cachée ([ADR-0008](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0008-generate-strings-from-a-home-grown-regular-subset.fr.md)) |
+| les retirages sont **bornés** | collections distinctes, exclusions de chaînes et correspondance d'expressions régulières tentent un nombre fixe de fois | une boucle qui pourrait ne pas finir est pire qu'un échec qui s'explique toujours ([ADR-0004](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0004-gate-distinct-collections-by-cardinality-else-bounded-draw.fr.md), [ADR-0027](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0027-guarantee-a-generated-regex-value-matches-by-bounded-redraw.fr.md)) |
+| les tailles s'arrêtent à un million | une longueur ou un effectif au-dessus de 1 000 000 est refusé | on a dépassé le point où un test voulait un dummy pour entrer dans celui où il voulait un test de charge ([ADR-0029](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0029-let-a-size-maximum-cap-without-steering-the-draw.fr.md)) |
+| le flottant reste ordinaire | un `double`, `float` ou `decimal` non contraint est tiré dans un ordre de grandeur d'un million | des tirages couvrant toute la plage du type produisent des valeurs qu'aucun domaine ne porte, et une arithmétique sur laquelle personne ne peut affirmer quoi que ce soit ([ADR-0031](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0031-draw-arbitrary-numbers-within-an-ordinary-magnitude.fr.md)) |
 
 Aucune de ces bornes n'est une limitation temporaire attendant que quelqu'un trouve le temps. Chacune
 est une décision dont le raisonnement est consigné, et chacune peut être réexaminée — en changeant la

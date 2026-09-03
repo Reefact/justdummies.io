@@ -5,8 +5,8 @@ slug: "justdummies-diagnosticcatalog"
 order: 2
 locale: "fr"
 sourcePath: "doc/handwritten/for-users/packages/justdummies-diagnosticcatalog.fr.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/catalog-v1.0.0-preview.4/doc/handwritten/for-users/packages/justdummies-diagnosticcatalog.fr.md"
-ref: "catalog-v1.0.0-preview.4"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/catalog-v1.0.0-preview.5/doc/handwritten/for-users/packages/justdummies-diagnosticcatalog.fr.md"
+ref: "catalog-v1.0.0-preview.5"
 ---
 
 Les règles `JD001`–`JD033`, publiées sous forme de constantes qu'un `[SuppressMessage]` peut nommer.
@@ -52,7 +52,7 @@ internal static class LegacyArrangements {
 
 Désormais, une catégorie renommée ou une règle retirée devient une **erreur de compilation** sur
 chaque site de suppression, c'est-à-dire précisément là où la décision de supprimer a été prise
-([ADR-0050](https://github.com/Reefact/just-dummies/blob/catalog-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0050-name-a-suppressed-rule-through-a-catalogue-constant.fr.md)).
+([ADR-0050](https://github.com/Reefact/just-dummies/blob/catalog-v1.0.0-preview.5/doc/handwritten/for-maintainers/adr/0050-name-a-suppressed-rule-through-a-catalogue-constant.fr.md)).
 
 ## Installation
 
@@ -105,6 +105,6 @@ sont embarqués dans `JustDummies` lui-même et fonctionnent sans ce paquet.
 **Oui**, si des suppressions apparaissent dans votre base de code et que vous préférez qu'elles
 soient vérifiées plutôt que crues. Le catalogue publié est ce qui fait d'une suppression une
 affirmation vérifiée par le compilateur, et non un commentaire qui se trouve être un attribut
-([ADR-0052](https://github.com/Reefact/just-dummies/blob/catalog-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0052-publish-the-jd-rules-as-a-first-party-catalogue.fr.md)).
+([ADR-0052](https://github.com/Reefact/just-dummies/blob/catalog-v1.0.0-preview.5/doc/handwritten/for-maintainers/adr/0052-publish-the-jd-rules-as-a-first-party-catalogue.fr.md)).
 
 Pour les règles elles-mêmes, voir l'[index des règles](/fr/docs/analyzers/).

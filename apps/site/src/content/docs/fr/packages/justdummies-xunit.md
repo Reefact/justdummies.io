@@ -5,8 +5,8 @@ slug: "justdummies-xunit"
 order: 1
 locale: "fr"
 sourcePath: "doc/handwritten/for-users/packages/justdummies-xunit.fr.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-users/packages/justdummies-xunit.fr.md"
-ref: "cli-v1.1.0-beta.3"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/xunit-v1.0.0-preview.2/doc/handwritten/for-users/packages/justdummies-xunit.fr.md"
+ref: "xunit-v1.0.0-preview.2"
 ---
 
 L'adaptateur xUnit **v3**. Il n'apporte qu'une seule chose — un attribut `[Reproducible]` — et cette
@@ -24,28 +24,27 @@ Il dépend de `JustDummies` et de xUnit v3.
 
 `ReproducibleAttribute`, avec une propriété `Seed` assignable. C'est tout — l'adaptateur est
 volontairement mince, car tout ce dont il a besoin existe déjà dans la bibliothèque
-([ADR-0018](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0018-adapt-dummies-to-xunit-v3-through-a-companion-package.fr.md)).
+([ADR-0018](https://github.com/Reefact/just-dummies/blob/xunit-v1.0.0-preview.2/doc/handwritten/for-maintainers/adr/0018-adapt-dummies-to-xunit-v3-through-a-companion-package.fr.md)).
 
 ## Utilisation
 
 <!-- jd:declarations -->
 ```csharp
-public sealed class DiscountTests {
+public sealed class OrderTests {
 
     [Fact, Reproducible]
-    public void A_discount_never_produces_a_negative_price() {
-        decimal amount     = Any.Decimal().Between(0m, 10_000m).WithScale(2).Generate();
-        int     percentage = Any.Int32().Between(0, 100).Generate();
+    public void A_20_percent_discount_takes_a_fifth_off_the_order() {
+        // Arrange
+        string anyReference = Any.String().StartingWith("ORD-").WithLength(12).Generate();
+        string anyCustomer  = Any.String().Alpha().WithLengthBetween(1, 50).Generate();
 
-        Assert.InRange(Discount.Apply(amount, percentage), 0m, amount);
-    }
+        Order order = new Order(anyReference, anyCustomer, amount: 100m);
 
-}
+        // Act
+        order.ApplyDiscount(20);
 
-internal static class Discount {
-
-    public static decimal Apply(decimal amount, int percentage) {
-        return amount - (amount * percentage / 100m);
+        // Assert
+        Assert.Equal(80m, order.Total);
     }
 
 }
@@ -60,16 +59,34 @@ L'attribut s'applique à trois niveaux, et le plus spécifique l'emporte pendant
 public sealed class OrderTests {
 
     [Fact]
-    public void An_order_reference_keeps_its_prefix() {
-        string reference = Any.String().StartingWith("ORD-").WithLength(12).Generate();
+    public void A_20_percent_discount_takes_a_fifth_off_the_order() {
+        // Arrange
+        string anyReference = Any.String().StartingWith("ORD-").WithLength(12).Generate();
+        string anyCustomer  = Any.String().Alpha().WithLengthBetween(1, 50).Generate();
 
-        Assert.StartsWith("ORD-", reference);
+        Order order = new Order(anyReference, anyCustomer, amount: 100m);
+
+        // Act
+        order.ApplyDiscount(20);
+
+        // Assert
+        Assert.Equal(80m, order.Total);
     }
 
     // Sur une méthode, pour rejouer une graine rapportée — le niveau extérieur est restauré ensuite.
     [Fact, Reproducible(Seed = 1743029518)]
-    public void A_quantity_stays_in_range() {
-        Assert.InRange(Any.Int32().Between(1, 100).Generate(), 1, 100);
+    public void A_100_percent_discount_clears_the_order() {
+        // Arrange
+        string anyReference = Any.String().StartingWith("ORD-").WithLength(12).Generate();
+        string anyCustomer  = Any.String().Alpha().WithLengthBetween(1, 50).Generate();
+
+        Order order = new Order(anyReference, anyCustomer, amount: 100m);
+
+        // Act
+        order.ApplyDiscount(100);
+
+        // Assert
+        Assert.Equal(0m, order.Total);
     }
 
 }
@@ -99,7 +116,7 @@ Remarquez que le message nomme l'**attribut**, et non `Any.Reproducibly(seed, ..
 depuis l'extérieur de son propre corps ne contient aucun appel de ce genre : le nommer enverrait le
 lecteur chercher du code qui n'existe pas. L'adaptateur fournit son propre fragment de rejeu via la
 seconde surcharge d'`Any.UseSeed` — la raison d'être de cette surcharge
-([ADR-0017](https://github.com/Reefact/just-dummies/blob/cli-v1.1.0-beta.3/doc/handwritten/for-maintainers/adr/0017-open-the-ambient-seed-scope-to-adapters.fr.md)).
+([ADR-0017](https://github.com/Reefact/just-dummies/blob/xunit-v1.0.0-preview.2/doc/handwritten/for-maintainers/adr/0017-open-the-ambient-seed-scope-to-adapters.fr.md)).
 
 Trois conséquences méritent d'être connues :
 

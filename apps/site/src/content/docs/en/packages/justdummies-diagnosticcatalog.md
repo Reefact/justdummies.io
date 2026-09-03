@@ -5,8 +5,8 @@ slug: "justdummies-diagnosticcatalog"
 order: 2
 locale: "en"
 sourcePath: "doc/handwritten/for-users/packages/justdummies-diagnosticcatalog.en.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/catalog-v1.0.0-preview.4/doc/handwritten/for-users/packages/justdummies-diagnosticcatalog.en.md"
-ref: "catalog-v1.0.0-preview.4"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/catalog-v1.0.0-preview.5/doc/handwritten/for-users/packages/justdummies-diagnosticcatalog.en.md"
+ref: "catalog-v1.0.0-preview.5"
 ---
 
 The `JD001`–`JD033` rules, published as constants a `[SuppressMessage]` can name. You only need this
@@ -51,7 +51,7 @@ internal static class LegacyArrangements {
 
 Now a renamed category or a retired rule is a **compile error** at every suppression site, which is
 exactly where the decision to suppress was made
-([ADR-0050](https://github.com/Reefact/just-dummies/blob/catalog-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0050-name-a-suppressed-rule-through-a-catalogue-constant.md)).
+([ADR-0050](https://github.com/Reefact/just-dummies/blob/catalog-v1.0.0-preview.5/doc/handwritten/for-maintainers/adr/0050-name-a-suppressed-rule-through-a-catalogue-constant.md)).
 
 ## Install
 
@@ -104,6 +104,6 @@ inside `JustDummies` itself and work without this package.
 **Yes**, if suppressions do appear in your codebase and you would rather they were checked than
 trusted. The published catalogue is what makes a suppression a compile-checked statement rather than
 a comment that happens to be an attribute
-([ADR-0052](https://github.com/Reefact/just-dummies/blob/catalog-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0052-publish-the-jd-rules-as-a-first-party-catalogue.md)).
+([ADR-0052](https://github.com/Reefact/just-dummies/blob/catalog-v1.0.0-preview.5/doc/handwritten/for-maintainers/adr/0052-publish-the-jd-rules-as-a-first-party-catalogue.md)).
 
 For the rules themselves, see the [analyzer rules index](/docs/analyzers/).

@@ -5,8 +5,8 @@ slug: "composition"
 order: 3
 locale: "en"
 sourcePath: "doc/handwritten/for-users/guides/composition.en.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/guides/composition.en.md"
-ref: "lib-v1.0.0-preview.4"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-users/guides/composition.en.md"
+ref: "lib-v1.0.0-preview.6"
 ---
 
 The built-in generators cover primitives. Your code is made of order references, money, customers
@@ -65,7 +65,7 @@ so.
 ## When eight is not enough
 
 The arity stops at eight on purpose
-([ADR-0005](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0005-cap-any-combine-at-arity-eight.md)). A type needing more
+([ADR-0005](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0005-cap-any-combine-at-arity-eight.md)). A type needing more
 than eight independent inputs is a type that wants intermediate structure, and composing that
 structure is both the workaround and the better design:
 
@@ -131,6 +131,30 @@ you are generating.
 
 The null-versus-value decision draws from the same random context as the wrapped generator, so a
 seeded run replays it exactly. A `null` draw does not consume a value from the wrapped generator.
+
+## `.AsNullable()`: a nullable type, never an absent value
+
+The opposite of `.OrNull()`, and the one you want far more often than the name suggests. A parameter
+spelled `OrderStatus?` still has to be given a value; if the test does not care which, the dummy for it is
+*not* sometimes-absent — an absent one exercises a branch the test never asked about.
+`.AsNullable()` widens the type and leaves the values alone:
+
+```csharp
+OrderStatus? status = Any.Enum<OrderStatus>().AsNullable().Generate();   // never null
+int?         units  = Any.Int32().Between(1, 10).AsNullable().Generate();
+```
+
+It matters most inside a **distinct** collection. `.As(value => (OrderStatus?)value)` would say the same
+thing about the type and nothing at all about the domain, so a set could not tell how many distinct
+values it had to draw from and would ask for more than exist:
+
+```csharp
+// The enum has a fixed number of members, so a set of them holds at most that many — and this knows it.
+ISet<OrderStatus?> statuses = Any.SetOf(Any.Enum<OrderStatus>().AsNullable()).NonEmpty().Generate();
+```
+
+A generator scaffolded by `dum` writes `.AsNullable()` for every nullable value-type parameter, for
+exactly that reason.
 
 ## Building a whole aggregate
 

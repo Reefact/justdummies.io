@@ -5,8 +5,8 @@ slug: "strings"
 order: 1
 locale: "en"
 sourcePath: "doc/handwritten/for-users/generators/strings.en.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/generators/strings.en.md"
-ref: "lib-v1.0.0-preview.4"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-users/generators/strings.en.md"
+ref: "lib-v1.0.0-preview.6"
 ---
 
 `Any.String()` is the most constrained generator in the library, because strings are where domain
@@ -25,10 +25,15 @@ An unconstrained draw yields **0 to 1024 characters drawn from the whole of ASCI
 characters, tabs and newlines included — so it can be empty, long, and full of things your code may
 not like.
 
-**That is the point, and it is deliberate.** A dummy is a value the code under test had no say in;
-restricting it in advance to short, tame text removes exactly the evidence the draw exists to
-produce. A test that passes with one of these has shown something. A test that passes with `abc123`
-has shown nothing about what happens at 300 characters, or when a `\r` arrives.
+**That is the point, and it is deliberate.** A dummy is a value your test does not care about — and
+the draw is there to put that indifference to the test, on code that may not share it. Restricting
+the value in advance to short, tame text removes exactly the evidence the draw exists to produce. A
+test that passes with one of these has shown something. A test that passes with `abc123` has shown
+nothing about what happens at 300 characters, or when a `\r` arrives.
+
+Note which way that argument runs: the draw is wide because *your code* might wrongly care, never
+because the *test* does. The moment the test cares which string came back, the value has stopped
+being a dummy — see [Getting started](/docs/guides/getting-started/#where-the-line-runs).
 
 So constrain it — with the invariants your code actually has:
 
@@ -39,8 +44,8 @@ string reference = Any.String().Printable().WithMaxLength(32).NonEmpty().Generat
 `NonEmpty()` when content is required, `WithMaxLength(...)` for the length your column or contract
 allows, `Printable()` when a control character is not one of the things it allows. Each of those is
 a fact about the surrounding code, written where it belongs
-([ADR-0075](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0075-draw-characters-from-the-whole-of-ascii.md),
-[ADR-0076](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0076-let-a-declared-maximum-steer-the-size-draw.md)).
+([ADR-0075](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0075-draw-characters-from-the-whole-of-ascii.md),
+[ADR-0076](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0076-let-a-declared-maximum-steer-the-size-draw.md)).
 
 ## Length
 
@@ -51,12 +56,33 @@ string ranged    = Any.String().WithLengthBetween(3, 20).Generate();
 string atLeast   = Any.String().WithMinLength(8).Generate();
 string atMost    = Any.String().WithMaxLength(50).Generate();
 string withStuff = Any.String().NonEmpty().Generate();
+string realText  = Any.String().NotBlank().Generate();
 ```
 
 `NonEmpty()` is the odd one in that list: it raises the floor to one and leaves the ceiling where it
 was, so a chain carrying only it still draws the whole spread. The analyzer
 [JD030](/docs/analyzers/JD030/) says so at the call site, on that line and on every other chain
 that declares no length.
+
+`NotBlank()` is the stronger neighbour, and usually the one a domain means: it requires at least one
+character that is **not whitespace** — exactly what a constructor guarding with
+`string.IsNullOrWhiteSpace` demands — and carries the same floor of one character with it.
+`NonEmpty()` does not cover that guard. A draw of `"\n\r"` is not empty, and under a short ceiling it
+is ordinary rather than rare. Interior whitespace stays legal, so `"a b"` is a value `NotBlank()`
+admits; only an entirely blank one is refused
+([ADR-0088](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0088-state-the-whitespace-guard-with-a-member-of-its-own.md)).
+
+Note that whitespace here is the BCL's own `char.IsWhiteSpace`, which is wider than the
+`Whitespaces()` family below: the family names the readable pair a draw may be narrowed **to**, while
+`NotBlank()` has to agree with the guard that will judge the value. The two contradict where the
+filler has to supply the non-blank character — `Any.String().Whitespaces().NotBlank()` names each
+side — while an anchored literal that already carries one settles the guarantee itself, which leaves
+`Any.String().StartingWith("A").Whitespaces().NotBlank()` legal.
+
+**And the order you write them in is yours to choose.** What is judged is the constraint set, not the
+call written so far, so `Whitespaces().NotBlank().StartingWith("A")` draws exactly what
+`StartingWith("A").Whitespaces().NotBlank()` draws — the anchor settles the guarantee whether it was
+declared before the pair or after it.
 
 **A declared bound is the bound you get.** `WithMaxLength(50)` draws across 0 to 50, and
 `WithLengthBetween(1000, 5000)` draws across the whole range — the two spellings of a range behave
@@ -65,7 +91,7 @@ yields 1000 to 2024.
 
 Every size argument is refused above one million, maxima included: past that point a test wanted a
 load test, not a dummy
-([ADR-0076](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0076-let-a-declared-maximum-steer-the-size-draw.md)).
+([ADR-0076](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0076-let-a-declared-maximum-steer-the-size-draw.md)).
 
 ## Alphabet
 
@@ -183,7 +209,7 @@ filter.
 
 Exclusions are met by a **bounded** redraw, so excluding nearly everything a small domain can
 produce ends in an explicit `AnyGenerationException` rather than a hang
-([ADR-0012](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0012-meet-string-exclusions-with-a-bounded-redraw.md)).
+([ADR-0012](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0012-meet-string-exclusions-with-a-bounded-redraw.md)).
 
 ## Characters
 
@@ -250,7 +276,7 @@ an `UnsupportedRegexException` naming the construct and its position — never m
 
 Widening this set would mean taking a regex-automaton dependency; the decision to keep a home-grown
 parser and refuse loudly instead is
-[ADR-0008](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0008-generate-strings-from-a-home-grown-regular-subset.md).
+[ADR-0008](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0008-generate-strings-from-a-home-grown-regular-subset.md).
 
 ### What you can still constrain
 
@@ -266,4 +292,4 @@ is already the more precise place to say it.
 
 A generated value is guaranteed to match its pattern, by a bounded redraw where construction alone
 cannot ensure it
-([ADR-0027](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0027-guarantee-a-generated-regex-value-matches-by-bounded-redraw.md)).
+([ADR-0027](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0027-guarantee-a-generated-regex-value-matches-by-bounded-redraw.md)).

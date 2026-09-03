@@ -5,8 +5,8 @@ slug: "errors-and-conflicts"
 order: 5
 locale: "fr"
 sourcePath: "doc/handwritten/for-users/guides/errors-and-conflicts.fr.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/guides/errors-and-conflicts.fr.md"
-ref: "lib-v1.0.0-preview.4"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-users/guides/errors-and-conflicts.fr.md"
+ref: "lib-v1.0.0-preview.6"
 ---
 
 JustDummies préfère refuser bruyamment plutôt que renvoyer une valeur que personne ne saurait
@@ -129,7 +129,7 @@ Les constructions acceptées — et celles refusées — sont listées dans
 [Chaînes et motifs](/fr/docs/generators/strings/). La décision d'analyser un sous-ensemble régulier
 avec l'analyseur syntaxique de la bibliothèque, plutôt que de prendre une dépendance à un automate
 d'expressions régulières pour élargir la couverture, est
-[ADR-0008](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0008-generate-strings-from-a-home-grown-regular-subset.fr.md).
+[ADR-0008](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0008-generate-strings-from-a-home-grown-regular-subset.fr.md).
 
 ## Symptôme, cause, remède
 

@@ -5,12 +5,12 @@ slug: "reproducibility"
 order: 4
 locale: "en"
 sourcePath: "doc/handwritten/for-users/guides/reproducibility.en.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/guides/reproducibility.en.md"
-ref: "lib-v1.0.0-preview.4"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-users/guides/reproducibility.en.md"
+ref: "lib-v1.0.0-preview.6"
 ---
 
-A test that draws a different value every run finds defects a fixed test never would — and is only
-worth having if a failure can be replayed exactly. This page is about the mechanism that makes that
+A test that draws a different value every run can reveal a wrong dependency that a fixed test may
+hide — and is only worth having if a failure can be replayed exactly. This page is about the mechanism that makes that
 true, and about the four ways to reach it.
 
 ## Why arbitrary values need a replay button
@@ -19,7 +19,7 @@ The objection to random values in tests is a fair one: *a test that fails once a
 is worse than no test at all.* It wastes an afternoon and teaches the team to press "retry".
 
 JustDummies answers it by making every run **replayable from a single integer**. Draws come from an
-ambient random source pinned to a seed. Vary the seed and the suite explores; report the seed on
+ambient random source pinned to a seed. Vary the seed and the suite varies with it; report the seed on
 failure and any run comes back exactly.
 
 
@@ -34,10 +34,14 @@ Wrap the body of a test and everything drawn inside it comes from one seed:
 
 ```csharp
 Any.Reproducibly(() => {
-    decimal amount     = Any.Decimal().Between(0m, 10_000m).WithScale(2).Generate();
-    int     percentage = Any.Int32().Between(0, 100).Generate();
+    string anyReference = Any.String().StartingWith("ORD-").WithLength(12).Generate();
+    string anyCustomer  = Any.String().Alpha().WithLengthBetween(1, 50).Generate();
 
-    Assert.InRange(amount - (amount * percentage / 100m), 0m, amount);
+    Order order = new Order(anyReference, anyCustomer, amount: 100m);
+
+    order.ApplyDiscount(20);
+
+    Assert.Equal(80m, order.Total);
 });
 ```
 
@@ -64,10 +68,14 @@ value:
 
 ```csharp
 Any.Reproducibly(1743029518, () => {
-    decimal amount     = Any.Decimal().Between(0m, 10_000m).WithScale(2).Generate();
-    int     percentage = Any.Int32().Between(0, 100).Generate();
+    string anyReference = Any.String().StartingWith("ORD-").WithLength(12).Generate();
+    string anyCustomer  = Any.String().Alpha().WithLengthBetween(1, 50).Generate();
 
-    Assert.InRange(amount - (amount * percentage / 100m), 0m, amount);
+    Order order = new Order(anyReference, anyCustomer, amount: 100m);
+
+    order.ApplyDiscount(20);
+
+    Assert.Equal(80m, order.Total);
 });
 ```
 
@@ -88,11 +96,16 @@ An `async` body needs `ReproduciblyAsync`, and the returned task **must** be awa
 
 ```csharp
 await Any.ReproduciblyAsync(async () => {
-    string reference = Any.String().StartingWith("ORD-").WithLength(12).Generate();
+    string anyReference = Any.String().StartingWith("ORD-").WithLength(12).Generate();
+    string anyCustomer  = Any.String().Alpha().WithLengthBetween(1, 50).Generate();
+
+    Order order = new Order(anyReference, anyCustomer, amount: 100m);
 
     await Task.Delay(1);
 
-    Assert.StartsWith("ORD-", reference);
+    order.ApplyDiscount(20);
+
+    Assert.Equal(80m, order.Total);
 });
 ```
 
@@ -107,9 +120,14 @@ When the code to pin cannot be wrapped in a delegate, open a scope instead and d
 
 ```csharp
 using (IDisposable scope = Any.UseSeed(1743029518)) {
-    int quantity = Any.Int32().Between(1, 100).Generate();
+    string anyReference = Any.String().StartingWith("ORD-").WithLength(12).Generate();
+    string anyCustomer  = Any.String().Alpha().WithLengthBetween(1, 50).Generate();
 
-    Assert.InRange(quantity, 1, 100);
+    Order order = new Order(anyReference, anyCustomer, amount: 100m);
+
+    order.ApplyDiscount(20);
+
+    Assert.Equal(80m, order.Total);
 }
 ```
 
@@ -158,14 +176,21 @@ entirely:
 
 <!-- jd:declarations -->
 ```csharp
-public sealed class DiscountTests {
+public sealed class OrderTests {
 
     [Fact, Reproducible]
-    public void A_discount_never_produces_a_negative_price() {
-        decimal amount     = Any.Decimal().Between(0m, 10_000m).WithScale(2).Generate();
-        int     percentage = Any.Int32().Between(0, 100).Generate();
+    public void A_20_percent_discount_takes_a_fifth_off_the_order() {
+        // Arrange
+        string anyReference = Any.String().StartingWith("ORD-").WithLength(12).Generate();
+        string anyCustomer  = Any.String().Alpha().WithLengthBetween(1, 50).Generate();
 
-        Assert.InRange(amount - (amount * percentage / 100m), 0m, amount);
+        Order order = new Order(anyReference, anyCustomer, amount: 100m);
+
+        // Act
+        order.ApplyDiscount(20);
+
+        // Assert
+        Assert.Equal(80m, order.Total);
     }
 
 }
@@ -187,7 +212,7 @@ the duration of the test and the outer ones are restored afterwards.
 
 From `1.0.0-preview.1`, a given seed draws **the same values across every patch and minor release of
 a major version**, and a golden master in the test suite enforces it
-([ADR-0049](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0049-replay-a-seed-across-patch-and-minor-versions.md)). A
+([ADR-0049](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0049-replay-a-seed-across-patch-and-minor-versions.md)). A
 seed you write down today is still replayable after an upgrade within the same major.
 
 Two limits are worth stating plainly.

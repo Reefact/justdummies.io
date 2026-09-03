@@ -5,8 +5,8 @@ slug: "composition"
 order: 3
 locale: "fr"
 sourcePath: "doc/handwritten/for-users/guides/composition.fr.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/guides/composition.fr.md"
-ref: "lib-v1.0.0-preview.4"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-users/guides/composition.fr.md"
+ref: "lib-v1.0.0-preview.6"
 ---
 
 Les générateurs fournis couvrent les primitifs. Votre code, lui, est fait de références de commande,
@@ -69,7 +69,7 @@ pour le dire.
 ## Quand huit ne suffit pas
 
 L'arité s'arrête à huit volontairement
-([ADR-0005](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0005-cap-any-combine-at-arity-eight.fr.md)). Un type réclamant
+([ADR-0005](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0005-cap-any-combine-at-arity-eight.fr.md)). Un type réclamant
 plus de huit entrées indépendantes est un type qui appelle une structure intermédiaire, et composer
 cette structure est à la fois le contournement et la meilleure conception :
 
@@ -137,6 +137,31 @@ le compilateur le fait, d'après le type que vous générez.
 La décision « null ou valeur » tire du même contexte aléatoire que le générateur enveloppé : une
 exécution graînée la rejoue donc exactement. Un tirage `null` ne consomme pas de valeur du
 générateur enveloppé.
+
+## `.AsNullable()` : un type nullable, jamais une valeur absente
+
+L'opposé de `.OrNull()`, et celui dont vous avez besoin bien plus souvent que le nom ne le laisse
+croire. Un paramètre écrit `OrderStatus?` doit quand même recevoir une valeur ; si le test se moque
+de laquelle, le dummy qui lui convient n'est *pas* parfois-absent — un dummy absent exerce une
+branche que le test n'a jamais demandée. `.AsNullable()` élargit le type et laisse les valeurs
+tranquilles :
+
+```csharp
+OrderStatus? status = Any.Enum<OrderStatus>().AsNullable().Generate();   // jamais null
+int?         units  = Any.Int32().Between(1, 10).AsNullable().Generate();
+```
+
+Ça compte surtout à l'intérieur d'une collection **distincte**. `.As(value => (OrderStatus?)value)`
+dirait la même chose du type et rien du tout du domaine : un ensemble ne saurait donc pas dans
+combien de valeurs distinctes il a le droit de puiser, et en demanderait plus qu'il n'en existe.
+
+```csharp
+// L'énum a un nombre de membres fixe, donc un ensemble en contient au plus autant — et ceci le sait.
+ISet<OrderStatus?> statuses = Any.SetOf(Any.Enum<OrderStatus>().AsNullable()).NonEmpty().Generate();
+```
+
+Un générateur scaffoldé par `dum` écrit `.AsNullable()` pour chaque paramètre nullable de type
+valeur, exactement pour cette raison.
 
 ## Construire un agrégat entier
 

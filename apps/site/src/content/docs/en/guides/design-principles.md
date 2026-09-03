@@ -5,8 +5,8 @@ slug: "design-principles"
 order: 2
 locale: "en"
 sourcePath: "doc/handwritten/for-users/guides/design-principles.en.md"
-sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-users/guides/design-principles.en.md"
-ref: "lib-v1.0.0-preview.4"
+sourceUrl: "https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-users/guides/design-principles.en.md"
+ref: "lib-v1.0.0-preview.6"
 ---
 
 Every library refuses something. Most do it by accident and apologise in the issue tracker.
@@ -16,9 +16,21 @@ like gaps.
 
 ## "Just dummies" is a scope, not a slogan
 
-The name is the specification. A dummy is a value that is arbitrary and **valid for the constraints
-declared at the call site**. It is not a statistically ideal draw, not a universal generator, and not
-a constraint solver.
+The name is the specification. A dummy is **a value a test needs and does not care about**: it must
+exist and be well-formed for the code to run, and its value never reaches the assertion and cannot
+change the outcome. **Data that takes part in what the test is trying to verify is not a dummy** —
+whether or not it appears in the assertion itself.
+
+What the library guarantees about such a value is narrow and exact: it is arbitrary, and it is
+**valid for the constraints declared at the call site**. It is not a statistically ideal draw, not a
+universal generator, and not a constraint solver.
+
+Both halves do work. Drop the guarantee and a dummy is unusable, because a value that violates the
+domain fails for reasons the test never meant to explore. Drop the definition and the scope quietly
+becomes something else: generate a value the test's outcome depends on and you have written a
+property, which this library runs with a sample size of one and cannot defend. The
+[getting-started guide](/docs/guides/getting-started/#where-the-line-runs) shows exactly where that line
+runs.
 
 That is narrower than it could be, deliberately. The library's job is to make a test say what it
 means and stay reproducible; anything beyond that competes for the same complexity budget and pays
@@ -27,7 +39,7 @@ for itself in surprises.
 ## Bound the ambition, never the correctness
 
 The rule the whole design follows has two halves, and both matter
-([ADR-0046](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0046-bound-the-generators-ambition-never-its-correctness.md)):
+([ADR-0046](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0046-bound-the-generators-ambition-never-its-correctness.md)):
 
 * **Bounded ambition.** There is a limit to what the generator will *attempt*.
 * **Unbounded correctness.** There is no limit on what it *guarantees* once it does attempt. A drawn
@@ -44,11 +56,11 @@ cannot be honoured. It is never a value produced by a mechanism nobody can reaso
 
 | Bound | What it is | Why |
 | --- | --- | --- |
-| `Any.Combine` stops at eight | no overload takes nine generators | a type needing nine independent inputs wants intermediate structure; composing it is both the workaround and the better design ([ADR-0005](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0005-cap-any-combine-at-arity-eight.md)) |
-| `Any.StringMatching` parses a **regular** subset | non-regular constructs are refused by name | widening it would mean a regex-automaton dependency; a named refusal beats a hidden dependency ([ADR-0008](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0008-generate-strings-from-a-home-grown-regular-subset.md)) |
-| redraws are **bounded** | distinct collections, string exclusions and regex matching try a fixed number of times | a loop that might not end is worse than a failure that always explains itself ([ADR-0004](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0004-gate-distinct-collections-by-cardinality-else-bounded-draw.md), [ADR-0027](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0027-guarantee-a-generated-regex-value-matches-by-bounded-redraw.md)) |
-| sizes stop at one million | a length or count above one million is refused | it is past the point where a test wanted a dummy and into the point where it wanted a load test ([ADR-0029](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0029-let-a-size-maximum-cap-without-steering-the-draw.md)) |
-| floating point stays ordinary | an unconstrained `double`, `float` or `decimal` is drawn within a magnitude of one million | draws spanning the type's full range produce values no domain has, and arithmetic nobody can assert on ([ADR-0031](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.4/doc/handwritten/for-maintainers/adr/0031-draw-arbitrary-numbers-within-an-ordinary-magnitude.md)) |
+| `Any.Combine` stops at eight | no overload takes nine generators | a type needing nine independent inputs wants intermediate structure; composing it is both the workaround and the better design ([ADR-0005](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0005-cap-any-combine-at-arity-eight.md)) |
+| `Any.StringMatching` parses a **regular** subset | non-regular constructs are refused by name | widening it would mean a regex-automaton dependency; a named refusal beats a hidden dependency ([ADR-0008](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0008-generate-strings-from-a-home-grown-regular-subset.md)) |
+| redraws are **bounded** | distinct collections, string exclusions and regex matching try a fixed number of times | a loop that might not end is worse than a failure that always explains itself ([ADR-0004](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0004-gate-distinct-collections-by-cardinality-else-bounded-draw.md), [ADR-0027](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0027-guarantee-a-generated-regex-value-matches-by-bounded-redraw.md)) |
+| sizes stop at one million | a length or count above one million is refused | it is past the point where a test wanted a dummy and into the point where it wanted a load test ([ADR-0029](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0029-let-a-size-maximum-cap-without-steering-the-draw.md)) |
+| floating point stays ordinary | an unconstrained `double`, `float` or `decimal` is drawn within a magnitude of one million | draws spanning the type's full range produce values no domain has, and arithmetic nobody can assert on ([ADR-0031](https://github.com/Reefact/just-dummies/blob/lib-v1.0.0-preview.6/doc/handwritten/for-maintainers/adr/0031-draw-arbitrary-numbers-within-an-ordinary-magnitude.md)) |
 
 None of these is a temporary limitation waiting for someone to find the time. Each is a decision with
 its reasoning recorded, and each can be revisited — by changing the decision, not by working around
