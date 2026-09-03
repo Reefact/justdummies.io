@@ -10,14 +10,23 @@ consumes this deployment (see [ADR-0001](docs/for-maintainers/adr/0001-a-release
 
 ## Unreleased
 
+_Nothing pending yet._
+
+## release/2026-09-03T08-52-43Z — September 3, 2026
+
 ### 🙌 Improvements
 
 - The home page's hero now demonstrates the same expression explained in the section right below it, instead of an unrelated one — its length is set by two editable fields, a minimum and a maximum, in place of the previous single exact length.
 - The documentation is now reachable from the bar at the top of every page, between "Playground" and "GitHub". Until now it was only in the footer, at the very bottom — that is, behind scrolling the whole page. The playground carries the same entry, in the same place.
+- The library the site offers to install moved to 1.0.0-preview.6, and two constraints came with it — visible in the playground and in the API reference. `NotBlank()` asks a string for at least one character that is not whitespace, which is what a domain guarding with `IsNullOrWhiteSpace` demands. `AsNullable()` widens a value-type generator to `Nullable` without changing what it draws and without ever yielding null, for a parameter that is spelled nullable and still has to be given a value.
+- The xUnit adapter moved to 1.0.0-preview.2 and the diagnostic catalogue package to 1.0.0-preview.5, and the documentation each of them publishes is mirrored here at those versions. The adapter's page now shows a discount applied to an order rather than a standalone price calculation, following the library's own rewrite of that example.
 
 ### 🐛 Fixes
 
 - The documentation's own links no longer come underlined word by word: the section cards on /docs, the topic list inside a section, the sidebar and the previous/next pair are drawn as the rest of the site draws its links, while the links inside the documentation's own prose keep their underline. The sidebar now marks the page you are reading the way the API reference's does, with a ground and a coloured rail rather than a change of colour alone, and it no longer shows a "Documentation sections" fold on windows wide enough to have nothing to fold.
+- On the home page, the dummy's hand points at the copy button rather than past it.
+- On the home page, the two length fields keep showing their hint when the other bound is invalid, and a bound left empty now takes the hint over a bound that is merely too large.
+- Inline code fragments have their background again: the token that carries it was named everywhere and declared nowhere.
 
 ## release/2026-08-24T07-27-33Z — August 24, 2026
 
