@@ -96,6 +96,38 @@ function topicPath(slug: string): string {
     }
 
     /*
+     * A blockquote, which this corpus does not use to quote anybody: all five in the English
+     * documentation are the guide's own rule, set apart and opened in bold — "A constraint
+     * states an invariant of the domain", "If an `anyXxxx` reaches your assertion, it is not a
+     * dummy". Left to the browser they arrived as an indented paragraph and nothing more, which
+     * is how the sharpest line on the page came to read like the one before it.
+     *
+     * The rail is the shape an aside takes here, and an alert is that same shape with a ground
+     * and a name added — so the two read as one family with the alert ranking above, rather than
+     * as two unrelated boxes. `--jd-text-muted` is what keeps them apart at a glance: it is the
+     * palette's one neutral legible at this width, so colour stays what says *which kind*, and
+     * a quote that is not of a kind takes none of the four.
+     *
+     * `margin-inline: 0` drops the browser's own indent, which is the other half of the family:
+     * a quote and an alert are otherwise offset differently on the same page for no reason a
+     * reader could name.
+     */
+    .docs-topic :global(blockquote) {
+        margin-block: var(--jd-space-6);
+        margin-inline: 0;
+        padding-left: var(--jd-space-4);
+        border-left: 3px solid var(--jd-text-muted);
+    }
+
+    .docs-topic :global(blockquote > :first-child) {
+        margin-top: 0;
+    }
+
+    .docs-topic :global(blockquote > :last-child) {
+        margin-bottom: 0;
+    }
+
+    /*
      * A GitHub alert, built by `rehypeRenderGithubAlerts` (astro.config.mjs) out of the
      * `> [!NOTE]` the library writes.
      *
