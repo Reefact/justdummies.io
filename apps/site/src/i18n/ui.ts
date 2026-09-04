@@ -717,6 +717,20 @@ const en = {
     'docs.sourceLink': 'Read the source, or correct it there',
     'docs.pinnedAt': 'Mirrored from',
 
+    /**
+     * The five kinds of GitHub alert — `> [!NOTE]` and its siblings — which the corpus
+     * writes in Markdown and `rehypeRenderGithubAlerts` (astro.config.mjs) renders as a
+     * callout. The marker in the source is a kind, not a caption: GitHub supplies the word
+     * itself, in English, to every reader. Naming them here is what lets a French page say
+     * "Avertissement" over prose the library wrote once — the same split as every other
+     * label this site puts around mirrored content (§7.6).
+     */
+    'docs.alert.note': 'Note',
+    'docs.alert.tip': 'Tip',
+    'docs.alert.important': 'Important',
+    'docs.alert.warning': 'Warning',
+    'docs.alert.caution': 'Caution',
+
     /** The sitewide footer. */
     'footer.nav': 'Footer',
     'footer.about': 'About',
@@ -1319,6 +1333,12 @@ const fr: Record<UiKey, string> = {
 
     'docs.sourceLink': 'Lire la source, ou la corriger là-bas',
     'docs.pinnedAt': 'Repris depuis',
+
+    'docs.alert.note': 'Note',
+    'docs.alert.tip': 'Astuce',
+    'docs.alert.important': 'Important',
+    'docs.alert.warning': 'Avertissement',
+    'docs.alert.caution': 'Attention',
 
     'footer.nav': 'Pied de page',
     'footer.about': 'À propos',

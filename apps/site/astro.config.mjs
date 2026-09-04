@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 
+import { renderGithubAlerts } from './src/docs-alerts.mjs';
 import { useTranslations } from './src/i18n/ui.ts';
 import { highlight } from './src/highlight.ts';
 
@@ -153,6 +154,68 @@ function rehypeMakeCodeBlocksFocusable() {
     };
 }
 
+/**
+ * The word each alert kind is announced by, as a key into this site's own strings. The five
+ * GitHub accepts and no more; `apps/site/src/docs-alerts.mjs` holds the same list, and a kind
+ * missing from this map is one the transform leaves alone.
+ *
+ * @type {Record<string, import('./src/i18n/ui.ts').UiKey>}
+ */
+const ALERT_LABELS = {
+    note: 'docs.alert.note',
+    tip: 'docs.alert.tip',
+    important: 'docs.alert.important',
+    warning: 'docs.alert.warning',
+    caution: 'docs.alert.caution',
+};
+
+/**
+ * A GitHub alert — `> [!NOTE]` and its four siblings — drawn as the callout it was written as,
+ * rather than as a blockquote whose first line reads `[!NOTE]` in plain sight.
+ *
+ * The syntax is GitHub's own, not Markdown's: neither CommonMark nor GFM gives a blockquote a
+ * kind, so a renderer nobody told about it publishes the marker as prose. The corpus mirrored
+ * here is written to be read on GitHub first, which is where it picked the habit up — and this
+ * repository does not write that prose (§7.5), so the choice is to render the notation or to
+ * publish a page the library did not write.
+ *
+ * A `div` rather than a `blockquote`, because the passage is the library's aside to its reader
+ * and not a quotation; and rather than an `aside`, whose landmark semantics depend on which
+ * ancestor it lands in — one more thing to be right about, for nothing gained. What carries the
+ * kind is the label, which is words: the colour beside it distinguishes the five for a reader
+ * who can see it and distinguishes nothing for anyone else, so it is never the only thing that
+ * does (WCAG 1.4.1, and `accessibility.spec.ts` sweeps this page in both locales).
+ *
+ * ALL THIS DOES HERE is bind the transform to the page's locale, which is the one thing the
+ * transform cannot know: the words are the site's own (§7.6), read from `i18n/ui.ts` off the
+ * frontmatter `scripts/generate-docs.mjs` writes. The rule itself — which blockquotes are
+ * eligible, and what an eligible one becomes — is `src/docs-alerts.mjs`, apart so that
+ * `scripts/check-docs-alerts.mjs` can run it over trees no page in the corpus produces.
+ *
+ * WHAT FAILS WHEN THIS IS BROKEN — and why nothing here throws. A kind the map does not name is
+ * left exactly as it arrived, as GitHub leaves a marker it does not recognise. Refusing here was
+ * written first and is worse than the defect it guards against, because **a rehype plugin that
+ * throws does not fail an Astro build**: the entry renders to nothing, the page ships with its
+ * whole body gone, and the exit code is 0 — on a cold content cache with nothing printed at all.
+ * Measured, not assumed. So the refusal reads the artefact instead, in
+ * `scripts/verify-output.sh`: no page may ship a paragraph that opens on an alert marker.
+ */
+function rehypeRenderGithubAlerts() {
+    /**
+     * @param {any} tree
+     * @param {any} file
+     */
+    return function transform(tree, file) {
+        const locale = file?.data?.astro?.frontmatter?.locale === 'fr' ? 'fr' : 'en';
+        const t = useTranslations(locale);
+
+        renderGithubAlerts(
+            tree,
+            Object.fromEntries(Object.entries(ALERT_LABELS).map(([kind, key]) => [kind, t(key)])),
+        );
+    };
+}
+
 export default defineConfig({
     site: 'https://justdummies.io',
 
@@ -174,7 +237,7 @@ export default defineConfig({
         // 'unsafe-inline'. This pipeline emits the older `align="…"` attribute instead — a
         // presentational HTML attribute browsers still honour, and one CSP's style-src has
         // no say over because it is not CSS.
-        rehypePlugins: [rehypeMakeCodeBlocksFocusable, rehypeAnnounceOutboundLinks, rehypeColourCodeBlocks],
+        rehypePlugins: [rehypeRenderGithubAlerts, rehypeMakeCodeBlocksFocusable, rehypeAnnounceOutboundLinks, rehypeColourCodeBlocks],
     },
 
     i18n: {
