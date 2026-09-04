@@ -47,6 +47,15 @@ node "${root}/scripts/generate-site-release-note.mjs"
 echo "▸ Stamping this build with its version"
 "${root}/scripts/generate-version.sh"
 
+# Not a generator: the one check here that reads no artefact and writes no file. The
+# documentation's alert transform implements a rule whose important half — an alert is the same
+# callout wherever it was written, including under a list item, where GitHub itself renders none
+# — no page in the corpus exercises, and a mistake there leaves nothing behind for
+# verify-output.sh to find downstream: a callout drawn where none belonged looks exactly like one
+# that does. Milliseconds, and it fails the build the way everything else here does.
+echo "▸ Checking the documentation's alert transform"
+node "${root}/scripts/check-docs-alerts.mjs"
+
 echo "▸ Building the site"
 pnpm --filter @justdummies/site build
 

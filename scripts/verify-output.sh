@@ -397,6 +397,32 @@ else
   fail "nothing in the shipped CSS colours .tok-keyword, so the code renders in one colour"
 fi
 
+# GitHub's alert notation — `> [!NOTE]` and its four siblings — is an ordinary blockquote to
+# any renderer that has not been taught it, so a kind `src/docs-alerts.mjs` does not know
+# reaches a reader as a paragraph opening on the marker itself. This is that transform's failing
+# check, and it is here rather than in the transform for a reason worth stating: a rehype plugin
+# that throws does not fail an Astro build. The entry renders to nothing, the page ships with its
+# body gone, and the run is green — on a cold content cache, with nothing printed. A quieter
+# failure than the one it was meant to prevent, so the check reads the artefact instead of
+# trusting the pipeline.
+#
+# Two things reach here, and both are this repository's to fix: a kind nobody added to the map,
+# and the transform ceasing to match at all. What deliberately cannot reach here is the
+# library's own slip — an alert indented under a list item, which GitHub renders as a
+# blockquote with its marker showing and `src/docs-alerts.mjs` renders as the alert its author
+# meant. That is what keeps this check from ever being this build refusing to publish over
+# another repository's markdown, which ADR-0013 ruled out. Both share one visible symptom, and
+# nothing else on the site produces it: a paragraph that opens on `[!`.
+markers="$(grep -rlE '<p>\[!' "${dist}" --include='*.html' || true)"
+if [ -n "${markers}" ]; then
+  for page in ${markers}; do
+    marker="$(grep -ohE '<p>\[![A-Za-z]+\]' "${page}" | head -1 | sed 's/^<p>//')"
+    fail "${page#"${dist}"/} publishes ${marker} as prose — no kind of that name is rendered, or src/docs-alerts.mjs has stopped matching"
+  done
+else
+  pass "no page publishes an alert marker as prose"
+fi
+
 # The policy claims style-src 'self'. That claim is only true while no document
 # carries an inline <style>, and one inlined stylesheet turns the whole policy into
 # a lie that shows up as unstyled pages in production and nowhere else.

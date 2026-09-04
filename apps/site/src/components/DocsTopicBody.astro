@@ -66,6 +66,8 @@ function topicPath(slug: string): string {
     .docs-topic {
         max-width: 44rem;
         line-height: var(--jd-line-body);
+        /* The measure an alert takes back below, whatever it was written inside. */
+        container-type: inline-size;
     }
 
     .docs-topic :global(h1) {
@@ -91,6 +93,66 @@ function topicPath(slug: string): string {
         background: var(--jd-code-inline-bg);
         padding: 0.1em 0.35em;
         border-radius: 0.3em;
+    }
+
+    /*
+     * A GitHub alert, built by `rehypeRenderGithubAlerts` (astro.config.mjs) out of the
+     * `> [!NOTE]` the library writes.
+     *
+     * Five kinds drawn in four hues, and deliberately: the palette holds no fifth colour that
+     * clears 4.5:1 on this ground, and adding one to separate WARNING from IMPORTANT would
+     * spend a token on a distinction the label already makes in words — the half of it every
+     * reader receives, including the one who never sees the rail. Colour ranks the five here;
+     * it does not name them.
+     */
+    .docs-topic :global(.jd-alert) {
+        --jd-alert-colour: var(--jd-text-muted);
+        margin-block: var(--jd-space-6);
+        padding: var(--jd-space-4);
+        border-left: 3px solid var(--jd-alert-colour);
+        border-radius: var(--jd-radius-md);
+        background: var(--jd-surface-raised);
+        /*
+         * SAME WIDTH AND SAME LEFT EDGE WHEREVER IT WAS WRITTEN. `src/docs-alerts.mjs` renders an
+         * alert under a list item too — the author meant one — and a callout that then sat inset
+         * by that list's indent would be a different object for a reason no reader can see.
+         *
+         * `100cqw` is this article's own inline size, so where the containing block is narrower
+         * — inside a list item, at any depth — the alert takes the measure back and pulls itself
+         * left by exactly the difference the browser computed. At the top level the difference is
+         * zero and both declarations are inert, which is why there is no second selector for the
+         * ordinary case and no number here that a nesting depth could make wrong.
+         */
+        width: 100cqw;
+        margin-inline-start: calc(-1 * (100cqw - 100%));
+    }
+
+    .docs-topic :global(.jd-alert--note) {
+        --jd-alert-colour: var(--jd-generated);
+    }
+
+    .docs-topic :global(.jd-alert--tip) {
+        --jd-alert-colour: var(--jd-success);
+    }
+
+    .docs-topic :global(.jd-alert--important),
+    .docs-topic :global(.jd-alert--warning) {
+        --jd-alert-colour: var(--jd-accent);
+    }
+
+    .docs-topic :global(.jd-alert--caution) {
+        --jd-alert-colour: var(--jd-error);
+    }
+
+    .docs-topic :global(.jd-alert-label) {
+        margin: 0 0 var(--jd-space-2);
+        color: var(--jd-alert-colour);
+        font-weight: 600;
+    }
+
+    /* The box's own padding closes it; the last paragraph's margin would double that. */
+    .docs-topic :global(.jd-alert > :last-child) {
+        margin-bottom: 0;
     }
 
     /*
