@@ -53,22 +53,25 @@ assert_prose "§9.9 the file it wrote does not build until it is resolved" \
 # division that only ever existed in the specification. What §9.2 requires is that the
 # link be identified as the chain the reader already wrote, not that it be called an act.
 assert_prose "§9.2 that link is the chain the reader already wrote" \
-  "act2\.link\.body[\s\S]{0,400}?chain you already wrote, unchanged"
+  "act2\.link\.body[\s\S]{0,460}?chain you already wrote, unchanged"
 assert_prose "§9.5 the red is not dramatised — nothing is broken" \
   "act3\.forgotten\.body[\s\S]{0,300}?Nothing is broken"
 assert_prose "§9.6 a seed per test case, and no wider a promise" \
   "act3\.replay\.body[\s\S]{0,300}?Each test case draws its own seed"
 # The first exit ships two packages and has to say why the second one is there — a reader
 # offered an adapter they have not been shown is a reader wondering what they are agreeing
-# to. The tool is still not offered here (asserted on the built document below).
+# to. It used to say the adapter "makes your draws replayable", which the library does on
+# its own (Any.Reproducibly, WithSeed); what the adapter adds is the attribute, and the
+# exit now names the moment it will matter and defers the rest to the third act. The tool
+# is still not offered here (asserted on the built document below).
 assert_prose "§9.3 the first exit offers the library, and says what the adapter is for" \
-  "act1\.exit\.body[\s\S]{0,200}?the library on its own[\s\S]{0,200}?Take the adapter with it"
+  "act1\.exit\.body[\s\S]{0,200}?the library alone[\s\S]{0,200}?adds the xUnit adapter[\s\S]{0,160}?when a draw makes a test fail"
 assert_prose "§9.3 the second exit calls the tool optional" \
   "act2\.exit\.body[\s\S]{0,200}?tool is optional"
 assert_prose "§9.3 the third exit offers all three" \
   "act3\.exit\.body[\s\S]{0,200}?smallest of the three"
 assert_prose "§9.2 the second act opens on the same test" \
-  "act2\.concise\.body[\s\S]{0,200}?Same test as before"
+  "act2\.concise\.body[\s\S]{0,200}?the same test as at the start"
 # A scene is titled by what the reader gets from it, and this is the title where that
 # matters most: named after the attribute, the third act opened on the least interesting
 # thing about itself. Editorial, like every anchor above it — the specification is where
@@ -209,7 +212,7 @@ const NAMED_BY = {
     AlphaNumeric:      /alphanumeric|alphanum/i,
     InUpperCase:       /uppercase|majuscule/i,
     StartingWith:      /with ORD-|par ORD-/i,
-    WithLengthBetween: /between eight and twenty|entre huit et vingt/i,
+    WithLengthBetween: /between eight and twenty|eight to twenty|entre huit et vingt|huit à vingt/i,
 };
 
 // The sentences that promise a complete list. Each must exist in both locales.
