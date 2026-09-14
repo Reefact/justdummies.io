@@ -149,7 +149,7 @@ const en = {
 
     'act2.concise.title': 'A test that is explicit at last, and does not lie',
     'act2.concise.body':
-        'It is the same test as at the start: same name, same act, same assertion. Only the arrangement changed, and it fits on one line that says what matters, without lying: this test depends on nothing but a pending order, whichever one it gets.',
+        'It is the same test as at the start: same name, same act, same assertion. Inside the method, only the arrangement changed, and it fits on one line that says what matters, without lying: this test depends on nothing but a pending order, whichever one it gets.',
 
     'act2.exit.title': 'Install all of it',
     'act2.exit.body':
@@ -825,7 +825,7 @@ const fr: Record<UiKey, string> = {
 
     'act2.concise.title': 'Un test enfin explicite, et qui ne ment pas',
     'act2.concise.body':
-        "C'est le même test qu'au début : même nom, même act, même assertion. Seul l'arrange a changé, et il tient en une ligne qui dit ce qui compte, sans mentir : ce test ne dépend que d'une commande en attente, quelle qu'elle soit.",
+        "C'est le même test qu'au début : même nom, même act, même assertion. Dans la méthode, seul l'arrange a changé, et il tient en une ligne qui dit ce qui compte, sans mentir : ce test ne dépend que d'une commande en attente, quelle qu'elle soit.",
 
     'act2.exit.title': 'Installer tout ça',
     'act2.exit.body':
