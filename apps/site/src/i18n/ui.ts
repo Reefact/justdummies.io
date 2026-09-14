@@ -126,14 +126,14 @@ const en = {
 
     'act1.exit.title': 'Install it now',
     'act1.exit.body':
-        'Everything above concerns the library alone, and the first command above is all it takes to install it. The second adds the xUnit adapter — what it brings comes further down, when a draw makes a test fail. If the library is all you needed, you can stop here. What follows shows how to write the generator that assembles several of these values.',
+        'Everything above concerns the library alone, and the first command above is all it takes to install it. The second adds the xUnit adapter: with it, each test that draws gets its own seed and reports it if it fails — the rest is explained later, when a draw makes a test fail. If the library is all you needed, you can stop here. What follows shows how to write the generator that assembles several of these values.',
 
     /**
      * ACT II — concision. The claim is that the arrangement can go away without the test
      * losing what it was about, and that the tool writes the part nobody wants to write.
      */
     'act2.title': 'The generator you never have to write',
-    'act2.summary': 'A tool reads your type and writes it. The file it produces is yours.',
+    'act2.summary': 'A tool reads your type and writes the generator. The file it produces is yours.',
 
     'act2.wanted.title': 'What we would like to write',
     'act2.wanted.body':
@@ -145,7 +145,7 @@ const en = {
 
     'act2.link.title': 'Generated to help you, and yours to change',
     'act2.link.body':
-        'The tool writes the whole file: the fields, a factory per parameter, the draw. It cannot read every rule OrderReference enforces, so rather than guess it wrote its best generator and planted a line that does not compile beside it. The file does not build until you have looked. You delete it and add .AlphaNumeric(), .InUpperCase() and .StartingWith("ORD-") to the reference factory, and that is the chain you already wrote, unchanged. The file is yours: read it, edit it, commit it.',
+        'The tool writes the whole file: the fields, a factory per parameter, the draw. It cannot read every rule OrderReference enforces, so rather than guess, it wrote its best generator and planted a line that does not compile beside it. The file does not build until you have looked. You delete it and add .AlphaNumeric(), .InUpperCase() and .StartingWith("ORD-") to the reference factory, and that is the chain you already wrote, unchanged. The file is yours: read it, edit it, commit it.',
 
     'act2.concise.title': 'A test that is explicit at last, and does not lie',
     'act2.concise.body':
@@ -786,7 +786,7 @@ const fr: Record<UiKey, string> = {
 
     'act1.test.title': 'En général, votre test ressemble à ça',
     'act1.test.body':
-        "De quoi parle ce test ? Il suffit de lire son nom : une commande en attente peut être annulée. Mais quelles variables comptent vraiment ici ? Ça, il faut bien chercher pour le voir. Trois de ses quatre lignes d'arrange construisent anyReference, anyCustomerId et anyTotal, que le constructeur exige mais que le test ne réutilise jamais : tout ce code noie la seule variable qui compte, le statut de la commande. Et en plus ce code ment ! Le constructeur a imposé un choix, et quelqu'un l'a fait : « ORD-54XEM4545 », 42.00. Rien ne prouve que « ORD-HJS54654S » et 17.50 auraient tout aussi bien fonctionné — et pourtant c'est exactement ce que prétend le nom des variables qui les portent.",
+        "De quoi parle ce test ? Il suffit de lire son nom : une commande en attente peut être annulée. Mais quelles variables comptent vraiment ici ? Ça, il faut bien chercher pour le voir. Trois de ses quatre lignes d'arrange construisent anyReference, anyCustomerId et anyTotal, que le constructeur exige mais que le test ne réutilise jamais : tout ce code noie la seule variable qui compte, le statut de la commande. Et en plus ce code ment ! Le constructeur a imposé un choix, et quelqu'un l'a fait : « ORD-54XEM4545 », 42.00. Rien ne prouve que « ORD-HJS54654S » et 17.50 auraient tout aussi bien fonctionné — et pourtant c'est exactement ce que prétendent les noms des variables qui les portent.",
 
     'act1.factories.title': 'Un premier nettoyage',
     'act1.factories.body':
@@ -806,10 +806,10 @@ const fr: Record<UiKey, string> = {
 
     'act1.exit.title': 'Installez-la maintenant',
     'act1.exit.body':
-        "Tout ce qui précède ne concerne que la bibliothèque elle-même, et la première commande ci-dessus suffit à l'installer. La seconde ajoute l'adaptateur xUnit — on verra plus bas ce qu'il apporte, quand un tirage fera échouer un test. Si la bibliothèque est tout ce qu'il vous fallait, vous pouvez vous arrêter ici. La suite montre comment écrire le générateur qui assemble plusieurs de ces valeurs.",
+        "Tout ce qui précède ne concerne que la bibliothèque elle-même, et la première commande ci-dessus suffit à l'installer. La seconde ajoute l'adaptateur xUnit : avec lui, chaque test qui tire reçoit son propre seed et le rapporte s'il échoue — le reste est expliqué plus bas, quand un tirage fera échouer un test. Si la bibliothèque est tout ce qu'il vous fallait, vous pouvez vous arrêter ici. La suite montre comment écrire le générateur qui assemble plusieurs de ces valeurs.",
 
     'act2.title': "Le générateur, vous n'aurez pas à l'écrire",
-    'act2.summary': "Un outil lit votre type et l'écrit. Le fichier produit est le vôtre.",
+    'act2.summary': 'Un outil lit votre type et écrit le générateur. Le fichier produit est le vôtre.',
 
     'act2.wanted.title': 'Ce qu\'on aimerait écrire',
     'act2.wanted.body':
@@ -821,11 +821,11 @@ const fr: Record<UiKey, string> = {
 
     'act2.link.title': 'Généré pour vous aider, vous gardez la main',
     'act2.link.body':
-        "L'outil écrit tout le fichier : les champs, une factory par paramètre, le tirage. Il ne sait pas lire toutes les règles de OrderReference, alors plutôt que d'inventer il écrit son meilleur générateur et plante à côté une ligne qui ne compile pas. Le fichier ne se construit pas tant que vous n'avez pas regardé. Vous supprimez cette ligne et ajoutez .AlphaNumeric(), .InUpperCase() et .StartingWith(\"ORD-\") sur la factory de reference : c'est la chaîne que vous avez déjà écrite, inchangée. Le fichier vous appartient : vous le lisez, vous le modifiez, vous le commitez.",
+        "L'outil écrit tout le fichier : les champs, une factory par paramètre, le tirage. Il ne sait pas lire toutes les règles de OrderReference, alors, plutôt que de deviner, il écrit son meilleur générateur et plante à côté une ligne qui ne compile pas. Le fichier ne se construit pas tant que vous n'avez pas regardé. Vous supprimez cette ligne et ajoutez .AlphaNumeric(), .InUpperCase() et .StartingWith(\"ORD-\") sur la factory de reference : c'est la chaîne que vous avez déjà écrite, inchangée. Le fichier vous appartient : vous le lisez, vous le modifiez, vous le commitez.",
 
     'act2.concise.title': 'Un test enfin explicite, et qui ne ment pas',
     'act2.concise.body':
-        "C'est le même test qu'au début : même nom, même act, même assertion. Dans la méthode, seul l'arrange a changé, et il tient en une ligne qui dit ce qui compte, sans mentir : ce test ne dépend que d'une commande en attente, quelle qu'elle soit.",
+        "C'est le même test qu'au début : même nom, même action, même assertion. Dans la méthode, seul l'arrange a changé, et il tient en une ligne qui dit ce qui compte, sans mentir : ce test ne dépend que d'une commande en attente, quelle qu'elle soit.",
 
     'act2.exit.title': 'Installer tout ça',
     'act2.exit.body':
