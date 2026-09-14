@@ -101,12 +101,12 @@ const en = {
      * to be valid, and that declaring what must be true is a different job from writing
      * a value down.
      */
-    'act1.title': 'The value your test does not care about',
-    'act1.summary': 'It still has to be valid.',
+    'act1.title': 'The value your test does not care about...',
+    'act1.summary': '... but which still has to be valid.',
 
     'act1.test.title': 'Your test probably looks like this',
     'act1.test.body':
-        'What is this test about? A pending order can be cancelled — but you have to go looking to see it. Three of its four arrangement lines build a reference, a customer and a total that the test never mentions again: the constructor demands them, that is all. And they lie: ORD-54XEM4545 and 42.00 read as values somebody chose, when any valid ones would have done. The subject of the test is the last argument of the line that builds the order.',
+        'What is this test about? Just read its name: a pending order can be cancelled. But which variables actually matter here? That takes some digging. Three of its four arrangement lines build anyReference, anyCustomerId and anyTotal, which the constructor demands and the test never touches again: all that code buries the one variable that matters, the order\'s status. And on top of that, the code lies. The constructor forced a choice, and somebody made it: "ORD-54XEM4545", 42.00. Nothing proves that "ORD-HJS54654S" and 17.50 would have worked just as well — yet that is exactly what the names of the variables holding them claim.',
 
     'act1.factories.title': 'A first tidy-up',
     'act1.factories.body':
@@ -114,30 +114,30 @@ const en = {
 
     'act1.careless.title': 'Making the factory tell the truth',
     'act1.careless.body':
-        'The factory now calls the library: Any.String() draws a genuinely arbitrary string, different on every run. The name AnyOrderReference stops lying. Drawing at random is surprising, but a value you typed proves only one thing: that the test passes with that one. The domain refuses the string it drew. That string does not start with ORD-, and OrderReference.Create says so as the value is built, not three assertions later.',
+        'The factory now calls the library: Any.String() draws a genuinely arbitrary string, different on every run. The name AnyOrderReference stops lying. Randomness in a test may raise an eyebrow — but a value you typed by hand proves only one thing: that the test passes with that one. One problem remains, though: the string it drew does not start with ORD-, and OrderReference.Create rejects it.',
 
     'act1.invariants.title': 'What the domain is asking for',
     'act1.invariants.body':
-        'These rules are not exotic, and they are written where they belong. But every one of them has to be satisfied. It is the generator\'s job to satisfy them, without the test having to mention any of it.',
+        'That is where the refusal came from: an order reference has a shape, and the domain enforces it. A genuinely arbitrary string never stood a chance. What is needed is an arbitrary value among those that satisfy these rules: it is the generator\'s job to comply, without the test having to mention any of it.',
 
     'act1.constraints.title': 'Declare the constraints, not the value',
     'act1.constraints.body':
-        'Every business rule becomes a call in the chain: starts with ORD-, uppercase alphanumeric after it, between eight and twenty characters long. The value it produces changes on every run, and it is valid every time. This is where drawing at random makes sense. That value was never the subject of the test, it only had to be valid. Any value that satisfies the rules will do. You describe what the value must satisfy, not what you are going to assert.',
+        'Every domain rule becomes a call in the chain: alphanumeric, uppercase, starting with ORD-, eight to twenty characters long. The value changes on every run, and on every run it is valid. This is where randomness earns its keep: that value was never the subject of the test, it only had to be valid — and now it is, without anyone having to pick it. You no longer describe a value, you describe what it has to satisfy.',
 
     'act1.exit.title': 'Install it now',
     'act1.exit.body':
-        'Everything above is the library on its own. If that is what you came for, install it now. Take the adapter with it: it makes your draws replayable, and the page comes back to that further down. What follows shows how all this setup disappears.',
+        'Everything above concerns the library alone, and the first command above is all it takes to install it. The second adds the xUnit adapter — what it brings comes further down, when a draw makes a test fail. If the library is all you needed, you can stop here. What follows shows how to write the generator that assembles several of these values.',
 
     /**
      * ACT II — concision. The claim is that the arrangement can go away without the test
      * losing what it was about, and that the tool writes the part nobody wants to write.
      */
-    'act2.title': 'Simpler still',
-    'act2.summary': 'A tool reads your type and writes the generator. The file it produces is yours.',
+    'act2.title': 'The generator you never have to write',
+    'act2.summary': 'A tool reads your type and writes it. The file it produces is yours.',
 
     'act2.wanted.title': 'What we would like to write',
     'act2.wanted.body':
-        'CreateAnyPendingOrder() replaces the three lines of arrangement, and the test says only what matters: the order is pending. You can write that helper yourself: it holds the chain of constraints you have just written, in a file of your own test project. The day Order gains a parameter, you are the one reopening that file. What follows is a tool that writes it, and rewrites it.',
+        'CreateAnyPendingOrder() replaces the whole arrangement, and the test says only what matters: the order is pending. You can write that helper yourself, in a file of your own test project: it assembles the generators you have just written and pins the status. The day Order gains a parameter, you are the one reopening that file. What follows is a tool that writes it — and rewrites it.',
 
     'act2.scaffold.title': 'The tool reads your type and writes the generator',
     'act2.scaffold.body':
@@ -145,11 +145,11 @@ const en = {
 
     'act2.link.title': 'Generated to help you, and yours to change',
     'act2.link.body':
-        'The tool writes the whole file: the fields, a factory per parameter, the draw. It cannot read the ORD- prefix rule, so it wrote its best generator rather than guess, and planted a line that does not compile beside it. The file does not build until you have looked. You delete it and add .AlphaNumeric(), .InUpperCase() and .StartingWith("ORD-") to the reference factory, and that is the chain you already wrote, unchanged. The file is yours: read it, edit it, commit it.',
+        'The tool writes the whole file: the fields, a factory per parameter, the draw. It cannot read every rule OrderReference enforces, so rather than guess it wrote its best generator and planted a line that does not compile beside it. The file does not build until you have looked. You delete it and add .AlphaNumeric(), .InUpperCase() and .StartingWith("ORD-") to the reference factory, and that is the chain you already wrote, unchanged. The file is yours: read it, edit it, commit it.',
 
     'act2.concise.title': 'A test that is explicit at last, and does not lie',
     'act2.concise.body':
-        'Same test as before, right down to the assertion. The arrangement is one line, and that line names the only thing the test needs: the order is pending. The rest is drawn on every run, and stays valid. Nothing here is called any while handing back the same value every time.',
+        'It is the same test as at the start: same name, same act, same assertion. Only the arrangement changed, and it fits on one line that says what matters, without lying: this test depends on nothing but a pending order, whichever one it gets.',
 
     'act2.exit.title': 'Install all of it',
     'act2.exit.body':
@@ -781,12 +781,12 @@ const fr: Record<UiKey, string> = {
         "Les 5 releases publiées par ce site juste avant la dernière, pour la même raison qu'au-dessus — son histoire à lui, pas celle de la bibliothèque.",
     'version.previous.viewMoreOnGithub': 'Voir plus de releases sur GitHub',
 
-    'act1.title': 'La valeur dont votre test se moque',
-    'act1.summary': 'Elle doit quand même être valide.',
+    'act1.title': 'La valeur dont votre test se moque...',
+    'act1.summary': '... mais qui doit quand même être valide.',
 
     'act1.test.title': 'En général, votre test ressemble à ça',
     'act1.test.body':
-        "De quoi parle ce test ? Une commande en attente peut être annulée — mais il faut chercher pour le voir. Trois de ses quatre lignes d'arrange construisent une référence, un client et un total dont le test ne reparlera jamais : le constructeur les exige, c'est tout. Et elles mentent : ORD-54XEM4545 et 42.00 se lisent comme des valeurs choisies, alors que n'importe lesquelles auraient fait l'affaire, pourvu qu'elles soient valides. Le sujet du test, lui, est le dernier argument de la ligne qui construit la commande.",
+        "De quoi parle ce test ? Il suffit de lire son nom : une commande en attente peut être annulée. Mais quelles variables comptent vraiment ici ? Ça, il faut bien chercher pour le voir. Trois de ses quatre lignes d'arrange construisent anyReference, anyCustomerId et anyTotal, que le constructeur exige mais que le test ne réutilise jamais : tout ce code noie la seule variable qui compte, le statut de la commande. Et en plus ce code ment ! Le constructeur a imposé un choix, et quelqu'un l'a fait : « ORD-54XEM4545 », 42.00. Rien ne prouve que « ORD-HJS54654S » et 17.50 auraient tout aussi bien fonctionné — et pourtant c'est exactement ce que prétend le nom des variables qui les portent.",
 
     'act1.factories.title': 'Un premier nettoyage',
     'act1.factories.body':
@@ -794,26 +794,26 @@ const fr: Record<UiKey, string> = {
 
     'act1.careless.title': 'Faire dire vrai à la factory',
     'act1.careless.body':
-        "La factory appelle maintenant la bibliothèque : Any.String() tire une chaîne vraiment quelconque, différente à chaque exécution. Le nom AnyOrderReference ne ment plus. Tirer au hasard surprend, mais une valeur tapée à la main ne prouve qu'une chose : que le test passe avec celle-là. Le domaine, lui, refuse la chaîne tirée. Elle ne commence pas par ORD-, et OrderReference.Create le dit dès la construction, pas trois assertions plus loin.",
+        "La factory appelle maintenant la bibliothèque : Any.String() tire une chaîne vraiment quelconque, différente à chaque exécution. Le nom AnyOrderReference ne ment plus. Du hasard dans un test, ça peut surprendre — mais une valeur tapée à la main ne prouve qu'une chose : que le test passe avec celle-là. Seulement, il reste un problème : la chaîne tirée ne commence pas par ORD-, et OrderReference.Create la refuse.",
 
     'act1.invariants.title': 'Ce que le domaine réclame',
     'act1.invariants.body':
-        "Ces règles n'ont rien d'exotique, et elles sont écrites au bon endroit. Mais chacune doit être respectée. C'est donc au générateur de s'y conformer, sans que le test ait à en parler.",
+        "Le refus vient de là : une référence de commande a une forme, et c'est le domaine qui la fait respecter. Une chaîne vraiment quelconque n'avait donc aucune chance. Ce qu'il faut, c'est une valeur quelconque parmi celles qui respectent ces règles : au générateur de s'y conformer, sans que le test ait à en parler.",
 
     'act1.constraints.title': 'Déclarez les contraintes, pas la valeur',
     'act1.constraints.body':
-        "Chaque règle métier devient un appel dans la chaîne : commence par ORD-, alphanumérique en majuscules après le préfixe, d'une longueur comprise entre huit et vingt caractères. La valeur produite change à chaque exécution, et elle est valide à chaque fois. Le hasard prend son sens ici. Cette valeur n'a jamais été le sujet du test, elle devait seulement être valide. N'importe laquelle qui respecte les règles fait donc l'affaire. Vous décrivez ce que la valeur doit respecter, pas ce que vous allez vérifier.",
+        "Chaque règle du domaine devient un appel de la chaîne : alphanumérique, en majuscules, commençant par ORD-, longue de huit à vingt caractères. À chaque exécution la valeur change, et à chaque exécution elle est valide. C'est ici que le hasard devient utile : cette valeur n'a jamais été le sujet du test, elle devait seulement être valide — et elle l'est, sans que personne ait eu à la choisir. Vous ne décrivez plus une valeur, vous décrivez ce qu'elle doit respecter.",
 
     'act1.exit.title': 'Installez-la maintenant',
     'act1.exit.body':
-        "Tout ce qui précède, c'est la bibliothèque seule. Si c'est ce que vous cherchiez, installez-la maintenant. Prenez l'adaptateur xUnit avec : il rend vos tirages rejouables, et la page y revient plus bas. La suite montre comment faire disparaître toute cette préparation.",
+        "Tout ce qui précède ne concerne que la bibliothèque elle-même, et la première commande ci-dessus suffit à l'installer. La seconde ajoute l'adaptateur xUnit — on verra plus bas ce qu'il apporte, quand un tirage fera échouer un test. Si la bibliothèque est tout ce qu'il vous fallait, vous pouvez vous arrêter ici. La suite montre comment écrire le générateur qui assemble plusieurs de ces valeurs.",
 
-    'act2.title': 'Simplifions encore',
-    'act2.summary': 'Un outil lit votre type et écrit le générateur. Le fichier produit est le vôtre.',
+    'act2.title': "Le générateur, vous n'aurez pas à l'écrire",
+    'act2.summary': "Un outil lit votre type et l'écrit. Le fichier produit est le vôtre.",
 
     'act2.wanted.title': 'Ce qu\'on aimerait écrire',
     'act2.wanted.body':
-        "CreateAnyPendingOrder() remplace les trois lignes d'arrange, et le test ne dit plus que l'essentiel : la commande est en attente. Ce helper, vous pouvez l'écrire vous-même : il contient la chaîne de contraintes que vous venez d'écrire, dans un fichier de votre projet de test. Le jour où Order gagne un paramètre, c'est vous qui rouvrez ce fichier. La suite montre un outil qui l'écrit, et qui le réécrit.",
+        "CreateAnyPendingOrder() remplace tout l'arrange, et le test ne dit plus que l'essentiel : la commande est en attente. Ce helper, vous pouvez l'écrire vous-même, dans un fichier de votre projet de test : il assemble les générateurs que vous venez d'écrire et fixe le statut. Le jour où Order gagne un paramètre, c'est vous qui rouvrez ce fichier. La suite montre un outil qui l'écrit — et qui le réécrit.",
 
     'act2.scaffold.title': 'L\'outil lit votre type et écrit le générateur',
     'act2.scaffold.body':
@@ -821,11 +821,11 @@ const fr: Record<UiKey, string> = {
 
     'act2.link.title': 'Généré pour vous aider, vous gardez la main',
     'act2.link.body':
-        "L'outil écrit tout le fichier : les champs, une factory par paramètre, le tirage. Il ne sait pas lire la règle du préfixe ORD-, alors plutôt que de l'inventer il écrit son meilleur générateur et plante à côté une ligne qui ne compile pas. Le fichier ne se construit pas tant que vous n'avez pas regardé. Vous supprimez cette ligne et ajoutez .AlphaNumeric(), .InUpperCase() et .StartingWith(\"ORD-\") sur la factory de reference : c'est la chaîne que vous avez déjà écrite, inchangée. Le fichier vous appartient : vous le lisez, vous le modifiez, vous le commitez.",
+        "L'outil écrit tout le fichier : les champs, une factory par paramètre, le tirage. Il ne sait pas lire toutes les règles de OrderReference, alors plutôt que d'inventer il écrit son meilleur générateur et plante à côté une ligne qui ne compile pas. Le fichier ne se construit pas tant que vous n'avez pas regardé. Vous supprimez cette ligne et ajoutez .AlphaNumeric(), .InUpperCase() et .StartingWith(\"ORD-\") sur la factory de reference : c'est la chaîne que vous avez déjà écrite, inchangée. Le fichier vous appartient : vous le lisez, vous le modifiez, vous le commitez.",
 
     'act2.concise.title': 'Un test enfin explicite, et qui ne ment pas',
     'act2.concise.body':
-        "Le même test qu'avant, jusqu'à l'assertion comprise. La préparation tient sur une ligne, et cette ligne nomme la seule chose dont le test a besoin : la commande est en attente. Le reste est tiré à chaque exécution, et reste valide. Plus rien ici ne s'appelle « any » en rendant toujours la même valeur.",
+        "C'est le même test qu'au début : même nom, même act, même assertion. Seul l'arrange a changé, et il tient en une ligne qui dit ce qui compte, sans mentir : ce test ne dépend que d'une commande en attente, quelle qu'elle soit.",
 
     'act2.exit.title': 'Installer tout ça',
     'act2.exit.body':
