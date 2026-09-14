@@ -61,11 +61,12 @@ assert_prose "§9.6 a seed per test case, and no wider a promise" \
 # The first exit ships two packages and has to say why the second one is there — a reader
 # offered an adapter they have not been shown is a reader wondering what they are agreeing
 # to. It used to say the adapter "makes your draws replayable", which the library does on
-# its own (Any.Reproducibly, WithSeed); what the adapter adds is the attribute, and the
-# exit now names the moment it will matter and defers the rest to the third act. The tool
-# is still not offered here (asserted on the built document below).
+# its own (Any.Reproducibly, WithSeed); what the adapter adds is the per-test-case seed
+# scope and the seed reported on failure, and the exit names that benefit and defers the
+# rest to the third act. The tool is still not offered here (asserted on the built
+# document below).
 assert_prose "§9.3 the first exit offers the library, and says what the adapter is for" \
-  "act1\.exit\.body[\s\S]{0,200}?the library alone[\s\S]{0,200}?adds the xUnit adapter[\s\S]{0,160}?when a draw makes a test fail"
+  "act1\.exit\.body[\s\S]{0,200}?the library alone[\s\S]{0,200}?adds the xUnit adapter[\s\S]{0,60}?its own seed and reports it if it fails"
 assert_prose "§9.3 the second exit calls the tool optional" \
   "act2\.exit\.body[\s\S]{0,200}?tool is optional"
 assert_prose "§9.3 the third exit offers all three" \
