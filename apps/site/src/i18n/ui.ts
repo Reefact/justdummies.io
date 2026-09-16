@@ -448,7 +448,7 @@ const en = {
 
     'why.legend.heading': 'The three answers',
     'why.legend.core': 'The tool is built for this, and does it with no extra setup.',
-    'why.legend.possible': 'The tool can get there, but only once you write something first. The note says what.',
+    'why.legend.possible': 'The tool can get there, but not without extra work on your side. The note says what.',
     'why.legend.outOfScope':
         'The tool does not do this. Sometimes its authors decided against it, sometimes nobody has built it yet — the note says which.',
     'why.legend.order':
@@ -1078,7 +1078,7 @@ const fr: Record<UiKey, string> = {
     'why.legend.heading': 'Les trois réponses',
     'why.legend.core': "L'outil est fait pour ça, et il le fait sans configuration supplémentaire.",
     'why.legend.possible':
-        "L'outil peut le faire, mais vous devrez écrire du code pour cela. La note précise lequel.",
+        "L'outil peut le faire, mais cela vous demande un travail supplémentaire. La note précise lequel.",
     'why.legend.outOfScope':
         "L'outil ne le fait pas. Parfois parce que ses auteurs l'ont écarté, parfois parce que personne ne l'a encore écrit. La note dit de quel cas il s'agit.",
     'why.legend.order':
