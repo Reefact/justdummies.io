@@ -525,7 +525,7 @@ const en = {
     'why.axis.codeGen.label': 'A tool writing the setup for you',
     'why.axis.codeGen.question': 'Do I hand-write a builder for each of my forty domain types?',
     'why.axis.codeGen.explanation':
-        'The constraints for an order are a file somebody has to write, and rewrite the day the type gains a parameter. Can a tool read your own source and write it instead? What it writes is ordinary C# in your test project: read it, edit it, commit it.',
+        'Describing the constraints for an order means writing a file, and rewriting it the day the type gains a parameter. Can a tool read your own source and write it instead? What it writes is ordinary C# in your test project: read it, edit it, commit it.',
     'why.axis.codeGen.term': 'scaffolding — not a source generator, which runs at build time and leaves you no file',
 
     'why.axis.exploration.label': 'Hunting for the value that breaks your code',
@@ -543,7 +543,7 @@ const en = {
     'why.table.axisHeader': 'Criterion',
 
     'why.note.justdummies.reuse':
-        "Write the generator once, in your own test project, and every test can call it. The dum tool — the library's own companion CLI — can write that file for you. Either way, it is a step of its own — no single call produces that file.",
+        "Write the generator once, in your own test project, and every test can call it. The dum tool — the library's own companion CLI — can write that file for you. Either way the file comes first: no call to the library creates it.",
     'why.note.justdummies.realism':
         'Valid, not believable. There is no catalogue of names, addresses or emails here.',
     'why.note.justdummies.graph':
@@ -1105,7 +1105,7 @@ const fr: Record<UiKey, string> = {
     'why.axis.invariants.label': 'Les valeurs que votre code accepte',
     'why.axis.invariants.question': 'La valeur produite passera-t-elle mon propre constructeur ?',
     'why.axis.invariants.explanation':
-        "La plupart des types du domaine refusent les valeurs invalides. OrderReference.Create rejette ainsi toute chaîne qui ne commence pas par ORD-, celles de moins de huit caractères ou de plus de vingt, et celles qui contiennent autre chose qu'une lettre majuscule ou un chiffre après le préfixe. Peu importe au test quelle référence il reçoit : encore faut-il qu'elle franchisse tous ces contrôles.",
+        "La plupart des types du domaine refusent les valeurs invalides. OrderReference.Create rejette ainsi les chaînes qui ne commencent pas par ORD-, celles de moins de huit caractères ou de plus de vingt, et celles qui contiennent autre chose qu'une lettre majuscule ou un chiffre après le préfixe. Peu importe au test quelle référence il reçoit : encore faut-il qu'elle franchisse tous ces contrôles.",
     'why.axis.invariants.term': 'invariant métier, ou précondition en design par contrat',
 
     'why.axis.callSite.label': 'Des règles énoncées sur place',
@@ -1176,7 +1176,7 @@ const fr: Record<UiKey, string> = {
     'why.table.axisHeader': 'Critère',
 
     'why.note.justdummies.reuse':
-        "Écrivez le générateur une fois, dans votre propre projet de test, et tous vos tests pourront l'appeler. L'outil dum — le CLI compagnon de la bibliothèque — peut écrire ce fichier à votre place. Dans les deux cas, l'étape reste à faire : aucun appel unique ne la remplace.",
+        "Écrivez le générateur une fois, dans votre propre projet de test, et tous vos tests pourront l'appeler. L'outil dum — le CLI compagnon de la bibliothèque — peut écrire ce fichier à votre place. Dans les deux cas, le fichier existe d'abord : aucun appel à la bibliothèque ne le crée.",
     'why.note.justdummies.realism':
         "Valides, pas vraisemblables. Il n'y a ici aucun catalogue de noms, d'adresses ou d'e-mails.",
     'why.note.justdummies.graph':
@@ -1210,7 +1210,7 @@ const fr: Record<UiKey, string> = {
         "Bogus remplit des valeurs. Il n'exécute pas votre test en boucle pour en trouver une qui échoue.",
 
     'why.note.autofixture.invariants':
-        "Une règle que le type porte sous forme d'annotation — [Range], [StringLength], [RegularExpression] — est déjà respectée, sans aucune configuration. Une règle appliquée à l'intérieur d'un constructeur, en revanche, passe inaperçue : la génération échoue tant que vous n'avez pas écrit un Register, un Customize<T> ou un ISpecimenBuilder pour la satisfaire.",
+        "Une règle que le type porte sous forme d'annotation — [Range], [StringLength], [RegularExpression] — est déjà respectée, sans aucune configuration. Une règle appliquée à l'intérieur d'un constructeur, en revanche, n'est pas honorée automatiquement : la génération échoue tant que vous n'avez pas écrit un Register, un Customize<T> ou un ISpecimenBuilder pour la satisfaire.",
     'why.note.autofixture.callSite':
         "Une règle portée par le type est respectée partout, sans une ligne dans le test. Une règle propre à ce test-là s'écrit sur place via Build<T>().With(x => x.Prop, value) — une valeur épinglée, ou une lambda que vous écrivez, une propriété à la fois.",
     'why.note.autofixture.testIntent':
