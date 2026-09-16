@@ -448,7 +448,7 @@ const en = {
 
     'why.legend.heading': 'The three answers',
     'why.legend.core': 'The tool is built for this, and does it with no extra setup.',
-    'why.legend.possible': 'The tool can get there, but you write something to get there. The note says what.',
+    'why.legend.possible': 'The tool can get there, but only once you write something first. The note says what.',
     'why.legend.outOfScope':
         'The tool does not do this. Sometimes its authors decided against it, sometimes nobody has built it yet — the note says which.',
     'why.legend.order':
@@ -479,13 +479,13 @@ const en = {
     'why.axis.invariants.label': 'Values your own code will accept',
     'why.axis.invariants.question': 'Will the generated value get past my own constructor?',
     'why.axis.invariants.explanation':
-        'Most domain types refuse bad input. OrderReference.Create rejects a string that does not start with ORD-, one shorter than eight characters or longer than twenty, and one carrying anything but an uppercase letter or a digit after the prefix. A test that needs any reference still needs one that clears every check.',
+        'Most domain types refuse bad input. OrderReference.Create rejects a string that does not start with ORD-, one shorter than eight characters or longer than twenty, and one carrying anything but an uppercase letter or a digit after the prefix. A test that does not care which reference it gets still needs one that clears every check.',
     'why.axis.invariants.term': 'business invariant, or precondition in design by contract',
 
     'why.axis.callSite.label': 'Rules stated where the value is asked for',
     'why.axis.callSite.question': 'Can I write "any number between 1 and 100" on the line that needs it?',
     'why.axis.callSite.explanation':
-        'Some rules belong to one test rather than to the domain: this quantity has to be at least two, this date has to be in the past. The question is whether you can say so on the spot, or have to declare a type, register a customisation or build a fixture first.',
+        'Some rules belong to one test rather than to the domain: this quantity has to be at least two, this date has to be in the past. What separates the four options is whether you can say so on the spot, or have to declare a type, register a customisation or build a fixture first.',
     'why.axis.callSite.term': 'call site — the place in your code where the value is asked for',
 
     'why.axis.testIntent.label': 'Showing which value the test checks',
@@ -496,7 +496,7 @@ const en = {
     'why.axis.reuse.label': 'Describing a valid object once',
     'why.axis.reuse.question': 'The day my type gains a constructor parameter, how many test files do I reopen?',
     'why.axis.reuse.explanation':
-        'Whatever describes a valid order — a chain of constraints, a set of rules, a builder — is worth writing once and calling from everywhere. The question is what that costs to set up, and how much of it the tool writes for you.',
+        'Whatever describes a valid order — a chain of constraints, a set of rules, a builder — is worth writing once and calling from everywhere. The four differ in what that costs to set up, and in how much of it the tool writes for you.',
 
     'why.axis.realism.label': 'Data that looks real',
     'why.axis.realism.question': 'Will a person look at this value, or only an assertion?',
@@ -513,19 +513,19 @@ const en = {
     'why.axis.reproducibility.label': 'Replaying the run that failed',
     'why.axis.reproducibility.question': 'CI went red on a drawn value. Can I get that exact value back?',
     'why.axis.reproducibility.explanation':
-        'Values that change on every run mean a test can fail today and pass tomorrow. What makes that workable is a number the failing run reports, which draws the same values again when you paste it back.',
+        'Values that change on every run mean a test can fail today and pass tomorrow. What makes that workable is a number the failing run reports. Feed it back, and the same values come out again.',
     'why.axis.reproducibility.term': 'seed',
 
     'why.axis.compileTime.label': 'Caught before the test runs',
     'why.axis.compileTime.question': 'Do I learn the setup is wrong in the editor, or ten minutes later?',
     'why.axis.compileTime.explanation':
-        'A chain of constraints can contradict itself: at most three characters, and starting with ORD-. Nothing satisfies that. The question is whether it shows up as a build error or as an exception on the first run.',
+        'A chain of constraints can contradict itself: at most three characters, and starting with ORD-. Nothing satisfies that. Such a contradiction surfaces either as a build error or as an exception on the first run.',
     'why.axis.compileTime.term': 'Roslyn analyzer',
 
     'why.axis.codeGen.label': 'A tool writing the setup for you',
     'why.axis.codeGen.question': 'Do I hand-write a builder for each of my forty domain types?',
     'why.axis.codeGen.explanation':
-        'The constraints for an order are a file somebody has to write, and rewrite the day the type gains a parameter. The question is whether a tool reads your own source and writes it. What it writes is ordinary C# in your test project: read it, edit it, commit it.',
+        'The constraints for an order are a file somebody has to write, and rewrite the day the type gains a parameter. Can a tool read your own source and write it instead? What it writes is ordinary C# in your test project: read it, edit it, commit it.',
     'why.axis.codeGen.term': 'scaffolding — not a source generator, which runs at build time and leaves you no file',
 
     'why.axis.exploration.label': 'Hunting for the value that breaks your code',
@@ -543,7 +543,7 @@ const en = {
     'why.table.axisHeader': 'Criterion',
 
     'why.note.justdummies.reuse':
-        "Write the generator once, in your own test project, and every test can call it. The dum tool — the library's own companion CLI — can write that file for you. Neither happens from a single call.",
+        "Write the generator once, in your own test project, and every test can call it. The dum tool — the library's own companion CLI — can write that file for you. Either way, it is a step of its own — no single call produces that file.",
     'why.note.justdummies.realism':
         'Valid, not believable. There is no catalogue of names, addresses or emails here.',
     'why.note.justdummies.graph':
@@ -556,7 +556,7 @@ const en = {
     'why.note.justdummies.reproducibility':
         'A failing test case reports its seed, and that seed redraws exactly the same values. Each case seeds itself, so a suite running in parallel still hands back the seed of the one that failed. This comes from the xUnit adapter; there is no NUnit or MSTest adapter today.',
     'why.note.justdummies.compileTime':
-        "The analyzers ship inside the main package at no extra cost — installing the library installs them, with no paid tier standing between you and them. They catch a self-contradictory constraint immediately, in the editor: at most three characters, say, and starting with ORD-. What stays out of reach here is a domain invariant nobody declared as a rule at all — enforced in ordinary constructor code, with no structured list of a type's own invariants for an analyzer to check completeness against. That is narrower than it sounds: Bogus Premium's analyzer can flag a property with no RuleFor, because a Faker<T>'s properties are a known, enumerable set. A hand-written constructor's own invariants are not.",
+        "The analyzers ship inside the main package at no extra cost — installing the library installs them, with no paid tier standing between you and them. They catch a self-contradictory constraint immediately, in the editor: at most three characters, say, and starting with ORD-. What stays out of reach is a domain invariant nobody declared as a rule at all. It lives in ordinary constructor code, and there is no structured list of a type's invariants for an analyzer to check against. That limit is narrower than it sounds. Bogus Premium's analyzer can flag a property with no RuleFor, because a Faker<T>'s properties are a known, enumerable set. A hand-written constructor's invariants are not.",
     'why.note.justdummies.codeGen':
         'The dum tool reads your type and writes the generator into your test project. The file is ordinary C#, and it is yours to edit and commit.',
     'why.note.justdummies.exploration':
@@ -565,7 +565,7 @@ const en = {
     'why.note.bogus.invariants':
         "A Faker<T> satisfies a domain rule once a RuleFor is written to match it — or a CustomInstantiator that calls the type's own factory. StrictMode(true) then checks that every property has a rule at all. What no check covers is whether a rule produces a value the domain would accept.",
     'why.note.bogus.callSite':
-        'A Faker<T> can be built inline in the test, right before Generate, with its rules on it — Random.Int(min, max) and the like. You write those rules out again in every test that needs them.',
+        'A Faker<T> can be built inline in the test, right before Generate, with its rules attached — Random.Int(min, max) and the like. You write those rules out again in every test that needs them.',
     'why.note.bogus.testIntent':
         'RuleFor(x => x.Prop, expected) pins the exact value the assertion checks, so the subject of the test is written down. The rules around it are written down just as visibly.',
     'why.note.bogus.reuse': 'A Faker<T> is defined once and reused across tests, the same way a JustDummies generator is.',
@@ -580,7 +580,7 @@ const en = {
         'Bogus fills values. It does not run your test repeatedly looking for one that fails.',
 
     'why.note.autofixture.invariants':
-        'A rule a type carries as an annotation — [Range], [StringLength], [RegularExpression] — is already honoured, with no configuration at all. A rule enforced inside a constructor is the other case: generation throws until a Register, a Customize<T> or an ISpecimenBuilder is written to satisfy it.',
+        'A rule a type carries as an annotation — [Range], [StringLength], [RegularExpression] — is already honoured, with no configuration at all. A rule enforced inside a constructor is where that stops: generation throws until you write a Register, a Customize<T> or an ISpecimenBuilder to satisfy it.',
     'why.note.autofixture.callSite':
         'A rule that lives on the type is honoured everywhere without a line in the test. A rule that belongs to this one test is written inline through Build<T>().With(x => x.Prop, value) — a pinned value, or a lambda you write, one property at a time.',
     'why.note.autofixture.testIntent':
@@ -603,11 +603,11 @@ const en = {
     'why.note.manual.callSite':
         'The rule is never stated. You pick a value that happens to satisfy it, and the rule stays in the head of whoever picked it.',
     'why.note.manual.testIntent':
-        'It shows the value the test is about with no indirection at all. Used for the parameters around it as well, the arrangement grows a line per parameter and the subject stops standing out.',
+        'It shows the value the test is about with no indirection at all. Use it for the parameters around it as well, though, and the arrangement grows a line per parameter until the subject stops standing out.',
     'why.note.manual.reuse':
         'A literal can move into a named constant or a helper and be shared. You then maintain it by hand, and every test that shares it runs on the same value.',
     'why.note.manual.realism':
-        'As realistic as the value you type: marie.durand@acme.fr is every bit as convincing as a generated one. You type it again in the next test.',
+        'The realism is entirely yours to supply: marie.durand@acme.fr is every bit as convincing as a generated one. You type it again in the next test.',
     'why.note.manual.graph':
         'Every nested object is constructed by hand, level by level, and each constructor is a line you write and then maintain.',
     'why.note.manual.reproducibility':
@@ -630,11 +630,11 @@ const en = {
         'Running one assertion over hundreds of generated inputs, then shrinking a failure to its smallest case, is property-based testing. JustDummies draws one value per run, and it is not that tool.',
     'why.notFor.secrets.label': 'You need a password, a token or a key.',
     'why.notFor.secrets.body':
-        'The generators produce test values, not secrets. Nothing drawn here is fit to be used as a credential, in a test or anywhere else.',
+        'The generators produce test values, not secrets. Nothing drawn here should ever serve as a credential, in a test or anywhere else.',
 
     'why.tryIt.heading': 'Try it',
     'why.tryIt.body':
-        'Add the package to a test project and change one line of one arrangement. Every other test stays as it is. Bogus, AutoFixture, your own builders and every literal you have already written keep working, in the same project and in the same file. If it does not earn its place, backing it out is deleting the lines you added.',
+        'Add the package to a test project and change one line of one arrangement. Every other test stays as it is. Bogus, AutoFixture, your own builders and every literal you have already written keep working, in the same project and in the same file. If it does not earn its place, you back it out by deleting the lines you added.',
     'why.tryIt.install': 'Install the library',
 
     'why.sources.heading': 'How this comparison was checked',
