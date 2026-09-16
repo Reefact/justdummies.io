@@ -1032,7 +1032,7 @@ const fr: Record<UiKey, string> = {
 
     'why.choose.heading': 'Lequel de ces besoins est le vôtre ?',
     'why.choose.lede':
-        "Ces quatre réponses passent souvent pour des rivales. Elles répondent à quatre questions différentes, et la plupart des projets s'en posent plusieurs. Cherchez la phrase que vous diriez à voix haute.",
+        "On présente souvent ces quatre approches comme concurrentes. Chacune répond en fait à une question différente, et la plupart des projets se posent plusieurs de ces questions. Repérez ci-dessous la phrase que vous pourriez dire de vos propres tests.",
 
     'why.tool.repoLink': 'Voir le dépôt',
 
@@ -1073,14 +1073,14 @@ const fr: Record<UiKey, string> = {
 
     'why.compare.heading': 'JustDummies face aux alternatives',
     'why.compare.lede':
-        "Dix critères, chacun posé comme une question sur vos propres tests, puis tranché pour les quatre options.",
+        "Dix critères. Chacun est une question que vous pouvez vous poser sur vos propres tests, et chacun reçoit sa réponse pour les quatre options.",
 
     'why.legend.heading': 'Les trois réponses',
     'why.legend.core': "L'outil est fait pour ça, et il le fait sans configuration supplémentaire.",
     'why.legend.possible':
-        "On y arrive, mais il faut écrire quelque chose pour y arriver. La note dit quoi.",
+        "L'outil peut le faire, mais vous devrez écrire du code pour cela. La note précise lequel.",
     'why.legend.outOfScope':
-        "L'outil ne le fait pas. Parfois parce que ses auteurs en ont décidé ainsi, parfois parce que personne ne l'a encore écrit — la note précise lequel des deux.",
+        "L'outil ne le fait pas. Parfois parce que ses auteurs l'ont écarté, parfois parce que personne ne l'a encore écrit. La note dit de quel cas il s'agit.",
     'why.legend.order':
         "Les critères sont regroupés selon les questions que vous pouvez vous poser dans vos tests, pas selon les points forts de JustDummies. Et JustDummies ne cherche volontairement pas à répondre à tous les besoins : son objectif est de bien faire une seule chose, générer les valeurs arbitraires et contraintes dont vos tests ont besoin.",
 
@@ -1097,7 +1097,7 @@ const fr: Record<UiKey, string> = {
 
     'why.family.accepted': 'La valeur passera-t-elle mon propre code ?',
     'why.family.readable': 'Mon test restera-t-il lisible ?',
-    'why.family.kind': "De quelle nature de valeur ai-je besoin ?",
+    'why.family.kind': "De quel genre de valeur ai-je besoin, au juste ?",
     'why.family.wrong': 'Que se passe-t-il quand ça casse, et qui écrit la préparation ?',
 
     'why.axis.termLabel': 'Terme technique :',
@@ -1105,26 +1105,26 @@ const fr: Record<UiKey, string> = {
     'why.axis.invariants.label': 'Les valeurs que votre code accepte',
     'why.axis.invariants.question': 'La valeur produite passera-t-elle mon propre constructeur ?',
     'why.axis.invariants.explanation':
-        "La plupart des types du domaine refusent ce qui ne leur convient pas. OrderReference.Create rejette une chaîne qui ne commence pas par ORD-, celles qui font moins de huit caractères ou plus de vingt, et celles qui portent après le préfixe autre chose qu'une lettre majuscule ou un chiffre. Un test qui a besoin d'une référence quelconque a quand même besoin d'une référence qui passe tous ces contrôles.",
+        "La plupart des types du domaine refusent les valeurs invalides. OrderReference.Create rejette ainsi toute chaîne qui ne commence pas par ORD-, celles de moins de huit caractères ou de plus de vingt, et celles qui contiennent autre chose qu'une lettre majuscule ou un chiffre après le préfixe. Peu importe au test quelle référence il reçoit : encore faut-il qu'elle franchisse tous ces contrôles.",
     'why.axis.invariants.term': 'invariant métier, ou précondition en design par contrat',
 
     'why.axis.callSite.label': 'Des règles énoncées sur place',
     'why.axis.callSite.question':
         "Puis-je écrire « un nombre quelconque entre 1 et 100 » sur la ligne qui en a besoin ?",
     'why.axis.callSite.explanation':
-        "Certaines règles appartiennent à un test plutôt qu'au domaine : cette quantité vaut au moins deux, cette date est passée. La question est de savoir si vous pouvez le dire là où le test demande la valeur, ou s'il faut d'abord déclarer un type, enregistrer une configuration ou monter une fixture.",
+        "Certaines règles appartiennent à un test précis, pas au domaine : ici la quantité doit valoir au moins deux, là la date doit être passée. Reste à savoir si vous pouvez l'écrire directement là où le test demande la valeur, ou s'il faut d'abord déclarer un type, enregistrer une configuration ou construire une fixture.",
     'why.axis.callSite.term': "point d'appel — l'endroit exact du code où la valeur est demandée",
 
     'why.axis.testIntent.label': 'Voir quelle valeur le test vérifie',
     'why.axis.testIntent.question': "Un lecteur peut-il dire de quelles valeurs dépend l'assertion ?",
     'why.axis.testIntent.explanation':
-        "Un test qui construit une commande à partir de quatre arguments ne dit pas sur lequel des quatre il porte. En tirer trois et écrire le quatrième en clair répond à la question dans la préparation elle-même.",
+        "Un test qui construit une commande à partir de quatre arguments ne dit pas lequel des quatre est son sujet. Si trois sont tirés au hasard et le quatrième écrit en clair, la préparation répond d'elle-même à la question.",
 
     'why.axis.reuse.label': 'Décrire un objet valide une seule fois',
     'why.axis.reuse.question':
         'Le jour où mon type gagne un paramètre de constructeur, combien de fichiers de test dois-je rouvrir ?',
     'why.axis.reuse.explanation':
-        "Ce qui décrit une commande valide — une chaîne de contraintes, un jeu de règles, un builder — mérite d'être écrit une fois et appelé partout. La question est de savoir ce que cela coûte à mettre en place, et quelle part l'outil en écrit pour vous.",
+        "Ce qui décrit une commande valide — une chaîne de contraintes, un jeu de règles, un builder — gagne à être écrit une seule fois, puis appelé partout. Tout dépend alors de ce que cette mise en place coûte, et de la part que l'outil en écrit à votre place.",
 
     'why.axis.realism.label': 'Des données vraisemblables',
     'why.axis.realism.question': 'Cette valeur sera-t-elle lue par un humain, ou seulement par une assertion ?',
@@ -1143,20 +1143,20 @@ const fr: Record<UiKey, string> = {
     'why.axis.reproducibility.question':
         'La CI est passée au rouge sur une valeur tirée. Puis-je récupérer exactement cette valeur ?',
     'why.axis.reproducibility.explanation':
-        "Des valeurs qui changent à chaque exécution, c'est un test qui peut échouer aujourd'hui et passer demain. Ce qui rend la chose vivable, c'est un numéro que l'exécution en échec rapporte, et qui retire exactement les mêmes valeurs quand vous le recollez.",
+        "Quand les valeurs changent à chaque exécution, un test peut échouer aujourd'hui et passer demain. Ce qui rend la situation gérable, c'est un numéro que l'exécution en échec affiche dans son rapport. Réinjectez-le, et le tirage recommence à l'identique.",
     'why.axis.reproducibility.term': 'seed',
 
     'why.axis.compileTime.label': "Détecté avant même de lancer le test",
-    'why.axis.compileTime.question': "Est-ce que je l'apprends dans l'éditeur, ou dix minutes plus tard ?",
+    'why.axis.compileTime.question': "Ma préparation est fausse : je l'apprends dans l'éditeur, ou dix minutes plus tard ?",
     'why.axis.compileTime.explanation':
-        "Une chaîne de contraintes peut se contredire : trois caractères au plus, et commençant par ORD-. Rien ne satisfait les deux. La question est de savoir si cela apparaît comme une erreur de compilation, ou comme une exception à la première exécution.",
+        "Une chaîne de contraintes peut se contredire : trois caractères au plus, et un préfixe ORD- obligatoire. Aucune valeur ne satisfait les deux à la fois. Une telle contradiction se signale soit par une erreur de compilation, soit par une exception à la première exécution.",
     'why.axis.compileTime.term': 'analyseur Roslyn',
 
     'why.axis.codeGen.label': 'Un outil qui écrit la préparation pour vous',
     'why.axis.codeGen.question':
         'Dois-je écrire à la main un builder pour chacun de mes quarante types du domaine ?',
     'why.axis.codeGen.explanation':
-        "Les contraintes d'une commande, c'est un fichier que quelqu'un doit écrire, puis réécrire le jour où le type gagne un paramètre. La question est de savoir si un outil lit vos propres sources et l'écrit. Ce qu'il écrit est du C# ordinaire, dans votre projet de test : vous le lisez, vous le modifiez, vous le committez.",
+        "Les contraintes d'une commande tiennent dans un fichier que quelqu'un doit écrire, puis réécrire le jour où le type gagne un paramètre. Un outil peut-il lire vos propres sources et l'écrire à votre place ? Ce qu'il produit est du C# ordinaire, posé dans votre projet de test : vous le lisez, vous le modifiez, vous le committez.",
     'why.axis.codeGen.term':
         "scaffolding — et non un générateur de source, qui tourne à la compilation et ne vous laisse aucun fichier",
 
@@ -1164,10 +1164,10 @@ const fr: Record<UiKey, string> = {
     'why.axis.exploration.question':
         "Est-ce que je veux une valeur quelconque, ou des centaines à la recherche d'un contre-exemple ?",
     'why.axis.exploration.explanation':
-        "Une valeur tirée par exécution vous dit que le code a tenu pour cette valeur-là. L'approche inverse exécute la même assertion sur des centaines d'entrées générées, puis réduit tout échec à la plus petite entrée qui échoue encore.",
+        "Une valeur tirée par exécution vous apprend que le code a tenu pour cette valeur-là. L'approche inverse passe la même assertion sur des centaines d'entrées générées. En cas d'échec, elle resserre ensuite la recherche jusqu'à la plus petite entrée qui échoue encore.",
     'why.axis.exploration.term': 'property-based testing, et shrinking',
     'why.axis.exploration.elsewhere':
-        "Aucune des quatre options ne le fait. En .NET, on se tourne d'ordinaire vers FsCheck ou CsCheck, et ils cohabitent avec n'importe laquelle d'entre elles plutôt que de la remplacer.",
+        "Aucune des quatre options ne le fait. En .NET, on se tourne d'ordinaire vers FsCheck ou CsCheck. Ces bibliothèques ne remplacent aucune des quatre : elles viennent s'y ajouter.",
 
     'why.matrix.summary': 'Tableau comparatif complet',
     'why.matrix.intro':
@@ -1176,15 +1176,15 @@ const fr: Record<UiKey, string> = {
     'why.table.axisHeader': 'Critère',
 
     'why.note.justdummies.reuse':
-        "Il faut d'abord écrire le générateur, dans votre propre projet de test ; ensuite, tous vos tests l'appellent. L'outil dum — le CLI compagnon de la bibliothèque — peut écrire ce fichier pour vous. Un simple appel ne le fait pas apparaître.",
+        "Écrivez le générateur une fois, dans votre propre projet de test, et tous vos tests pourront l'appeler. L'outil dum — le CLI compagnon de la bibliothèque — peut écrire ce fichier à votre place. Dans les deux cas, l'étape reste à faire : aucun appel unique ne la remplace.",
     'why.note.justdummies.realism':
         "Valides, pas vraisemblables. Il n'y a ici aucun catalogue de noms, d'adresses ou d'e-mails.",
     'why.note.justdummies.graph':
-        "Vous fournissez un générateur par type et vous les composez. Rien n'inspecte votre classe pour remplir les niveaux du dessous.",
+        "Vous fournissez un générateur par type et vous les composez. Rien n'inspecte votre classe pour remplir les niveaux inférieurs.",
     'why.note.justdummies.reproducibility':
-        "Un cas de test qui échoue rapporte son seed, et ce seed retire exactement les mêmes valeurs. Chaque cas tire le sien : une suite qui tourne en parallèle vous rend donc bien celui du cas qui a échoué. C'est l'adaptateur xUnit qui le fournit ; il n'existe aujourd'hui ni adaptateur NUnit ni adaptateur MSTest.",
+        "Un cas de test qui échoue affiche son seed, et ce seed rejoue exactement le même tirage. Chaque cas possède le sien : même dans une suite qui tourne en parallèle, vous récupérez bien celui du cas en échec. Cette remontée vient de l'adaptateur xUnit ; il n'existe aujourd'hui ni adaptateur NUnit ni adaptateur MSTest.",
     'why.note.justdummies.compileTime':
-        "Les analyseurs sont livrés gratuitement dans le paquet principal, sans palier payant : installer la bibliothèque les installe. Ils détectent immédiatement, dans l'éditeur, une contrainte contradictoire — par exemple trois caractères au plus, et devant commencer par ORD-. Ce qui reste hors de portée ici, c'est un invariant métier que personne n'a déclaré comme règle : il vit dans le code ordinaire d'un constructeur, sans liste structurée des invariants d'un type à laquelle un analyseur pourrait le confronter. C'est plus étroit qu'il n'y paraît : l'analyseur de Bogus Premium peut signaler une propriété sans RuleFor, parce que les propriétés d'un Faker<T> forment un ensemble connu et énumérable. Les invariants d'un constructeur écrit à la main ne le sont pas.",
+        "Les analyseurs sont livrés dans le paquet principal, sans supplément : installer la bibliothèque les installe, et aucun palier payant ne s'interpose. Ils signalent immédiatement, dans l'éditeur, une contrainte qui se contredit — trois caractères au plus, par exemple, avec un préfixe ORD- obligatoire. Ce qui leur échappe, c'est l'invariant métier que personne n'a jamais déclaré comme règle. Il est appliqué dans le code ordinaire d'un constructeur, et aucun inventaire structuré des invariants du type ne permet d'en vérifier la complétude. La limite est moins large qu'il n'y paraît. L'analyseur de Bogus Premium sait signaler une propriété sans RuleFor, parce que les propriétés d'un Faker<T> forment un ensemble connu et énumérable. Les invariants d'un constructeur écrit à la main, eux, ne le sont pas.",
     'why.note.justdummies.codeGen':
         "L'outil dum lit votre type et écrit le générateur dans votre projet de test. Le fichier est du C# ordinaire, et il vous appartient : à vous de le modifier et de le committer.",
     'why.note.justdummies.exploration':
@@ -1193,9 +1193,9 @@ const fr: Record<UiKey, string> = {
     'why.note.bogus.invariants':
         "Un Faker<T> respecte une règle métier dès qu'un RuleFor est écrit pour elle — ou un CustomInstantiator qui appelle la fabrique du type. StrictMode(true) vérifie ensuite que chaque propriété a bien une règle. Ce qu'aucun contrôle ne couvre, c'est de savoir si une règle produit une valeur que le domaine accepterait.",
     'why.note.bogus.callSite':
-        "Un Faker<T> peut être construit sur place dans le test, juste avant Generate, avec ses règles dessus — Random.Int(min, max) et consorts. Il faut simplement les réécrire dans chaque test qui en a besoin.",
+        "Un Faker<T> se construit sur place dans le test, juste avant Generate, avec ses règles — Random.Int(min, max) et consorts. Il faut simplement les réécrire dans chaque test qui en a besoin.",
     'why.note.bogus.testIntent':
-        "RuleFor(x => x.Prop, expected) épingle la valeur exacte que vérifie l'assertion : le sujet du test est donc écrit noir sur blanc. Les règles autour le sont tout autant.",
+        "RuleFor(x => x.Prop, expected) épingle la valeur exacte que vérifie l'assertion : le sujet du test est donc écrit noir sur blanc. Les règles qui l'entourent le sont tout aussi visiblement.",
     'why.note.bogus.reuse':
         "Un Faker<T> se définit une fois et se réutilise d'un test à l'autre, exactement comme un générateur JustDummies.",
     'why.note.bogus.graph':
@@ -1203,18 +1203,18 @@ const fr: Record<UiKey, string> = {
     'why.note.bogus.reproducibility':
         "UseSeed sur un Faker, ou Randomizer.Seed pour toute l'exécution, rend un tirage rejouable.",
     'why.note.bogus.compileTime':
-        "Le paquet gratuit détecte une règle manquante à l'exécution : StrictMode(true) fait échouer Generate, et AssertConfigurationIsValid le vérifie à la demande. La détecter pendant que vous tapez, c'est l'analyseur de Bogus Premium, qui relève d'une licence payante.",
+        "Le paquet gratuit détecte une règle manquante à l'exécution : StrictMode(true) fait échouer Generate, et AssertConfigurationIsValid le vérifie à la demande. Pour la voir signalée pendant que vous tapez, il faut l'analyseur de Bogus Premium, qui relève d'une licence payante.",
     'why.note.bogus.codeGen':
         "Le même analyseur Premium propose la règle manquante sous forme de correctif en un clic dans l'éditeur. C'est une aide d'une autre nature qu'un fichier écrit par un outil et que vous gardez.",
     'why.note.bogus.exploration':
         "Bogus remplit des valeurs. Il n'exécute pas votre test en boucle pour en trouver une qui échoue.",
 
     'why.note.autofixture.invariants':
-        "Une règle que le type porte sous forme d'annotation — [Range], [StringLength], [RegularExpression] — est déjà respectée, sans aucune configuration. Une règle appliquée à l'intérieur d'un constructeur, c'est l'autre cas : la génération échoue tant qu'un Register, un Customize<T> ou un ISpecimenBuilder n'a pas été écrit pour la satisfaire.",
+        "Une règle que le type porte sous forme d'annotation — [Range], [StringLength], [RegularExpression] — est déjà respectée, sans aucune configuration. Une règle appliquée à l'intérieur d'un constructeur, en revanche, passe inaperçue : la génération échoue tant que vous n'avez pas écrit un Register, un Customize<T> ou un ISpecimenBuilder pour la satisfaire.",
     'why.note.autofixture.callSite':
         "Une règle portée par le type est respectée partout, sans une ligne dans le test. Une règle propre à ce test-là s'écrit sur place via Build<T>().With(x => x.Prop, value) — une valeur épinglée, ou une lambda que vous écrivez, une propriété à la fois.",
     'why.note.autofixture.testIntent':
-        "C'est l'objectif qu'AutoFixture se donne lui-même : les valeurs dont le test se moque disparaissent, parce que vous ne les décrivez jamais. Ce qui disparaît avec elles, c'est tout énoncé de ce que ces valeurs doivent respecter.",
+        "C'est l'objectif même d'AutoFixture : les valeurs dont le test se moque s'effacent, puisque vous ne les décrivez jamais. Mais toute mention des règles qu'elles doivent respecter s'efface avec elles.",
     'why.note.autofixture.reuse':
         "Une ICustomization rassemble un jeu de règles écrit une seule fois, dans une classe à part, et chaque test qui l'active en hérite.",
     'why.note.autofixture.realism':
@@ -1224,22 +1224,22 @@ const fr: Record<UiKey, string> = {
     'why.note.autofixture.compileTime':
         "Aucun analyseur n'est livré avec. Une configuration incapable de produire une valeur se découvre à l'exécution du test.",
     'why.note.autofixture.codeGen':
-        "Rien n'écrit de fichier à votre place, et c'est l'inverse qui est visé : sans règle à déclarer, il n'y a pas de code de préparation à écrire.",
+        "Rien n'écrit de fichier à votre place, et c'est justement le but recherché : sans règle à déclarer, il n'y a aucun code de préparation à écrire.",
     'why.note.autofixture.exploration':
         "Une valeur anonyme par demande, pas une recherche de celle qui met votre code en défaut.",
 
     'why.note.manual.invariants':
-        "La valeur est valide parce que quelqu'un l'a choisie ainsi, et pour cette seule raison. Rien ne vérifie qu'elle l'est restée depuis.",
+        "La valeur est valide parce que quelqu'un l'a choisie en connaissance de cause, et pour cette seule raison. Le jour où la règle change, rien ne vient vérifier qu'elle l'est toujours.",
     'why.note.manual.callSite':
-        "La règle n'est jamais énoncée. Vous choisissez une valeur qui la respecte, et la règle reste dans la tête de celui qui l'a choisie.",
+        "La règle n'est jamais énoncée. Vous choisissez une valeur qui se trouve la respecter, et la règle reste dans la tête de celui qui l'a choisie.",
     'why.note.manual.testIntent':
-        "Elle montre sans détour la valeur qui est le sujet du test. Employée aussi pour les paramètres autour, la préparation gagne une ligne par paramètre, et le sujet cesse de ressortir.",
+        "Elle montre sans détour la valeur qui fait le sujet du test. Mais si vous l'employez aussi pour les paramètres alentour, la préparation gagne une ligne par paramètre, et le sujet cesse de ressortir.",
     'why.note.manual.reuse':
-        "Une valeur peut être extraite dans une constante nommée ou un helper, puis partagée. Vous la maintenez alors à la main, et tous les tests qui la partagent tournent sur la même valeur.",
+        "Vous pouvez extraire la valeur dans une constante nommée ou un helper, puis la réutiliser partout. Vous la maintenez alors à la main, et tous les tests concernés tournent sur cette unique valeur.",
     'why.note.manual.realism':
-        "Aussi vraisemblable que la valeur que vous tapez : marie.durand@acme.fr l'est autant qu'une valeur générée. Il faut la retaper au test suivant.",
+        "La vraisemblance dépend entièrement de vous : marie.durand@acme.fr est aussi crédible qu'une valeur générée. Mais il faut la retaper au test suivant.",
     'why.note.manual.graph':
-        "Chaque objet imbriqué se construit à la main, niveau par niveau, et le constructeur de chacun est une ligne que vous écrivez puis maintenez.",
+        "Chaque objet imbriqué se construit à la main, niveau par niveau. Chaque constructeur appelé est une ligne de plus à écrire, puis à maintenir.",
     'why.note.manual.reproducibility':
         "La même valeur à chaque exécution, puisque c'est celle que vous avez tapée. Rien à rejouer, et rien qui varie.",
     'why.note.manual.compileTime':
@@ -1257,14 +1257,14 @@ const fr: Record<UiKey, string> = {
         "Une démo, une capture d'écran, une base que quelqu'un va parcourir. Prenez un générateur de fausses données. Une valeur valide n'est pas une valeur crédible.",
     'why.notFor.exploration.label': "Vous voulez que le test parte chercher un contre-exemple.",
     'why.notFor.exploration.body':
-        "Exécuter une même assertion sur des centaines d'entrées générées, puis réduire un échec à son plus petit cas, c'est du property-based testing. JustDummies tire une valeur par exécution, et ce n'est pas cet outil-là.",
+        "Passer une même assertion sur des centaines d'entrées générées, puis ramener un échec à son plus petit cas, c'est du property-based testing. JustDummies tire une valeur par exécution : ce n'est pas l'outil qu'il vous faut ici.",
     'why.notFor.secrets.label': "Vous avez besoin d'un mot de passe, d'un jeton ou d'une clé.",
     'why.notFor.secrets.body':
-        "Les générateurs produisent des valeurs de test, pas des secrets. Rien de ce qui est tiré ici n'est propre à servir d'élément d'authentification, dans un test comme ailleurs.",
+        "Les générateurs produisent des valeurs de test, pas des secrets. Aucune valeur tirée ici ne doit servir à authentifier quoi que ce soit, dans un test comme ailleurs.",
 
     'why.tryIt.heading': 'Essayez-le',
     'why.tryIt.body':
-        "Ajoutez le paquet à un projet de test et changez une ligne dans une seule préparation. Tous les autres tests restent tels quels. Bogus, AutoFixture, vos propres builders et toutes les valeurs que vous avez déjà écrites continuent de fonctionner, dans le même projet et dans le même fichier. S'il ne fait pas ses preuves, revenir en arrière consiste à supprimer les lignes ajoutées.",
+        "Ajoutez le paquet à un projet de test, puis changez une ligne dans une seule préparation. Tous les autres tests restent tels quels. Bogus, AutoFixture, vos propres builders et toutes les valeurs déjà écrites continuent de fonctionner, dans le même projet et dans le même fichier. Si l'essai n'est pas concluant, il suffit de supprimer les lignes ajoutées.",
     'why.tryIt.install': 'Installer la bibliothèque',
 
     'why.sources.heading': 'Comment ce comparatif a été vérifié',
