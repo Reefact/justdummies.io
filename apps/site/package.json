@@ -16,7 +16,7 @@
     "@justdummies/design-tokens": "workspace:*"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.10",
+    "@astrojs/check": "^0.9.12",
     "astro": "^7.4.0",
     "typescript": "^5.9.3"
   }
